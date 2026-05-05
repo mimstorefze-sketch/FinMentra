@@ -7,6 +7,36 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ── SUPABASE AUTH SCREEN ── */
+#auth-screen {
+  position:fixed;inset:0;z-index:2000;background:var(--navy);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-body);
+}
+.auth-box {
+  background:#fff;border-radius:20px;padding:32px 24px;
+  max-width:360px;width:92%;text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,.3);
+}
+.auth-logo {
+  font-family:'Cormorant Garamond',serif;font-size:28px;
+  font-weight:600;color:#0A1F6E;margin-bottom:4px;
+}
+.auth-logo em{font-style:italic;color:#4A6CF7;}
+.auth-sub{font-size:12px;color:#64748B;margin-bottom:24px;}
+.auth-tabs{display:flex;gap:4px;background:#EEF2FF;border-radius:10px;padding:4px;margin-bottom:20px;}
+.auth-tab{flex:1;padding:8px;border-radius:8px;font-size:13px;font-weight:700;color:#64748B;cursor:pointer;border:none;background:none;font-family:inherit;}
+.auth-tab.active{background:#0A1F6E;color:#fff;}
+.auth-input{width:100%;padding:11px 14px;border:1.5px solid #C8D8FF;border-radius:10px;font-size:13px;font-family:inherit;outline:none;margin-bottom:10px;color:#0B1430;}
+.auth-input:focus{border-color:#4A6CF7;}
+.auth-btn{width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-top:4px;}
+.auth-btn:hover{background:#1E3A8A;}
+.auth-err{font-size:12px;color:#DC2626;margin-top:8px;display:none;}
+.auth-loading{font-size:12px;color:#64748B;margin-top:8px;display:none;}
+</style>
 <style>
 /* ══════════════════════════════════════════════════
    FINMENTRA v5 — INDEX.HTML THEME + PHASE3 CONTENT
@@ -2321,6 +2351,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div class="profile-item" style="border-bottom:none;"><div class="profile-item-icon">🆕</div><div class="profile-item-label">New standards</div><button class="toggle on"></button></div>
   </div>
   <button class="btn btn-block" style="background:var(--red-l);color:var(--red);border:1px solid var(--red);margin-top:4px;" onclick="if(confirm('Reset all progress?\')){S.xp=0;S.streak=0;S.coins=240;S.totalQ=0;S.totalCorrect=0;updateHUD();toast('Progress reset')}">⚠️ Reset Progress</button>
+  <button class="btn btn-block" style="background:var(--navy);color:#fff;margin-top:8px;" onclick="logoutUser()">🚪 Logout</button>
 </div>
 
 <!-- ══ BOOKMARKS ══ -->
@@ -5977,6 +6008,8 @@ function saveState(){
       gender:S.gender,mode:S.mode,darkMode:S.darkMode,
     }));
   }catch(e){}
+  // Also save to Supabase if logged in
+  if(typeof saveUserProgress === 'function') saveUserProgress();
 }
 function loadState(){
   try{
@@ -5991,6 +6024,29 @@ const _origAnswerQ=answerQ;
 // Already handled in answerQ — also save after each answer
 
 </script>
+
+<!-- ══ AUTH SCREEN ══ -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">Fin<em>Mentra</em></div>
+    <div class="auth-sub">Where Finance Becomes Second Nature</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+      <button class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
+    </div>
+    <input class="auth-input" id="auth-email" type="email" placeholder="Email address"/>
+    <input class="auth-input" id="auth-password" type="password" placeholder="Password (min 6 characters)"/>
+    <div id="auth-name-wrap" style="display:none;">
+      <input class="auth-input" id="auth-name" type="text" placeholder="Your full name"/>
+    </div>
+    <button class="auth-btn" id="auth-btn" onclick="handleAuth()">Login</button>
+    <div class="auth-err" id="auth-err"></div>
+    <div class="auth-loading" id="auth-loading">Please wait...</div>
+    <div style="margin-top:14px;font-size:11px;color:#94A3B8;">
+      By continuing you agree to our Terms & Privacy Policy
+    </div>
+  </div>
+</div>
 
 <!-- FLOATING ACTION BUTTON -->
 <div id="fab">
@@ -6019,5 +6075,143 @@ const _origAnswerQ=answerQ;
   <button id="fab-main" onclick="toggleFab()">＋</button>
 </div>
 
+<script>
+// ══ SUPABASE INIT ══
+const SUPA_URL = 'https://vofxhqnipoywbbkmlxcp.supabase.co';
+const SUPA_KEY = 'sb_publishable_Msgu7dGioeUfmnH88XtXlA_-WFeJoQh';
+const _supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+let _currentUser = null;
+
+// ── AUTH TAB SWITCH ──
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  const nameWrap = document.getElementById('auth-name-wrap');
+  const btn = document.getElementById('auth-btn');
+  if (tab === 'signup') {
+    nameWrap.style.display = 'block';
+    btn.textContent = 'Create Account';
+  } else {
+    nameWrap.style.display = 'none';
+    btn.textContent = 'Login';
+  }
+  document.getElementById('auth-err').style.display = 'none';
+}
+
+// ── HANDLE AUTH (login or signup) ──
+async function handleAuth() {
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value.trim();
+  const isSignup = document.getElementById('auth-btn').textContent === 'Create Account';
+  const errEl = document.getElementById('auth-err');
+  const loadEl = document.getElementById('auth-loading');
+
+  if (!email || !password) {
+    errEl.textContent = 'Please enter email and password.';
+    errEl.style.display = 'block'; return;
+  }
+  errEl.style.display = 'none';
+  loadEl.style.display = 'block';
+
+  try {
+    let result;
+    if (isSignup) {
+      const name = document.getElementById('auth-name').value.trim();
+      result = await _supa.auth.signUp({
+        email, password,
+        options: { data: { full_name: name } }
+      });
+    } else {
+      result = await _supa.auth.signInWithPassword({ email, password });
+    }
+
+    if (result.error) {
+      errEl.textContent = result.error.message;
+      errEl.style.display = 'block';
+      loadEl.style.display = 'none';
+      return;
+    }
+
+    _currentUser = result.data.user;
+    loadEl.style.display = 'none';
+    document.getElementById('auth-screen').style.display = 'none';
+
+    // Load user progress from Supabase
+    await loadUserProgress();
+
+  } catch(e) {
+    errEl.textContent = 'Something went wrong. Please try again.';
+    errEl.style.display = 'block';
+    loadEl.style.display = 'none';
+  }
+}
+
+// ── LOAD USER PROGRESS FROM SUPABASE ──
+async function loadUserProgress() {
+  if (!_currentUser) return;
+  try {
+    const { data, error } = await _supa
+      .from('user_progress')
+      .select('*')
+      .eq('user_id', _currentUser.id)
+      .single();
+
+    if (data) {
+      S.xp = data.xp || 0;
+      S.coins = data.coins || 240;
+      S.streak = data.streak || 0;
+      S.bestStreak = data.best_streak || 0;
+      S.totalQ = data.total_questions || 0;
+      S.totalCorrect = data.total_correct || 0;
+      S.hearts = data.hearts || 3;
+      updateHUD();
+    } else {
+      // New user — create their progress row
+      await _supa.from('user_progress').insert({
+        user_id: _currentUser.id,
+        xp: S.xp, coins: S.coins, streak: S.streak,
+        best_streak: S.bestStreak, total_questions: S.totalQ,
+        total_correct: S.totalCorrect, hearts: S.hearts
+      });
+    }
+  } catch(e) { console.log('Progress load error:', e); }
+}
+
+// ── SAVE USER PROGRESS TO SUPABASE ──
+async function saveUserProgress() {
+  if (!_currentUser) { saveState(); return; }
+  try {
+    await _supa.from('user_progress').upsert({
+      user_id: _currentUser.id,
+      xp: S.xp, coins: S.coins, streak: S.streak,
+      best_streak: S.bestStreak, total_questions: S.totalQ,
+      total_correct: S.totalCorrect, hearts: S.hearts,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+  } catch(e) { saveState(); } // fallback to localStorage
+}
+
+// ── LOGOUT ──
+async function logoutUser() {
+  await _supa.auth.signOut();
+  _currentUser = null;
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+
+// ── CHECK IF ALREADY LOGGED IN ──
+(async function checkSession() {
+  const { data } = await _supa.auth.getSession();
+  if (data.session) {
+    _currentUser = data.session.user;
+    document.getElementById('auth-screen').style.display = 'none';
+    await loadUserProgress();
+  }
+})();
+
+// ── AUTO SAVE TO SUPABASE EVERY 30s ──
+setInterval(saveUserProgress, 30000);
+
+</script>
 </body>
 </html>
