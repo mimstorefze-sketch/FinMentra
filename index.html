@@ -706,6 +706,11 @@ a{color:inherit;text-decoration:none;}
 body.lefthanded .bottom-nav { flex-direction: row-reverse; }
 body.lefthanded .action-row { flex-direction: row-reverse; }
 body.lefthanded .mentor { left:auto !important; right:12px; }
+/* High contrast mode */
+[data-contrast="high"] { --text:#000 !important; --navy:#00008B !important; --muted:#333 !important; --surface:#fff !important; --bg:#f0f0f0 !important; --border:#000 !important; --border2:#000 !important; filter: contrast(1.2); }
+[data-contrast="high"] .card, [data-contrast="high"] .qcard, [data-contrast="high"] .qcard-q { border: 2px solid #000 !important; }
+/* Reduce motion mode */
+[data-motion="reduced"] *, [data-motion="reduced"] *::before, [data-motion="reduced"] *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 
 /* ── FORMULA TABLE ── */
 .formula-item { border-bottom: 1px solid var(--border2); padding: 2px 0; }
@@ -2335,7 +2340,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div class="card-h"><div class="card-title">🌙 Appearance</div></div>
     <div class="profile-item"><div class="profile-item-icon">🌙</div><div class="profile-item-label">Dark Mode</div><button class="toggle" id="dark-toggle-s" onclick="toggleDarkMode()"></button></div>
     <div class="profile-item"><div class="profile-item-icon">🔤</div><div class="profile-item-label">Font Size</div><div style="display:flex;gap:6px;"><button class="chip active" onclick="setFontSize(14,this)">S</button><button class="chip" onclick="setFontSize(16,this)">M</button><button class="chip" onclick="setFontSize(18,this)">L</button><button class="chip" onclick="setFontSize(20,this)">XL</button></div></div>
-    <div class="profile-item" style="border-bottom:none;"><div class="profile-item-icon">🎨</div><div class="profile-item-label">High Contrast</div><button class="toggle" onclick="toast('High contrast applied')"></button></div>
+    <div class="profile-item" style="border-bottom:none;"><div class="profile-item-icon">🎨</div><div class="profile-item-label">High Contrast</div><button class="toggle" data-setting="contrast" onclick="toggleHighContrast(this)"></button></div>
   </div>
   <div class="card">
     <div class="card-h"><div class="card-title">🔊 Sound</div></div>
@@ -2345,8 +2350,8 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div class="card">
     <div class="card-h"><div class="card-title">📅 Study</div></div>
     <div class="profile-item"><div class="profile-item-icon">📅</div><div class="profile-item-label">Exam Date</div><input type="date" id="exam-date" style="border:none;background:none;font-family:var(--font-mono);font-size:12px;color:var(--navy);outline:none;" onchange="S.examDate=this.value;toast('Exam date saved!')"></div>
-    <div class="profile-item"><div class="profile-item-icon">♿</div><div class="profile-item-label">Reduce Motion</div><button class="toggle" onclick="this.classList.toggle('on');document.documentElement.style.setProperty('--anim-dur',this.classList.contains('on')?'0s':'0.3s');toast('Motion setting saved')"></button></div>
-    <div class="profile-item" style="border-bottom:none;"><div class="profile-item-icon">🤚</div><div class="profile-item-label">Left-handed Mode</div><button class="toggle" onclick="this.classList.toggle('on');document.body.classList.toggle('lefthanded',this.classList.contains('on'));toast('Layout flipped')"></button></div>
+    <div class="profile-item"><div class="profile-item-icon">♿</div><div class="profile-item-label">Reduce Motion</div><button class="toggle" data-setting="motion" onclick="toggleReduceMotion(this)"></button></div>
+    <div class="profile-item" style="border-bottom:none;"><div class="profile-item-icon">🤚</div><div class="profile-item-label">Left-handed Mode</div><button class="toggle" data-setting="lefthanded" onclick="toggleLeftHand(this)"></button></div>
   </div>
   <div class="card">
     <div class="card-h"><div class="card-title">🔔 Notifications</div></div>
@@ -3121,31 +3126,55 @@ function showScreen(id){
 
 function switchMode(mode){
   if(mode === S.mode) return;
-  // Show in-app confirmation
   const toLabel = mode === 'professional' ? '💼 Professional' : '🎓 Student';
   showModeConfirm(toLabel, function(){
     S.mode = mode;
-    document.getElementById('ms-student').classList.toggle('active', mode==='student');
-    document.getElementById('ms-pro').classList.toggle('active', mode==='professional');
+    // Sync button UI
+    const sBtn = document.getElementById('ms-student');
+    const pBtn = document.getElementById('ms-pro');
+    if(sBtn) sBtn.classList.toggle('active', mode==='student');
+    if(pBtn) pBtn.classList.toggle('active', mode==='professional');
+    // Navigate
     if(mode === 'professional'){
       showScreen('pro-home');
-      const pg=document.getElementById('pro-greeting');
+      const pg = document.getElementById('pro-greeting');
       if(pg) pg.textContent = getMoodGreeting(true);
     } else {
       showScreen('home');
     }
     renderBottomNav();
+    saveState();
   }, function(){
-    // Cancelled — revert buttons
-    document.getElementById('ms-student').classList.toggle('active', S.mode==='student');
-    document.getElementById('ms-pro').classList.toggle('active', S.mode==='professional');
+    // Cancelled — revert button UI to match current state
+    const sBtn = document.getElementById('ms-student');
+    const pBtn = document.getElementById('ms-pro');
+    if(sBtn) sBtn.classList.toggle('active', S.mode==='student');
+    if(pBtn) pBtn.classList.toggle('active', S.mode==='professional');
   });
 }
 
+// Called on init to sync button UI with saved state — no popup
+function applyModeUI(mode){
+  S.mode = mode;
+  const sBtn = document.getElementById('ms-student');
+  const pBtn = document.getElementById('ms-pro');
+  if(sBtn) sBtn.classList.toggle('active', mode==='student');
+  if(pBtn) pBtn.classList.toggle('active', mode==='professional');
+  if(mode === 'professional'){
+    showScreen('pro-home');
+    const pg = document.getElementById('pro-greeting');
+    if(pg) pg.textContent = getMoodGreeting(true);
+  } else {
+    showScreen('home');
+  }
+  renderBottomNav();
+}
+
 function showModeConfirm(toLabel, onConfirm, onCancel){
-  // Remove any existing
   const existing = document.getElementById('mode-confirm-popup');
   if(existing) existing.remove();
+  window._modeConfirmYes = onConfirm;
+  window._modeConfirmNo  = onCancel;
   const popup = document.createElement('div');
   popup.id = 'mode-confirm-popup';
   popup.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
@@ -3154,11 +3183,9 @@ function showModeConfirm(toLabel, onConfirm, onCancel){
       <div style="font-size:32px;margin-bottom:12px;">🔄</div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#0A1F6E;margin-bottom:8px;">Switch Mode?</div>
       <div style="font-size:13px;color:#64748B;margin-bottom:24px;line-height:1.5;">You are switching to<br><strong style="color:#0A1F6E;">${toLabel}</strong></div>
-      <button onclick="document.getElementById('mode-confirm-popup').remove();(arguments[0]||window._modeConfirmYes)&&window._modeConfirmYes()" style="width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px;">Yes, Switch</button>
-      <button onclick="document.getElementById('mode-confirm-popup').remove();window._modeConfirmNo&&window._modeConfirmNo()" style="width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;">Cancel</button>
+      <button onclick="document.getElementById('mode-confirm-popup').remove();window._modeConfirmYes&&window._modeConfirmYes();" style="width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px;">Yes, Switch</button>
+      <button onclick="document.getElementById('mode-confirm-popup').remove();window._modeConfirmNo&&window._modeConfirmNo();" style="width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;">Cancel</button>
     </div>`;
-  window._modeConfirmYes = onConfirm;
-  window._modeConfirmNo  = onCancel;
   document.body.appendChild(popup);
 }
 
@@ -3509,7 +3536,7 @@ function closeOnboarding(){
   document.getElementById('onboarding').style.display='none';
   buildMentor();updateMentorName();
   document.getElementById('hw-greeting').textContent=getMoodGreeting();
-  if(S.mode==='professional') switchMode('professional');
+  if(S.mode==='professional') applyModeUI('professional');
   // Only show daily reward if not already claimed today
   checkAndShowDailyReward();
 }
@@ -4275,6 +4302,8 @@ function toggleCheckItem(item){
     }
   }catch(e){}
 
+  // Restore accessibility settings
+  restoreAccessibility();
   // Inject coin SVGs
   const obCoinIcon=document.getElementById('ob-coin-icon');if(obCoinIcon) obCoinIcon.innerHTML=coinSVG(32);
   const shopCoinSvg=document.getElementById('shop-coin-svg');if(shopCoinSvg) shopCoinSvg.innerHTML=coinSVG(28);
@@ -4321,7 +4350,69 @@ function setFontSize(px, el) {
   });
   el.classList.add('active');
   try { localStorage.setItem('fm_fontsize', px); } catch(e) {}
-  toast('Font size set');
+  toast('Font size updated');
+}
+
+function toggleHighContrast(btn) {
+  btn.classList.toggle('on');
+  const on = btn.classList.contains('on');
+  document.documentElement.setAttribute('data-contrast', on ? 'high' : 'normal');
+  try { localStorage.setItem('fm_contrast', on ? '1' : '0'); } catch(e) {}
+  toast(on ? 'High contrast on' : 'High contrast off');
+}
+
+function toggleReduceMotion(btn) {
+  btn.classList.toggle('on');
+  const on = btn.classList.contains('on');
+  document.documentElement.setAttribute('data-motion', on ? 'reduced' : 'normal');
+  try { localStorage.setItem('fm_motion', on ? '1' : '0'); } catch(e) {}
+  toast(on ? 'Motion reduced' : 'Motion restored');
+}
+
+function toggleLeftHand(btn) {
+  btn.classList.toggle('on');
+  const on = btn.classList.contains('on');
+  document.body.classList.toggle('lefthanded', on);
+  try { localStorage.setItem('fm_lefthanded', on ? '1' : '0'); } catch(e) {}
+  toast(on ? 'Left-hand layout on' : 'Left-hand layout off');
+}
+
+// Restore all accessibility settings on load
+function restoreAccessibility() {
+  try {
+    // Font size
+    const fs = localStorage.getItem('fm_fontsize');
+    if (fs) {
+      document.documentElement.style.fontSize = fs + 'px';
+      document.querySelectorAll('.chip').forEach(c => {
+        if (['S','M','L','XL'].includes(c.textContent)) {
+          const map = {'14':'S','16':'M','18':'L','20':'XL'};
+          c.classList.toggle('active', c.textContent === map[fs]);
+        }
+      });
+    }
+    // High contrast
+    const hc = localStorage.getItem('fm_contrast');
+    if (hc === '1') {
+      document.documentElement.setAttribute('data-contrast', 'high');
+      const btn = document.querySelector('[data-setting="contrast"]');
+      if (btn) btn.classList.add('on');
+    }
+    // Reduce motion
+    const rm = localStorage.getItem('fm_motion');
+    if (rm === '1') {
+      document.documentElement.setAttribute('data-motion', 'reduced');
+      const btn = document.querySelector('[data-setting="motion"]');
+      if (btn) btn.classList.add('on');
+    }
+    // Left handed
+    const lh = localStorage.getItem('fm_lefthanded');
+    if (lh === '1') {
+      document.body.classList.add('lefthanded');
+      const btn = document.querySelector('[data-setting="lefthanded"]');
+      if (btn) btn.classList.add('on');
+    }
+  } catch(e) {}
 }
 
 // ── COIN SHOP ──
@@ -6135,7 +6226,15 @@ function saveState(){
 function loadState(){
   try{
     const saved=localStorage.getItem('fm_state');
-    if(saved){const d=JSON.parse(saved);Object.assign(S,d);}
+    if(saved){
+      const d=JSON.parse(saved);
+      Object.assign(S,d);
+      // Sync button UI silently — no popup
+      const sBtn=document.getElementById('ms-student');
+      const pBtn=document.getElementById('ms-pro');
+      if(sBtn) sBtn.classList.toggle('active', S.mode==='student');
+      if(pBtn) pBtn.classList.toggle('active', S.mode==='professional');
+    }
   }catch(e){}
 }
 // Auto-save every 30s and on answer
