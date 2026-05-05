@@ -12,30 +12,62 @@
 <style>
 /* ── SUPABASE AUTH SCREEN ── */
 #auth-screen {
-  position:fixed;inset:0;z-index:2000;background:var(--navy);
+  position:fixed;inset:0;z-index:2000;background:rgba(10,31,110,0.97);
   display:flex;align-items:center;justify-content:center;
   font-family:var(--font-body);
+  backdrop-filter:blur(8px);
 }
 .auth-box {
-  background:#fff;border-radius:20px;padding:32px 24px;
+  background:#fff;border-radius:24px;padding:32px 24px 24px;
   max-width:360px;width:92%;text-align:center;
-  box-shadow:0 20px 60px rgba(0,0,0,.3);
+  box-shadow:0 24px 64px rgba(0,0,0,.4);
 }
 .auth-logo {
-  font-family:'Cormorant Garamond',serif;font-size:28px;
-  font-weight:600;color:#0A1F6E;margin-bottom:4px;
+  font-family:'Cormorant Garamond',serif;font-size:30px;
+  font-weight:600;color:#0A1F6E;margin-bottom:2px;
 }
 .auth-logo em{font-style:italic;color:#4A6CF7;}
-.auth-sub{font-size:12px;color:#64748B;margin-bottom:24px;}
-.auth-tabs{display:flex;gap:4px;background:#EEF2FF;border-radius:10px;padding:4px;margin-bottom:20px;}
-.auth-tab{flex:1;padding:8px;border-radius:8px;font-size:13px;font-weight:700;color:#64748B;cursor:pointer;border:none;background:none;font-family:inherit;}
+.auth-sub{font-size:12px;color:#64748B;margin-bottom:20px;}
+/* Social buttons */
+.auth-social-btn {
+  width:100%;padding:12px 16px;border-radius:12px;
+  font-size:13px;font-weight:700;border:1.5px solid #C8D8FF;
+  cursor:pointer;font-family:inherit;margin-bottom:10px;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  background:#fff;color:#0B1430;transition:all .2s;
+}
+.auth-social-btn:hover{background:#EEF2FF;border-color:#4A6CF7;}
+.auth-divider{display:flex;align-items:center;gap:10px;margin:4px 0 14px;}
+.auth-divider span{font-size:11px;color:#94A3B8;white-space:nowrap;}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:#E2E8F0;}
+/* Tabs */
+.auth-tabs{display:flex;gap:4px;background:#EEF2FF;border-radius:10px;padding:4px;margin-bottom:14px;}
+.auth-tab{flex:1;padding:8px;border-radius:8px;font-size:12px;font-weight:700;color:#64748B;cursor:pointer;border:none;background:none;font-family:inherit;}
 .auth-tab.active{background:#0A1F6E;color:#fff;}
-.auth-input{width:100%;padding:11px 14px;border:1.5px solid #C8D8FF;border-radius:10px;font-size:13px;font-family:inherit;outline:none;margin-bottom:10px;color:#0B1430;}
+.auth-input{width:100%;padding:11px 14px;border:1.5px solid #C8D8FF;border-radius:10px;font-size:13px;font-family:inherit;outline:none;margin-bottom:10px;color:#0B1430;box-sizing:border-box;}
 .auth-input:focus{border-color:#4A6CF7;}
 .auth-btn{width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-top:4px;}
 .auth-btn:hover{background:#1E3A8A;}
 .auth-err{font-size:12px;color:#DC2626;margin-top:8px;display:none;}
 .auth-loading{font-size:12px;color:#64748B;margin-top:8px;display:none;}
+.auth-skip{font-size:12px;color:#4A6CF7;margin-top:14px;cursor:pointer;text-decoration:underline;display:block;}
+/* Register popup overlay */
+#register-popup {
+  position:fixed;inset:0;z-index:1900;background:rgba(10,31,110,0.85);
+  display:none;align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+#register-popup.show{display:flex;}
+.reg-popup-box {
+  background:#fff;border-radius:24px 24px 0 0;padding:28px 24px 32px;
+  width:100%;max-width:480px;text-align:center;
+}
+.reg-popup-emoji{font-size:40px;margin-bottom:8px;}
+.reg-popup-title{font-size:20px;font-weight:800;color:#0A1F6E;margin-bottom:6px;}
+.reg-popup-sub{font-size:13px;color:#64748B;margin-bottom:20px;line-height:1.5;}
+.reg-popup-xp{background:#EEF2FF;border-radius:12px;padding:12px;margin-bottom:16px;font-size:13px;font-weight:700;color:#0A1F6E;}
+.reg-popup-btn{width:100%;padding:14px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px;}
+.reg-popup-skip{font-size:12px;color:#94A3B8;cursor:pointer;}
 </style>
 <style>
 /* ══════════════════════════════════════════════════
@@ -1359,37 +1391,12 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 <div id="login-reward">
   <div class="lr-box">
     <div style="font-size:40px;line-height:1;margin-bottom:8px;">🎁</div>
-    <div style="font-family:var(--font-display);font-size:24px;color:var(--navy);font-weight:600;margin-bottom:4px;">Day 4 Reward!</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:20px;">Streak bonus unlocked — claim it!</div>
-    <div class="lr-streak-row">
-      <div class="lr-day">
-        <div class="lr-day-circle done" style="font-size:14px;font-weight:800;color:var(--green);">✓</div>
-        <div class="lr-day-lbl">Mon</div>
-      </div>
-      <div class="lr-day">
-        <div class="lr-day-circle done" style="font-size:14px;font-weight:800;color:var(--green);">✓</div>
-        <div class="lr-day-lbl">Tue</div>
-      </div>
-      <div class="lr-day">
-        <div class="lr-day-circle done" style="font-size:14px;font-weight:800;color:var(--green);">✓</div>
-        <div class="lr-day-lbl">Wed</div>
-      </div>
-      <div class="lr-day">
-        <div class="lr-day-circle today" style="font-size:16px;">🔥</div>
-        <div class="lr-day-lbl" style="color:var(--navy);font-weight:700;">Thu</div>
-      </div>
-      <div class="lr-day">
-        <div class="lr-day-circle" style="font-size:11px;font-weight:700;color:var(--steel);">?</div>
-        <div class="lr-day-lbl">Fri</div>
-      </div>
-      <div class="lr-day">
-        <div class="lr-day-circle" style="font-size:11px;font-weight:700;color:var(--steel);">?</div>
-        <div class="lr-day-lbl">Sat</div>
-      </div>
-    </div>
+    <div id="lr-day-title" style="font-family:var(--font-display);font-size:24px;color:var(--navy);font-weight:600;margin-bottom:4px;">Day 1 Reward!</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:20px;">Daily bonus — claim it!</div>
+    <div class="lr-streak-row" id="lr-streak-row"></div>
     <div style="background:var(--gold-l);border-radius:12px;padding:14px;margin:12px 0;text-align:center;">
-      <div style="font-family:var(--font-mono);font-size:28px;font-weight:700;color:var(--navy);">+30 Coins</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:2px;">+20 XP bonus</div>
+      <div id="lr-coins-text" style="font-family:var(--font-mono);font-size:28px;font-weight:700;color:var(--navy);">+10 Coins</div>
+      <div id="lr-xp-text" style="font-size:12px;color:var(--muted);margin-top:2px;">+10 XP bonus</div>
     </div>
     <button class="ob-btn" onclick="closeLoginReward()">Claim Reward →</button>
   </div>
@@ -3109,16 +3116,46 @@ function showScreen(id){
 }
 
 function switchMode(mode){
-  S.mode=mode;
-  document.getElementById('ms-student').classList.toggle('active',mode==='student');
-  document.getElementById('ms-pro').classList.toggle('active',mode==='professional');
-  if(mode==='professional'){
-    showScreen('pro-home');
-    document.getElementById('pro-greeting').textContent=getMoodGreeting(true);
-  } else {
-    showScreen('home');
-  }
-  renderBottomNav();
+  if(mode === S.mode) return;
+  // Show in-app confirmation
+  const toLabel = mode === 'professional' ? '💼 Professional' : '🎓 Student';
+  showModeConfirm(toLabel, function(){
+    S.mode = mode;
+    document.getElementById('ms-student').classList.toggle('active', mode==='student');
+    document.getElementById('ms-pro').classList.toggle('active', mode==='professional');
+    if(mode === 'professional'){
+      showScreen('pro-home');
+      const pg=document.getElementById('pro-greeting');
+      if(pg) pg.textContent = getMoodGreeting(true);
+    } else {
+      showScreen('home');
+    }
+    renderBottomNav();
+  }, function(){
+    // Cancelled — revert buttons
+    document.getElementById('ms-student').classList.toggle('active', S.mode==='student');
+    document.getElementById('ms-pro').classList.toggle('active', S.mode==='professional');
+  });
+}
+
+function showModeConfirm(toLabel, onConfirm, onCancel){
+  // Remove any existing
+  const existing = document.getElementById('mode-confirm-popup');
+  if(existing) existing.remove();
+  const popup = document.createElement('div');
+  popup.id = 'mode-confirm-popup';
+  popup.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+  popup.innerHTML = `
+    <div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+      <div style="font-size:32px;margin-bottom:12px;">🔄</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#0A1F6E;margin-bottom:8px;">Switch Mode?</div>
+      <div style="font-size:13px;color:#64748B;margin-bottom:24px;line-height:1.5;">You are switching to<br><strong style="color:#0A1F6E;">${toLabel}</strong></div>
+      <button onclick="document.getElementById('mode-confirm-popup').remove();(arguments[0]||window._modeConfirmYes)&&window._modeConfirmYes()" style="width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px;">Yes, Switch</button>
+      <button onclick="document.getElementById('mode-confirm-popup').remove();window._modeConfirmNo&&window._modeConfirmNo()" style="width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;">Cancel</button>
+    </div>`;
+  window._modeConfirmYes = onConfirm;
+  window._modeConfirmNo  = onCancel;
+  document.body.appendChild(popup);
 }
 
 // ── TOPICS ──
@@ -3345,6 +3382,8 @@ function answerQ(idx,btn,q){
   // Enable Next button after answering
   const nb=document.getElementById('next-btn');if(nb){nb.disabled=false;nb.textContent='Next ›';}
   const sb2=document.getElementById('skip-btn');if(sb2) sb2.style.display='none';
+  // Check if guest needs to register
+  if(typeof checkGuestPrompt==='function') checkGuestPrompt();
 }
 function checkNearMiss(){
   const nm=document.getElementById('near-miss');const nmt=document.getElementById('near-miss-text');if(!nm||!nmt) return;
@@ -3467,15 +3506,93 @@ function closeOnboarding(){
   buildMentor();updateMentorName();
   document.getElementById('hw-greeting').textContent=getMoodGreeting();
   if(S.mode==='professional') switchMode('professional');
-  setTimeout(()=>document.getElementById('login-reward').classList.add('show'),600);
+  // Only show daily reward if not already claimed today
+  checkAndShowDailyReward();
 }
+
+function checkAndShowDailyReward(){
+  try{
+    const today = new Date().toDateString();
+    const lastClaim = localStorage.getItem('fm_last_reward_date');
+    if(lastClaim === today) return; // Already claimed today — don't show
+    // Build the reward popup with real data
+    buildLoginRewardUI();
+    setTimeout(()=>document.getElementById('login-reward').classList.add('show'),600);
+  }catch(e){}
+}
+
+function buildLoginRewardUI(){
+  try{
+    const today = new Date().toDateString();
+    const lastClaim = localStorage.getItem('fm_last_reward_date');
+    const lastDate = lastClaim ? new Date(lastClaim) : null;
+    const todayDate = new Date();
+
+    // Check if yesterday was last claim (consecutive day)
+    const isConsecutive = lastDate && (
+      todayDate - lastDate < 2 * 24 * 60 * 60 * 1000
+    );
+
+    // Get or reset login streak
+    let loginStreak = parseInt(localStorage.getItem('fm_login_streak') || '0');
+    if(!isConsecutive) loginStreak = 0; // reset if missed a day
+    loginStreak++;
+    localStorage.setItem('fm_login_streak', loginStreak);
+
+    // Day title
+    const titleEl = document.getElementById('lr-day-title');
+    if(titleEl) titleEl.textContent = 'Day ' + loginStreak + ' Reward!';
+
+    // Coins & XP scale with streak
+    const coins = Math.min(10 + (loginStreak - 1) * 5, 50); // 10,15,20...50 max
+    const xp    = Math.min(10 + (loginStreak - 1) * 5, 50);
+    const coinsEl = document.getElementById('lr-coins-text');
+    const xpEl    = document.getElementById('lr-xp-text');
+    if(coinsEl) coinsEl.textContent = '+' + coins + ' Coins';
+    if(xpEl)    xpEl.textContent    = '+' + xp + ' XP bonus';
+
+    // Store reward amounts to claim later
+    localStorage.setItem('fm_pending_coins', coins);
+    localStorage.setItem('fm_pending_xp',    xp);
+
+    // Build streak row (show last 6 days)
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const row = document.getElementById('lr-streak-row');
+    if(row){
+      row.innerHTML = '';
+      for(let i = 0; i < 6; i++){
+        const dayOffset = i - (Math.min(loginStreak,6) - 1);
+        const d = new Date(todayDate);
+        d.setDate(d.getDate() + dayOffset);
+        const dayName = days[d.getDay()];
+        const isDone = dayOffset < 0 && i < loginStreak - 1;
+        const isToday = dayOffset === 0;
+        const isFuture = dayOffset > 0;
+        const div = document.createElement('div');
+        div.className = 'lr-day';
+        div.innerHTML = `
+          <div class="lr-day-circle ${isDone?'done':''} ${isToday?'today':''}" style="font-size:${isDone?'14px':isToday?'16px':'11px'};font-weight:${isFuture?'700':'800'};color:${isDone?'var(--green)':isFuture?'var(--steel)':'inherit'};">
+            ${isDone?'✓':isToday?'🔥':'?'}
+          </div>
+          <div class="lr-day-lbl" style="${isToday?'color:var(--navy);font-weight:700;':''}">${dayName}</div>`;
+        row.appendChild(div);
+      }
+    }
+  }catch(e){}
+}
+
 function closeLoginReward(){
   document.getElementById('login-reward').classList.remove('show');
-  S.coins+=30;S.xp+=20;updateHUD();
-  spawnCoins();
-  spawnConfetti();
-  playSound('levelup');
-  setTimeout(()=>toast('🎉 +30 Coins and +20 XP claimed!'),300);
+  // Give real reward amounts
+  try{
+    const coins = parseInt(localStorage.getItem('fm_pending_coins') || '10');
+    const xp    = parseInt(localStorage.getItem('fm_pending_xp')    || '10');
+    S.coins += coins; S.xp += xp;
+    updateHUD(); spawnCoins(); spawnConfetti(); playSound('levelup');
+    setTimeout(()=>toast('🎉 +'+coins+' Coins and +'+xp+' XP claimed!'),300);
+    // Mark today as claimed
+    localStorage.setItem('fm_last_reward_date', new Date().toDateString());
+  }catch(e){}
 }
 
 // ── MENTOR (index.html clean SVG character) ──
@@ -6030,10 +6147,26 @@ const _origAnswerQ=answerQ;
   <div class="auth-box">
     <div class="auth-logo">Fin<em>Mentra</em></div>
     <div class="auth-sub">Where Finance Becomes Second Nature</div>
+
+    <!-- Social login buttons -->
+    <button class="auth-social-btn" onclick="signInWithGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+      Continue with Google
+    </button>
+
+    <button class="auth-social-btn" onclick="signInWithLinkedIn()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#0077B5"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      Continue with LinkedIn
+    </button>
+
+    <div class="auth-divider"><span>or use email</span></div>
+
+    <!-- Email/password tabs -->
     <div class="auth-tabs">
-      <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
-      <button class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
+      <button class="auth-tab active" onclick="switchAuthTab('login',this)">Login</button>
+      <button class="auth-tab" onclick="switchAuthTab('signup',this)">Sign Up</button>
     </div>
+
     <input class="auth-input" id="auth-email" type="email" placeholder="Email address"/>
     <input class="auth-input" id="auth-password" type="password" placeholder="Password (min 6 characters)"/>
     <div id="auth-name-wrap" style="display:none;">
@@ -6042,9 +6175,33 @@ const _origAnswerQ=answerQ;
     <button class="auth-btn" id="auth-btn" onclick="handleAuth()">Login</button>
     <div class="auth-err" id="auth-err"></div>
     <div class="auth-loading" id="auth-loading">Please wait...</div>
-    <div style="margin-top:14px;font-size:11px;color:#94A3B8;">
+
+    <!-- Skip / guest option -->
+    <span class="auth-skip" onclick="startAsGuest()">Try 10 free questions — no account needed</span>
+
+    <div style="margin-top:12px;font-size:10px;color:#94A3B8;">
       By continuing you agree to our Terms & Privacy Policy
     </div>
+  </div>
+</div>
+
+<!-- ══ REGISTER POPUP (shown after 10 questions) ══ -->
+<div id="register-popup">
+  <div class="reg-popup-box">
+    <div class="reg-popup-emoji">🎉</div>
+    <div class="reg-popup-title">Amazing session!</div>
+    <div class="reg-popup-sub">Create a free account to save your progress and start your next session.</div>
+    <div class="reg-popup-xp" id="reg-popup-stats">You earned 0 XP • 0 correct answers</div>
+    <button class="auth-social-btn" style="margin-bottom:8px;" onclick="closeRegPopup();signInWithGoogle()">
+      <svg width="16" height="16" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+      Save with Google
+    </button>
+    <button class="auth-social-btn" style="margin-bottom:8px;" onclick="closeRegPopup();signInWithLinkedIn()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#0077B5"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      Save with LinkedIn
+    </button>
+    <button class="reg-popup-btn" onclick="closeRegPopup();showEmailAuth()">Create Account with Email</button>
+    <div class="reg-popup-skip" onclick="continueAsGuest()" id="reg-popup-skip-btn">Get 5 more questions first →</div>
   </div>
 </div>
 
@@ -6082,14 +6239,96 @@ const SUPA_KEY = 'sb_publishable_Msgu7dGioeUfmnH88XtXlA_-WFeJoQh';
 const _supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 let _currentUser = null;
+let _isGuest = false;
+let _guestQCount = 0;        // questions answered as guest this session
+let _guestBonusUsed = false; // whether they used the "5 more" option
+
+// ── GUEST MODE ──
+function startAsGuest(){
+  _isGuest = true;
+  _guestQCount = 0;
+  document.getElementById('auth-screen').style.display = 'none';
+  // Check if day 2 (came back without registering)
+  try {
+    const lastVisit = localStorage.getItem('fm_last_visit');
+    const today = new Date().toDateString();
+    if(lastVisit && lastVisit !== today){
+      // Day 2+ user — they came back! Lower threshold to 3
+      localStorage.setItem('fm_guest_threshold', '3');
+    } else {
+      localStorage.setItem('fm_guest_threshold', '10');
+    }
+    localStorage.setItem('fm_last_visit', today);
+  } catch(e){}
+}
+
+function getGuestThreshold(){
+  try { return parseInt(localStorage.getItem('fm_guest_threshold') || '10'); } catch(e){ return 10; }
+}
+
+// Called after every answer — check if we should show register popup
+function checkGuestPrompt(){
+  if(_currentUser || !_isGuest) return;
+  _guestQCount++;
+  const threshold = _guestBonusUsed ? 9999 : getGuestThreshold();
+  if(_guestQCount >= threshold){
+    showRegisterPopup();
+  }
+}
+
+// ── REGISTER POPUP ──
+function showRegisterPopup(){
+  const popup = document.getElementById('register-popup');
+  const stats = document.getElementById('reg-popup-stats');
+  const skipBtn = document.getElementById('reg-popup-skip-btn');
+  if(stats) stats.textContent = 'You earned ' + S.xp + ' XP • ' + S.totalCorrect + ' correct answers';
+  // If they already used the "5 more" bonus — hide skip button
+  if(skipBtn) skipBtn.style.display = _guestBonusUsed ? 'none' : 'block';
+  if(popup) popup.classList.add('show');
+}
+
+function closeRegPopup(){
+  const popup = document.getElementById('register-popup');
+  if(popup) popup.classList.remove('show');
+}
+
+function continueAsGuest(){
+  // Give them 5 more questions then force register
+  _guestBonusUsed = true;
+  _guestQCount = 0;
+  localStorage.setItem('fm_guest_threshold', '5');
+  closeRegPopup();
+  toast('5 more questions — then save your progress! 🎯');
+}
+
+function showEmailAuth(){
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+
+// ── SOCIAL LOGIN ──
+async function signInWithGoogle(){
+  const { error } = await _supa.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: 'https://www.finmentra.com' }
+  });
+  if(error) toast('Google login failed: ' + error.message);
+}
+
+async function signInWithLinkedIn(){
+  const { error } = await _supa.auth.signInWithOAuth({
+    provider: 'linkedin_oidc',
+    options: { redirectTo: 'https://www.finmentra.com' }
+  });
+  if(error) toast('LinkedIn login failed: ' + error.message);
+}
 
 // ── AUTH TAB SWITCH ──
-function switchAuthTab(tab) {
+function switchAuthTab(tab, el) {
   document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
+  if(el) el.classList.add('active');
   const nameWrap = document.getElementById('auth-name-wrap');
   const btn = document.getElementById('auth-btn');
-  if (tab === 'signup') {
+  if(tab === 'signup'){
     nameWrap.style.display = 'block';
     btn.textContent = 'Create Account';
   } else {
@@ -6099,65 +6338,40 @@ function switchAuthTab(tab) {
   document.getElementById('auth-err').style.display = 'none';
 }
 
-// ── HANDLE AUTH (login or signup) ──
+// ── EMAIL/PASSWORD AUTH ──
 async function handleAuth() {
   const email = document.getElementById('auth-email').value.trim();
   const password = document.getElementById('auth-password').value.trim();
   const isSignup = document.getElementById('auth-btn').textContent === 'Create Account';
   const errEl = document.getElementById('auth-err');
   const loadEl = document.getElementById('auth-loading');
-
-  if (!email || !password) {
-    errEl.textContent = 'Please enter email and password.';
-    errEl.style.display = 'block'; return;
-  }
-  errEl.style.display = 'none';
-  loadEl.style.display = 'block';
-
+  if(!email || !password){ errEl.textContent='Please enter email and password.'; errEl.style.display='block'; return; }
+  errEl.style.display='none'; loadEl.style.display='block';
   try {
     let result;
-    if (isSignup) {
+    if(isSignup){
       const name = document.getElementById('auth-name').value.trim();
-      result = await _supa.auth.signUp({
-        email, password,
-        options: { data: { full_name: name } }
-      });
+      result = await _supa.auth.signUp({ email, password, options:{ data:{ full_name: name } } });
     } else {
       result = await _supa.auth.signInWithPassword({ email, password });
     }
-
-    if (result.error) {
-      errEl.textContent = result.error.message;
-      errEl.style.display = 'block';
-      loadEl.style.display = 'none';
-      return;
-    }
-
+    if(result.error){ errEl.textContent=result.error.message; errEl.style.display='block'; loadEl.style.display='none'; return; }
     _currentUser = result.data.user;
-    loadEl.style.display = 'none';
-    document.getElementById('auth-screen').style.display = 'none';
-
-    // Load user progress from Supabase
+    _isGuest = false;
+    loadEl.style.display='none';
+    document.getElementById('auth-screen').style.display='none';
+    closeRegPopup();
     await loadUserProgress();
-
-  } catch(e) {
-    errEl.textContent = 'Something went wrong. Please try again.';
-    errEl.style.display = 'block';
-    loadEl.style.display = 'none';
-  }
+    toast('Welcome to FinMentra! 🎉');
+  } catch(e){ errEl.textContent='Something went wrong. Try again.'; errEl.style.display='block'; loadEl.style.display='none'; }
 }
 
 // ── LOAD USER PROGRESS FROM SUPABASE ──
 async function loadUserProgress() {
-  if (!_currentUser) return;
+  if(!_currentUser) return;
   try {
-    const { data, error } = await _supa
-      .from('user_progress')
-      .select('*')
-      .eq('user_id', _currentUser.id)
-      .single();
-
-    if (data) {
+    const { data } = await _supa.from('user_progress').select('*').eq('user_id', _currentUser.id).single();
+    if(data){
       S.xp = data.xp || 0;
       S.coins = data.coins || 240;
       S.streak = data.streak || 0;
@@ -6167,7 +6381,6 @@ async function loadUserProgress() {
       S.hearts = data.hearts || 3;
       updateHUD();
     } else {
-      // New user — create their progress row
       await _supa.from('user_progress').insert({
         user_id: _currentUser.id,
         xp: S.xp, coins: S.coins, streak: S.streak,
@@ -6175,12 +6388,12 @@ async function loadUserProgress() {
         total_correct: S.totalCorrect, hearts: S.hearts
       });
     }
-  } catch(e) { console.log('Progress load error:', e); }
+  } catch(e){ console.log('Progress load error:', e); }
 }
 
 // ── SAVE USER PROGRESS TO SUPABASE ──
 async function saveUserProgress() {
-  if (!_currentUser) { saveState(); return; }
+  if(!_currentUser) { saveState(); return; }
   try {
     await _supa.from('user_progress').upsert({
       user_id: _currentUser.id,
@@ -6189,29 +6402,47 @@ async function saveUserProgress() {
       total_correct: S.totalCorrect, hearts: S.hearts,
       updated_at: new Date().toISOString()
     }, { onConflict: 'user_id' });
-  } catch(e) { saveState(); } // fallback to localStorage
+  } catch(e){ saveState(); }
 }
 
 // ── LOGOUT ──
 async function logoutUser() {
-  await _supa.auth.signOut();
-  _currentUser = null;
-  document.getElementById('auth-screen').style.display = 'flex';
+  if(confirm('Are you sure you want to logout?')){
+    await _supa.auth.signOut();
+    _currentUser = null;
+    _isGuest = false;
+    _guestQCount = 0;
+    _guestBonusUsed = false;
+    document.getElementById('auth-screen').style.display = 'flex';
+  }
 }
 
-// ── CHECK IF ALREADY LOGGED IN ──
+// ── CHECK IF ALREADY LOGGED IN (returning user) ──
 (async function checkSession() {
   const { data } = await _supa.auth.getSession();
-  if (data.session) {
+  if(data.session){
     _currentUser = data.session.user;
+    _isGuest = false;
     document.getElementById('auth-screen').style.display = 'none';
     await loadUserProgress();
+    // Show daily reward if not claimed today
+    setTimeout(checkAndShowDailyReward, 1000);
   }
+  // Listen for OAuth redirect callback
+  _supa.auth.onAuthStateChange(async (event, session) => {
+    if(event === 'SIGNED_IN' && session){
+      _currentUser = session.user;
+      _isGuest = false;
+      document.getElementById('auth-screen').style.display = 'none';
+      closeRegPopup();
+      await loadUserProgress();
+      toast('Welcome to FinMentra! 🎉');
+    }
+  });
 })();
 
-// ── AUTO SAVE TO SUPABASE EVERY 30s ──
+// ── AUTO SAVE EVERY 30s ──
 setInterval(saveUserProgress, 30000);
-
 </script>
 </body>
 </html>
