@@ -2359,7 +2359,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div class="profile-item"><div class="profile-item-icon">📊</div><div class="profile-item-label">Weekly report</div><button class="toggle on"></button></div>
     <div class="profile-item" style="border-bottom:none;"><div class="profile-item-icon">🆕</div><div class="profile-item-label">New standards</div><button class="toggle on"></button></div>
   </div>
-  <button class="btn btn-block" style="background:var(--red-l);color:var(--red);border:1px solid var(--red);margin-top:4px;" onclick="if(confirm('Reset all progress?\')){S.xp=0;S.streak=0;S.coins=240;S.totalQ=0;S.totalCorrect=0;updateHUD();toast('Progress reset')}">⚠️ Reset Progress</button>
+  <button class="btn btn-block" style="background:var(--red-l);color:var(--red);border:1px solid var(--red);margin-top:4px;" onclick="showResetConfirm()">⚠️ Reset Progress</button>
 
   <!-- Legal links -->
   <div style="display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border2);">
@@ -3178,15 +3178,75 @@ function showModeConfirm(toLabel, onConfirm, onCancel){
   const popup = document.createElement('div');
   popup.id = 'mode-confirm-popup';
   popup.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
-  popup.innerHTML = `
-    <div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);">
-      <div style="font-size:32px;margin-bottom:12px;">🔄</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#0A1F6E;margin-bottom:8px;">Switch Mode?</div>
-      <div style="font-size:13px;color:#64748B;margin-bottom:24px;line-height:1.5;">You are switching to<br><strong style="color:#0A1F6E;">${toLabel}</strong></div>
-      <button onclick="document.getElementById('mode-confirm-popup').remove();window._modeConfirmYes&&window._modeConfirmYes();" style="width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px;">Yes, Switch</button>
-      <button onclick="document.getElementById('mode-confirm-popup').remove();window._modeConfirmNo&&window._modeConfirmNo();" style="width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;">Cancel</button>
-    </div>`;
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);';
+  box.innerHTML = '<div style="font-size:32px;margin-bottom:12px;">\ud83d\udd04</div>'
+    + '<div style="font-size:20px;font-weight:600;color:#0A1F6E;margin-bottom:8px;">Switch Mode?</div>'
+    + '<div style="font-size:13px;color:#64748B;margin-bottom:24px;line-height:1.5;">Switching to <strong>' + toLabel + '</strong></div>';
+  const yesBtn = document.createElement('button');
+  yesBtn.textContent = 'Yes, Switch';
+  yesBtn.style.cssText = 'width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px;display:block;';
+  yesBtn.onclick = function(){ popup.remove(); window._modeConfirmYes && window._modeConfirmYes(); };
+  const noBtn = document.createElement('button');
+  noBtn.textContent = 'Cancel';
+  noBtn.style.cssText = 'width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;display:block;';
+  noBtn.onclick = function(){ popup.remove(); window._modeConfirmNo && window._modeConfirmNo(); };
+  box.appendChild(yesBtn);
+  box.appendChild(noBtn);
+  popup.appendChild(box);
   document.body.appendChild(popup);
+}
+
+function showResetConfirm(){
+  const existing = document.getElementById('reset-confirm-popup');
+  if(existing) existing.remove();
+  const popup = document.createElement('div');
+  popup.id = 'reset-confirm-popup';
+  popup.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);';
+  box.innerHTML = '<div style="font-size:32px;margin-bottom:12px;">\u26a0\ufe0f</div>'
+    + '<div style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:600;color:#DC2626;margin-bottom:8px;">Reset Progress?</div>'
+    + '<div style="font-size:13px;color:#64748B;margin-bottom:24px;line-height:1.5;">This will delete all your XP, coins, streak and answers.<br><strong style="color:#DC2626;">This cannot be undone.</strong></div>';
+  const yesBtn = document.createElement('button');
+  yesBtn.textContent = 'Yes, Reset Everything';
+  yesBtn.style.cssText = 'width:100%;padding:13px;border-radius:12px;background:#DC2626;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px;display:block;';
+  yesBtn.onclick = function(){ doResetProgress(); popup.remove(); };
+  const noBtn = document.createElement('button');
+  noBtn.textContent = 'Cancel';
+  noBtn.style.cssText = 'width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;display:block;';
+  noBtn.onclick = function(){ popup.remove(); };
+  box.appendChild(yesBtn);
+  box.appendChild(noBtn);
+  popup.appendChild(box);
+  document.body.appendChild(popup);
+}
+
+async function doResetProgress(){
+  // Reset local state
+  S.xp=0; S.streak=0; S.bestStreak=0; S.coins=240;
+  S.totalQ=0; S.totalCorrect=0; S.hearts=3;
+  S.sessionQ=0; S.sessionCorrect=0;
+  // Clear localStorage progress
+  try{
+    localStorage.removeItem('fm_state');
+    localStorage.removeItem('fm_login_streak');
+    localStorage.removeItem('fm_last_reward_date');
+    localStorage.removeItem('fm_guest_threshold');
+  }catch(e){}
+  // Reset in Supabase if logged in
+  if(_currentUser){
+    try{
+      await _supa.from('user_progress').upsert({
+        user_id:_currentUser.id,
+        xp:0, coins:240, streak:0, best_streak:0,
+        total_questions:0, total_correct:0, hearts:3,
+        updated_at: new Date().toISOString()
+      },{onConflict:'user_id'});
+    }catch(e){}
+  }
+  updateHUD();
+  toast('✅ Progress has been reset');
 }
 
 // ── TOPICS ──
@@ -6510,14 +6570,29 @@ async function saveUserProgress() {
 
 // ── LOGOUT ──
 async function logoutUser() {
-  if(confirm('Are you sure you want to logout?')){
-    await _supa.auth.signOut();
-    _currentUser = null;
-    _isGuest = false;
-    _guestQCount = 0;
-    _guestBonusUsed = false;
-    document.getElementById('auth-screen').style.display = 'flex';
-  }
+  const existing = document.getElementById('logout-confirm-popup');
+  if(existing) existing.remove();
+  const popup = document.createElement('div');
+  popup.id = 'logout-confirm-popup';
+  popup.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+  popup.innerHTML = `
+    <div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+      <div style="font-size:32px;margin-bottom:12px;">🚪</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#0A1F6E;margin-bottom:8px;">Logout?</div>
+      <div style="font-size:13px;color:#64748B;margin-bottom:24px;line-height:1.5;">Your progress is saved.<br>You can log back in anytime.</div>
+      <button onclick="doLogout();document.getElementById('logout-confirm-popup').remove();" style="width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px;">Yes, Logout</button>
+      <button onclick="document.getElementById('logout-confirm-popup').remove();" style="width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;">Cancel</button>
+    </div>`;
+  document.body.appendChild(popup);
+}
+
+async function doLogout(){
+  await _supa.auth.signOut();
+  _currentUser = null;
+  _isGuest = false;
+  _guestQCount = 0;
+  _guestBonusUsed = false;
+  document.getElementById('auth-screen').style.display = 'flex';
 }
 
 // ── CHECK IF ALREADY LOGGED IN (returning user) ──
