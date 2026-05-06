@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FinMentra Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#0A1F6E;--navy2:#1E3A8A;--blue:#4A6CF7;
+  --bg:#F4F7FF;--surface:#fff;--text:#0B1430;
+  --muted:#64748B;--border:#E2E8F0;--border2:#C8D8FF;
+  --green:#0A6E3A;--red:#DC2626;--gold:#F59E0B;
+  --font-display:'Cormorant Garamond',serif;
+  --font-body:'Plus Jakarta Sans',sans-serif;
+  --font-mono:'DM Mono',monospace;
+}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── LOGIN ── */
+#login-screen{
+  position:fixed;inset:0;background:var(--navy);
+  display:flex;align-items:center;justify-content:center;z-index:1000;
+}
+.login-box{
+  background:#fff;border-radius:24px;padding:40px 32px;
+  max-width:380px;width:92%;text-align:center;
+  box-shadow:0 24px 64px rgba(0,0,0,.4);
+}
+.login-logo{font-family:var(--font-display);font-size:32px;font-weight:600;color:var(--navy);margin-bottom:4px;}
+.login-logo em{font-style:italic;color:var(--blue);}
+.login-sub{font-size:12px;color:var(--muted);margin-bottom:8px;}
+.admin-badge{display:inline-block;background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;margin-bottom:24px;}
+.login-input{width:100%;padding:12px 16px;border:1.5px solid var(--border2);border-radius:12px;font-size:14px;font-family:var(--font-body);outline:none;margin-bottom:12px;color:var(--text);}
+.login-input:focus{border-color:var(--blue);}
+.login-btn{width:100%;padding:14px;border-radius:12px;background:var(--navy);color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);}
+.login-btn:hover{background:var(--navy2);}
+.login-err{font-size:12px;color:var(--red);margin-top:8px;display:none;}
+
+/* ── LAYOUT ── */
+#admin-app{display:none;}
+.admin-layout{display:flex;min-height:100vh;}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:260px;background:var(--navy);color:#fff;
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;overflow-y:auto;
+  z-index:100;
+}
+.sidebar-logo{padding:24px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.1);}
+.sidebar-logo-text{font-family:var(--font-display);font-size:24px;font-weight:600;}
+.sidebar-logo-text em{font-style:italic;color:#C7D7FF;}
+.sidebar-logo-sub{font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;letter-spacing:1px;text-transform:uppercase;}
+.sidebar-section{padding:16px 12px 8px;font-size:9px;font-weight:700;color:rgba(255,255,255,0.3);letter-spacing:2px;text-transform:uppercase;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 16px;margin:2px 8px;border-radius:10px;
+  font-size:13px;font-weight:600;color:rgba(255,255,255,0.7);
+  cursor:pointer;transition:all .2s;border:none;background:none;width:calc(100% - 16px);text-align:left;
+}
+.nav-item:hover{background:rgba(255,255,255,0.08);color:#fff;}
+.nav-item.active{background:rgba(255,255,255,0.15);color:#fff;}
+.nav-item .nav-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
+.nav-item .nav-count{margin-left:auto;background:rgba(255,255,255,0.15);border-radius:999px;padding:2px 8px;font-size:10px;}
+.sidebar-footer{margin-top:auto;padding:16px;border-top:1px solid rgba(255,255,255,0.1);}
+.logout-btn{width:100%;padding:10px;border-radius:10px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);font-size:13px;font-weight:600;border:none;cursor:pointer;font-family:var(--font-body);}
+
+/* ── MAIN ── */
+.main{margin-left:260px;padding:24px;min-height:100vh;}
+.page{display:none;}
+.page.active{display:block;}
+
+/* ── TOP BAR ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+.page-title{font-family:var(--font-display);font-size:28px;font-weight:600;color:var(--navy);}
+.page-subtitle{font-size:13px;color:var(--muted);margin-top:2px;}
+
+/* ── STATS ROW ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.stat-card{background:var(--surface);border-radius:16px;padding:20px;border:1px solid var(--border);}
+.stat-num{font-family:var(--font-mono);font-size:28px;font-weight:500;color:var(--navy);}
+.stat-label{font-size:12px;color:var(--muted);margin-top:4px;}
+.stat-icon{font-size:24px;margin-bottom:8px;}
+
+/* ── CARD ── */
+.card{background:var(--surface);border-radius:16px;border:1px solid var(--border);overflow:hidden;margin-bottom:20px;}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:15px;font-weight:700;color:var(--navy);}
+.card-body{padding:20px;}
+
+/* ── FORM ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-grid.full{grid-template-columns:1fr;}
+.form-group{margin-bottom:12px;}
+.form-label{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px;display:block;}
+.form-input, .form-select, .form-textarea{
+  width:100%;padding:10px 14px;border:1.5px solid var(--border2);border-radius:10px;
+  font-size:13px;font-family:var(--font-body);outline:none;color:var(--text);background:#fff;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--blue);}
+.form-textarea{resize:vertical;min-height:80px;line-height:1.6;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-row.three{grid-template-columns:1fr 1fr 1fr;}
+
+/* ── BUTTONS ── */
+.btn{padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);transition:all .2s;}
+.btn-primary{background:var(--navy);color:#fff;}
+.btn-primary:hover{background:var(--navy2);}
+.btn-success{background:#0A6E3A;color:#fff;}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-secondary{background:var(--bg);color:var(--navy);border:1px solid var(--border2);}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn-group{display:flex;gap:8px;margin-top:16px;}
+
+/* ── TABLE ── */
+.data-table{width:100%;border-collapse:collapse;}
+.data-table th{text-align:left;font-size:11px;font-weight:700;color:var(--muted);padding:10px 12px;border-bottom:2px solid var(--border);text-transform:uppercase;letter-spacing:0.5px;}
+.data-table td{padding:12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:top;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:hover td{background:var(--bg);}
+.table-actions{display:flex;gap:6px;}
+
+/* ── BADGES ── */
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
+.badge-ifrs{background:#EEF2FF;color:#3730A3;}
+.badge-ias{background:#F0FDF4;color:#166534;}
+.badge-isa{background:#FFF7ED;color:#9A3412;}
+.badge-foundation{background:#F0FDF4;color:#166534;}
+.badge-intermediate{background:#FFF7ED;color:#9A3412;}
+.badge-advanced{background:#FEF2F2;color:#991B1B;}
+.badge-active{background:#DCFCE7;color:#166534;}
+.badge-inactive{background:#FEE2E2;color:#991B1B;}
+
+/* ── TABS ── */
+.tab-bar{display:flex;gap:4px;background:var(--bg);border-radius:12px;padding:4px;margin-bottom:20px;}
+.tab-btn{flex:1;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;border:none;background:none;font-family:var(--font-body);}
+.tab-btn.active{background:var(--navy);color:#fff;}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;display:none;box-shadow:0 8px 24px rgba(0,0,0,.2);}
+
+/* ── LOADING ── */
+.loading{text-align:center;padding:40px;color:var(--muted);font-size:14px;}
+
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;padding:48px 24px;}
+.empty-state-icon{font-size:48px;margin-bottom:12px;}
+.empty-state-title{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:6px;}
+.empty-state-sub{font-size:13px;color:var(--muted);}
+
+@media(max-width:768px){
+  .sidebar{width:100%;position:relative;height:auto;}
+  .main{margin-left:0;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .form-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Fin<em>Mentra</em></div>
+    <div class="login-sub">Content Management System</div>
+    <div class="admin-badge">🔐 Admin Access Only</div>
+    <input class="login-input" id="admin-password" type="password" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="login-btn" onclick="doLogin()">Access Admin Panel</button>
+    <div class="login-err" id="login-err">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<!-- ══ ADMIN APP ══ -->
+<div id="admin-app">
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-text">Fin<em>Mentra</em></div>
+      <div class="sidebar-logo-sub">Admin Panel</div>
+    </div>
+
+    <div class="sidebar-section">Overview</div>
+    <button class="nav-item active" onclick="showPage('dashboard',this)">
+      <span class="nav-icon">📊</span> Dashboard
+    </button>
+
+    <div class="sidebar-section">Student Content</div>
+    <button class="nav-item" onclick="showPage('questions',this)">
+      <span class="nav-icon">❓</span> Questions
+      <span class="nav-count" id="count-questions">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('summaries',this)">
+      <span class="nav-icon">📋</span> Standard Summaries
+      <span class="nav-count" id="count-summaries">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('traps',this)">
+      <span class="nav-icon">⚠️</span> Exam Traps
+      <span class="nav-count" id="count-traps">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('formulas',this)">
+      <span class="nav-icon">📐</span> Formulas
+      <span class="nav-count" id="count-formulas">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('topics',this)">
+      <span class="nav-icon">📚</span> Topics
+      <span class="nav-count" id="count-topics">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('journal',this)">
+      <span class="nav-icon">📒</span> Journal Entries
+      <span class="nav-count" id="count-journal">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('disclosures',this)">
+      <span class="nav-icon">✅</span> Disclosure Checklist
+      <span class="nav-count" id="count-disclosures">0</span>
+    </button>
+
+    <div class="sidebar-section">Professional Content</div>
+    <button class="nav-item" onclick="showPage('scenarios',this)">
+      <span class="nav-icon">💼</span> Client Scenarios
+      <span class="nav-count" id="count-scenarios">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('audit',this)">
+      <span class="nav-icon">🔍</span> Audit Files
+      <span class="nav-count" id="count-audit">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('ethics',this)">
+      <span class="nav-icon">⚖️</span> Ethics Cases
+      <span class="nav-count" id="count-ethics">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('excel',this)">
+      <span class="nav-icon">📊</span> Excel Templates
+      <span class="nav-count" id="count-excel">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('updates',this)">
+      <span class="nav-icon">🔔</span> IFRS Updates
+      <span class="nav-count" id="count-updates">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('memos',this)">
+      <span class="nav-icon">📝</span> Technical Memos
+      <span class="nav-count" id="count-memos">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('ratios',this)">
+      <span class="nav-icon">📈</span> Ratio Benchmarks
+      <span class="nav-count" id="count-ratios">0</span>
+    </button>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="doLogout()">🚪 Logout</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="topbar">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-subtitle">FinMentra Content Overview</div>
+        </div>
+      </div>
+      <div class="stats-row" id="dashboard-stats">
+        <div class="stat-card"><div class="stat-icon">❓</div><div class="stat-num" id="dash-questions">0</div><div class="stat-label">Questions</div></div>
+        <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-num" id="dash-summaries">0</div><div class="stat-label">Summaries</div></div>
+        <div class="stat-card"><div class="stat-icon">⚠️</div><div class="stat-num" id="dash-traps">0</div><div class="stat-label">Exam Traps</div></div>
+        <div class="stat-card"><div class="stat-icon">📐</div><div class="stat-num" id="dash-formulas">0</div><div class="stat-label">Formulas</div></div>
+        <div class="stat-card"><div class="stat-icon">📚</div><div class="stat-num" id="dash-topics">0</div><div class="stat-label">Topics</div></div>
+        <div class="stat-card"><div class="stat-icon">📒</div><div class="stat-num" id="dash-journal">0</div><div class="stat-label">Journal Entries</div></div>
+        <div class="stat-card"><div class="stat-icon">💼</div><div class="stat-num" id="dash-scenarios">0</div><div class="stat-label">Client Scenarios</div></div>
+        <div class="stat-card"><div class="stat-icon">⚖️</div><div class="stat-num" id="dash-ethics">0</div><div class="stat-label">Ethics Cases</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">🚀 Quick Actions</div></div>
+        <div class="card-body" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+          <button class="btn btn-primary" onclick="showPage('questions',null);setTimeout(()=>document.getElementById('add-question-form').scrollIntoView(),300)">+ Add Question</button>
+          <button class="btn btn-primary" onclick="showPage('summaries',null)">+ Add Summary</button>
+          <button class="btn btn-primary" onclick="showPage('traps',null)">+ Add Exam Trap</button>
+          <button class="btn btn-primary" onclick="showPage('formulas',null)">+ Add Formula</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUESTIONS PAGE -->
+    <div class="page" id="page-questions">
+      <div class="topbar">
+        <div><div class="page-title">Questions</div><div class="page-subtitle">Manage all practice questions</div></div>
+      </div>
+
+      <!-- Add Question Form -->
+      <div class="card" id="add-question-form">
+        <div class="card-header"><div class="card-title">➕ Add New Question</div></div>
+        <div class="card-body">
+          <div class="form-row three">
+            <div class="form-group">
+              <label class="form-label">Standard *</label>
+              <input class="form-input" id="q-standard" placeholder="e.g. IFRS 15"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category *</label>
+              <select class="form-select" id="q-category">
+                <option>IFRS</option><option>IAS</option><option>ISA</option>
+                <option>Costing</option><option>Tax</option><option>FM</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Difficulty *</label>
+              <select class="form-select" id="q-difficulty">
+                <option>Foundation</option><option>Intermediate</option><option>Advanced</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Question *</label>
+            <textarea class="form-textarea" id="q-question" placeholder="Enter the question..."></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Option A *</label><input class="form-input" id="q-a" placeholder="Option A"/></div>
+            <div class="form-group"><label class="form-label">Option B *</label><input class="form-input" id="q-b" placeholder="Option B"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Option C *</label><input class="form-input" id="q-c" placeholder="Option C"/></div>
+            <div class="form-group"><label class="form-label">Option D *</label><input class="form-input" id="q-d" placeholder="Option D"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Correct Answer *</label>
+              <select class="form-select" id="q-answer">
+                <option value="A">A</option><option value="B">B</option>
+                <option value="C">C</option><option value="D">D</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Explanation</label>
+            <textarea class="form-textarea" id="q-explanation" placeholder="Why is this the correct answer?"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Exam Trap</label>
+            <input class="form-input" id="q-trap" placeholder="Common mistake students make..."/>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-success" onclick="addQuestion()">✅ Save Question</button>
+            <button class="btn btn-secondary" onclick="clearQuestionForm()">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Questions List -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">All Questions</div>
+          <select class="form-select" style="width:auto;" onchange="filterQuestions(this.value)">
+            <option value="all">All Categories</option>
+            <option>IFRS</option><option>IAS</option><option>ISA</option>
+            <option>Costing</option><option>Tax</option><option>FM</option>
+          </select>
+        </div>
+        <div class="card-body" style="padding:0;overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr>
+              <th>Standard</th><th>Category</th><th>Difficulty</th>
+              <th>Question</th><th>Answer</th><th>Status</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="questions-table-body">
+              <tr><td colspan="7"><div class="loading">Loading questions...</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- STANDARD SUMMARIES PAGE -->
+    <div class="page" id="page-summaries">
+      <div class="topbar"><div><div class="page-title">Standard Summaries</div><div class="page-subtitle">IFRS/IAS quick reference cards</div></div></div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">➕ Add Summary</div></div>
+        <div class="card-body">
+          <div class="form-row three">
+            <div class="form-group"><label class="form-label">Standard *</label><input class="form-input" id="s-standard" placeholder="e.g. IFRS 15"/></div>
+            <div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="s-title" placeholder="e.g. Revenue from Contracts"/></div>
+            <div class="form-group"><label class="form-label">Category *</label>
+              <select class="form-select" id="s-category"><option>IFRS</option><option>IAS</option><option>ISA</option></select>
+            </div>
+          </div>
+          <div class="form-group"><label class="form-label">Core Principle *</label><textarea class="form-textarea" id="s-principle" placeholder="Main principle of this standard..."></textarea></div>
+          <div class="form-group"><label class="form-label">Key Points (one per line)</label><textarea class="form-textarea" id="s-points" placeholder="Key point 1&#10;Key point 2&#10;Key point 3" style="min-height:100px;"></textarea></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Journal Entry — Debit</label><input class="form-input" id="s-dr" placeholder="Dr Account Name"/></div>
+            <div class="form-group"><label class="form-label">Journal Entry — Credit</label><input class="form-input" id="s-cr" placeholder="Cr Account Name"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Exam Trap</label><input class="form-input" id="s-trap" placeholder="Most common exam mistake for this standard..."/></div>
+          <div class="btn-group"><button class="btn btn-success" onclick="addSummary()">✅ Save Summary</button><button class="btn btn-secondary" onclick="clearSummaryForm()">Clear</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">All Summaries</div></div>
+        <div class="card-body" style="padding:0;overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>Standard</th><th>Title</th><th>Category</th><th>Core Principle</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="summaries-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXAM TRAPS PAGE -->
+    <div class="page" id="page-traps">
+      <div class="topbar"><div><div class="page-title">Exam Traps</div><div class="page-subtitle">Common mistakes students make</div></div></div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">➕ Add Exam Trap</div></div>
+        <div class="card-body">
+          <div class="form-row three">
+            <div class="form-group"><label class="form-label">Standard *</label><input class="form-input" id="t-standard" placeholder="e.g. IAS 16"/></div>
+            <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="t-category"><option>IFRS</option><option>IAS</option><option>ISA</option><option>Costing</option><option>Tax</option><option>FM</option></select></div>
+            <div class="form-group"><label class="form-label">Difficulty</label><select class="form-select" id="t-difficulty"><option>Foundation</option><option>Intermediate</option><option>Advanced</option></select></div>
+          </div>
+          <div class="form-group"><label class="form-label">Trap Title *</label><input class="form-input" id="t-title" placeholder="Short title of the trap..."/></div>
+          <div class="form-group"><label class="form-label">Trap Description *</label><textarea class="form-textarea" id="t-description" placeholder="Full description of the common mistake..."></textarea></div>
+          <div class="form-group"><label class="form-label">Correct Approach</label><textarea class="form-textarea" id="t-correct" placeholder="What should students do instead?"></textarea></div>
+          <div class="btn-group"><button class="btn btn-success" onclick="addTrap()">✅ Save Trap</button><button class="btn btn-secondary" onclick="clearTrapForm()">Clear</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">All Exam Traps</div></div>
+        <div class="card-body" style="padding:0;overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>Standard</th><th>Category</th><th>Title</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="traps-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORMULAS PAGE -->
+    <div class="page" id="page-formulas">
+      <div class="topbar"><div><div class="page-title">Formulas</div><div class="page-subtitle">Accounting and finance formulas</div></div></div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">➕ Add Formula</div></div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Category *</label>
+              <select class="form-select" id="f-category"><option>valuation</option><option>ratios</option><option>leases</option><option>ecl</option><option>depreciation</option><option>tax</option><option>costing</option><option>other</option></select>
+            </div>
+            <div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="f-title" placeholder="e.g. WACC Formula"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Formula *</label><input class="form-input" id="f-formula" placeholder="e.g. WACC = Ke × E/(D+E) + Kd × (1−t) × D/(D+E)" style="font-family:var(--font-mono);"/></div>
+          <div class="form-group"><label class="form-label">Explanation</label><textarea class="form-textarea" id="f-explanation" placeholder="What does each variable mean?"></textarea></div>
+          <div class="form-group"><label class="form-label">Example</label><textarea class="form-textarea" id="f-example" placeholder="Worked example..."></textarea></div>
+          <div class="btn-group"><button class="btn btn-success" onclick="addFormula()">✅ Save Formula</button><button class="btn btn-secondary" onclick="clearFormulaForm()">Clear</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">All Formulas</div></div>
+        <div class="card-body" style="padding:0;overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>Category</th><th>Title</th><th>Formula</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="formulas-table-body"><tr><td colspan="5"><div class="loading">Loading...</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOPICS PAGE -->
+    <div class="page" id="page-topics">
+      <div class="topbar"><div><div class="page-title">Topics</div><div class="page-subtitle">Manage topic list</div></div></div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">➕ Add Topic</div></div>
+        <div class="card-body">
+          <div class="form-row three">
+            <div class="form-group"><label class="form-label">Standard *</label><input class="form-input" id="top-standard" placeholder="e.g. IFRS 15"/></div>
+            <div class="form-group"><label class="form-label">Name *</label><input class="form-input" id="top-name" placeholder="e.g. Revenue from Contracts"/></div>
+            <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="top-category"><option>IFRS</option><option>IAS</option><option>ISA</option><option>Costing</option><option>Tax</option><option>FM</option></select></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Subtitle</label><input class="form-input" id="top-subtitle" placeholder="Short description..."/></div>
+            <div class="form-group"><label class="form-label">Sort Order</label><input class="form-input" id="top-order" type="number" placeholder="0"/></div>
+          </div>
+          <div class="btn-group"><button class="btn btn-success" onclick="addTopic()">✅ Save Topic</button><button class="btn btn-secondary" onclick="clearTopicForm()">Clear</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">All Topics</div></div>
+        <div class="card-body" style="padding:0;overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>Standard</th><th>Name</th><th>Category</th><th>Subtitle</th><th>Order</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="topics-table-body"><tr><td colspan="7"><div class="loading">Loading...</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- JOURNAL ENTRIES PAGE -->
+    <div class="page" id="page-journal">
+      <div class="topbar"><div><div class="page-title">Journal Entries</div><div class="page-subtitle">DR/CR templates per standard</div></div></div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">➕ Add Journal Entry</div></div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Standard *</label><input class="form-input" id="j-standard" placeholder="e.g. IFRS 16"/></div>
+            <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="j-category"><option>IFRS</option><option>IAS</option><option>ISA</option><option>Costing</option><option>Tax</option><option>FM</option></select></div>
+          </div>
+          <div class="form-group"><label class="form-label">Scenario *</label><input class="form-input" id="j-scenario" placeholder="e.g. Initial recognition of lease"/></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Debit Account *</label><input class="form-input" id="j-dr" placeholder="Dr Right-of-Use Asset"/></div>
+            <div class="form-group"><label class="form-label">Debit Amount</label><input class="form-input" id="j-dr-amount" placeholder="X"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Credit Account *</label><input class="form-input" id="j-cr" placeholder="Cr Lease Liability"/></div>
+            <div class="form-group"><label class="form-label">Credit Amount</label><input class="form-input" id="j-cr-amount" placeholder="X"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Narrative</label><textarea class="form-textarea" id="j-narrative" placeholder="Explanation of this journal entry..."></textarea></div>
+          <div class="btn-group"><button class="btn btn-success" onclick="addJournal()">✅ Save Entry</button><button class="btn btn-secondary" onclick="clearJournalForm()">Clear</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">All Journal Entries</div></div>
+        <div class="card-body" style="padding:0;overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>Standard</th><th>Scenario</th><th>Debit</th><th>Credit</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="journal-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- DISCLOSURES PAGE -->
+    <div class="page" id="page-disclosures">
+      <div class="topbar"><div><div class="page-title">Disclosure Checklist</div><div class="page-subtitle">Disclosure requirements per standard</div></div></div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">➕ Add Disclosure Item</div></div>
+        <div class="card-body">
+          <div class="form-row three">
+            <div class="form-group"><label class="form-label">Standard *</label><input class="form-input" id="d-standard" placeholder="e.g. IFRS 16"/></div>
+            <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="d-category"><option>IFRS</option><option>IAS</option><option>ISA</option></select></div>
+            <div class="form-group"><label class="form-label">Mode</label><select class="form-select" id="d-mode"><option value="both">Both</option><option value="student">Student</option><option value="professional">Professional</option></select></div>
+          </div>
+          <div class="form-group"><label class="form-label">Disclosure Item *</label><textarea class="form-textarea" id="d-item" placeholder="e.g. Maturity analysis of lease liabilities showing undiscounted cash flows..."></textarea></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Mandatory?</label><select class="form-select" id="d-mandatory"><option value="true">Yes — Mandatory</option><option value="false">No — Encouraged</option></select></div>
+            <div class="form-group"><label class="form-label">Notes</label><input class="form-input" id="d-notes" placeholder="Additional notes..."/></div>
+          </div>
+          <div class="btn-group"><button class="btn btn-success" onclick="addDisclosure()">✅ Save Item</button><button class="btn btn-secondary" onclick="clearDisclosureForm()">Clear</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">All Disclosure Items</div></div>
+        <div class="card-body" style="padding:0;overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>Standard</th><th>Category</th><th>Item</th><th>Mandatory</th><th>Mode</th><th>Actions</th></tr></thead>
+            <tbody id="disclosures-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIENT SCENARIOS PAGE -->
+    <div class="page" id="page-scenarios">
+      <div class="topbar"><div><div class="page-title">Client Scenarios</div><div class="page-subtitle">Real-world professional scenarios</div></div></div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">➕ Add Scenario</div></div>
+        <div class="card-body">
+          <div class="form-row three">
+            <div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="sc-title" placeholder="Scenario title..."/></div>
+            <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="sc-category"><option>IFRS</option><option>IAS</option><option>Audit</option><option>Tax</option><option>Advisory</option></select></div>
+            <div class="form-group"><label class="form-label">Difficulty</label><select class="form-select" id="sc-difficulty"><option>Foundation</option><option>Intermediate</option><option>Advanced</option></select></div>
+          </div>
+          <div class="form-group"><label class="form-label">Scenario Text *</label><textarea class="form-textarea" id="sc-text" placeholder="Your client approaches you with the following situation..." style="min-height:120px;"></textarea></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Option A *</label><input class="form-input" id="sc-a" placeholder="Option A"/></div>
+            <div class="form-group"><label class="form-label">Option B *</label><input class="form-input" id="sc-b" placeholder="Option B"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Option C *</label><input class="form-input" id="sc-c" placeholder="Option C"/></div>
+            <div class="form-group"><label class="form-label">Option D *</label><input class="form-input" id="sc-d" placeholder="Option D"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Correct Answer *</label><select class="form-select" id="sc-answer"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
+            <div class="form-group"><label class="form-label">Standard Reference</label><input class="form-input" id="sc-ref" placeholder="e.g. IFRS 15.31"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Explanation *</label><textarea class="form-textarea" id="sc-explanation" placeholder="Why is this the correct approach?"></textarea></div>
+          <div class="btn-group"><button class="btn btn-success" onclick="addScenario()">✅ Save Scenario</button><button class="btn btn-secondary" onclick="clearScenarioForm()">Clear</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">All Scenarios</div></div>
+        <div class="card-body" style="padding:0;overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>Title</th><th>Category</th><th>Difficulty</th><th>Answer</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="scenarios-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUDIT FILES PAGE -->
+    <div class="page" id="page-audit">
+      <div class="topbar"><div><div class="page-title">Audit Files</div><div class="page-subtitle">Audit working paper templates</div></div></div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">➕ Add Audit File</div></div>
+        <div class="card-body">
+          <div class="form-row three">
+            <div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="a-title" placeholder="e.g. Planning Materiality Memo"/></div>
+            <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="a-category"><option>Planning</option><option>Risk Assessment</option><option>Testing</option><option>Completion</option><option>Reporting</option></select></div>
+            <div class="form-group"><label class="form-label">ISA Reference</label><input class="form-input" id="a-isa" placeholder="e.g. ISA 320"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">File Type *</label><select class="form-select" id="a-type"><option>Working Paper</option><option>Checklist</option><option>Template</option><option>Example</option></select></div>
+          <div class="form-group"><label class="form-label">Content *</label><textarea class="form-textarea" id="a-content" placeholder="Full content of the audit working paper..." style="min-height:160px;"></textarea></div>
+          <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="a-notes" placeholder="Additional guidance notes..."></textarea></div>
+          <div class="btn-group"><button class="btn btn-success" onclick="addAudit()">✅ Save File</button><button class="btn btn-secondary" onclick="clearAuditForm()">Clear</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">All Audit Files</div></div>
+        <div class="card-body" style="padding:0;overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>Title</th><th>Category</th><th>Type</th><th>ISA Ref</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="audit-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ETHICS CASES PAGE -->
+    <div class="page" id="page-ethics">
+      <div class="topbar"><div><div class="page-title">Ethics Cases</div><div class="page-subtitle">IESBA ethics case studies</div></div></div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">➕ Add Ethics Case</div></div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="e-title" placeholder="e.g. Conflict of Interest — Advisory"/></div>
+            <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="e-category"><option>Independence</option><option>Confidentiality</option><option>Conflict of Interest</option><option>Professional Competence</option><option>Integrity</option></select></div>
+          </div>
+          <div class="form-group"><label class="form-label">Case Text *</label><textarea class="form-textarea" id="e-case" placeholder="Describe the ethical situation..." style="min-height:120px;"></textarea></div>
+          <div class="form-group"><label class="form-label">Ethical Issue *</label><input class="form-input" id="e-issue" placeholder="What is the main ethical issue here?"/></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Option A *</label><input class="form-input" id="e-a" placeholder="Option A"/></div>
+            <div class="form-group"><label class="form-label">Option B *</label><input class="form-input" id="e-b" placeholder="Option B"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Option C *</label><input class="form-input" id="e-c" placeholder="Option C"/></div>
+            <div class="form-group"><label class="form-label">Option D *</label><input class="form-input" id="e-d" placeholder="Option D"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Correct Answer *</label><select class="form-select" id="e-answer"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
+            <div class="form-group"><label class="form-label">IESBA Reference</label><input class="form-input" id="e-ref" placeholder="e.g. IESBA Code Section 220"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Explanation *</label><textarea class="form-textarea" id="e-explanation" placeholder="Why is this the correct ethical approach?"></textarea></div>
+          <div class="btn-group"><button class="btn btn-success" onclick="addEthics()">✅ Save Case</button><button class="btn btn-secondary" onclick="clearEthicsForm()">Clear</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">All Ethics Cases</div></div>
+        <div class="card-body" style="padding:0;overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>Title</th><th>Category</th><th>Ethical Issue</th><th>Answer</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="ethics-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXCEL TEMPLATES PAGE -->
+    <div class="page" id="page-excel">
+      <div class="topbar"><div><div class="page-title">Excel Templates</div><div class="page-subtitle">Finance spreadsheet templates</div></div></div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">➕ Add Excel Template</div></div>
+        <div class="card-body">
+          <div class="form-row three">
+            <div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="ex-title" placeholder="e.g. DCF Valuation Model"/></div>
+            <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="ex-category"><option>Valuation</option><option>Financial Statements</option><option>Budgeting</option><option>Audit</option><option>Tax</option><option>Costing</option></select></div>
+            <div class="form-group"><label class="form-label">Difficulty</label><select class="form-select" id="ex-difficulty"><option>Foundation</option><option>Intermediate</option><option>Advanced</option></select></div>
+          </div>
+          <div class="form-group"><label class="form-label">Description *</label><textarea class="form-textarea" id="ex-description" placeholder="What does this template do?"></textarea></div>
+          <div class="form-group"><label class="form-label">Template Content / Instructions</label><textarea class="form-textarea" id="ex-content" placeholder="Step by step instructions or template structure..." style="min-height:120px;"></textarea></div>
+          <div class="btn-group"><button class="btn btn-success" onclick="addExcel()">✅ Save Template</button><button class="btn btn-secondary" onclick="clearExcelForm()">Clear</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">All Templates</div></div>
+        <div class="card-body" style="padding:0;overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>Title</th><th>Category</th><th>Difficulty</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="excel-table-body"><tr><td colspan="5"><div class="loading">Loading...</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- IFRS UPDATES PAGE -->
+    <div class="page" id="page-updates">
+      <div class="topbar"><div><div class="page-title">IFRS Updates</div><div class="page-subtitle">New standards and amendments</div></div></div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">➕ Add Update</div></div>
+        <div class="card-body">
+          <div class="form-row three">
+            <div class="form-group"><label class="form-label">Standard *</label><input class="form-input" id="u-standard" placeholder="e.g. IFRS 18"/></div>
+            <div class="form-group"><label class="form-label">Update Type *</label><select class="form-select" id="u-type"><option>New Standard</option><option>Amendment</option><option>Interpretation</option><option>Exposure Draft</option></select></div>
+            <div class="form-group"><label class="form-label">Effective Date</label><input class="form-input" id="u-date" placeholder="e.g. 1 January 2027"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Update Title *</label><input class="form-input" id="u-title" placeholder="e.g. Presentation and Disclosure in Financial Statements"/></div>
+          <div class="form-group"><label class="form-label">Summary *</label><textarea class="form-textarea" id="u-summary" placeholder="What changed and why?"></textarea></div>
+          <div class="form-group"><label class="form-label">Impact</label><textarea class="form-textarea" id="u-impact" placeholder="How does this affect students and professionals?"></textarea></div>
+          <div class="btn-group"><button class="btn btn-success" onclick="addUpdate()">✅ Save Update</button><button class="btn btn-secondary" onclick="clearUpdateForm()">Clear</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">All Updates</div></div>
+        <div class="card-body" style="padding:0;overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>Standard</th><th>Title</th><th>Type</th><th>Effective Date</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="updates-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TECHNICAL MEMOS PAGE -->
+    <div class="page" id="page-memos">
+      <div class="topbar"><div><div class="page-title">Technical Memos</div><div class="page-subtitle">Client advice templates</div></div></div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">➕ Add Technical Memo</div></div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="m-title" placeholder="e.g. Lease Classification Analysis"/></div>
+            <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="m-category"><option>IFRS</option><option>IAS</option><option>Audit</option><option>Tax</option><option>Advisory</option></select></div>
+          </div>
+          <div class="form-group"><label class="form-label">Standard Reference</label><input class="form-input" id="m-standard" placeholder="e.g. IFRS 16"/></div>
+          <div class="form-group"><label class="form-label">Memo Content *</label><textarea class="form-textarea" id="m-content" placeholder="Full technical memo content..." style="min-height:160px;"></textarea></div>
+          <div class="form-group"><label class="form-label">Conclusion *</label><textarea class="form-textarea" id="m-conclusion" placeholder="Technical conclusion and recommendation..."></textarea></div>
+          <div class="btn-group"><button class="btn btn-success" onclick="addMemo()">✅ Save Memo</button><button class="btn btn-secondary" onclick="clearMemoForm()">Clear</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">All Memos</div></div>
+        <div class="card-body" style="padding:0;overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>Title</th><th>Category</th><th>Standard</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="memos-table-body"><tr><td colspan="5"><div class="loading">Loading...</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- RATIO BENCHMARKS PAGE -->
+    <div class="page" id="page-ratios">
+      <div class="topbar"><div><div class="page-title">Ratio Benchmarks</div><div class="page-subtitle">Industry financial ratio benchmarks</div></div></div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">➕ Add Ratio Benchmark</div></div>
+        <div class="card-body">
+          <div class="form-row three">
+            <div class="form-group"><label class="form-label">Ratio Name *</label><input class="form-input" id="r-name" placeholder="e.g. Current Ratio"/></div>
+            <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="r-category"><option>Liquidity</option><option>Profitability</option><option>Efficiency</option><option>Leverage</option><option>Valuation</option></select></div>
+            <div class="form-group"><label class="form-label">Industry *</label><input class="form-input" id="r-industry" placeholder="e.g. Manufacturing"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Formula *</label><input class="form-input" id="r-formula" placeholder="e.g. Current Assets / Current Liabilities" style="font-family:var(--font-mono);"/></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Benchmark Low</label><input class="form-input" id="r-low" type="number" step="0.01" placeholder="e.g. 1.5"/></div>
+            <div class="form-group"><label class="form-label">Benchmark High</label><input class="form-input" id="r-high" type="number" step="0.01" placeholder="e.g. 2.5"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Interpretation</label><textarea class="form-textarea" id="r-interpretation" placeholder="How to interpret this ratio..."></textarea></div>
+          <div class="btn-group"><button class="btn btn-success" onclick="addRatio()">✅ Save Ratio</button><button class="btn btn-secondary" onclick="clearRatioForm()">Clear</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">All Ratio Benchmarks</div></div>
+        <div class="card-body" style="padding:0;overflow-x:auto;">
+          <table class="data-table">
+            <thead><tr><th>Ratio</th><th>Category</th><th>Industry</th><th>Formula</th><th>Range</th><th>Actions</th></tr></thead>
+            <tbody id="ratios-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end main -->
+</div><!-- end admin-layout -->
+</div><!-- end admin-app -->
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ══ CONFIG ══
+const SUPA_URL = 'https://vofxhqnipoywbbkmlxcp.supabase.co';
+const SUPA_KEY = 'sb_publishable_Msgu7dGioeUfmnH88XtXlA_-WFeJoQh';
+const _supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// ══ SET YOUR ADMIN PASSWORD HERE ══
+const ADMIN_PASSWORD = 'FinMentra@Admin2026!';
+
+// ══ LOGIN ══
+function doLogin(){
+  const pw = document.getElementById('admin-password').value;
+  if(pw === ADMIN_PASSWORD){
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-app').style.display = 'block';
+    loadAllCounts();
+    loadPage('questions');
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+  }
+}
+
+function doLogout(){
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('admin-app').style.display = 'none';
+  document.getElementById('admin-password').value = '';
+}
+
+// ══ NAVIGATION ══
+function showPage(page, btn){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  if(btn) btn.classList.add('active');
+  loadPage(page);
+}
+
+function loadPage(page){
+  const loaders = {
+    dashboard: loadDashboard,
+    questions: loadQuestions,
+    summaries: loadSummaries,
+    traps: loadTraps,
+    formulas: loadFormulas,
+    topics: loadTopics,
+    journal: loadJournal,
+    disclosures: loadDisclosures,
+    scenarios: loadScenarios,
+    audit: loadAudit,
+    ethics: loadEthics,
+    excel: loadExcel,
+    updates: loadUpdates,
+    memos: loadMemos,
+    ratios: loadRatios,
+  };
+  if(loaders[page]) loaders[page]();
+}
+
+// ══ TOAST ══
+function toast(msg, type='success'){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = type === 'error' ? '#DC2626' : '#0A1F6E';
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
+}
+
+// ══ LOAD ALL COUNTS ══
+async function loadAllCounts(){
+  const tables = [
+    ['questions','count-questions','dash-questions'],
+    ['standard_summaries','count-summaries','dash-summaries'],
+    ['exam_traps','count-traps','dash-traps'],
+    ['formulas','count-formulas','dash-formulas'],
+    ['topics','count-topics','dash-topics'],
+    ['journal_entries','count-journal','dash-journal'],
+    ['disclosure_checklist','count-disclosures',null],
+    ['client_scenarios','count-scenarios','dash-scenarios'],
+    ['audit_files','count-audit',null],
+    ['ethics_cases','count-ethics','dash-ethics'],
+    ['excel_templates','count-excel',null],
+    ['ifrs_updates','count-updates',null],
+    ['technical_memos','count-memos',null],
+    ['ratio_benchmarks','count-ratios',null],
+  ];
+  for(const [table, sideEl, dashEl] of tables){
+    try{
+      const {count} = await _supa.from(table).select('*', {count:'exact',head:true});
+      const n = count || 0;
+      const se = document.getElementById(sideEl);
+      if(se) se.textContent = n;
+      if(dashEl){const de=document.getElementById(dashEl);if(de) de.textContent=n;}
+    }catch(e){}
+  }
+}
+
+async function loadDashboard(){ loadAllCounts(); }
+
+// ══ HELPER: render empty state ══
+function emptyState(msg){ return '<tr><td colspan="99"><div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">No content yet</div><div class="empty-state-sub">' + msg + '</div></div></td></tr>'; }
+
+// ══ HELPER: toggle active ══
+async function toggleActive(table, id, current){
+  await _supa.from(table).update({is_active: !current}).eq('id', id);
+  toast(current ? 'Deactivated' : 'Activated');
+  loadAllCounts();
+}
+
+// ══ HELPER: delete row ══
+async function deleteRow(table, id, reloader){
+  if(!confirm('Delete this item? This cannot be undone.')) return;
+  await _supa.from(table).delete().eq('id', id);
+  toast('Deleted successfully');
+  reloader();
+  loadAllCounts();
+}
+
+// ════════════════════════════════════════
+// QUESTIONS
+// ════════════════════════════════════════
+async function addQuestion(){
+  const data = {
+    standard: document.getElementById('q-standard').value.trim(),
+    category: document.getElementById('q-category').value,
+    difficulty: document.getElementById('q-difficulty').value,
+    question: document.getElementById('q-question').value.trim(),
+    option_a: document.getElementById('q-a').value.trim(),
+    option_b: document.getElementById('q-b').value.trim(),
+    option_c: document.getElementById('q-c').value.trim(),
+    option_d: document.getElementById('q-d').value.trim(),
+    correct_answer: document.getElementById('q-answer').value,
+    explanation: document.getElementById('q-explanation').value.trim(),
+    exam_trap: document.getElementById('q-trap').value.trim(),
+  };
+  if(!data.standard||!data.question||!data.option_a||!data.option_b||!data.option_c||!data.option_d){
+    toast('Please fill in all required fields','error'); return;
+  }
+  const {error} = await _supa.from('questions').insert(data);
+  if(error){ toast('Error: ' + error.message,'error'); return; }
+  toast('✅ Question saved!');
+  clearQuestionForm();
+  loadQuestions();
+  loadAllCounts();
+}
+
+async function loadQuestions(cat='all'){
+  const tbody = document.getElementById('questions-table-body');
+  tbody.innerHTML = '<tr><td colspan="7"><div class="loading">Loading...</div></td></tr>';
+  let q = _supa.from('questions').select('*').order('created_at', {ascending:false});
+  if(cat !== 'all') q = q.eq('category', cat);
+  const {data, error} = await q;
+  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first question using the form above'); return; }
+  tbody.innerHTML = data.map(r => `
+    <tr>
+      <td><strong>${r.standard}</strong></td>
+      <td><span class="badge badge-${r.category.toLowerCase()}">${r.category}</span></td>
+      <td><span class="badge badge-${r.difficulty.toLowerCase()}">${r.difficulty}</span></td>
+      <td style="max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.question}</td>
+      <td><strong>${r.correct_answer}</strong></td>
+      <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+      <td><div class="table-actions">
+        <button class="btn btn-sm btn-secondary" onclick="toggleActive('questions','${r.id}',${r.is_active});loadQuestions()">${r.is_active?'Deactivate':'Activate'}</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteRow('questions','${r.id}',loadQuestions)">Delete</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function filterQuestions(cat){ loadQuestions(cat); }
+function clearQuestionForm(){ ['q-standard','q-question','q-a','q-b','q-c','q-d','q-explanation','q-trap'].forEach(id => document.getElementById(id).value=''); }
+
+// ════════════════════════════════════════
+// STANDARD SUMMARIES
+// ════════════════════════════════════════
+async function addSummary(){
+  const points = document.getElementById('s-points').value.trim().split('\n').filter(p=>p.trim());
+  const data = {
+    standard: document.getElementById('s-standard').value.trim(),
+    title: document.getElementById('s-title').value.trim(),
+    category: document.getElementById('s-category').value,
+    core_principle: document.getElementById('s-principle').value.trim(),
+    key_points: JSON.stringify(points),
+    journal_entry_dr: document.getElementById('s-dr').value.trim(),
+    journal_entry_cr: document.getElementById('s-cr').value.trim(),
+    exam_trap: document.getElementById('s-trap').value.trim(),
+  };
+  if(!data.standard||!data.title||!data.core_principle){ toast('Fill required fields','error'); return; }
+  const {error} = await _supa.from('standard_summaries').insert(data);
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast('✅ Summary saved!'); clearSummaryForm(); loadSummaries(); loadAllCounts();
+}
+
+async function loadSummaries(){
+  const tbody = document.getElementById('summaries-table-body');
+  tbody.innerHTML = '<tr><td colspan="6"><div class="loading">Loading...</div></td></tr>';
+  const {data,error} = await _supa.from('standard_summaries').select('*').order('standard');
+  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first summary'); return; }
+  tbody.innerHTML = data.map(r=>`<tr>
+    <td><strong>${r.standard}</strong></td><td>${r.title}</td>
+    <td><span class="badge badge-${r.category.toLowerCase()}">${r.category}</span></td>
+    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.core_principle||''}</td>
+    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td><div class="table-actions">
+      <button class="btn btn-sm btn-secondary" onclick="toggleActive('standard_summaries','${r.id}',${r.is_active});loadSummaries()">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('standard_summaries','${r.id}',loadSummaries)">Delete</button>
+    </div></td></tr>`).join('');
+}
+function clearSummaryForm(){ ['s-standard','s-title','s-principle','s-points','s-dr','s-cr','s-trap'].forEach(id=>document.getElementById(id).value=''); }
+
+// ════════════════════════════════════════
+// EXAM TRAPS
+// ════════════════════════════════════════
+async function addTrap(){
+  const data = {
+    standard: document.getElementById('t-standard').value.trim(),
+    category: document.getElementById('t-category').value,
+    difficulty: document.getElementById('t-difficulty').value,
+    trap_title: document.getElementById('t-title').value.trim(),
+    trap_description: document.getElementById('t-description').value.trim(),
+    correct_approach: document.getElementById('t-correct').value.trim(),
+  };
+  if(!data.standard||!data.trap_title||!data.trap_description){ toast('Fill required fields','error'); return; }
+  const {error} = await _supa.from('exam_traps').insert(data);
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast('✅ Trap saved!'); clearTrapForm(); loadTraps(); loadAllCounts();
+}
+
+async function loadTraps(){
+  const tbody = document.getElementById('traps-table-body');
+  tbody.innerHTML = '<tr><td colspan="6"><div class="loading">Loading...</div></td></tr>';
+  const {data,error} = await _supa.from('exam_traps').select('*').order('standard');
+  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first exam trap'); return; }
+  tbody.innerHTML = data.map(r=>`<tr>
+    <td><strong>${r.standard}</strong></td>
+    <td><span class="badge badge-${r.category.toLowerCase()}">${r.category}</span></td>
+    <td>${r.trap_title}</td>
+    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.trap_description}</td>
+    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td><div class="table-actions">
+      <button class="btn btn-sm btn-secondary" onclick="toggleActive('exam_traps','${r.id}',${r.is_active});loadTraps()">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('exam_traps','${r.id}',loadTraps)">Delete</button>
+    </div></td></tr>`).join('');
+}
+function clearTrapForm(){ ['t-standard','t-title','t-description','t-correct'].forEach(id=>document.getElementById(id).value=''); }
+
+// ════════════════════════════════════════
+// FORMULAS
+// ════════════════════════════════════════
+async function addFormula(){
+  const data = {
+    category: document.getElementById('f-category').value,
+    title: document.getElementById('f-title').value.trim(),
+    formula: document.getElementById('f-formula').value.trim(),
+    explanation: document.getElementById('f-explanation').value.trim(),
+    example: document.getElementById('f-example').value.trim(),
+  };
+  if(!data.title||!data.formula){ toast('Fill required fields','error'); return; }
+  const {error} = await _supa.from('formulas').insert(data);
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast('✅ Formula saved!'); clearFormulaForm(); loadFormulas(); loadAllCounts();
+}
+
+async function loadFormulas(){
+  const tbody = document.getElementById('formulas-table-body');
+  tbody.innerHTML = '<tr><td colspan="5"><div class="loading">Loading...</div></td></tr>';
+  const {data,error} = await _supa.from('formulas').select('*').order('category');
+  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first formula'); return; }
+  tbody.innerHTML = data.map(r=>`<tr>
+    <td>${r.category}</td><td><strong>${r.title}</strong></td>
+    <td style="font-family:var(--font-mono);font-size:12px;">${r.formula}</td>
+    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td><div class="table-actions">
+      <button class="btn btn-sm btn-secondary" onclick="toggleActive('formulas','${r.id}',${r.is_active});loadFormulas()">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('formulas','${r.id}',loadFormulas)">Delete</button>
+    </div></td></tr>`).join('');
+}
+function clearFormulaForm(){ ['f-title','f-formula','f-explanation','f-example'].forEach(id=>document.getElementById(id).value=''); }
+
+// ════════════════════════════════════════
+// TOPICS
+// ════════════════════════════════════════
+async function addTopic(){
+  const data = {
+    standard: document.getElementById('top-standard').value.trim(),
+    name: document.getElementById('top-name').value.trim(),
+    category: document.getElementById('top-category').value,
+    subtitle: document.getElementById('top-subtitle').value.trim(),
+    sort_order: parseInt(document.getElementById('top-order').value)||0,
+  };
+  if(!data.standard||!data.name){ toast('Fill required fields','error'); return; }
+  const {error} = await _supa.from('topics').insert(data);
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast('✅ Topic saved!'); clearTopicForm(); loadTopics(); loadAllCounts();
+}
+
+async function loadTopics(){
+  const tbody = document.getElementById('topics-table-body');
+  tbody.innerHTML = '<tr><td colspan="7"><div class="loading">Loading...</div></td></tr>';
+  const {data,error} = await _supa.from('topics').select('*').order('sort_order');
+  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first topic'); return; }
+  tbody.innerHTML = data.map(r=>`<tr>
+    <td><strong>${r.standard}</strong></td><td>${r.name}</td>
+    <td><span class="badge badge-${r.category.toLowerCase()}">${r.category}</span></td>
+    <td>${r.subtitle||'-'}</td><td>${r.sort_order}</td>
+    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td><div class="table-actions">
+      <button class="btn btn-sm btn-secondary" onclick="toggleActive('topics','${r.id}',${r.is_active});loadTopics()">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('topics','${r.id}',loadTopics)">Delete</button>
+    </div></td></tr>`).join('');
+}
+function clearTopicForm(){ ['top-standard','top-name','top-subtitle','top-order'].forEach(id=>document.getElementById(id).value=''); }
+
+// ════════════════════════════════════════
+// JOURNAL ENTRIES
+// ════════════════════════════════════════
+async function addJournal(){
+  const data = {
+    standard: document.getElementById('j-standard').value.trim(),
+    category: document.getElementById('j-category').value,
+    scenario: document.getElementById('j-scenario').value.trim(),
+    debit_account: document.getElementById('j-dr').value.trim(),
+    debit_amount: document.getElementById('j-dr-amount').value.trim(),
+    credit_account: document.getElementById('j-cr').value.trim(),
+    credit_amount: document.getElementById('j-cr-amount').value.trim(),
+    narrative: document.getElementById('j-narrative').value.trim(),
+  };
+  if(!data.standard||!data.scenario||!data.debit_account||!data.credit_account){ toast('Fill required fields','error'); return; }
+  const {error} = await _supa.from('journal_entries').insert(data);
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast('✅ Journal entry saved!'); clearJournalForm(); loadJournal(); loadAllCounts();
+}
+
+async function loadJournal(){
+  const tbody = document.getElementById('journal-table-body');
+  tbody.innerHTML = '<tr><td colspan="6"><div class="loading">Loading...</div></td></tr>';
+  const {data,error} = await _supa.from('journal_entries').select('*').order('standard');
+  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first journal entry'); return; }
+  tbody.innerHTML = data.map(r=>`<tr>
+    <td><strong>${r.standard}</strong></td>
+    <td>${r.scenario}</td>
+    <td style="font-family:var(--font-mono);font-size:12px;">Dr ${r.debit_account}</td>
+    <td style="font-family:var(--font-mono);font-size:12px;">Cr ${r.credit_account}</td>
+    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td><div class="table-actions">
+      <button class="btn btn-sm btn-secondary" onclick="toggleActive('journal_entries','${r.id}',${r.is_active});loadJournal()">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('journal_entries','${r.id}',loadJournal)">Delete</button>
+    </div></td></tr>`).join('');
+}
+function clearJournalForm(){ ['j-standard','j-scenario','j-dr','j-dr-amount','j-cr','j-cr-amount','j-narrative'].forEach(id=>document.getElementById(id).value=''); }
+
+// ════════════════════════════════════════
+// DISCLOSURES
+// ════════════════════════════════════════
+async function addDisclosure(){
+  const data = {
+    standard: document.getElementById('d-standard').value.trim(),
+    category: document.getElementById('d-category').value,
+    mode: document.getElementById('d-mode').value,
+    disclosure_item: document.getElementById('d-item').value.trim(),
+    is_mandatory: document.getElementById('d-mandatory').value === 'true',
+    notes: document.getElementById('d-notes').value.trim(),
+  };
+  if(!data.standard||!data.disclosure_item){ toast('Fill required fields','error'); return; }
+  const {error} = await _supa.from('disclosure_checklist').insert(data);
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast('✅ Disclosure saved!'); clearDisclosureForm(); loadDisclosures(); loadAllCounts();
+}
+
+async function loadDisclosures(){
+  const tbody = document.getElementById('disclosures-table-body');
+  tbody.innerHTML = '<tr><td colspan="6"><div class="loading">Loading...</div></td></tr>';
+  const {data,error} = await _supa.from('disclosure_checklist').select('*').order('standard');
+  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first disclosure item'); return; }
+  tbody.innerHTML = data.map(r=>`<tr>
+    <td><strong>${r.standard}</strong></td>
+    <td><span class="badge badge-${r.category.toLowerCase()}">${r.category}</span></td>
+    <td style="max-width:300px;">${r.disclosure_item}</td>
+    <td>${r.is_mandatory?'<span class="badge badge-active">Mandatory</span>':'<span class="badge badge-inactive">Optional</span>'}</td>
+    <td>${r.mode}</td>
+    <td><div class="table-actions">
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('disclosure_checklist','${r.id}',loadDisclosures)">Delete</button>
+    </div></td></tr>`).join('');
+}
+function clearDisclosureForm(){ ['d-standard','d-item','d-notes'].forEach(id=>document.getElementById(id).value=''); }
+
+// ════════════════════════════════════════
+// CLIENT SCENARIOS
+// ════════════════════════════════════════
+async function addScenario(){
+  const data = {
+    title: document.getElementById('sc-title').value.trim(),
+    category: document.getElementById('sc-category').value,
+    difficulty: document.getElementById('sc-difficulty').value,
+    scenario_text: document.getElementById('sc-text').value.trim(),
+    option_a: document.getElementById('sc-a').value.trim(),
+    option_b: document.getElementById('sc-b').value.trim(),
+    option_c: document.getElementById('sc-c').value.trim(),
+    option_d: document.getElementById('sc-d').value.trim(),
+    correct_answer: document.getElementById('sc-answer').value,
+    standard_reference: document.getElementById('sc-ref').value.trim(),
+    explanation: document.getElementById('sc-explanation').value.trim(),
+  };
+  if(!data.title||!data.scenario_text){ toast('Fill required fields','error'); return; }
+  const {error} = await _supa.from('client_scenarios').insert(data);
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast('✅ Scenario saved!'); clearScenarioForm(); loadScenarios(); loadAllCounts();
+}
+
+async function loadScenarios(){
+  const tbody = document.getElementById('scenarios-table-body');
+  tbody.innerHTML = '<tr><td colspan="6"><div class="loading">Loading...</div></td></tr>';
+  const {data,error} = await _supa.from('client_scenarios').select('*').order('created_at',{ascending:false});
+  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first client scenario'); return; }
+  tbody.innerHTML = data.map(r=>`<tr>
+    <td><strong>${r.title}</strong></td>
+    <td>${r.category}</td>
+    <td><span class="badge badge-${r.difficulty.toLowerCase()}">${r.difficulty}</span></td>
+    <td><strong>${r.correct_answer}</strong></td>
+    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td><div class="table-actions">
+      <button class="btn btn-sm btn-secondary" onclick="toggleActive('client_scenarios','${r.id}',${r.is_active});loadScenarios()">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('client_scenarios','${r.id}',loadScenarios)">Delete</button>
+    </div></td></tr>`).join('');
+}
+function clearScenarioForm(){ ['sc-title','sc-text','sc-a','sc-b','sc-c','sc-d','sc-ref','sc-explanation'].forEach(id=>document.getElementById(id).value=''); }
+
+// ════════════════════════════════════════
+// AUDIT FILES
+// ════════════════════════════════════════
+async function addAudit(){
+  const data = {
+    title: document.getElementById('a-title').value.trim(),
+    category: document.getElementById('a-category').value,
+    file_type: document.getElementById('a-type').value,
+    isa_reference: document.getElementById('a-isa').value.trim(),
+    content: document.getElementById('a-content').value.trim(),
+    notes: document.getElementById('a-notes').value.trim(),
+  };
+  if(!data.title||!data.content){ toast('Fill required fields','error'); return; }
+  const {error} = await _supa.from('audit_files').insert(data);
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast('✅ Audit file saved!'); clearAuditForm(); loadAudit(); loadAllCounts();
+}
+
+async function loadAudit(){
+  const tbody = document.getElementById('audit-table-body');
+  tbody.innerHTML = '<tr><td colspan="6"><div class="loading">Loading...</div></td></tr>';
+  const {data,error} = await _supa.from('audit_files').select('*').order('category');
+  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first audit file'); return; }
+  tbody.innerHTML = data.map(r=>`<tr>
+    <td><strong>${r.title}</strong></td><td>${r.category}</td><td>${r.file_type}</td>
+    <td>${r.isa_reference||'-'}</td>
+    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td><div class="table-actions">
+      <button class="btn btn-sm btn-secondary" onclick="toggleActive('audit_files','${r.id}',${r.is_active});loadAudit()">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('audit_files','${r.id}',loadAudit)">Delete</button>
+    </div></td></tr>`).join('');
+}
+function clearAuditForm(){ ['a-title','a-isa','a-content','a-notes'].forEach(id=>document.getElementById(id).value=''); }
+
+// ════════════════════════════════════════
+// ETHICS CASES
+// ════════════════════════════════════════
+async function addEthics(){
+  const data = {
+    title: document.getElementById('e-title').value.trim(),
+    category: document.getElementById('e-category').value,
+    case_text: document.getElementById('e-case').value.trim(),
+    ethical_issue: document.getElementById('e-issue').value.trim(),
+    option_a: document.getElementById('e-a').value.trim(),
+    option_b: document.getElementById('e-b').value.trim(),
+    option_c: document.getElementById('e-c').value.trim(),
+    option_d: document.getElementById('e-d').value.trim(),
+    correct_answer: document.getElementById('e-answer').value,
+    iesba_reference: document.getElementById('e-ref').value.trim(),
+    explanation: document.getElementById('e-explanation').value.trim(),
+  };
+  if(!data.title||!data.case_text){ toast('Fill required fields','error'); return; }
+  const {error} = await _supa.from('ethics_cases').insert(data);
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast('✅ Ethics case saved!'); clearEthicsForm(); loadEthics(); loadAllCounts();
+}
+
+async function loadEthics(){
+  const tbody = document.getElementById('ethics-table-body');
+  tbody.innerHTML = '<tr><td colspan="6"><div class="loading">Loading...</div></td></tr>';
+  const {data,error} = await _supa.from('ethics_cases').select('*').order('created_at',{ascending:false});
+  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first ethics case'); return; }
+  tbody.innerHTML = data.map(r=>`<tr>
+    <td><strong>${r.title}</strong></td><td>${r.category}</td>
+    <td>${r.ethical_issue}</td><td><strong>${r.correct_answer}</strong></td>
+    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td><div class="table-actions">
+      <button class="btn btn-sm btn-secondary" onclick="toggleActive('ethics_cases','${r.id}',${r.is_active});loadEthics()">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('ethics_cases','${r.id}',loadEthics)">Delete</button>
+    </div></td></tr>`).join('');
+}
+function clearEthicsForm(){ ['e-title','e-case','e-issue','e-a','e-b','e-c','e-d','e-ref','e-explanation'].forEach(id=>document.getElementById(id).value=''); }
+
+// ════════════════════════════════════════
+// EXCEL TEMPLATES
+// ════════════════════════════════════════
+async function addExcel(){
+  const data = {
+    title: document.getElementById('ex-title').value.trim(),
+    category: document.getElementById('ex-category').value,
+    difficulty: document.getElementById('ex-difficulty').value,
+    description: document.getElementById('ex-description').value.trim(),
+    template_content: document.getElementById('ex-content').value.trim(),
+  };
+  if(!data.title||!data.description){ toast('Fill required fields','error'); return; }
+  const {error} = await _supa.from('excel_templates').insert(data);
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast('✅ Template saved!'); clearExcelForm(); loadExcel(); loadAllCounts();
+}
+
+async function loadExcel(){
+  const tbody = document.getElementById('excel-table-body');
+  tbody.innerHTML = '<tr><td colspan="5"><div class="loading">Loading...</div></td></tr>';
+  const {data,error} = await _supa.from('excel_templates').select('*').order('category');
+  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first Excel template'); return; }
+  tbody.innerHTML = data.map(r=>`<tr>
+    <td><strong>${r.title}</strong></td><td>${r.category}</td>
+    <td><span class="badge badge-${r.difficulty.toLowerCase()}">${r.difficulty}</span></td>
+    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td><div class="table-actions">
+      <button class="btn btn-sm btn-secondary" onclick="toggleActive('excel_templates','${r.id}',${r.is_active});loadExcel()">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('excel_templates','${r.id}',loadExcel)">Delete</button>
+    </div></td></tr>`).join('');
+}
+function clearExcelForm(){ ['ex-title','ex-description','ex-content'].forEach(id=>document.getElementById(id).value=''); }
+
+// ════════════════════════════════════════
+// IFRS UPDATES
+// ════════════════════════════════════════
+async function addUpdate(){
+  const data = {
+    standard: document.getElementById('u-standard').value.trim(),
+    update_title: document.getElementById('u-title').value.trim(),
+    update_type: document.getElementById('u-type').value,
+    effective_date: document.getElementById('u-date').value.trim(),
+    summary: document.getElementById('u-summary').value.trim(),
+    impact: document.getElementById('u-impact').value.trim(),
+  };
+  if(!data.standard||!data.update_title||!data.summary){ toast('Fill required fields','error'); return; }
+  const {error} = await _supa.from('ifrs_updates').insert(data);
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast('✅ Update saved!'); clearUpdateForm(); loadUpdates(); loadAllCounts();
+}
+
+async function loadUpdates(){
+  const tbody = document.getElementById('updates-table-body');
+  tbody.innerHTML = '<tr><td colspan="6"><div class="loading">Loading...</div></td></tr>';
+  const {data,error} = await _supa.from('ifrs_updates').select('*').order('created_at',{ascending:false});
+  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first IFRS update'); return; }
+  tbody.innerHTML = data.map(r=>`<tr>
+    <td><strong>${r.standard}</strong></td><td>${r.update_title}</td>
+    <td>${r.update_type}</td><td>${r.effective_date||'-'}</td>
+    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td><div class="table-actions">
+      <button class="btn btn-sm btn-secondary" onclick="toggleActive('ifrs_updates','${r.id}',${r.is_active});loadUpdates()">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('ifrs_updates','${r.id}',loadUpdates)">Delete</button>
+    </div></td></tr>`).join('');
+}
+function clearUpdateForm(){ ['u-standard','u-title','u-date','u-summary','u-impact'].forEach(id=>document.getElementById(id).value=''); }
+
+// ════════════════════════════════════════
+// TECHNICAL MEMOS
+// ════════════════════════════════════════
+async function addMemo(){
+  const data = {
+    title: document.getElementById('m-title').value.trim(),
+    category: document.getElementById('m-category').value,
+    standard: document.getElementById('m-standard').value.trim(),
+    memo_content: document.getElementById('m-content').value.trim(),
+    conclusion: document.getElementById('m-conclusion').value.trim(),
+  };
+  if(!data.title||!data.memo_content){ toast('Fill required fields','error'); return; }
+  const {error} = await _supa.from('technical_memos').insert(data);
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast('✅ Memo saved!'); clearMemoForm(); loadMemos(); loadAllCounts();
+}
+
+async function loadMemos(){
+  const tbody = document.getElementById('memos-table-body');
+  tbody.innerHTML = '<tr><td colspan="5"><div class="loading">Loading...</div></td></tr>';
+  const {data,error} = await _supa.from('technical_memos').select('*').order('category');
+  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first technical memo'); return; }
+  tbody.innerHTML = data.map(r=>`<tr>
+    <td><strong>${r.title}</strong></td><td>${r.category}</td>
+    <td>${r.standard||'-'}</td>
+    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td><div class="table-actions">
+      <button class="btn btn-sm btn-secondary" onclick="toggleActive('technical_memos','${r.id}',${r.is_active});loadMemos()">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('technical_memos','${r.id}',loadMemos)">Delete</button>
+    </div></td></tr>`).join('');
+}
+function clearMemoForm(){ ['m-title','m-standard','m-content','m-conclusion'].forEach(id=>document.getElementById(id).value=''); }
+
+// ════════════════════════════════════════
+// RATIO BENCHMARKS
+// ════════════════════════════════════════
+async function addRatio(){
+  const data = {
+    ratio_name: document.getElementById('r-name').value.trim(),
+    category: document.getElementById('r-category').value,
+    industry: document.getElementById('r-industry').value.trim(),
+    formula: document.getElementById('r-formula').value.trim(),
+    benchmark_low: parseFloat(document.getElementById('r-low').value)||null,
+    benchmark_high: parseFloat(document.getElementById('r-high').value)||null,
+    interpretation: document.getElementById('r-interpretation').value.trim(),
+  };
+  if(!data.ratio_name||!data.formula){ toast('Fill required fields','error'); return; }
+  const {error} = await _supa.from('ratio_benchmarks').insert(data);
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast('✅ Ratio saved!'); clearRatioForm(); loadRatios(); loadAllCounts();
+}
+
+async function loadRatios(){
+  const tbody = document.getElementById('ratios-table-body');
+  tbody.innerHTML = '<tr><td colspan="6"><div class="loading">Loading...</div></td></tr>';
+  const {data,error} = await _supa.from('ratio_benchmarks').select('*').order('category');
+  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first ratio benchmark'); return; }
+  tbody.innerHTML = data.map(r=>`<tr>
+    <td><strong>${r.ratio_name}</strong></td><td>${r.category}</td>
+    <td>${r.industry}</td>
+    <td style="font-family:var(--font-mono);font-size:12px;">${r.formula}</td>
+    <td>${r.benchmark_low||'-'} — ${r.benchmark_high||'-'}</td>
+    <td><div class="table-actions">
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('ratio_benchmarks','${r.id}',loadRatios)">Delete</button>
+    </div></td></tr>`).join('');
+}
+function clearRatioForm(){ ['r-name','r-industry','r-formula','r-low','r-high','r-interpretation'].forEach(id=>document.getElementById(id).value=''); }
+
+// ══ ENTER KEY ON LOGIN ══
+document.getElementById('admin-password').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+</script>
+</body>
+</html>
