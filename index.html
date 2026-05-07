@@ -7137,22 +7137,39 @@ function generateCode(){
   return code;
 }
 
-// Get questions for challenge
+// Get questions for challenge — always returns questions
 function getChallengeQuestions(category, count){
   let pool = [];
-  if(category === 'Mixed'){
-    Object.values(QB).forEach(qs => pool.push(...qs));
-  } else if(QB_BY_DOMAIN && QB_BY_DOMAIN[category]){
+  // Try QB_BY_DOMAIN first
+  if(category === 'Mixed' || !category){
+    // Get all questions from all domains
+    if(QB_BY_DOMAIN){
+      Object.values(QB_BY_DOMAIN).forEach(qs=>{ if(Array.isArray(qs)) pool.push(...qs); });
+    }
+    if(pool.length === 0) Object.values(QB).forEach(qs=>pool.push(...qs));
+  } else if(QB_BY_DOMAIN && QB_BY_DOMAIN[category] && QB_BY_DOMAIN[category].length > 0){
     pool = [...QB_BY_DOMAIN[category]];
   } else {
+    // Filter QB by standard prefix
     Object.entries(QB).forEach(([std,qs])=>{
       if(std.startsWith(category)) pool.push(...qs);
     });
   }
-  if(pool.length === 0) pool = [...(QB_BY_DOMAIN['IFRS']||[])];
-  return pool.sort(()=>Math.random()-.5).slice(0,parseInt(count)).map(q=>({
-    q: q.q, opts: q.opts, correct: q.correct, explain: q.explain||''
-  }));
+  // Final fallback — use ALL questions from QB
+  if(pool.length === 0){
+    Object.values(QB).forEach(qs=>pool.push(...qs));
+  }
+  // Shuffle and return serializable objects
+  return pool
+    .sort(()=>Math.random()-.5)
+    .slice(0, parseInt(count)||10)
+    .map(q=>({
+      q: q.q||q.question||'',
+      opts: q.opts||q.options||[],
+      correct: typeof q.correct==='number'?q.correct:0,
+      explain: q.explain||q.explanation||''
+    }))
+    .filter(q=>q.q && q.opts && q.opts.length===4); // only valid questions
 }
 
 // ── CREATE CHALLENGE ──
@@ -7654,12 +7671,14 @@ async function findOnlineMatch(){
 
 async function searchForOpponent(category){
   try{
-    // Find someone waiting (not me, same or any category)
+    // Only match with players who joined queue in last 30 seconds
+    const thirtySecAgo = new Date(Date.now()-30000).toISOString();
     const {data:opponents} = await _supa.from('matchmaking_queue')
       .select('*')
       .eq('status','waiting')
       .neq('player_id',MM.myPlayerId)
-      .or('category.eq.'+category+',category.eq.Mixed')
+      .gte('created_at', thirtySecAgo)  // Only fresh entries!
+      .or('category.eq.'+category+',category.eq.Mixed,category.eq.'+category)
       .order('created_at',{ascending:true})
       .limit(1);
 
@@ -7866,6 +7885,37 @@ async function cancelMatchmaking(silent){
   if(!silent){ showChallengeSection('lobby'); toast('Search cancelled'); }
 }
 
+// Clean up stale queue entries older than 60 seconds
+async function cleanStaleQueueEntries(){
+  try{
+    const sixtySecAgo = new Date(Date.now()-60000).toISOString();
+    await _supa.from('matchmaking_queue')
+      .delete()
+      .eq('status','waiting')
+      .lt('created_at', sixtySecAgo);
+  }catch(e){}
+}
+
+// Remove from queue when user closes/leaves page
+window.addEventListener('beforeunload', ()=>{
+  if(MM.myPlayerId){
+    // Use sendBeacon for reliable cleanup on page close
+    const url = `${SUPA_URL}/rest/v1/matchmaking_queue?player_id=eq.${MM.myPlayerId}`;
+    navigator.sendBeacon && navigator.sendBeacon(url);
+    // Also try sync delete
+    _supa.from('matchmaking_queue').delete().eq('player_id',MM.myPlayerId);
+  }
+});
+
+// Also clean up when tab becomes hidden
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden && MM.myPlayerId){
+    _supa.from('matchmaking_queue').delete().eq('player_id',MM.myPlayerId);
+    clearInterval(MM.searchInterval);
+    clearInterval(MM.searchTimer);
+  }
+});
+
 // ── ELO RATING UPDATE ──
 function calculateElo(myRating, oppRating, result){
   const K = 32;
@@ -7963,8 +8013,8 @@ showScreen = function(id){
     loadChallengeStats();
     loadPlayerRating();
     loadGlobalRankings();
+    cleanStaleQueueEntries();
     showChallengeSection('lobby');
-    // Refresh online count every 30s
     clearInterval(MM.onlineCountInterval);
     MM.onlineCountInterval = setInterval(updateOnlineCount, 30000);
   }
