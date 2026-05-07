@@ -17,6 +17,13 @@
 </script>
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// Initialize Supabase immediately so it's available everywhere
+const SUPA_URL = 'https://vofxhqnipoywbbkmlxcp.supabase.co';
+const SUPA_KEY = 'sb_publishable_Msgu7dGioeUfmnH88XtXlA_-WFeJoQh';
+const _supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+console.log('✅ Supabase initialized');
+</script>
 <style>
 /* ── SUPABASE AUTH SCREEN ── */
 #auth-screen {
@@ -3339,24 +3346,26 @@ function selectDomain(el,d){
   startSession(); // async — runs in background, loadQuestion called when ready
 }
 // ── SUPABASE QUESTION CACHE ──
-const SQ_CACHE = {}; // cache by category to avoid repeated fetches
+const SQ_CACHE = {};
 
 async function fetchQuestionsFromSupabase(category, count){
+  // Wait for _supa to be available
+  if(typeof _supa === 'undefined'){
+    console.log('Supabase not ready yet');
+    return null;
+  }
   const cacheKey = category||'Mixed';
-  // Return cached if available and fresh
   if(SQ_CACHE[cacheKey] && SQ_CACHE[cacheKey].length >= 3){
     return SQ_CACHE[cacheKey].sort(()=>Math.random()-.5).slice(0,count);
   }
   try{
     let query = _supa.from('questions').select('*');
-    // Filter by category if not Mixed
     if(category && category !== 'Mixed'){
       query = query.eq('category', category);
     }
     const {data, error} = await query.limit(200);
     if(error){ console.log('Supabase questions error:',error); return null; }
     if(!data || data.length === 0){ console.log('No questions in Supabase for:',category); return null; }
-    // Convert Supabase format to QB format
     const converted = data.map(q=>({
       q: q.question,
       opts: [q.option_a, q.option_b, q.option_c, q.option_d],
@@ -3364,8 +3373,7 @@ async function fetchQuestionsFromSupabase(category, count){
       explain: q.explanation||'',
       standard: q.standard||''
     })).filter(q=>q.correct >= 0 && q.q && q.opts[0]);
-    console.log('Loaded',converted.length,'questions from Supabase for category:',category);
-    // Cache it
+    console.log('✅ Loaded',converted.length,'questions from Supabase for:',category);
     SQ_CACHE[cacheKey] = converted;
     return converted.sort(()=>Math.random()-.5).slice(0,count);
   }catch(e){ console.log('Supabase fetch error:',e); return null; }
@@ -6911,15 +6919,13 @@ const _origAnswerQ=answerQ;
 </div>
 
 <script>
-// ══ SUPABASE INIT ══
-const SUPA_URL = 'https://vofxhqnipoywbbkmlxcp.supabase.co';
-const SUPA_KEY = 'sb_publishable_Msgu7dGioeUfmnH88XtXlA_-WFeJoQh';
-const _supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+// ══ SUPABASE - already initialized in head ══
+// _supa, SUPA_URL, SUPA_KEY available globally
 
 let _currentUser = null;
 let _isGuest = false;
-let _guestQCount = 0;        // questions answered as guest this session
-let _guestBonusUsed = false; // whether they used the "5 more" option
+let _guestQCount = 0;
+let _guestBonusUsed = false;
 
 // ── GUEST MODE ──
 function startAsGuest(){
