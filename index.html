@@ -3132,7 +3132,7 @@ function switchMode(mode){
   if(mode === S.mode) return;
   const toLabel = mode === 'professional' ? '💼 Professional' : '🎓 Student';
   showModeConfirm(toLabel, function(){
-    // Reset practice state so no stale standard shows
+    // Reset all practice state
     S.currentStandard = null;
     S.sessionQs = [];
     S.qIndex = 0;
@@ -3143,25 +3143,27 @@ function switchMode(mode){
     const pBtn = document.getElementById('ms-pro');
     if(sBtn) sBtn.classList.toggle('active', mode==='student');
     if(pBtn) pBtn.classList.toggle('active', mode==='professional');
-    // Navigate to correct home screen
-    if(mode === 'professional'){
-      const pg = document.getElementById('pro-greeting');
-      if(pg) pg.textContent = getMoodGreeting(true);
-      showScreen('pro-home');
+    // Directly show correct screen — bypass all wrappers
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    const targetId = mode==='professional' ? 'screen-pro-home' : 'screen-home';
+    const target = document.getElementById(targetId);
+    if(target) target.classList.add('active');
+    S.screen = mode==='professional' ? 'pro-home' : 'home';
+    if(mode==='professional'){
+      const pg=document.getElementById('pro-greeting');
+      if(pg) pg.textContent=getMoodGreeting(true);
     } else {
-      showScreen('home');
-      // Reset practice to fresh state for student mode
-      S.currentStandard = null;
-      S.domain = 'IFRS';
-      setTimeout(()=>{ if(typeof startSession==='function') startSession(); }, 200);
+      updateMissions();
+      loadLeaderboard();
+      setTimeout(()=>{ if(typeof startSession==='function') startSession(); },200);
     }
     renderBottomNav();
     saveState();
-    toast('Switched to ' + toLabel + ' mode');
+    window.scrollTo(0,0);
+    toast('Switched to '+toLabel+' mode');
   }, function(){
-    // Cancelled — revert button UI to match current state
-    const sBtn = document.getElementById('ms-student');
-    const pBtn = document.getElementById('ms-pro');
+    const sBtn=document.getElementById('ms-student');
+    const pBtn=document.getElementById('ms-pro');
     if(sBtn) sBtn.classList.toggle('active', S.mode==='student');
     if(pBtn) pBtn.classList.toggle('active', S.mode==='professional');
   });
@@ -4230,24 +4232,27 @@ setTimeout(populateJEDropdown,100);
 function sumSection(section){let total=0;document.querySelectorAll('.fs-input[data-section="'+section+'"]').forEach(inp=>{total+=parseFloat((inp.value||'0').replace(/,/g,''))||0;});return total;}
 function delFSRow(btn){const row=btn.closest('.fs-row');if(row) row.remove();recalcAll();}
 function addFSRowToSection(section, recalcFn){
-  // Find the fs-section that contains inputs with this data-section
-  const refInput = document.querySelector('.fs-input[data-section="'+section+'"]');
-  if(!refInput){ toast('Section "'+section+'" not found'); return; }
-  const fsSection = refInput.closest('.fs-section');
-  if(!fsSection){ toast('Cannot find section container'); return; }
+  // Find the ADD button for this section — insert before it
+  const addButtons = document.querySelectorAll('.fs-add-btn');
+  let targetBtn = null;
+  addButtons.forEach(btn=>{
+    if(btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("'"+section+"'")){
+      targetBtn = btn;
+    }
+  });
+
+  if(!targetBtn){
+    toast('Section not found'); return;
+  }
 
   // Create the new row DOM
   const newRow = document.createElement('div');
-  newRow.className = 'fs-row';
-  // Style as real fs-row — no dotted border, same format
   newRow.className = 'fs-row';
   newRow.style.cssText = 'background:var(--blue-ll);border:1.5px solid var(--blue);border-radius:0;animation:fadeIn .2s ease;';
 
   const nameInp = document.createElement('input');
   nameInp.placeholder = 'Item name...';
   nameInp.className = 'fs-row-label';
-  nameInp.contentEditable = 'true';
-  nameInp.placeholder = 'Item name...';
   nameInp.style.cssText = 'flex:1;min-width:0;outline:none;font-size:12px;font-family:var(--font-body);color:var(--text);background:transparent;border:none;border-bottom:1px dashed var(--border);';
 
   const amtInp = document.createElement('input');
@@ -4273,14 +4278,8 @@ function addFSRowToSection(section, recalcFn){
   newRow.appendChild(confirmBtn);
   newRow.appendChild(cancelBtn);
 
-  // Insert BEFORE the last existing fs-row in the section (so new row appears above total)
-  const existingRows = fsSection.querySelectorAll('.fs-row');
-  const lastRow = existingRows[existingRows.length - 1];
-  if(lastRow && lastRow.parentElement === fsSection){
-    fsSection.insertBefore(newRow, lastRow.nextSibling);
-  } else {
-    fsSection.appendChild(newRow);
-  }
+  // Insert BEFORE the add button — so it appears right above the button
+  targetBtn.parentElement.insertBefore(newRow, targetBtn);
   nameInp.focus();
 
   confirmBtn.addEventListener('click', function(){
@@ -7660,13 +7659,29 @@ async function findOnlineMatch(){
     const s=MM.searchSeconds%60;
     const el=document.getElementById('mm-search-timer');
     if(el) el.textContent=m+':'+(s<10?'0':'')+s;
-    // After 30s show AI fallback hint
+    // After 30s show encouraging message
     if(MM.searchSeconds===30){
       const hint=document.getElementById('mm-search-hint');
-      if(hint) hint.textContent='Taking long... we\'ll match you with AI if no one found in 15s';
+      if(hint) hint.textContent='Still searching... share FinMentra with friends to find opponents faster! 🔗';
     }
-    // After 45s — play vs AI
-    if(MM.searchSeconds>=45) matchWithAI(category);
+    // After 60s show different message
+    if(MM.searchSeconds===60){
+      const hint=document.getElementById('mm-search-hint');
+      if(hint) hint.textContent='Hang tight! A real opponent is being found... ⏳';
+    }
+    // After 90s show option to cancel or wait
+    if(MM.searchSeconds===90){
+      const hint=document.getElementById('mm-search-hint');
+      if(hint) hint.innerHTML='No opponents found yet. <strong>Try again at peak hours (6-10 PM UAE)</strong> or invite a friend! 🌙';
+    }
+    // After 120s — stop searching, show message (NO AI fallback)
+    if(MM.searchSeconds>=120){
+      clearInterval(MM.searchTimer);
+      clearInterval(MM.searchInterval);
+      cancelMatchmaking(true);
+      showChallengeSection('lobby');
+      toast('No opponents online right now. Try again later or challenge a friend! 😊');
+    }
   },1000);
 
   // Subscribe to queue — watch for match
@@ -7680,14 +7695,14 @@ async function findOnlineMatch(){
       }
     ).subscribe();
 
-  // Also actively search for waiting opponent
-  MM.searchInterval = setInterval(()=>searchForOpponent(category), 2000);
+  // Also actively search for waiting opponent every 1.5 seconds
+  MM.searchInterval = setInterval(()=>searchForOpponent(category), 1500);
 }
 
 async function searchForOpponent(category){
   try{
-    // Only match with players who joined queue in last 30 seconds
-    const thirtySecAgo = new Date(Date.now()-30000).toISOString();
+    // Only match with players who joined queue in last 150 seconds
+    const thirtySecAgo = new Date(Date.now()-150000).toISOString();
     const {data:opponents} = await _supa.from('matchmaking_queue')
       .select('*')
       .eq('status','waiting')
@@ -7840,32 +7855,9 @@ function startCountdown(oppData){
 }
 
 function matchWithAI(category){
-  clearInterval(MM.searchInterval);
-  clearInterval(MM.searchTimer);
-  cancelMatchmaking(true);
-
-  // Fake AI opponent
-  const aiNames = ['IFRS Bot 🤖','Ledger AI 📊','Audit Pro 🔍','Tax Master 💰','Finance AI 📈'];
-  const aiOpp = {
-    player_name: aiNames[Math.floor(Math.random()*aiNames.length)],
-    player_rating: MM.myRating + Math.floor(Math.random()*100-50),
-  };
-
-  const questions = getChallengeQuestions(category, 10);
-  CH.challengeId = 'ai_'+Date.now();
-  CH.role = 'host';
-  CH.isAIMatch = true;
-  CH.questions = questions;
-  CH.myScore = 0; CH.opponentScore = 0;
-  CH.myAnswers = []; CH.opponentAnswers = [];
-  CH.currentQ = 0;
-
-  toast('No opponents found — playing vs AI!');
-  showOpponentFound(aiOpp);
-  setTimeout(()=>startCountdown(aiOpp), 1000);
-
-  // AI will auto-answer questions
-  simulateAIOpponent();
+  // Disabled — we only match with real users now
+  toast('No opponents found. Please try again later! 😊');
+  cancelMatchmaking(false);
 }
 
 function simulateAIOpponent(){
@@ -7903,11 +7895,11 @@ async function cancelMatchmaking(silent){
 // Clean up stale queue entries older than 60 seconds
 async function cleanStaleQueueEntries(){
   try{
-    const sixtySecAgo = new Date(Date.now()-60000).toISOString();
+    const threeMinAgo = new Date(Date.now()-180000).toISOString();
     await _supa.from('matchmaking_queue')
       .delete()
       .eq('status','waiting')
-      .lt('created_at', sixtySecAgo);
+      .lt('created_at', threeMinAgo);
   }catch(e){}
 }
 
