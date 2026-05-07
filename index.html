@@ -7220,10 +7220,15 @@ async function joinChallenge(){
     CH.challengeId = challenge.id;
     CH.code = code;
     CH.role = 'guest';
-    CH.questions = JSON.parse(challenge.questions||'[]');
+    CH.questions = typeof challenge.questions === 'string' ? JSON.parse(challenge.questions||'[]') : (challenge.questions||[]);
     CH.myScore = 0; CH.opponentScore = 0;
     CH.myAnswers = []; CH.opponentAnswers = [];
     CH.currentQ = 0;
+
+    if(!CH.questions || CH.questions.length === 0){
+      toast('Could not load questions. Please try again.','error');
+      return;
+    }
 
     // Subscribe and start battle
     subscribeToChallenge(challenge.id);
@@ -7728,14 +7733,36 @@ async function onMatchFound(challengeId, oppId, category, myRole, oppData, quest
   CH.myAnswers = []; CH.opponentAnswers = [];
   CH.currentQ = 0;
 
-  if(questions){
+  // Load questions — wait until done
+  if(questions && questions.length > 0){
     CH.questions = questions;
   } else {
-    const {data:ch} = await _supa.from('challenges').select('questions').eq('id',challengeId).single();
-    CH.questions = JSON.parse(ch?.questions||'[]');
+    // Fetch from Supabase with retry
+    let attempts = 0;
+    while(attempts < 5){
+      try{
+        const {data:ch} = await _supa.from('challenges').select('questions,host_name,guest_name').eq('id',challengeId).single();
+        if(ch && ch.questions){
+          CH.questions = typeof ch.questions === 'string' ? JSON.parse(ch.questions) : ch.questions;
+          if(!oppData) oppData = { player_name: myRole==='host' ? ch.guest_name : ch.host_name };
+          break;
+        }
+      }catch(e){}
+      attempts++;
+      await new Promise(r=>setTimeout(r,1000));
+    }
   }
 
-  // Show countdown
+  if(!CH.questions || CH.questions.length === 0){
+    toast('Could not load questions. Please try again.','error');
+    showChallengeSection('lobby');
+    return;
+  }
+
+  // Subscribe to realtime updates
+  subscribeToChallenge(challengeId);
+
+  // Show countdown then start
   await new Promise(r=>setTimeout(r,1500));
   startCountdown(oppData);
 }
