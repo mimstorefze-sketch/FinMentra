@@ -3306,8 +3306,9 @@ const SQ_CACHE = {};
 async function fetchQuestionsFromSupabase(category, count){
   if(typeof _supa === 'undefined'){ return null; }
   const cacheKey = category||'Mixed';
-  if(SQ_CACHE[cacheKey] && SQ_CACHE[cacheKey].length >= 3){
-    return SQ_CACHE[cacheKey].sort(()=>Math.random()-.5).slice(0,count);
+  // Cache per domain but always shuffle for variety
+  if(SQ_CACHE[cacheKey] && SQ_CACHE[cacheKey].length >= count){
+    return [...SQ_CACHE[cacheKey]].sort(()=>Math.random()-.5).slice(0,count);
   }
   try{
     // First try with category filter
@@ -3315,7 +3316,7 @@ async function fetchQuestionsFromSupabase(category, count){
     if(category && category !== 'Mixed'){
       query = query.eq('category', category);
     }
-    let {data, error} = await query.limit(200);
+    let {data, error} = await query.limit(500); // fetch more for better randomness
 
     // If no results with category filter — try without filter
     if((!data || data.length === 0) && category !== 'Mixed'){
@@ -3367,12 +3368,22 @@ async function startSession(){
     pool = supaQs;
     console.log('Using',pool.length,'Supabase questions');
   } else {
-    // Fallback to local QB
+    // Fallback to local QB — pull randomly from ALL standards in the domain
     console.log('Falling back to local QB for:',category);
     if(S.currentStandard && QB[S.currentStandard]){
       pool = [...QB[S.currentStandard]];
     } else {
-      pool = [...(QB_BY_DOMAIN[S.domain]||QB_BY_DOMAIN['IFRS']||[])];
+      const domainFilter = {
+        IFRS:    k => k.startsWith('IFRS'),
+        IAS:     k => k.startsWith('IAS'),
+        ISA:     k => k.startsWith('ISA'),
+        Costing: k => k.startsWith('MC'),
+        Tax:     k => k.startsWith('TX'),
+        FM:      k => k.startsWith('FM'),
+      };
+      const fn = domainFilter[S.domain];
+      if(fn){ Object.entries(QB).forEach(([k,qs])=>{ if(fn(k)&&Array.isArray(qs)) pool.push(...qs); }); }
+      if(pool.length === 0) pool = [...(QB_BY_DOMAIN[S.domain]||QB_BY_DOMAIN['IFRS']||[])];
     }
   }
   if(pool.length === 0){
@@ -3388,9 +3399,19 @@ async function startSession(){
 
 // Get questions for challenge — uses same Supabase pool as Arena
 async function getChallengeQuestionsAsync(category, count){
-  // Try Supabase first
-  const supaQs = await fetchQuestionsFromSupabase(category, count*2);
-  if(supaQs && supaQs.length >= 3){
+  // For Mixed, fetch from multiple domains to guarantee enough questions
+  let supaQs = [];
+  if(category === 'Mixed' || !category){
+    const domains = ['IFRS','IAS','ISA','Costing','Tax','FM'];
+    for(const d of domains){
+      const qs = await fetchQuestionsFromSupabase(d, Math.ceil(count/2));
+      if(qs) supaQs.push(...qs);
+      if(supaQs.length >= count * 2) break;
+    }
+  } else {
+    supaQs = await fetchQuestionsFromSupabase(category, count*2) || [];
+  }
+  if(supaQs.length >= 3){
     return supaQs.sort(()=>Math.random()-.5).slice(0,count);
   }
   // Fallback to local QB
@@ -6116,10 +6137,19 @@ const PATH_WORLDS = [
 // First 3 in every world are always open.
 // After that, each topic unlocks when the previous one is completed.
 function isTopicUnlocked(world, topicIndex){
-  if(topicIndex < 3) return true; // first 3 always open
-  // All topics from index 3 onward: unlock when the previous topic is completed
+  const ct = S.completedTopics || {};
+  // For worlds after W1: first topic only unlocks when prev world has ≥1 completion
+  const worldIdx = PATH_WORLDS.indexOf(world);
+  if(worldIdx > 0){
+    const prevWorld = PATH_WORLDS[worldIdx - 1];
+    const prevWorldHasCompletion = prevWorld.topics.some(t => ct[t.std]);
+    if(!prevWorldHasCompletion) return false; // whole world locked until prev world started
+  }
+  // First 3 topics in this world are open (once world is accessible)
+  if(topicIndex < 3) return true;
+  // Topics 4+ unlock one-by-one as previous is completed
   const prevStd = world.topics[topicIndex - 1].std;
-  return !!(S.completedTopics && S.completedTopics[prevStd]);
+  return !!ct[prevStd];
 }
 
 function getTopicStage(std, world, topicIndex){
@@ -6141,18 +6171,23 @@ function buildLearningPath(){
   container.innerHTML = '';
 
   PATH_WORLDS.forEach((world) => {
-    const completedCount = world.topics.filter(t => S.completedTopics && S.completedTopics[t.std]).length;
+    const ct = S.completedTopics || {};
+    const completedCount = world.topics.filter(t => ct[t.std]).length;
+    const worldIdx = PATH_WORLDS.indexOf(world);
+    const worldLocked = worldIdx > 0 && !PATH_WORLDS[worldIdx-1].topics.some(t => ct[t.std]);
     const worldEl = document.createElement('div');
     worldEl.className = 'path-world';
     worldEl.style.marginBottom = '14px';
+    if(worldLocked) worldEl.style.opacity = '0.55';
 
     worldEl.innerHTML = `
       <div class="world-header" style="background:${world.color};">
-        <div class="world-icon">${world.icon}</div>
+        <div class="world-icon">${worldLocked ? '🔒' : world.icon}</div>
         <div style="flex:1;">
           <div class="world-title">${world.title}</div>
-          <div class="world-sub">${completedCount} / ${world.topics.length} completed</div>
+          <div class="world-sub">${worldLocked ? 'Complete World '+(worldIdx)+' to unlock' : completedCount+' / '+world.topics.length+' completed'}</div>
         </div>
+        ${worldLocked ? '<span style="background:rgba(255,255,255,.2);padding:3px 10px;border-radius:999px;font-size:10px;color:#fff;font-weight:700;">LOCKED</span>' : ''}
       </div>
       <div class="path-nodes" id="world-nodes-${world.id}"></div>
       ${world.boss ? `
@@ -6668,7 +6703,7 @@ const _origAnswerQ=answerQ;
 </style>
 
 <!-- ══ MULTIPLAYER CHALLENGE SCREEN ══ -->
-<div class="screen" id="screen-multiplayer" style="padding-top:8px;">
+<div class="screen" id="screen-multiplayer" style="gap:0;padding:12px 14px;">
 
   <!-- LOBBY (choose create or join) -->
   <div id="ch-lobby">
@@ -6843,6 +6878,9 @@ const _origAnswerQ=answerQ;
       <div style="margin-top:8px;padding:12px;background:var(--bg);border-radius:10px;font-size:12px;color:var(--muted);text-align:center;">
         Category: <strong id="ch-wait-category">IFRS</strong> · <strong id="ch-wait-count">10</strong> Questions
       </div>
+      <button onclick="cancelWaiting()" style="width:100%;margin-top:12px;padding:12px;border-radius:12px;background:var(--red-l);color:var(--red);border:2px solid var(--red);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:6px;">
+        ✕ <span>Cancel / Quit</span>
+      </button>
     </div>
     <button class="ch-btn ch-btn-secondary" onclick="cancelChallenge()">Cancel</button>
   </div>
@@ -6878,8 +6916,12 @@ const _origAnswerQ=answerQ;
       <div id="battle-options"></div>
       <div id="battle-explanation" style="display:none;margin-top:12px;padding:12px;background:var(--blue-ll);border-radius:10px;font-size:12px;line-height:1.6;color:var(--navy);"></div>
     </div>
-    <!-- Forfeit button -->
-    <button onclick="forfeitChallenge()" style="width:100%;padding:10px;border-radius:10px;background:var(--red-l);color:var(--red);border:1px solid var(--red);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);margin-top:4px;">🏳️ Forfeit — counts as a loss</button>
+    <!-- Quit/Forfeit button — visible on all screen sizes -->
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button onclick="forfeitChallenge()" style="flex:1;padding:12px;border-radius:12px;background:var(--red-l);color:var(--red);border:2px solid var(--red);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:6px;">
+        🏳️ <span>Quit / Forfeit</span>
+      </button>
+    </div>
   </div>
 
   <!-- RESULTS SCREEN -->
@@ -7622,6 +7664,19 @@ function endChallenge(challengeData){
 
 function copyCode(){
   navigator.clipboard&&navigator.clipboard.writeText(CH.code).then(()=>toast('Code copied! Share it with your friend 🎉'));
+}
+
+function cancelWaiting(){
+  // Cancel the hosted challenge while still in waiting room
+  try{
+    if(CH.challengeId){
+      _supa.from('challenges').update({status:'cancelled'}).eq('id',CH.challengeId).then(()=>{});
+    }
+    if(CH.subscription){ CH.subscription.unsubscribe(); CH.subscription = null; }
+  }catch(e){}
+  CH.challengeId = null; CH.code = null; CH.role = null;
+  showChallengeSection('lobby');
+  toast('Challenge cancelled');
 }
 
 function forfeitChallenge(){
