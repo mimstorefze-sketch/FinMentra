@@ -3336,20 +3336,84 @@ function selectDomain(el,d){
   S.sessionQs=[];
   S.qIndex=0;
   S.answered=false;
-  startSession();
+  startSession(); // async — runs in background, loadQuestion called when ready
 }
-function startSession(){
-  let pool;
-  if(S.currentStandard&&QB[S.currentStandard]){pool=[...QB[S.currentStandard]];}
-  else{pool=[...(QB_BY_DOMAIN[S.domain]||QB_BY_DOMAIN['IFRS'])];}
-  if(pool.length===0){
-    const qt=document.getElementById('q-text');if(qt) qt.textContent='Questions for this standard coming soon!';
-    const opts=document.getElementById('options');if(opts) opts.innerHTML='';return;
+// ── SUPABASE QUESTION CACHE ──
+const SQ_CACHE = {}; // cache by category to avoid repeated fetches
+
+async function fetchQuestionsFromSupabase(category, count){
+  const cacheKey = category||'Mixed';
+  // Return cached if available and fresh
+  if(SQ_CACHE[cacheKey] && SQ_CACHE[cacheKey].length >= 3){
+    return SQ_CACHE[cacheKey].sort(()=>Math.random()-.5).slice(0,count);
   }
-  pool=[...pool].sort(()=>Math.random()-.5);
-  S.sessionQs=pool.slice(0,Math.min(8,pool.length));
-  S.qIndex=0;S.sessionQ=0;S.sessionCorrect=0;
+  try{
+    let query = _supa.from('questions').select('*');
+    // Filter by category if not Mixed
+    if(category && category !== 'Mixed'){
+      query = query.eq('category', category);
+    }
+    const {data, error} = await query.limit(200);
+    if(error){ console.log('Supabase questions error:',error); return null; }
+    if(!data || data.length === 0){ console.log('No questions in Supabase for:',category); return null; }
+    // Convert Supabase format to QB format
+    const converted = data.map(q=>({
+      q: q.question,
+      opts: [q.option_a, q.option_b, q.option_c, q.option_d],
+      correct: ['A','B','C','D'].indexOf(q.correct_answer),
+      explain: q.explanation||'',
+      standard: q.standard||''
+    })).filter(q=>q.correct >= 0 && q.q && q.opts[0]);
+    console.log('Loaded',converted.length,'questions from Supabase for category:',category);
+    // Cache it
+    SQ_CACHE[cacheKey] = converted;
+    return converted.sort(()=>Math.random()-.5).slice(0,count);
+  }catch(e){ console.log('Supabase fetch error:',e); return null; }
+}
+
+async function startSession(){
+  let pool = [];
+  // Show loading while fetching
+  const qt=document.getElementById('q-text');
+  const opts=document.getElementById('options');
+  if(qt) qt.textContent='Loading questions...';
+  if(opts) opts.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">⏳ Fetching questions...</div>';
+
+  // Try Supabase first
+  const category = S.domain || 'IFRS';
+  const supaQs = await fetchQuestionsFromSupabase(category, 20);
+  if(supaQs && supaQs.length >= 3){
+    pool = supaQs;
+    console.log('Using',pool.length,'Supabase questions');
+  } else {
+    // Fallback to local QB
+    console.log('Falling back to local QB for:',category);
+    if(S.currentStandard && QB[S.currentStandard]){
+      pool = [...QB[S.currentStandard]];
+    } else {
+      pool = [...(QB_BY_DOMAIN[S.domain]||QB_BY_DOMAIN['IFRS']||[])];
+    }
+  }
+  if(pool.length === 0){
+    if(qt) qt.textContent='Questions for this standard coming soon!';
+    if(opts) opts.innerHTML='';
+    return;
+  }
+  pool = [...pool].sort(()=>Math.random()-.5);
+  S.sessionQs = pool.slice(0, Math.min(8, pool.length));
+  S.qIndex=0; S.sessionQ=0; S.sessionCorrect=0;
   loadQuestion();
+}
+
+// Get questions for challenge — uses same Supabase pool as Arena
+async function getChallengeQuestionsAsync(category, count){
+  // Try Supabase first
+  const supaQs = await fetchQuestionsFromSupabase(category, count*2);
+  if(supaQs && supaQs.length >= 3){
+    return supaQs.sort(()=>Math.random()-.5).slice(0,count);
+  }
+  // Fallback to local QB
+  return getChallengeQuestions(category, count);
 }
 function buildProgressDots(){
   const dots=document.getElementById('prog-dots');if(!dots) return;
@@ -6571,7 +6635,7 @@ const _origAnswerQ=answerQ;
 </style>
 
 <!-- ══ MULTIPLAYER CHALLENGE SCREEN ══ -->
-<div class="screen" id="screen-multiplayer">
+<div class="screen" id="screen-multiplayer" style="padding-top:8px;">
 
   <!-- LOBBY (choose create or join) -->
   <div id="ch-lobby">
@@ -6781,6 +6845,8 @@ const _origAnswerQ=answerQ;
       <div id="battle-options"></div>
       <div id="battle-explanation" style="display:none;margin-top:12px;padding:12px;background:var(--blue-ll);border-radius:10px;font-size:12px;line-height:1.6;color:var(--navy);"></div>
     </div>
+    <!-- Forfeit button -->
+    <button onclick="forfeitChallenge()" style="width:100%;padding:10px;border-radius:10px;background:var(--red-l);color:var(--red);border:1px solid var(--red);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);margin-top:4px;">🏳️ Forfeit — counts as a loss</button>
   </div>
 
   <!-- RESULTS SCREEN -->
@@ -7133,34 +7199,51 @@ function getChallengeQuestions(category, count){
   let pool = [];
   // Try QB_BY_DOMAIN first
   if(category === 'Mixed' || !category){
-    // Get all questions from all domains
     if(QB_BY_DOMAIN){
       Object.values(QB_BY_DOMAIN).forEach(qs=>{ if(Array.isArray(qs)) pool.push(...qs); });
     }
-    if(pool.length === 0) Object.values(QB).forEach(qs=>pool.push(...qs));
+    if(pool.length === 0) Object.values(QB).forEach(qs=>{ if(Array.isArray(qs)) pool.push(...qs); });
   } else if(QB_BY_DOMAIN && QB_BY_DOMAIN[category] && QB_BY_DOMAIN[category].length > 0){
     pool = [...QB_BY_DOMAIN[category]];
   } else {
-    // Filter QB by standard prefix
     Object.entries(QB).forEach(([std,qs])=>{
-      if(std.startsWith(category)) pool.push(...qs);
+      if(std.startsWith(category) && Array.isArray(qs)) pool.push(...qs);
     });
   }
-  // Final fallback — use ALL questions from QB
+  // Final fallback — use ALL questions
   if(pool.length === 0){
-    Object.values(QB).forEach(qs=>pool.push(...qs));
+    Object.values(QB).forEach(qs=>{ if(Array.isArray(qs)) pool.push(...qs); });
   }
-  // Shuffle and return serializable objects
-  return pool
-    .sort(()=>Math.random()-.5)
-    .slice(0, parseInt(count)||10)
-    .map(q=>({
-      q: q.q||q.question||'',
-      opts: q.opts||q.options||[],
-      correct: typeof q.correct==='number'?q.correct:0,
-      explain: q.explain||q.explanation||''
-    }))
-    .filter(q=>q.q && q.opts && q.opts.length===4); // only valid questions
+  // Shuffle
+  pool = pool.sort(()=>Math.random()-.5);
+  // Slice and make serializable plain objects
+  const result = [];
+  for(let i=0; i<pool.length && result.length<parseInt(count||10); i++){
+    const q = pool[i];
+    if(!q) continue;
+    const question = q.q || q.question || '';
+    const opts = q.opts || q.options || [];
+    const correct = typeof q.correct==='number' ? q.correct : 0;
+    if(question && Array.isArray(opts) && opts.length===4){
+      result.push({
+        q: question,
+        opts: opts.map(o=>String(o)),
+        correct: correct,
+        explain: String(q.explain||q.explanation||'')
+      });
+    }
+  }
+  // If still empty use hardcoded fallback questions
+  if(result.length === 0){
+    return [
+      {q:'Under IFRS 15, revenue is recognised when:',opts:['Cash is received','Control transfers to customer','Invoice is issued','Contract is signed'],correct:1,explain:'IFRS 15 requires revenue recognition when control transfers.'},
+      {q:'Under IAS 16, revaluation gains are recognised in:',opts:['P&L','Other Comprehensive Income','Retained earnings','Share capital'],correct:1,explain:'Revaluation gains go to OCI and accumulate in revaluation surplus.'},
+      {q:'IFRS 16 requires lessees to recognise:',opts:['Operating lease expense only','Right-of-use asset and lease liability','Nothing for short-term leases','Only finance leases'],correct:1,explain:'IFRS 16 requires recognition of ROU asset and lease liability for most leases.'},
+      {q:'Under IAS 36, recoverable amount is:',opts:['Lower of FV and VIU','Higher of FVLCD and VIU','Carrying amount','Replacement cost'],correct:1,explain:'Recoverable amount is the HIGHER of fair value less costs of disposal and value in use.'},
+      {q:'Under IAS 37, a provision is recognised when:',opts:['Management decides','Future loss expected','Present obligation, probable outflow, reliable estimate','Auditor requires it'],correct:2,explain:'All three criteria must be met: present obligation, probable outflow, reliable estimate.'},
+    ];
+  }
+  return result;
 }
 
 // ── CREATE CHALLENGE ──
@@ -7168,8 +7251,8 @@ async function createChallenge(){
   const category = document.getElementById('ch-create-category').value;
   const count = document.getElementById('ch-create-count').value;
   const code = generateCode();
-  const questions = getChallengeQuestions(category, count);
-  const myName = _currentUser ? ('User ' + _currentUser.id.substring(0,6)) : 'Guest';
+  const questions = await getChallengeQuestionsAsync(category, parseInt(count));
+  const myName = getMyDisplayName();
 
   try{
     const {data, error} = await _supa.from('challenges').insert({
@@ -7506,6 +7589,54 @@ function copyCode(){
   navigator.clipboard&&navigator.clipboard.writeText(CH.code).then(()=>toast('Code copied! Share it with your friend 🎉'));
 }
 
+function forfeitChallenge(){
+  const box = document.createElement('div');
+  box.style.cssText='position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+  box.innerHTML=`<div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+    <div style="font-size:40px;margin-bottom:12px;">🏳️</div>
+    <div style="font-size:18px;font-weight:700;color:#DC2626;margin-bottom:8px;">Forfeit Match?</div>
+    <div style="font-size:13px;color:#64748B;margin-bottom:24px;line-height:1.5;">This counts as a <strong style="color:#DC2626;">loss</strong> and your rating will drop.<br>Your opponent wins automatically.</div>
+    <button onclick="confirmForfeit();this.closest('div[style]').remove();" style="width:100%;padding:12px;border-radius:12px;background:#DC2626;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;">Yes, Forfeit</button>
+    <button onclick="this.closest('div[style]').remove();" style="width:100%;padding:10px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;">Keep Playing</button>
+  </div>`;
+  document.body.appendChild(box);
+}
+
+async function confirmForfeit(){
+  clearInterval(CH.timerInterval);
+  if(CH.subscription) CH.subscription.unsubscribe();
+  // Update Supabase — mark as finished, forfeiter loses
+  if(CH.challengeId && !CH.challengeId.startsWith('ai_')){
+    try{
+      const updateData = {
+        status:'finished',
+        finished_at: new Date().toISOString(),
+        winner: CH.role==='host' ? 'guest' : 'host',
+      };
+      // Set forfeiter score to 0
+      if(CH.role==='host') updateData.host_score = 0;
+      else updateData.guest_score = 999;
+      await _supa.from('challenges').update(updateData).eq('id',CH.challengeId);
+    }catch(e){}
+  }
+  // Remove from queue
+  if(MM.myPlayerId){
+    try{ await _supa.from('matchmaking_queue').delete().eq('player_id',MM.myPlayerId); }catch(e){}
+  }
+  // Record as loss
+  CH.losses = (CH.losses||0)+1;
+  CH.winStreak = 0;
+  saveChallengeStats();
+  // Update rating
+  if(CH.isOnlineMatch) await updatePlayerRating('loss', 1200);
+  // Show results as loss
+  S.xp += 25; S.coins += 5;
+  updateHUD(); saveState();
+  showChallengeSection('lobby');
+  loadChallengeStats();
+  toast('Match forfeited — counted as a loss 🏳️');
+}
+
 function cancelChallenge(){
   if(CH.challengeId){
     _supa.from('challenges').update({status:'cancelled'}).eq('id',CH.challengeId);
@@ -7721,8 +7852,8 @@ async function searchForOpponent(category){
     clearInterval(MM.searchInterval);
     clearInterval(MM.searchTimer);
 
-    // Create challenge with questions
-    const questions = getChallengeQuestions(category, 10);
+    // Create challenge with questions from Supabase or local QB
+    const questions = await getChallengeQuestionsAsync(category, 10);
     const {data:challenge,error} = await _supa.from('challenges').insert({
       code: generateCode(),
       host_id: MM.myPlayerId,
@@ -7817,9 +7948,9 @@ async function onMatchFound(challengeId, oppId, category, myRole, oppData, quest
       attempts++;
       await new Promise(r=>setTimeout(r,800));
     }
-    // Still no questions? Generate locally
+    // Still no questions? Generate using async fetch
     if(!CH.questions || CH.questions.length===0){
-      CH.questions = getChallengeQuestions(category||'Mixed', 10);
+      CH.questions = await getChallengeQuestionsAsync(category||'Mixed', 10);
     }
   }
 
