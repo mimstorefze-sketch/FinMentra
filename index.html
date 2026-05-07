@@ -3349,28 +3349,41 @@ function selectDomain(el,d){
 const SQ_CACHE = {};
 
 async function fetchQuestionsFromSupabase(category, count){
-  // Wait for _supa to be available
-  if(typeof _supa === 'undefined'){
-    console.log('Supabase not ready yet');
-    return null;
-  }
+  if(typeof _supa === 'undefined'){ return null; }
   const cacheKey = category||'Mixed';
   if(SQ_CACHE[cacheKey] && SQ_CACHE[cacheKey].length >= 3){
     return SQ_CACHE[cacheKey].sort(()=>Math.random()-.5).slice(0,count);
   }
   try{
+    // First try with category filter
     let query = _supa.from('questions').select('*');
     if(category && category !== 'Mixed'){
       query = query.eq('category', category);
     }
-    const {data, error} = await query.limit(200);
-    if(error){ 
+    let {data, error} = await query.limit(200);
+
+    // If no results with category filter — try without filter
+    if((!data || data.length === 0) && category !== 'Mixed'){
+      console.log('No questions for category "'+category+'" — trying all questions');
+      const result = await _supa.from('questions').select('*').limit(200);
+      data = result.data;
+      error = result.error;
+    }
+
+    if(error){
       console.log('Supabase questions error code:', error.code);
       console.log('Supabase questions error message:', error.message);
       console.log('Supabase questions error details:', error.details);
-      return null; 
+      return null;
     }
-    if(!data || data.length === 0){ console.log('No questions in Supabase for:',category); return null; }
+    if(!data || data.length === 0){
+      console.log('No questions in Supabase for:', category);
+      return null;
+    }
+    // Log what categories exist to help debug
+    const cats = [...new Set(data.map(q=>q.category))];
+    console.log('✅ Found',data.length,'questions. Categories in DB:',cats);
+
     const converted = data.map(q=>({
       q: q.question,
       opts: [q.option_a, q.option_b, q.option_c, q.option_d],
@@ -3378,7 +3391,7 @@ async function fetchQuestionsFromSupabase(category, count){
       explain: q.explanation||'',
       standard: q.standard||''
     })).filter(q=>q.correct >= 0 && q.q && q.opts[0]);
-    console.log('✅ Loaded',converted.length,'questions from Supabase for:',category);
+
     SQ_CACHE[cacheKey] = converted;
     return converted.sort(()=>Math.random()-.5).slice(0,count);
   }catch(e){ console.log('Supabase fetch error:',e); return null; }
@@ -7082,7 +7095,11 @@ async function loadUserProgress() {
 
 // ── SAVE USER PROGRESS TO SUPABASE ──
 async function saveUserProgress() {
-  if(!_currentUser) { saveState(); return; }
+  if(!_currentUser) { 
+    // Not logged in — just use localStorage (already done by saveState)
+    // DO NOT call saveState here — would cause infinite loop
+    return; 
+  }
   try {
     await _supa.from('user_progress').upsert({
       user_id: _currentUser.id,
