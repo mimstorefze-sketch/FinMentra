@@ -7672,7 +7672,7 @@ async function searchForOpponent(category){
     clearInterval(MM.searchInterval);
     clearInterval(MM.searchTimer);
 
-    // Create challenge
+    // Create challenge with questions
     const questions = getChallengeQuestions(category, 10);
     const {data:challenge,error} = await _supa.from('challenges').insert({
       code: generateCode(),
@@ -7682,7 +7682,7 @@ async function searchForOpponent(category){
       guest_name: opp.player_name,
       status:'active',
       total_questions:10,
-      questions:JSON.stringify(questions),
+      questions: JSON.stringify(questions),
       category,
       started_at:new Date().toISOString(),
     }).select().single();
@@ -7725,7 +7725,6 @@ function showOpponentFound(opp){
 }
 
 async function onMatchFound(challengeId, oppId, category, myRole, oppData, questions){
-  // Set CH state
   CH.challengeId = challengeId;
   CH.role = myRole;
   CH.isOnlineMatch = true;
@@ -7733,37 +7732,50 @@ async function onMatchFound(challengeId, oppId, category, myRole, oppData, quest
   CH.myAnswers = []; CH.opponentAnswers = [];
   CH.currentQ = 0;
 
-  // Load questions — wait until done
+  // If questions passed directly — use them
   if(questions && questions.length > 0){
     CH.questions = questions;
   } else {
-    // Fetch from Supabase with retry
+    // Generate fresh questions locally using same category
+    // This ensures both players always have questions
+    CH.questions = getChallengeQuestions(category||'Mixed', 10);
+  }
+
+  // Also update Supabase with questions so opponent gets them
+  if(myRole === 'host'){
+    try{
+      await _supa.from('challenges').update({
+        questions: JSON.stringify(CH.questions)
+      }).eq('id', challengeId);
+    }catch(e){}
+  } else {
+    // Guest — try to get host's questions first, fallback to local
     let attempts = 0;
-    while(attempts < 5){
+    while(attempts < 3){
       try{
-        const {data:ch} = await _supa.from('challenges').select('questions,host_name,guest_name').eq('id',challengeId).single();
+        const {data:ch} = await _supa.from('challenges')
+          .select('questions,host_name,guest_name')
+          .eq('id', challengeId).single();
         if(ch && ch.questions){
-          CH.questions = typeof ch.questions === 'string' ? JSON.parse(ch.questions) : ch.questions;
-          if(!oppData) oppData = { player_name: myRole==='host' ? ch.guest_name : ch.host_name };
-          break;
+          const parsed = typeof ch.questions==='string'?JSON.parse(ch.questions):ch.questions;
+          if(parsed && parsed.length > 0){
+            CH.questions = parsed;
+            if(!oppData) oppData = {player_name: ch.host_name};
+            break;
+          }
         }
       }catch(e){}
       attempts++;
-      await new Promise(r=>setTimeout(r,1000));
+      await new Promise(r=>setTimeout(r,800));
+    }
+    // Still no questions? Generate locally
+    if(!CH.questions || CH.questions.length===0){
+      CH.questions = getChallengeQuestions(category||'Mixed', 10);
     }
   }
 
-  if(!CH.questions || CH.questions.length === 0){
-    toast('Could not load questions. Please try again.','error');
-    showChallengeSection('lobby');
-    return;
-  }
-
-  // Subscribe to realtime updates
   subscribeToChallenge(challengeId);
-
-  // Show countdown then start
-  await new Promise(r=>setTimeout(r,1500));
+  await new Promise(r=>setTimeout(r,1000));
   startCountdown(oppData);
 }
 
