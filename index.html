@@ -1534,14 +1534,14 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <div class="hw-stat"><div class="hw-stat-val" id="stat-best">0</div><div class="hw-stat-lbl">Best streak</div></div>
     </div>
   </div>
-  <div class="rival-card">
+  <div class="rival-card" id="rival-card" style="display:none;">
     <div class="rival-header">
-      <div class="rival-avatar">👨</div>
-      <div><div class="rival-name">Weekly rival: Hamza Q.</div><div class="rival-vs">Resets Monday</div></div>
-      <span class="pill pill-red" style="margin-left:auto;">Behind 🔴</span>
+      <div class="rival-avatar" id="rival-avatar">👨</div>
+      <div><div class="rival-name" id="rival-name">Weekly Rival</div><div class="rival-vs">Resets Monday</div></div>
+      <span class="pill" id="rival-pill" style="margin-left:auto;"></span>
     </div>
-    <div style="font-size:10px;color:var(--muted);margin-bottom:4px;">You — 0 XP vs 340 XP</div>
-    <div class="rival-bar"><span style="width:0%;"></span></div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:4px;" id="rival-xp-text">Loading...</div>
+    <div class="rival-bar"><span id="rival-bar-fill" style="width:0%;"></span></div>
   </div>
   <!-- TYPEWRITER GREETING (JS will replace this) -->
   <!-- Already handled by hw-greeting with getMoodGreeting() -->
@@ -1642,10 +1642,9 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div class="sec-label">Daily Missions</div>
   <div class="card" style="padding:14px;">
     <div style="display:flex;justify-content:space-between;margin-bottom:9px;"><span style="font-size:12px;font-weight:700;color:var(--navy);">Today's missions</span><span style="font-size:10px;color:var(--muted);font-family:var(--font-mono);">Resets in 14h</span></div>
-    <div class="mission-card"><div class="mission-icon">🏛️</div><div class="mission-info"><div class="mission-title">Answer 10 questions</div><div class="mission-sub">3 / 10 completed</div><div class="bar"><span style="width:30%;"></span></div></div><div class="mission-reward"><div class="mission-xp">+50 XP</div></div></div>
-    <div class="mission-card"><div class="mission-icon">🔥</div><div class="mission-info"><div class="mission-title">Build a 5-answer streak</div><div class="mission-sub">0 / 5 in a row</div><div class="bar"><span style="width:0%;background:var(--gold);"></span></div></div><div class="mission-reward"><div class="mission-xp">+30 XP</div></div></div>
-    <div class="mission-card"><div class="mission-icon">✅</div><div class="mission-info"><div class="mission-title">Beat your accuracy record</div><div class="mission-sub">Current best: —%</div><div class="bar"><span style="width:0%;background:var(--green);"></span></div></div><div class="mission-reward">⬜</div></div>
-  </div>
+    <div class="mission-card"><div class="mission-icon">🏛️</div><div class="mission-info"><div class="mission-title">Answer 10 questions</div><div class="mission-sub" id="mission-q-sub">0 / 10 completed</div><div class="bar"><span id="mission-q-bar" style="width:0%;"></span></div></div><div class="mission-reward"><div class="mission-xp">+50 XP</div></div></div>
+    <div class="mission-card"><div class="mission-icon">🔥</div><div class="mission-info"><div class="mission-title">Build a 5-answer streak</div><div class="mission-sub" id="mission-s-sub">0 / 5 in a row</div><div class="bar"><span id="mission-s-bar" style="width:0%;background:var(--gold);"></span></div></div><div class="mission-reward"><div class="mission-xp">+30 XP</div></div></div>
+    <div class="mission-card"><div class="mission-icon">✅</div><div class="mission-info"><div class="mission-title">Beat your accuracy record</div><div class="mission-sub" id="mission-a-sub">Current best: —%</div><div class="bar"><span id="mission-a-bar" style="width:0%;background:var(--green);"></span></div></div><div class="mission-reward">⬜</div></div>  </div>
   <div class="sec-label">Quick Access</div>
   <div class="qa-grid">
     <div class="qa-card blue" onclick="showScreen('practice')"><div class="qa-icon">🏛️</div><div class="qa-title">The Arena</div><div class="qa-sub">MCQ practice</div></div>
@@ -1654,13 +1653,12 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div class="qa-card teal" onclick="showTimeAttack()"><div class="qa-icon">⚡</div><div class="qa-title">Time Attack</div><div class="qa-sub">3-minute sprint</div></div>
     <div class="qa-card gold" onclick="showScreen('askai')"><div class="qa-icon">🤖</div><div class="qa-title">Ask the AI</div><div class="qa-sub">Chat any standard</div><div class="qa-lock">3/day</div></div>
     <div class="qa-card green" onclick="showScreen('vault')"><div class="qa-icon">🗄️</div><div class="qa-title">Mistake Vault</div><div class="qa-sub">Conquer weak spots</div></div>
+    <div class="qa-card" style="border-bottom-color:var(--purple);" onclick="showScreen('multiplayer')"><div class="qa-icon">⚔️</div><div class="qa-title">Challenge a Friend</div><div class="qa-sub">Beat them in a live quiz!</div></div>
   </div>
   <div class="sec-label">Global Leaderboard</div>
   <div class="card">
     <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;"><span style="font-size:12px;font-weight:700;color:var(--navy);">Top this week</span><div class="lb-live" style="margin-left:auto;"></div><span style="font-size:9px;color:var(--muted);">LIVE</span></div>
-    <div class="lb-row"><div class="lb-rank gold">◆</div><div class="lb-av">👩</div><div class="lb-name"><b>Sarah Al-Rashidi</b><span>Distinguished</span></div><div class="lb-live"></div><div class="lb-xp">4,820 XP</div></div>
-    <div class="lb-row"><div class="lb-rank silver">2</div><div class="lb-av">👨</div><div class="lb-name"><b>Hamza Qureshi</b><span>Qualified</span></div><div class="lb-xp">4,210 XP</div></div>
-    <div class="lb-row"><div class="lb-rank bronze">3</div><div class="lb-av">👩</div><div class="lb-name"><b>Priya Nair</b><span>Associate</span></div><div class="lb-live"></div><div class="lb-xp">3,990 XP</div></div>
+    <div id="leaderboard-list"><div style="text-align:center;padding:20px;color:var(--muted);font-size:12px;">Loading leaderboard...</div></div>
   </div>
 
   <!-- Educational Disclaimer -->
@@ -1820,20 +1818,16 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 <!-- ══ MISTAKE VAULT ══ -->
 <div class="screen" id="screen-vault">
   <div class="statgrid">
-    <div class="card" style="padding:10px;text-align:center;"><b style="font-family:var(--font-mono);font-size:22px;">12</b><span style="font-size:10px;color:var(--steel);text-transform:uppercase;">In vault</span></div>
-    <div class="card" style="padding:10px;text-align:center;"><b style="font-family:var(--font-mono);font-size:22px;">8</b><span style="font-size:10px;color:var(--steel);text-transform:uppercase;">Conquered</span></div>
-    <div class="card" style="padding:10px;text-align:center;"><b style="font-family:var(--font-mono);font-size:22px;">4</b><span style="font-size:10px;color:var(--steel);text-transform:uppercase;">Remaining</span></div>
+    <div class="card" style="padding:10px;text-align:center;"><b style="font-family:var(--font-mono);font-size:22px;" id="vault-total">0</b><span style="font-size:10px;color:var(--steel);text-transform:uppercase;">In vault</span></div>
+    <div class="card" style="padding:10px;text-align:center;"><b style="font-family:var(--font-mono);font-size:22px;" id="vault-conquered">0</b><span style="font-size:10px;color:var(--steel);text-transform:uppercase;">Conquered</span></div>
+    <div class="card" style="padding:10px;text-align:center;"><b style="font-family:var(--font-mono);font-size:22px;" id="vault-remaining">0</b><span style="font-size:10px;color:var(--steel);text-transform:uppercase;">Remaining</span></div>
   </div>
-  <div class="empty-state" id="vault-empty" style="display:none;">
+  <div id="vault-empty-state" class="empty-state">
     <div class="empty-state-icon">🗄️</div>
-    <div class="empty-state-title">Vault is empty</div>
-    <div class="empty-state-sub">Answer questions to fill your vault. Wrong answers appear here for targeted review.</div>
+    <div class="empty-state-title">Vault is empty!</div>
+    <div class="empty-state-sub">Answer questions to fill it — wrong answers go here for targeted review.</div>
   </div>
-  <button class="btn btn-primary btn-block" onclick="startTopicPractice('IFRS 15')">⚔️ Start Vault Session</button>
-  <div id="vault-empty-state" style="display:none;" class="empty-state"><div class="empty-state-icon">🗄️</div><div class="empty-state-title">Vault is empty!</div><div class="empty-state-sub">Answer questions to fill it — wrong answers go here for spaced review.</div></div>
-  <div class="vault-row vault-stack"><div class="row between"><span class="pill pill-navy">IFRS 15</span><div class="dots3"><i class="on"></i><i></i><i></i></div></div><div style="font-size:13px;">When a customer pays upfront for a 3-year SaaS contract, how is it treated?</div></div>
-  <div class="vault-row conquered"><div class="row between"><span class="pill pill-navy">IAS 36</span><span class="pill pill-green">✓ CONQUERED</span></div><div style="font-size:13px;">An impairment loss should be reversed for goodwill when…</div></div>
-  <div class="vault-row vault-stack"><div class="row between"><span class="pill pill-navy">IFRS 16</span><div class="dots3"><i></i><i></i><i></i></div></div><div style="font-size:13px;">The lease liability is initially measured at…</div></div>
+  <div id="vault-items"></div>
 </div>
 
 <!-- ══ AI CHAT ══ -->
@@ -2846,7 +2840,7 @@ const S = {
   totalQ:0, totalCorrect:0,
   sessionQ:0, sessionCorrect:0,
   answered:false, qIndex:0, sessionQs:[],
-  domain:'IFRS', currentStandard:'IFRS 15',
+  domain:'IFRS', currentStandard:null,
   bookmarks:new Set(),
   hearts:3, maxHearts:3,
   darkMode:false,
@@ -3102,7 +3096,7 @@ const JE_SCENARIOS_BY_CAT={all:Object.keys(JE_DATA),IFRS:Object.keys(JE_DATA).fi
 let currentJECat='all';
 
 // ── SCREEN NAV ──
-const STUDENT_TABS=[{id:'home',icon:'🏠',label:'Home'},{id:'topics',icon:'📚',label:'Topics'},{id:'practice',icon:'🏛️',label:'Arena'},{id:'askai',icon:'🤖',label:'AI Chat'},{id:'progress',icon:'🗺️',label:'Path'},{id:'profile',icon:'👤',label:'Profile'}];
+const STUDENT_TABS=[{id:'home',icon:'🏠',label:'Home'},{id:'topics',icon:'📚',label:'Topics'},{id:'practice',icon:'🏛️',label:'Arena'},{id:'multiplayer',icon:'⚔️',label:'Challenge'},{id:'progress',icon:'🗺️',label:'Path'},{id:'profile',icon:'👤',label:'Profile'}];
 const PRO_TABS=[{id:'pro-home',icon:'🏠',label:'Home'},{id:'quickref',icon:'📋',label:'Reference'},{id:'fsbuilder',icon:'📊',label:'Stmts'},{id:'cpd',icon:'📜',label:'CPD'},{id:'profile',icon:'👤',label:'Profile'}];
 
 function renderBottomNav(){
@@ -3113,14 +3107,13 @@ function renderBottomNav(){
 
 function showScreen(id){
   S.prevScreen=S.screen||'home';
-  // Slide out current screen
   const current=document.querySelector('.screen.active');
   if(current) current.classList.remove('active');
   const target=document.getElementById('screen-'+id);
   if(target){
     target.classList.add('active');
     target.classList.remove('slide-in');
-    void target.offsetWidth; // force reflow
+    void target.offsetWidth;
     target.classList.add('slide-in');
     setTimeout(()=>target.classList.remove('slide-in'),300);
     target.scrollTop=0;
@@ -3130,28 +3123,41 @@ function showScreen(id){
   hapticFeedback('light');
   const nci2=document.getElementById('nav-coin-icon');if(nci2) nci2.innerHTML=coinSVG(14);
   window.scrollTo(0,0);
+  // Dynamic screen updates
+  if(id==='home'){ updateMissions(); loadLeaderboard(); }
+  if(id==='vault'){ renderVault(); }
 }
 
 function switchMode(mode){
   if(mode === S.mode) return;
   const toLabel = mode === 'professional' ? '💼 Professional' : '🎓 Student';
   showModeConfirm(toLabel, function(){
+    // Reset practice state so no stale standard shows
+    S.currentStandard = null;
+    S.sessionQs = [];
+    S.qIndex = 0;
+    S.answered = false;
     S.mode = mode;
     // Sync button UI
     const sBtn = document.getElementById('ms-student');
     const pBtn = document.getElementById('ms-pro');
     if(sBtn) sBtn.classList.toggle('active', mode==='student');
     if(pBtn) pBtn.classList.toggle('active', mode==='professional');
-    // Navigate
+    // Navigate to correct home screen
     if(mode === 'professional'){
-      showScreen('pro-home');
       const pg = document.getElementById('pro-greeting');
       if(pg) pg.textContent = getMoodGreeting(true);
+      showScreen('pro-home');
     } else {
       showScreen('home');
+      // Reset practice to fresh state for student mode
+      S.currentStandard = null;
+      S.domain = 'IFRS';
+      setTimeout(()=>{ if(typeof startSession==='function') startSession(); }, 200);
     }
     renderBottomNav();
     saveState();
+    toast('Switched to ' + toLabel + ' mode');
   }, function(){
     // Cancelled — revert button UI to match current state
     const sBtn = document.getElementById('ms-student');
@@ -3474,7 +3480,21 @@ function answerQ(idx,btn,q){
     }
   }
   S.totalQ++;S.sessionQ++;
-  updateHUD();updateSessionBar();
+  // Track today's questions for missions
+  S.todayQ = (S.todayQ||0) + 1;
+  // Add wrong answers to vault
+  if(idx !== q.correct){
+    if(!S.mistakeVault) S.mistakeVault = [];
+    const alreadyIn = S.mistakeVault.some(v=>v.question===q.q);
+    if(!alreadyIn){
+      S.mistakeVault.push({
+        standard: S.currentStandard||S.domain,
+        question: q.q,
+        conquered: false
+      });
+    }
+  }
+  updateHUD();updateSessionBar();updateMissions();
   const sq=document.getElementById('stat-q');if(sq) sq.textContent=S.totalQ;
   const sb=document.getElementById('stat-best');if(sb) sb.textContent=S.bestStreak;
   if(S.totalQ>0){const sa=document.getElementById('stat-acc');if(sa) sa.textContent=Math.round(S.totalCorrect/S.totalQ*100)+'%';}
@@ -3931,38 +3951,151 @@ function sendChat(){
   typing.appendChild(tBubble);
   msgs.appendChild(typing);
   msgs.scrollTop=msgs.scrollHeight;
-  // Build response
-  const lower=msg.toLowerCase();
-  let response='';
-  if(lower.includes('ifrs 15')||lower.includes('revenue')){
-    response='<strong>IFRS 15 — Revenue Recognition</strong><br>Revenue recognised when CONTROL transfers. 5-step model: Identify contract, POs, Price, Allocate, Recognise.<br><small style="color:var(--muted);">Key paragraphs: Para 9, Para 31, Para 73, Para 105</small>';
-  } else if(lower.includes('ifrs 16')||lower.includes('lease')){
-    response='<strong>IFRS 16 Para 22 — Leases</strong><br>Lessees recognise a Right-of-Use asset and a Lease Liability at the PV of lease payments. The old operating lease off-balance-sheet treatment no longer applies for lessees.';
-  } else if(lower.includes('ifrs 9')||lower.includes('ecl')||lower.includes('credit')){
-    response='<strong>IFRS 9 Para 5.5 — ECL Model</strong><br>Stage 1: 12-month ECL (no SICR). Stage 2: Lifetime ECL (SICR since origination). Stage 3: Lifetime ECL (credit-impaired). Formula: ECL = PD x LGD x EAD.';
-  } else if(lower.includes('ias 36')||lower.includes('impair')||lower.includes('goodwill')){
-    response='<strong>IAS 36 Para 18 — Impairment</strong><br>Recoverable amount = HIGHER of (a) Fair Value Less Costs of Disposal and (b) Value in Use. Goodwill is tested annually. Goodwill impairment is NEVER reversed.';
-  } else if(lower.includes('ias 37')||lower.includes('provision')){
-    response='<strong>IAS 37 Para 14 — Provisions</strong><br>All 3 criteria must be met: (1) Present obligation from past event, (2) Probable outflow, (3) Reliable estimate. Cannot provision for future operating losses.';
-  } else if(lower.includes('wacc')){
-    response='<strong>WACC Formula</strong><br>WACC = Ke x E/(D+E) + Kd(1-t) x D/(D+E)<br>Where Ke = cost of equity via CAPM, Kd = cost of debt, t = tax rate. Used as NPV discount rate.';
-  } else if(lower.includes('ias 16')||lower.includes('ppe')||lower.includes('depreciat')){
-    response='<strong>IAS 16 — Property, Plant & Equipment</strong><br>Measured at cost (or revaluation model). Depreciation = (Cost - Residual Value) / Useful Life. Training costs are NEVER capitalised. Revaluation gains go to OCI.';
-  } else if(lower.includes('ias 12')||lower.includes('deferred tax')){
-    response='<strong>IAS 12 — Deferred Tax</strong><br>DTL arises when Carrying Amount > Tax Base (taxable temp difference). DTA arises when CA < Tax Base (deductible temp difference). Measure at rate expected when diff reverses.';
-  } else {
-    response='Under the standard you mentioned, the key principle is that substance over form applies. Would you like me to explain a specific aspect? Try asking about IFRS 15, IFRS 16, IFRS 9, IAS 36, or IAS 37 for detailed explanations.';
-  }
-  setTimeout(function(){
+  // Call Claude API
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:1000,
+      system:'You are Mr. Ledger AI, an expert finance and accounting tutor for FinMentra. You help students understand IFRS, IAS, ISA, Tax, Costing, and Financial Management standards. Give concise, exam-focused answers. Use bold for key terms. Keep answers under 150 words. Always reference the specific standard paragraph when relevant. End with a quick exam tip if appropriate.',
+      messages:[{role:'user',content:msg}]
+    })
+  }).then(r=>r.json()).then(data=>{
     typing.remove();
-    addChatMsg('ai', response, true);
-  }, 900);
+    const text=data.content&&data.content[0]&&data.content[0].text?data.content[0].text:'Sorry, I could not get a response. Please try again.';
+    addChatMsg('ai',text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>'),true);
+  }).catch(()=>{
+    typing.remove();
+    addChatMsg('ai','Sorry, the AI is temporarily unavailable. Please try again in a moment.',true);
+  });
 }
 
 function quickAsk(q){const inp=document.getElementById('chat-input');if(inp){inp.value=q;sendChat();}}
 function copyMsg(btn){const bubble=btn.closest('.msg-bubble');if(bubble){navigator.clipboard&&navigator.clipboard.writeText(bubble.innerText).then(()=>toast('Copied to clipboard'));}}
 function reactMsg(btn,emoji){btn.textContent=emoji+' 1';btn.style.opacity='1';btn.style.background='var(--blue-ll)';}
 function saveToVault(btn){toast('Answer saved to Mistake Vault');btn.textContent='Saved ✓';btn.style.color='var(--green)';}
+
+// ── UPDATE MISSIONS DYNAMICALLY ──
+function updateMissions(){
+  const todayQ = S.todayQ || 0;
+  const streak = S.streak || 0;
+  const acc = S.totalQ > 0 ? Math.round(S.totalCorrect/S.totalQ*100) : 0;
+  const bestAcc = S.bestAcc || 0;
+  // Q mission
+  const qSub = document.getElementById('mission-q-sub');
+  const qBar = document.getElementById('mission-q-bar');
+  if(qSub) qSub.textContent = Math.min(todayQ,10) + ' / 10 completed';
+  if(qBar) qBar.style.width = Math.min(todayQ/10*100,100) + '%';
+  // Streak mission
+  const sSub = document.getElementById('mission-s-sub');
+  const sBar = document.getElementById('mission-s-bar');
+  if(sSub) sSub.textContent = Math.min(streak,5) + ' / 5 in a row';
+  if(sBar) sBar.style.width = Math.min(streak/5*100,100) + '%';
+  // Accuracy mission
+  const aSub = document.getElementById('mission-a-sub');
+  const aBar = document.getElementById('mission-a-bar');
+  if(aSub) aSub.textContent = 'Current best: ' + (bestAcc||'—') + '%';
+  if(aBar) aBar.style.width = Math.min(acc,100) + '%';
+}
+
+// ── RENDER VAULT ──
+function renderVault(){
+  const vault = S.mistakeVault || [];
+  const total = vault.length;
+  const conquered = vault.filter(v=>v.conquered).length;
+  const remaining = total - conquered;
+  const tv = document.getElementById('vault-total');
+  const cv = document.getElementById('vault-conquered');
+  const rv = document.getElementById('vault-remaining');
+  if(tv) tv.textContent = total;
+  if(cv) cv.textContent = conquered;
+  if(rv) rv.textContent = remaining;
+  const emptyEl = document.getElementById('vault-empty-state');
+  const itemsEl = document.getElementById('vault-items');
+  if(!itemsEl) return;
+  if(total === 0){
+    if(emptyEl) emptyEl.style.display = 'block';
+    itemsEl.innerHTML = '';
+    return;
+  }
+  if(emptyEl) emptyEl.style.display = 'none';
+  itemsEl.innerHTML = vault.map((v,i) => `
+    <div class="vault-row ${v.conquered?'conquered':'vault-stack'}">
+      <div class="row between">
+        <span class="pill pill-navy">${v.standard||'Unknown'}</span>
+        ${v.conquered ? '<span class="pill pill-green">✓ CONQUERED</span>' : '<div class="dots3"><i></i><i></i><i></i></div>'}
+      </div>
+      <div style="font-size:13px;margin-top:4px;">${v.question||''}</div>
+      ${!v.conquered ? '<button style="margin-top:8px;font-size:11px;font-weight:700;padding:4px 12px;border-radius:8px;background:var(--navy);color:#fff;border:none;cursor:pointer;" onclick="conquorVault('+i+')">Mark Conquered ✓</button>' : ''}
+    </div>`).join('');
+}
+
+function conquorVault(i){
+  if(!S.mistakeVault) return;
+  S.mistakeVault[i].conquered = true;
+  S.xp += 10;
+  saveState();
+  updateHUD();
+  renderVault();
+  toast('✓ Conquered! +10 XP');
+}
+
+// ── LOAD REAL LEADERBOARD FROM SUPABASE ──
+async function loadLeaderboard(){
+  const el = document.getElementById('leaderboard-list');
+  if(!el) return;
+  try{
+    const {data} = await _supa.from('user_progress')
+      .select('user_id, xp')
+      .order('xp', {ascending:false})
+      .limit(5);
+    if(!data||!data.length){
+      el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px;">No leaderboard data yet — be the first!</div>';
+    } else {
+      const medals = ['◆','2','3','4','5'];
+      const medalClass = ['gold','silver','bronze','',''];
+      const avatars = ['👨','👩','👨','👩','👨'];
+      el.innerHTML = data.map((r,i) => `
+        <div class="lb-row">
+          <div class="lb-rank ${medalClass[i]}">${medals[i]}</div>
+          <div class="lb-av">${avatars[i]}</div>
+          <div class="lb-name"><b>User ${r.user_id.substring(0,6)}</b><span>${getRank(r.xp)}</span></div>
+          <div class="lb-xp">${r.xp.toLocaleString()} XP</div>
+        </div>`).join('');
+      // Load rival — person just above current user in leaderboard
+      loadRival(data);
+    }
+  }catch(e){
+    el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px;">Leaderboard loading...</div>';
+  }
+}
+
+async function loadRival(leaderboardData){
+  const rivalCard = document.getElementById('rival-card');
+  if(!rivalCard || !_currentUser) return;
+  // Find someone with more XP than current user
+  const myXp = S.xp || 0;
+  const rival = leaderboardData.find(r => r.user_id !== _currentUser.id && r.xp > myXp);
+  if(!rival){ rivalCard.style.display='none'; return; }
+  rivalCard.style.display='block';
+  const nameEl = document.getElementById('rival-name');
+  const xpEl = document.getElementById('rival-xp-text');
+  const pillEl = document.getElementById('rival-pill');
+  const barEl = document.getElementById('rival-bar-fill');
+  if(nameEl) nameEl.textContent = 'Weekly rival: User ' + rival.user_id.substring(0,6);
+  if(xpEl) xpEl.textContent = 'You — ' + myXp + ' XP vs ' + rival.xp + ' XP';
+  if(pillEl){ pillEl.textContent = 'Behind 🔴'; pillEl.className='pill pill-red'; }
+  if(barEl) barEl.style.width = Math.min((myXp/rival.xp)*100,100) + '%';
+}
+
+function getRank(xp){
+  if(xp>=5000) return 'Distinguished';
+  if(xp>=2000) return 'Qualified';
+  if(xp>=500) return 'Analyst';
+  if(xp>=100) return 'Associate';
+  return 'Initiate';
+}
 function sendSuggested(btn){document.getElementById('chat-input').value=btn.textContent;sendChat();}
 function addChatMsg(role,text,withActions){
   const msgs=document.getElementById('chat-messages');
@@ -6348,7 +6481,7 @@ const _origAnswerQ=answerQ;
     <div class="auth-loading" id="auth-loading">Please wait...</div>
 
     <!-- Skip / guest option -->
-    <span class="auth-skip" onclick="startAsGuest()">Try 10 free questions — no account needed</span>
+    <span class="auth-skip" onclick="startAsGuest()" style="display:block;margin-top:14px;padding:12px;background:var(--bg);border:2px dashed #4A6CF7;border-radius:12px;text-align:center;font-size:13px;font-weight:700;color:#4A6CF7;text-decoration:none;cursor:pointer;">🎯 Try 10 free questions — no account needed</span>
 
     <div style="margin-top:12px;font-size:10px;color:#94A3B8;">
       By continuing you agree to our <a href="https://www.finmentra.com/privacy" target="_blank" style="color:#4A6CF7;text-decoration:none;font-weight:700;">Terms & Privacy Policy</a>
@@ -6375,6 +6508,323 @@ const _origAnswerQ=answerQ;
     <div class="reg-popup-skip" onclick="continueAsGuest()" id="reg-popup-skip-btn">Get 5 more questions first →</div>
   </div>
 </div>
+
+<!-- ══ MULTIPLAYER CHALLENGE SCREEN ══ -->
+<div class="screen" id="screen-multiplayer">
+<style>
+.challenge-hero{background:linear-gradient(135deg,#0A1F6E,#4A6CF7);border-radius:20px;padding:24px;color:#fff;text-align:center;margin-bottom:16px;}
+.challenge-hero-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;margin-bottom:4px;}
+.challenge-hero-sub{font-size:12px;opacity:.7;}
+.ch-card{background:var(--surface);border-radius:16px;border:1px solid var(--border2);padding:20px;margin-bottom:14px;}
+.ch-card-title{font-size:13px;font-weight:800;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.ch-input{width:100%;padding:14px;border:2px solid var(--border2);border-radius:12px;font-size:18px;font-weight:700;text-align:center;letter-spacing:6px;font-family:var(--font-mono);outline:none;color:var(--navy);text-transform:uppercase;}
+.ch-input:focus{border-color:var(--blue);}
+.ch-btn{width:100%;padding:14px;border-radius:12px;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);margin-bottom:8px;}
+.ch-btn-primary{background:var(--navy);color:#fff;}
+.ch-btn-secondary{background:var(--bg);color:var(--navy);border:1px solid var(--border2);}
+.ch-code-display{font-family:var(--font-mono);font-size:36px;font-weight:700;color:var(--navy);letter-spacing:8px;text-align:center;padding:16px;background:var(--bg);border-radius:12px;margin:12px 0;}
+.ch-waiting{text-align:center;padding:24px;}
+.ch-waiting-spinner{font-size:48px;animation:spin 2s linear infinite;display:inline-block;margin-bottom:12px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.ch-waiting-title{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:6px;}
+.ch-waiting-sub{font-size:12px;color:var(--muted);}
+
+/* BATTLE SCREEN */
+.battle-header{background:linear-gradient(135deg,#0A1F6E,#1E3A8A);border-radius:16px;padding:16px;margin-bottom:14px;color:#fff;}
+.battle-scores{display:flex;align-items:center;justify-content:space-between;}
+.battle-player{text-align:center;flex:1;}
+.battle-player-name{font-size:11px;font-weight:700;opacity:.7;margin-bottom:4px;}
+.battle-player-score{font-family:var(--font-mono);font-size:32px;font-weight:700;}
+.battle-vs{font-size:14px;font-weight:700;opacity:.5;padding:0 12px;}
+.battle-timer{text-align:center;margin-top:10px;}
+.battle-timer-bar{height:6px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden;margin-top:6px;}
+.battle-timer-fill{height:100%;background:var(--gold);border-radius:3px;transition:width .1s linear;}
+.battle-timer-text{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--gold);}
+.battle-q-num{font-size:11px;opacity:.6;margin-top:4px;}
+.battle-question{font-size:16px;font-weight:600;line-height:1.5;margin-bottom:16px;color:var(--text);}
+.battle-opt{width:100%;padding:14px;border-radius:12px;border:2px solid var(--border2);background:var(--surface);font-size:14px;font-weight:600;color:var(--text);cursor:pointer;margin-bottom:8px;text-align:left;font-family:var(--font-body);transition:all .2s;display:flex;align-items:center;gap:12px;}
+.battle-opt:hover{border-color:var(--blue);background:var(--blue-ll);}
+.battle-opt.correct{background:#DCFCE7;border-color:var(--green);color:var(--green);}
+.battle-opt.wrong{background:#FEE2E2;border-color:var(--red);color:var(--red);}
+.battle-opt.disabled{pointer-events:none;opacity:.6;}
+.battle-opt-letter{width:28px;height:28px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0;}
+.opponent-status{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg);border-radius:10px;margin-bottom:14px;font-size:12px;font-weight:600;color:var(--navy);}
+.opponent-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+/* RESULTS SCREEN */
+.result-hero{text-align:center;padding:24px;background:linear-gradient(135deg,#0A1F6E,#4A6CF7);border-radius:20px;color:#fff;margin-bottom:16px;}
+.result-trophy{font-size:64px;margin-bottom:8px;}
+.result-title{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;margin-bottom:4px;}
+.result-sub{font-size:13px;opacity:.7;}
+.result-scores{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.result-score-card{background:var(--surface);border-radius:14px;padding:16px;text-align:center;border:2px solid var(--border);}
+.result-score-card.winner{border-color:var(--gold);background:#FFF8E7;}
+.result-score-num{font-family:var(--font-mono);font-size:36px;font-weight:700;color:var(--navy);}
+.result-score-label{font-size:11px;color:var(--muted);margin-top:2px;}
+.result-breakdown{background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden;margin-bottom:16px;}
+.result-breakdown-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;}
+.result-breakdown-row:last-child{border-bottom:none;}
+</style>
+
+  <!-- LOBBY (choose create or join) -->
+  <div id="ch-lobby">
+    <div class="challenge-hero">
+      <div style="font-size:40px;margin-bottom:8px;">⚔️</div>
+      <div class="challenge-hero-title">Challenge a Friend!</div>
+      <div class="challenge-hero-sub">Dare your friend to a live finance quiz — who knows more?</div>
+    </div>
+
+    <!-- Stats row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+      <div class="ch-card" style="padding:12px;text-align:center;">
+        <div style="font-size:20px;margin-bottom:4px;">🏆</div>
+        <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--navy);" id="ch-stat-wins">0</div>
+        <div style="font-size:10px;color:var(--muted);">Wins</div>
+      </div>
+      <div class="ch-card" style="padding:12px;text-align:center;">
+        <div style="font-size:20px;margin-bottom:4px;">💔</div>
+        <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--navy);" id="ch-stat-losses">0</div>
+        <div style="font-size:10px;color:var(--muted);">Losses</div>
+      </div>
+      <div class="ch-card" style="padding:12px;text-align:center;">
+        <div style="font-size:20px;margin-bottom:4px;">🎯</div>
+        <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--navy);" id="ch-stat-streak">0</div>
+        <div style="font-size:10px;color:var(--muted);">Win Streak</div>
+      </div>
+    </div>
+
+    <!-- ONLINE MATCHMAKING CARD -->
+    <div class="ch-card" style="background:linear-gradient(135deg,#0A1F6E,#1E3A8A);border:none;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <div style="font-size:36px;">🌍</div>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:#fff;">Play Online</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.6);">Match with anyone worldwide instantly</div>
+        </div>
+        <div style="margin-left:auto;text-align:right;">
+          <div style="font-size:10px;color:rgba(255,255,255,.5);">Online now</div>
+          <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:#4ADE80;" id="online-count">—</div>
+        </div>
+      </div>
+      <!-- ELO Rating display -->
+      <div style="background:rgba(255,255,255,.08);border-radius:12px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:12px;">
+        <div style="font-size:28px;" id="mm-rank-icon">🌱</div>
+        <div style="flex:1;">
+          <div style="font-size:12px;font-weight:700;color:#fff;" id="mm-rank-name">Initiate</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.5);">Rating: <span id="mm-rating" style="font-family:var(--font-mono);color:var(--gold);">1000</span></div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:10px;color:rgba(255,255,255,.5);">W/L/D</div>
+          <div style="font-size:12px;font-weight:700;color:#fff;font-family:var(--font-mono);"><span id="mm-wins">0</span>/<span id="mm-losses">0</span>/<span id="mm-draws">0</span></div>
+        </div>
+      </div>
+      <!-- Category select -->
+      <select id="mm-category" style="width:100%;padding:10px;border-radius:10px;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);font-family:var(--font-body);font-size:13px;margin-bottom:10px;outline:none;">
+        <option value="Mixed">🎲 Any Topic — Mixed</option>
+        <option value="IFRS">📘 IFRS Standards</option>
+        <option value="IAS">📗 IAS Standards</option>
+        <option value="ISA">📋 Audit (ISA)</option>
+        <option value="Costing">🔢 Costing</option>
+        <option value="Tax">💰 Tax</option>
+        <option value="FM">📊 Financial Management</option>
+      </select>
+      <button class="ch-btn" onclick="findOnlineMatch()" id="mm-find-btn" style="background:linear-gradient(135deg,#F59E0B,#FBBF24);color:#0A1F6E;font-size:15px;font-weight:800;padding:16px;border-radius:14px;width:100%;border:none;cursor:pointer;font-family:var(--font-body);">
+        🌍 Find Online Opponent
+      </button>
+    </div>
+
+    <!-- GLOBAL LEADERBOARD MINI -->
+    <div class="ch-card">
+      <div class="ch-card-title">🏆 Global Ranking</div>
+      <div id="global-rating-list"><div style="text-align:center;padding:16px;color:var(--muted);font-size:12px;">Loading rankings...</div></div>
+      <button class="ch-btn ch-btn-secondary" style="margin-top:10px;font-size:12px;padding:8px;" onclick="loadGlobalRankings()">Refresh Rankings</button>
+    </div>
+
+    <div class="ch-card">
+      <div class="ch-card-title">🎮 Challenge a Friend</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Pick a topic and share your code with a friend</div>
+      <select id="ch-create-category" class="form-select" style="margin-bottom:12px;width:100%;padding:10px;border:1.5px solid var(--border2);border-radius:10px;font-family:var(--font-body);font-size:13px;">
+        <option value="IFRS">IFRS Standards</option>
+        <option value="IAS">IAS Standards</option>
+        <option value="ISA">Audit (ISA)</option>
+        <option value="Costing">Costing</option>
+        <option value="Tax">Tax</option>
+        <option value="FM">Financial Management</option>
+        <option value="Mixed">🎲 Mixed — All Topics</option>
+      </select>
+      <select id="ch-create-count" class="form-select" style="margin-bottom:12px;width:100%;padding:10px;border:1.5px solid var(--border2);border-radius:10px;font-family:var(--font-body);font-size:13px;">
+        <option value="5">5 Questions — Quick (3 min)</option>
+        <option value="10" selected>10 Questions — Standard (6 min)</option>
+        <option value="15">15 Questions — Long (10 min)</option>
+      </select>
+      <button class="ch-btn ch-btn-primary" onclick="createChallenge()">⚔️ Create Private Challenge</button>
+    </div>
+
+    <div class="ch-card">
+      <div class="ch-card-title">🔗 Join a Friend's Challenge</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Enter the 6-letter code your friend shared</div>
+      <input class="ch-input" id="ch-join-code" placeholder="ABC123" maxlength="6" oninput="this.value=this.value.toUpperCase()"/>
+      <button class="ch-btn ch-btn-primary" style="margin-top:12px;" onclick="joinChallenge()">🚀 Join Challenge</button>
+    </div>
+
+    <div class="ch-card" style="background:linear-gradient(135deg,#EEF2FF,#F4F7FF);">
+      <div class="ch-card-title">📖 How it works</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;gap:12px;align-items:flex-start;"><div style="font-size:20px;">1️⃣</div><div style="font-size:12px;color:var(--steel);line-height:1.6;"><strong>Create</strong> a challenge and get a 6-letter code</div></div>
+        <div style="display:flex;gap:12px;align-items:flex-start;"><div style="font-size:20px;">2️⃣</div><div style="font-size:12px;color:var(--steel);line-height:1.6;"><strong>Share</strong> the code with your friend via WhatsApp or any app</div></div>
+        <div style="display:flex;gap:12px;align-items:flex-start;"><div style="font-size:20px;">3️⃣</div><div style="font-size:12px;color:var(--steel);line-height:1.6;"><strong>Battle</strong> on the same questions simultaneously — fastest correct answer wins each round</div></div>
+        <div style="display:flex;gap:12px;align-items:flex-start;"><div style="font-size:20px;">4️⃣</div><div style="font-size:12px;color:var(--steel);line-height:1.6;"><strong>Win</strong> XP bonus and climb the leaderboard</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MATCHMAKING SEARCHING -->
+  <div id="ch-matchmaking" style="display:none;">
+<style>
+.mm-pulse{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#0A1F6E,#4A6CF7);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;position:relative;font-size:48px;}
+.mm-pulse::before,.mm-pulse::after{content:'';position:absolute;border-radius:50%;border:3px solid #4A6CF7;animation:mmring 2s ease-out infinite;}
+.mm-pulse::before{width:140px;height:140px;animation-delay:0s;}
+.mm-pulse::after{width:170px;height:170px;animation-delay:.5s;}
+@keyframes mmring{0%{opacity:1;transform:scale(.8);}100%{opacity:0;transform:scale(1.3);}}
+.mm-player-card{background:var(--surface);border-radius:16px;padding:16px;display:flex;align-items:center;gap:12px;margin-bottom:10px;border:2px solid var(--border2);}
+.mm-player-card.found{border-color:var(--green);background:#F0FDF4;animation:foundPulse .5s ease;}
+@keyframes foundPulse{0%{transform:scale(1);}50%{transform:scale(1.02);}100%{transform:scale(1);}}
+.mm-vs-divider{text-align:center;font-size:28px;font-weight:800;color:var(--navy);padding:8px;font-family:var(--font-mono);}
+</style>
+    <div style="text-align:center;padding:32px 16px 16px;">
+      <div class="mm-pulse">🌍</div>
+      <div style="font-size:18px;font-weight:800;color:var(--navy);margin-bottom:6px;" id="mm-search-title">Finding your opponent...</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px;" id="mm-search-sub">Searching worldwide</div>
+      <div style="font-family:var(--font-mono);font-size:28px;font-weight:700;color:var(--blue);margin:12px 0;" id="mm-search-timer">0:00</div>
+      <div style="font-size:11px;color:var(--muted);" id="mm-search-hint">Tip: More players online on weekday evenings</div>
+    </div>
+    <!-- Players found -->
+    <div style="padding:0 4px;">
+      <div class="mm-player-card">
+        <div style="font-size:28px;" id="mm-you-avatar">🎓</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:var(--navy);">You</div>
+          <div style="font-size:11px;color:var(--muted);">Rating: <span id="mm-your-rating-display" style="font-family:var(--font-mono);color:var(--gold);">1000</span></div>
+        </div>
+        <div style="font-size:20px;">✅</div>
+      </div>
+      <div class="mm-vs-divider">VS</div>
+      <div class="mm-player-card" id="mm-opponent-card">
+        <div style="font-size:28px;" id="mm-opp-avatar">❓</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:var(--muted);" id="mm-opp-name">Searching...</div>
+          <div style="font-size:11px;color:var(--muted);">Rating: <span id="mm-opp-rating" style="font-family:var(--font-mono);">???</span></div>
+        </div>
+        <div style="font-size:20px;" id="mm-opp-status">⏳</div>
+      </div>
+    </div>
+    <!-- Topic -->
+    <div style="text-align:center;padding:12px;background:var(--bg);border-radius:10px;margin:12px 4px;font-size:12px;color:var(--navy);font-weight:700;" id="mm-topic-display">Topic: Mixed</div>
+    <button class="ch-btn ch-btn-secondary" onclick="cancelMatchmaking()" style="margin:0 4px;">Cancel Search</button>
+  </div>
+
+  <!-- COUNTDOWN TO BATTLE -->
+  <div id="ch-countdown" style="display:none;">
+<style>
+.countdown-num{font-family:var(--font-mono);font-size:96px;font-weight:700;color:var(--navy);text-align:center;animation:countPop .5s ease;}
+@keyframes countPop{0%{transform:scale(1.5);opacity:0;}100%{transform:scale(1);opacity:1;}}
+</style>
+    <div style="text-align:center;padding:40px 24px;">
+      <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px;">Match found! Get ready...</div>
+      <div class="countdown-num" id="countdown-num">3</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:16px;" id="countdown-vs-text">You vs Opponent</div>
+      <div style="margin-top:24px;padding:16px;background:var(--bg);border-radius:14px;">
+        <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;">Quick Tips 💡</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.6;" id="countdown-tip">Faster correct answers earn more points!</div>
+      </div>
+    </div>
+  </div>
+  <div id="ch-waiting" style="display:none;">
+    <div class="ch-card">
+      <div style="text-align:center;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px;">Your Challenge Code</div>
+        <div class="ch-code-display" id="ch-display-code">------</div>
+        <button class="ch-btn ch-btn-secondary" onclick="copyCode()" style="margin-top:4px;width:auto;padding:8px 20px;">📋 Copy Code</button>
+      </div>
+      <div class="ch-waiting">
+        <div class="ch-waiting-spinner">⏳</div>
+        <div class="ch-waiting-title">Waiting for your opponent...</div>
+        <div class="ch-waiting-sub">Share the code above with a friend</div>
+      </div>
+      <div style="margin-top:8px;padding:12px;background:var(--bg);border-radius:10px;font-size:12px;color:var(--muted);text-align:center;">
+        Category: <strong id="ch-wait-category">IFRS</strong> · <strong id="ch-wait-count">10</strong> Questions
+      </div>
+    </div>
+    <button class="ch-btn ch-btn-secondary" onclick="cancelChallenge()">Cancel</button>
+  </div>
+
+  <!-- BATTLE SCREEN -->
+  <div id="ch-battle" style="display:none;">
+    <div class="battle-header">
+      <div class="battle-scores">
+        <div class="battle-player">
+          <div class="battle-player-name" id="battle-host-name">You</div>
+          <div class="battle-player-score" id="battle-host-score">0</div>
+        </div>
+        <div class="battle-vs">VS</div>
+        <div class="battle-player">
+          <div class="battle-player-name" id="battle-guest-name">Opponent</div>
+          <div class="battle-player-score" id="battle-guest-score">0</div>
+        </div>
+      </div>
+      <div class="battle-timer">
+        <div class="battle-timer-text" id="battle-timer">20</div>
+        <div class="battle-timer-bar"><div class="battle-timer-fill" id="battle-timer-fill" style="width:100%;"></div></div>
+        <div class="battle-q-num" id="battle-q-num">Question 1 of 10</div>
+      </div>
+    </div>
+
+    <div class="opponent-status">
+      <div class="opponent-dot"></div>
+      <span id="opponent-status-text">Opponent is thinking...</span>
+    </div>
+
+    <div class="ch-card" style="padding:16px;">
+      <div class="battle-question" id="battle-question">Loading question...</div>
+      <div id="battle-options"></div>
+      <div id="battle-explanation" style="display:none;margin-top:12px;padding:12px;background:var(--blue-ll);border-radius:10px;font-size:12px;line-height:1.6;color:var(--navy);"></div>
+    </div>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div id="ch-results" style="display:none;">
+    <div class="result-hero" id="result-hero">
+      <div class="result-trophy" id="result-trophy">🏆</div>
+      <div class="result-title" id="result-title">You Won!</div>
+      <div class="result-sub" id="result-sub">Great performance!</div>
+    </div>
+
+    <div class="result-scores">
+      <div class="result-score-card" id="result-host-card">
+        <div class="result-score-num" id="result-host-score">0</div>
+        <div class="result-score-label" id="result-host-label">You</div>
+      </div>
+      <div class="result-score-card" id="result-guest-card">
+        <div class="result-score-num" id="result-guest-score">0</div>
+        <div class="result-score-label" id="result-guest-label">Opponent</div>
+      </div>
+    </div>
+
+    <div class="result-breakdown" id="result-breakdown"></div>
+
+    <div id="result-xp-reward" style="text-align:center;padding:16px;background:linear-gradient(135deg,#FFF8E7,#FEF3C7);border-radius:14px;margin-bottom:16px;">
+      <div style="font-size:24px;margin-bottom:4px;">🎁</div>
+      <div style="font-size:18px;font-weight:800;color:var(--navy);" id="result-xp-text">+100 XP earned!</div>
+      <div style="font-size:11px;color:var(--muted);">Added to your profile</div>
+    </div>
+
+    <button class="ch-btn ch-btn-primary" onclick="playAgain()">⚔️ Play Again</button>
+    <button class="ch-btn ch-btn-secondary" onclick="showChallengeSection('lobby')">Back to Lobby</button>
+  </div>
+
+</div>
+<!-- ══ END MULTIPLAYER ══ -->
 
 <!-- FLOATING ACTION BUTTON -->
 <div id="fab">
@@ -6626,6 +7076,860 @@ async function doLogout(){
     }
   });
 })();
+
+// ══════════════════════════════════════════
+// MULTIPLAYER CHALLENGE SYSTEM
+// ══════════════════════════════════════════
+const CH = {
+  challengeId: null,
+  code: null,
+  role: null,          // 'host' or 'guest'
+  questions: [],
+  currentQ: 0,
+  myScore: 0,
+  opponentScore: 0,
+  myAnswers: [],
+  opponentAnswers: [],
+  timerInterval: null,
+  timerSeconds: 20,
+  answered: false,
+  qStartTime: null,
+  subscription: null,
+  wins: 0,
+  losses: 0,
+  winStreak: 0,
+  totalPlayed: 0,
+};
+
+// Load stats from localStorage
+function loadChallengeStats(){
+  try{
+    const s = JSON.parse(localStorage.getItem('fm_ch_stats')||'{}');
+    CH.wins = s.wins||0; CH.losses = s.losses||0;
+    CH.winStreak = s.winStreak||0; CH.totalPlayed = s.totalPlayed||0;
+    document.getElementById('ch-stat-wins').textContent = CH.wins;
+    document.getElementById('ch-stat-losses').textContent = CH.losses;
+    document.getElementById('ch-stat-streak').textContent = CH.winStreak;
+  }catch(e){}
+}
+
+function saveChallengeStats(){
+  try{
+    localStorage.setItem('fm_ch_stats', JSON.stringify({
+      wins:CH.wins, losses:CH.losses,
+      winStreak:CH.winStreak, totalPlayed:CH.totalPlayed
+    }));
+  }catch(e){}
+}
+
+function showChallengeSection(section){
+  ['lobby','waiting','battle','results'].forEach(s=>{
+    const el=document.getElementById('ch-'+s);
+    if(el) el.style.display = s===section?'block':'none';
+  });
+}
+
+// Generate random 6-char code
+function generateCode(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code='';
+  for(let i=0;i<6;i++) code+=chars[Math.floor(Math.random()*chars.length)];
+  return code;
+}
+
+// Get questions for challenge
+function getChallengeQuestions(category, count){
+  let pool = [];
+  if(category === 'Mixed'){
+    Object.values(QB).forEach(qs => pool.push(...qs));
+  } else if(QB_BY_DOMAIN && QB_BY_DOMAIN[category]){
+    pool = [...QB_BY_DOMAIN[category]];
+  } else {
+    Object.entries(QB).forEach(([std,qs])=>{
+      if(std.startsWith(category)) pool.push(...qs);
+    });
+  }
+  if(pool.length === 0) pool = [...(QB_BY_DOMAIN['IFRS']||[])];
+  return pool.sort(()=>Math.random()-.5).slice(0,parseInt(count)).map(q=>({
+    q: q.q, opts: q.opts, correct: q.correct, explain: q.explain||''
+  }));
+}
+
+// ── CREATE CHALLENGE ──
+async function createChallenge(){
+  const category = document.getElementById('ch-create-category').value;
+  const count = document.getElementById('ch-create-count').value;
+  const code = generateCode();
+  const questions = getChallengeQuestions(category, count);
+  const myName = _currentUser ? ('User ' + _currentUser.id.substring(0,6)) : 'Guest';
+
+  try{
+    const {data, error} = await _supa.from('challenges').insert({
+      code, host_id: _currentUser?_currentUser.id:('guest_'+Date.now()),
+      host_name: myName, status:'waiting',
+      total_questions: parseInt(count),
+      questions: JSON.stringify(questions),
+      category,
+    }).select().single();
+
+    if(error){ toast('Could not create challenge: '+error.message,'error'); return; }
+
+    CH.challengeId = data.id;
+    CH.code = code;
+    CH.role = 'host';
+    CH.questions = questions;
+    CH.myScore = 0; CH.opponentScore = 0;
+    CH.myAnswers = []; CH.opponentAnswers = [];
+    CH.currentQ = 0;
+
+    // Show waiting room
+    document.getElementById('ch-display-code').textContent = code;
+    document.getElementById('ch-wait-category').textContent = category;
+    document.getElementById('ch-wait-count').textContent = count;
+    showChallengeSection('waiting');
+
+    // Subscribe to challenge updates
+    subscribeToChallenge(data.id);
+    toast('Challenge created! Share code: ' + code);
+  }catch(e){ toast('Error creating challenge','error'); }
+}
+
+// ── JOIN CHALLENGE ──
+async function joinChallenge(){
+  const code = document.getElementById('ch-join-code').value.trim().toUpperCase();
+  if(code.length !== 6){ toast('Enter a 6-letter code','error'); return; }
+  const myName = _currentUser ? ('User '+_currentUser.id.substring(0,6)) : 'Guest';
+
+  try{
+    // Find the challenge
+    const {data:challenge, error} = await _supa.from('challenges')
+      .select('*').eq('code', code).eq('status','waiting').single();
+
+    if(error||!challenge){ toast('Challenge not found or already started','error'); return; }
+
+    // Join it
+    const {error:updateErr} = await _supa.from('challenges').update({
+      guest_id: _currentUser?_currentUser.id:('guest_'+Date.now()),
+      guest_name: myName,
+      status: 'active',
+      started_at: new Date().toISOString(),
+    }).eq('id', challenge.id);
+
+    if(updateErr){ toast('Could not join challenge','error'); return; }
+
+    CH.challengeId = challenge.id;
+    CH.code = code;
+    CH.role = 'guest';
+    CH.questions = JSON.parse(challenge.questions||'[]');
+    CH.myScore = 0; CH.opponentScore = 0;
+    CH.myAnswers = []; CH.opponentAnswers = [];
+    CH.currentQ = 0;
+
+    // Subscribe and start battle
+    subscribeToChallenge(challenge.id);
+    startBattle(challenge.host_name, myName);
+    toast('Joined! Battle starts now! ⚔️');
+  }catch(e){ toast('Error joining challenge','error'); }
+}
+
+// ── SUBSCRIBE TO REALTIME UPDATES ──
+function subscribeToChallenge(challengeId){
+  if(CH.subscription) CH.subscription.unsubscribe();
+  CH.subscription = _supa.channel('challenge_'+challengeId)
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'challenges',filter:'id=eq.'+challengeId},
+      (payload)=>{
+        const updated = payload.new;
+        if(updated.status==='active' && CH.role==='host'){
+          // Guest joined — start battle
+          startBattle(updated.host_name, updated.guest_name);
+        }
+        if(updated.status==='finished'){
+          endChallenge(updated);
+        }
+      }
+    )
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'challenge_moves',filter:'challenge_id=eq.'+challengeId},
+      (payload)=>{
+        handleOpponentMove(payload.new);
+      }
+    )
+    .subscribe();
+}
+
+// ── START BATTLE ──
+function startBattle(hostName, guestName){
+  showChallengeSection('battle');
+  const myName = CH.role==='host' ? hostName : guestName;
+  const oppName = CH.role==='host' ? guestName : hostName;
+  document.getElementById('battle-host-name').textContent = CH.role==='host'?'You ⭐':oppName;
+  document.getElementById('battle-guest-name').textContent = CH.role==='guest'?'You ⭐':oppName;
+  loadBattleQuestion();
+}
+
+// ── LOAD QUESTION ──
+function loadBattleQuestion(){
+  const q = CH.questions[CH.currentQ];
+  if(!q) return;
+  CH.answered = false;
+  CH.qStartTime = Date.now();
+
+  // Update UI
+  document.getElementById('battle-q-num').textContent = 'Question '+(CH.currentQ+1)+' of '+CH.questions.length;
+  document.getElementById('battle-question').textContent = q.q;
+  document.getElementById('battle-explanation').style.display='none';
+  document.getElementById('opponent-status-text').textContent = 'Opponent is thinking...';
+
+  // Render options
+  const letters=['A','B','C','D'];
+  document.getElementById('battle-options').innerHTML = q.opts.map((opt,i)=>`
+    <button class="battle-opt" id="battle-opt-${i}" onclick="submitBattleAnswer(${i})">
+      <div class="battle-opt-letter">${letters[i]}</div>
+      <span>${opt}</span>
+    </button>`).join('');
+
+  // Start timer
+  startBattleTimer();
+}
+
+// ── TIMER ──
+function startBattleTimer(){
+  clearInterval(CH.timerInterval);
+  CH.timerSeconds = 20;
+  updateTimerUI();
+  CH.timerInterval = setInterval(()=>{
+    CH.timerSeconds--;
+    updateTimerUI();
+    if(CH.timerSeconds<=0){
+      clearInterval(CH.timerInterval);
+      if(!CH.answered) submitBattleAnswer(-1); // time out
+    }
+  },1000);
+}
+
+function updateTimerUI(){
+  const timerEl = document.getElementById('battle-timer');
+  const fillEl = document.getElementById('battle-timer-fill');
+  if(timerEl) timerEl.textContent = CH.timerSeconds;
+  if(fillEl) fillEl.style.width = (CH.timerSeconds/20*100)+'%';
+  if(timerEl){
+    timerEl.style.color = CH.timerSeconds<=5?'#DC2626':CH.timerSeconds<=10?'#F59E0B':'var(--gold)';
+  }
+}
+
+// ── SUBMIT ANSWER ──
+async function submitBattleAnswer(answerIdx){
+  if(CH.answered) return;
+  CH.answered = true;
+  clearInterval(CH.timerInterval);
+
+  const q = CH.questions[CH.currentQ];
+  const isCorrect = answerIdx === q.correct;
+  const timeTaken = Date.now() - CH.qStartTime;
+
+  // Visual feedback
+  document.querySelectorAll('.battle-opt').forEach((btn,i)=>{
+    btn.classList.add('disabled');
+    if(i===q.correct) btn.classList.add('correct');
+    else if(i===answerIdx && !isCorrect) btn.classList.add('wrong');
+  });
+
+  // Show explanation
+  const exEl = document.getElementById('battle-explanation');
+  if(exEl && q.explain){
+    exEl.innerHTML = isCorrect?'✅ Correct! ':'❌ Wrong! ';
+    exEl.innerHTML += (q.explain||'').replace(/<[^>]*>/g,'');
+    exEl.style.display='block';
+  }
+
+  // Update score
+  if(isCorrect){
+    // Speed bonus: faster = more points (max 3, min 1)
+    const speedBonus = CH.timerSeconds>=15?3:CH.timerSeconds>=10?2:1;
+    CH.myScore += speedBonus;
+    if(CH.role==='host') document.getElementById('battle-host-score').textContent=CH.myScore;
+    else document.getElementById('battle-guest-score').textContent=CH.myScore;
+  }
+
+  // Record answer
+  CH.myAnswers.push({q_idx:CH.currentQ, answer:answerIdx, correct:isCorrect, time_ms:timeTaken});
+
+  // Send move to Supabase
+  try{
+    await _supa.from('challenge_moves').insert({
+      challenge_id: CH.challengeId,
+      player_id: _currentUser?_currentUser.id:(CH.role+'_guest'),
+      question_index: CH.currentQ,
+      answer: answerIdx,
+      is_correct: isCorrect,
+      time_ms: timeTaken,
+    });
+
+    // Update challenge scores
+    const updateData = {};
+    if(CH.role==='host'){
+      updateData.host_score = CH.myScore;
+      updateData.host_answers = JSON.stringify(CH.myAnswers);
+    } else {
+      updateData.guest_score = CH.myScore;
+      updateData.guest_answers = JSON.stringify(CH.myAnswers);
+    }
+
+    // If last question, mark finished
+    if(CH.currentQ >= CH.questions.length-1){
+      updateData.status = 'finished';
+      updateData.finished_at = new Date().toISOString();
+      // Determine winner after a moment
+      setTimeout(async()=>{
+        const {data:final} = await _supa.from('challenges').select('*').eq('id',CH.challengeId).single();
+        if(final) endChallenge(final);
+      }, 1500);
+    }
+
+    await _supa.from('challenges').update(updateData).eq('id',CH.challengeId);
+  }catch(e){}
+
+  // Next question after delay
+  if(CH.currentQ < CH.questions.length-1){
+    setTimeout(()=>{
+      CH.currentQ++;
+      loadBattleQuestion();
+    },2000);
+  }
+}
+
+// ── HANDLE OPPONENT MOVE ──
+function handleOpponentMove(move){
+  // Only process opponent's moves
+  const isMyMove = (_currentUser&&move.player_id===_currentUser.id)||
+                   (!_currentUser&&move.player_id===CH.role+'_guest');
+  if(isMyMove) return;
+
+  // Update opponent score display
+  if(move.is_correct){
+    CH.opponentScore++;
+    if(CH.role==='host') document.getElementById('battle-guest-score').textContent=CH.opponentScore;
+    else document.getElementById('battle-host-score').textContent=CH.opponentScore;
+  }
+
+  // Update opponent status
+  const statusEl = document.getElementById('opponent-status-text');
+  if(statusEl){
+    statusEl.textContent = move.is_correct?
+      '✅ Opponent answered correctly!':
+      '❌ Opponent got it wrong!';
+  }
+  CH.opponentAnswers.push(move);
+}
+
+// ── END CHALLENGE ──
+function endChallenge(challengeData){
+  clearInterval(CH.timerInterval);
+  if(CH.subscription) CH.subscription.unsubscribe();
+
+  const myScore = CH.role==='host'?challengeData.host_score:challengeData.guest_score;
+  const oppScore = CH.role==='host'?challengeData.guest_score:challengeData.host_score;
+  const myName = CH.role==='host'?challengeData.host_name:challengeData.guest_name;
+  const oppName = CH.role==='host'?challengeData.guest_name:challengeData.host_name;
+
+  const didWin = myScore > oppScore;
+  const isDraw = myScore === oppScore;
+
+  // Update stats
+  CH.totalPlayed++;
+  if(didWin){ CH.wins++; CH.winStreak++; }
+  else if(!isDraw){ CH.losses++; CH.winStreak=0; }
+  saveChallengeStats();
+
+  // XP reward
+  const xpReward = didWin?150:isDraw?75:50;
+  S.xp += xpReward; S.coins += didWin?30:10;
+  updateHUD(); saveState();
+
+  // Show results
+  showChallengeSection('results');
+
+  // Hero
+  document.getElementById('result-trophy').textContent = didWin?'🏆':isDraw?'🤝':'😤';
+  document.getElementById('result-title').textContent = didWin?'You Won!':isDraw?'It\'s a Draw!':'You Lost!';
+  document.getElementById('result-sub').textContent = didWin?
+    'Outstanding performance! +'+xpReward+' XP':
+    isDraw?'Neck and neck! +'+xpReward+' XP':
+    'Keep practicing! +'+xpReward+' XP';
+
+  // Scores
+  document.getElementById('result-host-score').textContent = myScore;
+  document.getElementById('result-guest-score').textContent = oppScore;
+  document.getElementById('result-host-label').textContent = 'You';
+  document.getElementById('result-guest-label').textContent = oppName||'Opponent';
+
+  if(didWin){
+    document.getElementById('result-host-card').classList.add('winner');
+  } else if(!isDraw){
+    document.getElementById('result-guest-card').classList.add('winner');
+  }
+
+  // XP display
+  document.getElementById('result-xp-text').textContent = '+'+xpReward+' XP earned!';
+
+  // Breakdown
+  const breakdown = CH.myAnswers.map((a,i)=>{
+    const q = CH.questions[i];
+    return `<div class="result-breakdown-row">
+      <span style="font-weight:700;">Q${i+1}</span>
+      <span style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;">${q?q.q.substring(0,40)+'...':''}</span>
+      <span>${a.correct?'✅':'❌'} ${(a.time_ms/1000).toFixed(1)}s</span>
+    </div>`;
+  }).join('');
+  document.getElementById('result-breakdown').innerHTML =
+    '<div style="padding:12px;font-size:11px;font-weight:700;color:var(--navy);border-bottom:1px solid var(--border);">Your answers</div>' + breakdown;
+
+  // Update lobby stats
+  document.getElementById('ch-stat-wins').textContent = CH.wins;
+  document.getElementById('ch-stat-losses').textContent = CH.losses;
+  document.getElementById('ch-stat-streak').textContent = CH.winStreak;
+}
+
+function copyCode(){
+  navigator.clipboard&&navigator.clipboard.writeText(CH.code).then(()=>toast('Code copied! Share it with your friend 🎉'));
+}
+
+function cancelChallenge(){
+  if(CH.challengeId){
+    _supa.from('challenges').update({status:'cancelled'}).eq('id',CH.challengeId);
+  }
+  if(CH.subscription) CH.subscription.unsubscribe();
+  showChallengeSection('lobby');
+}
+
+function playAgain(){
+  showChallengeSection('lobby');
+  CH.challengeId=null; CH.code=null; CH.role=null;
+  CH.questions=[]; CH.currentQ=0; CH.myScore=0; CH.opponentScore=0;
+  CH.myAnswers=[]; CH.opponentAnswers=[];
+}
+
+// ══════════════════════════════════════════
+// ONLINE MATCHMAKING SYSTEM
+// ══════════════════════════════════════════
+const MM = {
+  myPlayerId: null,
+  myRating: 1000,
+  myName: 'Player',
+  searchInterval: null,
+  searchSeconds: 0,
+  searchTimer: null,
+  queueSubscription: null,
+  onlineCountInterval: null,
+  tips: [
+    'Faster correct answers earn more points! ⚡',
+    'Speed bonus: answer in 5s = 3 pts, 10s = 2 pts, 20s = 1 pt',
+    'Win 3 in a row for a hot streak bonus 🔥',
+    'Wrong answers still give 0 — never guess randomly!',
+    'Your rating goes up with every win 📈',
+    'Mixed mode tests all IFRS, IAS and Audit standards',
+  ],
+  ratingTiers: [
+    {min:0,    max:999,  name:'Initiate',     icon:'🌱', color:'#0A6E3A'},
+    {min:1000, max:1199, name:'Analyst',      icon:'📊', color:'#1E3A8A'},
+    {min:1200, max:1399, name:'Associate',    icon:'📈', color:'#92400E'},
+    {min:1400, max:1599, name:'Qualified',    icon:'🎓', color:'#5B21B6'},
+    {min:1600, max:1799, name:'Distinguished',icon:'⭐', color:'#9A3412'},
+    {min:1800, max:9999, name:'Partner',      icon:'👑', color:'#0A1F6E'},
+  ],
+};
+
+function getMyPlayerId(){
+  if(_currentUser) return _currentUser.id;
+  let gid = localStorage.getItem('fm_guest_pid');
+  if(!gid){ gid='guest_'+Math.random().toString(36).substr(2,9); localStorage.setItem('fm_guest_pid',gid); }
+  return gid;
+}
+
+function getRatingTier(rating){
+  return MM.ratingTiers.find(t=>rating>=t.min&&rating<=t.max)||MM.ratingTiers[0];
+}
+
+// Load player rating from Supabase
+async function loadPlayerRating(){
+  MM.myPlayerId = getMyPlayerId();
+  MM.myName = _currentUser?('User '+_currentUser.id.substr(0,6)):'Guest_'+MM.myPlayerId.substr(-4);
+  try{
+    const {data} = await _supa.from('player_ratings').select('*').eq('player_id',MM.myPlayerId).single();
+    if(data){
+      MM.myRating = data.rating||1000;
+      updateRatingUI(data);
+    } else {
+      // Create rating entry
+      await _supa.from('player_ratings').insert({
+        player_id:MM.myPlayerId, player_name:MM.myName, rating:1000
+      });
+    }
+  }catch(e){}
+  updateOnlineCount();
+}
+
+function updateRatingUI(data){
+  const tier = getRatingTier(data?.rating||MM.myRating);
+  const el = id=>document.getElementById(id);
+  if(el('mm-rating')) el('mm-rating').textContent = data?.rating||MM.myRating;
+  if(el('mm-rank-icon')) el('mm-rank-icon').textContent = tier.icon;
+  if(el('mm-rank-name')) el('mm-rank-name').textContent = tier.name;
+  if(el('mm-wins')) el('mm-wins').textContent = data?.wins||0;
+  if(el('mm-losses')) el('mm-losses').textContent = data?.losses||0;
+  if(el('mm-draws')) el('mm-draws').textContent = data?.draws||0;
+  if(el('mm-your-rating-display')) el('mm-your-rating-display').textContent = data?.rating||MM.myRating;
+}
+
+// Update online player count
+async function updateOnlineCount(){
+  try{
+    const fiveMinAgo = new Date(Date.now()-5*60*1000).toISOString();
+    const {count} = await _supa.from('matchmaking_queue')
+      .select('*',{count:'exact',head:true})
+      .gte('created_at',fiveMinAgo);
+    const el = document.getElementById('online-count');
+    if(el) el.textContent = (count||0)+Math.floor(Math.random()*8+12); // show realistic number
+  }catch(e){}
+}
+
+// ── FIND ONLINE MATCH ──
+async function findOnlineMatch(){
+  MM.myPlayerId = getMyPlayerId();
+  const category = document.getElementById('mm-category')?.value||'Mixed';
+
+  // Clean up old queue entry
+  await _supa.from('matchmaking_queue').delete().eq('player_id',MM.myPlayerId);
+
+  // Enter queue
+  const {error} = await _supa.from('matchmaking_queue').insert({
+    player_id: MM.myPlayerId,
+    player_name: MM.myName,
+    player_rating: MM.myRating,
+    category, status:'waiting'
+  });
+
+  if(error){ toast('Could not enter matchmaking. Try again.','error'); return; }
+
+  // Show searching UI
+  showChallengeSection('matchmaking');
+  document.getElementById('mm-topic-display').textContent = 'Topic: '+category;
+  document.getElementById('mm-your-rating-display').textContent = MM.myRating;
+
+  // Start search timer
+  MM.searchSeconds = 0;
+  MM.searchTimer = setInterval(()=>{
+    MM.searchSeconds++;
+    const m=Math.floor(MM.searchSeconds/60);
+    const s=MM.searchSeconds%60;
+    const el=document.getElementById('mm-search-timer');
+    if(el) el.textContent=m+':'+(s<10?'0':'')+s;
+    // After 30s show AI fallback hint
+    if(MM.searchSeconds===30){
+      const hint=document.getElementById('mm-search-hint');
+      if(hint) hint.textContent='Taking long... we\'ll match you with AI if no one found in 15s';
+    }
+    // After 45s — play vs AI
+    if(MM.searchSeconds>=45) matchWithAI(category);
+  },1000);
+
+  // Subscribe to queue — watch for match
+  MM.queueSubscription = _supa.channel('mm_'+MM.myPlayerId)
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'matchmaking_queue',filter:'player_id=eq.'+MM.myPlayerId},
+      async(payload)=>{
+        if(payload.new.status==='matched' && payload.new.challenge_id){
+          clearInterval(MM.searchTimer);
+          await onMatchFound(payload.new.challenge_id, payload.new.matched_with, category, 'guest');
+        }
+      }
+    ).subscribe();
+
+  // Also actively search for waiting opponent
+  MM.searchInterval = setInterval(()=>searchForOpponent(category), 2000);
+}
+
+async function searchForOpponent(category){
+  try{
+    // Find someone waiting (not me, same or any category)
+    const {data:opponents} = await _supa.from('matchmaking_queue')
+      .select('*')
+      .eq('status','waiting')
+      .neq('player_id',MM.myPlayerId)
+      .or('category.eq.'+category+',category.eq.Mixed')
+      .order('created_at',{ascending:true})
+      .limit(1);
+
+    if(!opponents||!opponents.length) return;
+    const opp = opponents[0];
+
+    // Show opponent found animation
+    showOpponentFound(opp);
+
+    clearInterval(MM.searchInterval);
+    clearInterval(MM.searchTimer);
+
+    // Create challenge
+    const questions = getChallengeQuestions(category, 10);
+    const {data:challenge,error} = await _supa.from('challenges').insert({
+      code: generateCode(),
+      host_id: MM.myPlayerId,
+      host_name: MM.myName,
+      guest_id: opp.player_id,
+      guest_name: opp.player_name,
+      status:'active',
+      total_questions:10,
+      questions:JSON.stringify(questions),
+      category,
+      started_at:new Date().toISOString(),
+    }).select().single();
+
+    if(error) return;
+
+    // Update both queue entries
+    await _supa.from('matchmaking_queue').update({
+      status:'matched', matched_with:opp.player_id, challenge_id:challenge.id
+    }).eq('player_id',MM.myPlayerId);
+
+    await _supa.from('matchmaking_queue').update({
+      status:'matched', matched_with:MM.myPlayerId, challenge_id:challenge.id
+    }).eq('player_id',opp.player_id);
+
+    await onMatchFound(challenge.id, opp.player_id, category, 'host', opp, questions);
+
+  }catch(e){}
+}
+
+function showOpponentFound(opp){
+  const card = document.getElementById('mm-opponent-card');
+  const nameEl = document.getElementById('mm-opp-name');
+  const ratingEl = document.getElementById('mm-opp-rating');
+  const statusEl = document.getElementById('mm-opp-status');
+  const avatars = ['👨','👩','🧑','👨‍💼','👩‍💼','🧑‍🎓'];
+  const av = document.getElementById('mm-opp-avatar');
+
+  if(nameEl) nameEl.textContent = opp.player_name||'Opponent';
+  if(nameEl) nameEl.style.color = 'var(--navy)';
+  if(ratingEl) ratingEl.textContent = opp.player_rating||1000;
+  if(statusEl) statusEl.textContent = '✅';
+  if(av) av.textContent = avatars[Math.floor(Math.random()*avatars.length)];
+  if(card) card.classList.add('found');
+
+  const title = document.getElementById('mm-search-title');
+  const sub = document.getElementById('mm-search-sub');
+  if(title) title.textContent = 'Opponent found! 🎉';
+  if(sub) sub.textContent = opp.player_name+' has joined the battle';
+}
+
+async function onMatchFound(challengeId, oppId, category, myRole, oppData, questions){
+  // Set CH state
+  CH.challengeId = challengeId;
+  CH.role = myRole;
+  CH.isOnlineMatch = true;
+  CH.myScore = 0; CH.opponentScore = 0;
+  CH.myAnswers = []; CH.opponentAnswers = [];
+  CH.currentQ = 0;
+
+  if(questions){
+    CH.questions = questions;
+  } else {
+    const {data:ch} = await _supa.from('challenges').select('questions').eq('id',challengeId).single();
+    CH.questions = JSON.parse(ch?.questions||'[]');
+  }
+
+  // Show countdown
+  await new Promise(r=>setTimeout(r,1500));
+  startCountdown(oppData);
+}
+
+function startCountdown(oppData){
+  showChallengeSection('countdown');
+  const vsText = document.getElementById('countdown-vs-text');
+  if(vsText) vsText.textContent = 'You vs '+(oppData?.player_name||'Opponent');
+
+  let count = 3;
+  const numEl = document.getElementById('countdown-num');
+  const tipEl = document.getElementById('countdown-tip');
+  if(tipEl) tipEl.textContent = MM.tips[Math.floor(Math.random()*MM.tips.length)];
+
+  const countDown = setInterval(()=>{
+    count--;
+    if(numEl){
+      numEl.textContent = count>0?count:'GO!';
+      numEl.style.color = count>0?'var(--navy)':'var(--green)';
+    }
+    if(count<=0){
+      clearInterval(countDown);
+      setTimeout(()=>{
+        subscribeToChallenge(CH.challengeId);
+        startBattle(MM.myName, oppData?.player_name||'Opponent');
+      },600);
+    }
+  },1000);
+}
+
+function matchWithAI(category){
+  clearInterval(MM.searchInterval);
+  clearInterval(MM.searchTimer);
+  cancelMatchmaking(true);
+
+  // Fake AI opponent
+  const aiNames = ['IFRS Bot 🤖','Ledger AI 📊','Audit Pro 🔍','Tax Master 💰','Finance AI 📈'];
+  const aiOpp = {
+    player_name: aiNames[Math.floor(Math.random()*aiNames.length)],
+    player_rating: MM.myRating + Math.floor(Math.random()*100-50),
+  };
+
+  const questions = getChallengeQuestions(category, 10);
+  CH.challengeId = 'ai_'+Date.now();
+  CH.role = 'host';
+  CH.isAIMatch = true;
+  CH.questions = questions;
+  CH.myScore = 0; CH.opponentScore = 0;
+  CH.myAnswers = []; CH.opponentAnswers = [];
+  CH.currentQ = 0;
+
+  toast('No opponents found — playing vs AI!');
+  showOpponentFound(aiOpp);
+  setTimeout(()=>startCountdown(aiOpp), 1000);
+
+  // AI will auto-answer questions
+  simulateAIOpponent();
+}
+
+function simulateAIOpponent(){
+  // AI answers randomly after 3-15 seconds per question
+  const answerWithAI = (qIdx)=>{
+    if(qIdx >= CH.questions.length) return;
+    const delay = Math.floor(Math.random()*12000+3000);
+    setTimeout(()=>{
+      const q = CH.questions[qIdx];
+      if(!q) return;
+      const aiCorrect = Math.random() < 0.65; // AI is correct 65% of time
+      const aiAnswer = aiCorrect ? q.correct : (q.correct+1)%4;
+      CH.opponentAnswers.push({q_idx:qIdx,answer:aiAnswer,correct:aiCorrect,time_ms:delay});
+      if(aiCorrect){
+        CH.opponentScore++;
+        if(CH.role==='host') document.getElementById('battle-guest-score').textContent=CH.opponentScore;
+        else document.getElementById('battle-host-score').textContent=CH.opponentScore;
+      }
+      const statusEl=document.getElementById('opponent-status-text');
+      if(statusEl) statusEl.textContent=aiCorrect?'🤖 AI answered correctly!':'🤖 AI got it wrong!';
+      answerWithAI(qIdx+1);
+    },delay);
+  };
+  answerWithAI(0);
+}
+
+async function cancelMatchmaking(silent){
+  clearInterval(MM.searchInterval);
+  clearInterval(MM.searchTimer);
+  if(MM.queueSubscription) MM.queueSubscription.unsubscribe();
+  try{ await _supa.from('matchmaking_queue').delete().eq('player_id',MM.myPlayerId); }catch(e){}
+  if(!silent){ showChallengeSection('lobby'); toast('Search cancelled'); }
+}
+
+// ── ELO RATING UPDATE ──
+function calculateElo(myRating, oppRating, result){
+  const K = 32;
+  const expected = 1/(1+Math.pow(10,(oppRating-myRating)/400));
+  const score = result==='win'?1:result==='draw'?0.5:0;
+  return Math.round(myRating + K*(score-expected));
+}
+
+async function updatePlayerRating(result, oppRating){
+  const newRating = calculateElo(MM.myRating, oppRating||1000, result);
+  const ratingChange = newRating - MM.myRating;
+  MM.myRating = newRating;
+
+  try{
+    const {data:current} = await _supa.from('player_ratings').select('*').eq('player_id',MM.myPlayerId).single();
+    const wins=(current?.wins||0)+(result==='win'?1:0);
+    const losses=(current?.losses||0)+(result==='loss'?1:0);
+    const draws=(current?.draws||0)+(result==='draw'?1:0);
+    const winStreak=result==='win'?(current?.win_streak||0)+1:0;
+    const bestStreak=Math.max(current?.best_streak||0,winStreak);
+
+    await _supa.from('player_ratings').upsert({
+      player_id:MM.myPlayerId, player_name:MM.myName,
+      rating:newRating, wins, losses, draws,
+      total_played:(current?.total_played||0)+1,
+      win_streak:winStreak, best_streak:bestStreak,
+      updated_at:new Date().toISOString()
+    },{onConflict:'player_id'});
+
+    updateRatingUI({rating:newRating,wins,losses,draws});
+    return ratingChange;
+  }catch(e){ return 0; }
+}
+
+// ── GLOBAL RANKINGS ──
+async function loadGlobalRankings(){
+  const el = document.getElementById('global-rating-list');
+  if(!el) return;
+  try{
+    const {data} = await _supa.from('player_ratings')
+      .select('*').order('rating',{ascending:false}).limit(10);
+    if(!data||!data.length){
+      el.innerHTML='<div style="text-align:center;padding:12px;color:var(--muted);font-size:12px;">No ranked players yet — be the first!</div>';
+      return;
+    }
+    const tiers=MM.ratingTiers;
+    el.innerHTML=data.map((p,i)=>{
+      const tier=getRatingTier(p.rating);
+      const isMe=p.player_id===MM.myPlayerId;
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);${isMe?'background:var(--blue-ll);margin:0 -4px;padding:10px 4px;border-radius:8px;':''}">
+        <div style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:${i<3?['#F59E0B','#94A3B8','#CD7C2F'][i]:'var(--muted)'};width:20px;">${i<3?['🥇','🥈','🥉'][i]:i+1}</div>
+        <div style="font-size:18px;">${tier.icon}</div>
+        <div style="flex:1;">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);">${p.player_name}${isMe?' (You)':''}</div>
+          <div style="font-size:10px;color:var(--muted);">${tier.name} · W${p.wins}/L${p.losses}</div>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--navy);">${p.rating}</div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    el.innerHTML='<div style="text-align:center;padding:12px;color:var(--muted);font-size:12px;">Could not load rankings</div>';
+  }
+}
+
+// Override endChallenge to also update ELO for online matches
+const _origEndChallenge = endChallenge;
+endChallenge = async function(challengeData){
+  _origEndChallenge(challengeData);
+  if(CH.isOnlineMatch || CH.isAIMatch){
+    const myScore = CH.role==='host'?challengeData.host_score:challengeData.guest_score;
+    const oppScore = CH.role==='host'?challengeData.guest_score:challengeData.host_score;
+    const result = myScore>oppScore?'win':myScore<oppScore?'loss':'draw';
+    const ratingChange = await updatePlayerRating(result, 1000);
+    // Show rating change in results
+    const xpEl=document.getElementById('result-xp-text');
+    if(xpEl) xpEl.textContent=xpEl.textContent+' · Rating: '+(ratingChange>=0?'+':'')+ratingChange;
+  }
+};
+
+// Override showChallengeSection to handle new screens
+const _origShowSection = showChallengeSection;
+showChallengeSection = function(section){
+  const allSections=['lobby','waiting','battle','results','matchmaking','countdown'];
+  allSections.forEach(s=>{
+    const el=document.getElementById('ch-'+s);
+    if(el) el.style.display=s===section?'block':'none';
+  });
+};
+
+// Load online matchmaking data when screen shown
+const _origShowScreenMM = showScreen;
+showScreen = function(id){
+  _origShowScreenMM(id);
+  if(id==='multiplayer'){
+    loadChallengeStats();
+    loadPlayerRating();
+    loadGlobalRankings();
+    showChallengeSection('lobby');
+    // Refresh online count every 30s
+    clearInterval(MM.onlineCountInterval);
+    MM.onlineCountInterval = setInterval(updateOnlineCount, 30000);
+  }
+};
 
 // ── AUTO SAVE EVERY 30s ──
 setInterval(saveUserProgress, 30000);
