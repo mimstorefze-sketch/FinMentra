@@ -1521,7 +1521,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 
 <!-- TOP NAV -->
 <nav class="nav">
-  <div class="nav-brand">Fin<em>Mentra</em></div>
+  <div class="nav-brand" id="nav-brand-logo" onclick="secretLogoTap()">Fin<em>Mentra</em></div>
   <div class="tn-hearts tn-stat" id="nav-hearts">❤️❤️❤️</div>
   <div class="tn-stat" id="nav-coins-stat" style="display:flex;align-items:center;gap:3px;"><span id="nav-coin-icon"></span><span id="nav-coins">240</span></div>
   <div class="tn-stat tn-xp">⚡ <span id="nav-xp">0</span><div class="tn-xp-bar"><span id="nav-xp-bar" style="width:0%"></span></div></div>
@@ -4349,7 +4349,59 @@ function copyMsg(btn){const bubble=btn.closest('.msg-bubble');if(bubble){navigat
 function reactMsg(btn,emoji){btn.textContent=emoji+' 1';btn.style.opacity='1';btn.style.background='var(--blue-ll)';}
 function saveToVault(btn){toast('Answer saved to Mistake Vault');btn.textContent='Saved ✓';btn.style.color='var(--green)';}
 
-// ── UPDATE MISSIONS DYNAMICALLY ──
+// ── SECRET PLAN SWITCHER (tap logo 5 times) ──
+let _logoTapCount = 0;
+let _logoTapTimer = null;
+function secretLogoTap(){
+  _logoTapCount++;
+  clearTimeout(_logoTapTimer);
+  _logoTapTimer = setTimeout(()=>{ _logoTapCount = 0; }, 2000);
+  if(_logoTapCount >= 5){
+    _logoTapCount = 0;
+    showPlanSwitcher();
+  }
+}
+
+function showPlanSwitcher(){
+  const existing = document.getElementById('plan-switcher-popup');
+  if(existing) existing.remove();
+  const popup = document.createElement('div');
+  popup.id = 'plan-switcher-popup';
+  popup.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(10,31,110,0.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:24px;padding:28px 24px;max-width:320px;width:92%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.4);';
+  box.innerHTML = '<div style="font-size:36px;margin-bottom:8px;">🔧</div>'
+    + '<div style="font-family:\'Cormorant Garamond\',serif;font-size:22px;font-weight:600;color:#0A1F6E;margin-bottom:4px;">Dev Plan Switcher</div>'
+    + '<div style="font-size:11px;color:#64748B;margin-bottom:20px;">Current plan: <strong style="color:#0A1F6E;">'+(S.plan||'free').toUpperCase()+'</strong></div>';
+
+  const plans = [
+    { plan:'free', label:'🆓 Free', color:'#64748B', bg:'#F1F5F9' },
+    { plan:'pro', label:'⭐ Pro', color:'#1E3A8A', bg:'#EEF2FF' },
+    { plan:'elite', label:'👑 Elite', color:'#92400E', bg:'#FEF3C7' },
+  ];
+
+  plans.forEach(p=>{
+    const btn = document.createElement('button');
+    btn.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:'+p.bg+';color:'+p.color+';font-size:14px;font-weight:700;border:2px solid '+(S.plan===p.plan?p.color:'transparent')+';cursor:pointer;font-family:inherit;margin-bottom:8px;display:block;';
+    btn.innerHTML = p.label + (S.plan===p.plan?' ← current':'');
+    btn.onclick = ()=>{
+      S.plan = p.plan;
+      saveState();
+      popup.remove();
+      toast('Plan set to '+(p.plan.toUpperCase())+' — reloading...');
+      setTimeout(()=>location.reload(), 1000);
+    };
+    box.appendChild(btn);
+  });
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.style.cssText = 'width:100%;padding:10px;border-radius:12px;background:#F1F5F9;color:#64748B;font-size:13px;font-weight:600;border:none;cursor:pointer;font-family:inherit;margin-top:4px;';
+  cancelBtn.onclick = ()=>popup.remove();
+  box.appendChild(cancelBtn);
+  popup.appendChild(box);
+  document.body.appendChild(popup);
+}
 function updateMissions(){
   const todayQ = S.todayQ || 0;
   const streak = S.streak || 0;
