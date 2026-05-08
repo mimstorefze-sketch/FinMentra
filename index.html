@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
 <title>FinMentra — Where Finance Becomes Second Nature</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -179,6 +182,8 @@ a{color:inherit;text-decoration:none;}
 
 /* ── SHELL ── */
 .shell{padding-top:112px;padding-bottom:80px;min-height:100vh;}
+#screen-multiplayer.active ~ * { padding-top: 0; }
+.shell:has(#screen-multiplayer.active) { padding-top: 60px; }
 .screen{display:none;max-width:720px;margin:0 auto;padding:16px 14px;flex-direction:column;gap:14px;}
 .screen.active{display:flex;}
 
@@ -366,14 +371,21 @@ a{color:inherit;text-decoration:none;}
 .actionrow,.action-row{display:flex;gap:6px;align-items:center;background:var(--surface);border-top:1px solid var(--border2);padding:10px 14px;margin:8px 0 0;border-radius:12px;box-shadow:0 2px 8px rgba(10,31,110,.06);}
 /* Normal flow — no fixed/floating on practice screen */
 #screen-practice { padding-bottom: 20px; }
-#screen-multiplayer { padding: 0 !important; margin-top: 0 !important; gap: 0 !important; }
-#screen-multiplayer > * { padding: 0 14px; }
-#screen-multiplayer #ch-lobby { padding: 12px 14px; }
-#screen-multiplayer #ch-waiting { padding: 12px 14px; }
-#screen-multiplayer #ch-battle { padding: 12px 14px; }
-#screen-multiplayer #ch-results { padding: 12px 14px; }
-#screen-multiplayer #ch-matchmaking { padding: 12px 14px; }
-#screen-multiplayer #ch-countdown { padding: 12px 14px; }
+#screen-multiplayer { 
+  padding: 0 !important; 
+  margin-top: 0 !important; 
+  gap: 0 !important;
+  padding-top: 0 !important;
+}
+#screen-multiplayer #ch-lobby,
+#screen-multiplayer #ch-waiting,
+#screen-multiplayer #ch-battle,
+#screen-multiplayer #ch-results,
+#screen-multiplayer #ch-matchmaking,
+#screen-multiplayer #ch-countdown { 
+  padding: 10px 14px 14px;
+  margin-top: 0;
+}
 .actionrow .btn{flex:1;}
 .btn-back{height:40px;padding:0 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface);display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--navy);cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0;}
 .btn-bookmark{width:40px;height:40px;border:1px solid var(--border);border-radius:10px;background:var(--surface);display:grid;place-items:center;font-size:16px;flex-shrink:0;cursor:pointer;font-family:var(--font-body);}
@@ -3103,23 +3115,36 @@ function switchMode(mode){
   if(mode === S.mode) return;
   const toLabel = mode === 'professional' ? '💼 Professional' : '🎓 Student';
   showModeConfirm(toLabel, function(){
-    // Reset all practice state
+    // Cancel any pending notifications/timers that could redirect
+    if(window._notifTimer) clearTimeout(window._notifTimer);
+    if(window._inAppNotifTimer) clearTimeout(window._inAppNotifTimer);
+    // Clear notification queue
+    if(typeof _notifQueue !== 'undefined') _notifQueue.length = 0;
+
     S.currentStandard = null;
     S.sessionQs = [];
     S.qIndex = 0;
     S.answered = false;
     S.mode = mode;
+
     // Sync button UI
     const sBtn = document.getElementById('ms-student');
     const pBtn = document.getElementById('ms-pro');
     if(sBtn) sBtn.classList.toggle('active', mode==='student');
     if(pBtn) pBtn.classList.toggle('active', mode==='professional');
-    // Directly show correct screen — bypass all wrappers
+
+    // Hide ALL screens first
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+
+    // Show correct screen directly
     const targetId = mode==='professional' ? 'screen-pro-home' : 'screen-home';
     const target = document.getElementById(targetId);
-    if(target) target.classList.add('active');
+    if(target){
+      target.classList.add('active');
+      target.scrollTop = 0;
+    }
     S.screen = mode==='professional' ? 'pro-home' : 'home';
+
     if(mode==='professional'){
       const pg=document.getElementById('pro-greeting');
       if(pg) pg.textContent=getMoodGreeting(true);
@@ -3132,6 +3157,7 @@ function switchMode(mode){
     window.scrollTo(0,0);
     toast('Switched to '+toLabel+' mode');
   }, function(){
+    // Cancelled — revert buttons
     const sBtn=document.getElementById('ms-student');
     const pBtn=document.getElementById('ms-pro');
     if(sBtn) sBtn.classList.toggle('active', S.mode==='student');
@@ -3356,43 +3382,56 @@ async function fetchQuestionsForStandard(standard){
   if(SQ_CACHE[cacheKey] && SQ_CACHE[cacheKey].length >= 1){
     return [...SQ_CACHE[cacheKey]].sort(()=>Math.random()-.5);
   }
+  // Check Mixed cache first
+  if(SQ_CACHE['Mixed']){
+    const fromCache = SQ_CACHE['Mixed'].filter(q=>q.standard===standard);
+    if(fromCache.length > 0){
+      SQ_CACHE[cacheKey] = fromCache;
+      return [...fromCache].sort(()=>Math.random()-.5);
+    }
+  }
   try{
     const url = SUPA_URL + '/rest/v1/questions?select=*&limit=100&standard=eq.' + encodeURIComponent(standard);
     const res = await fetch(url, {
-      method: 'GET',
-      headers:{
-        'apikey': SUPA_KEY,
-        'Authorization': 'Bearer ' + SUPA_KEY,
-        'Content-Type': 'application/json'
-      },
-      mode: 'cors',
-      credentials: 'omit'
+      method:'GET',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY},
+      mode:'cors', credentials:'omit'
     });
     if(!res.ok) return null;
     const data = await res.json();
-    if(!data || data.length === 0) return null;
-    const converted = data.map(q=>shuffleOptions({
-      q: q.question,
-      opts: [q.option_a, q.option_b, q.option_c, q.option_d],
-      correct: ['A','B','C','D'].indexOf(q.correct_answer),
-      explain: q.explanation||'',
-      standard: q.standard||''
-    })).filter(q=>q.correct>=0&&q.q&&q.opts[0]);
+    if(!data||data.length===0) return null;
+    const converted = data.map(convertQuestion).filter(q=>q.correct>=0&&q.q&&q.opts[0]);
     SQ_CACHE[cacheKey] = converted;
-    return converted;
+    return [...converted].sort(()=>Math.random()-.5);
   }catch(e){ return null; }
 }
 
-// Shuffle options to avoid answer bias (Copilot tends to put correct answer as A)
+// ── SUPABASE QUESTION CACHE ──
+const SQ_CACHE = {};
+
+// Shuffle options to fix answer bias — MUST be defined before use
 function shuffleOptions(q){
-  const opts = [...q.opts];
+  const opts = [...(q.opts||[])];
+  if(opts.length !== 4) return q;
   const correctText = opts[q.correct];
-  // Fisher-Yates shuffle
+  if(correctText === undefined) return q;
   for(let i=opts.length-1;i>0;i--){
     const j=Math.floor(Math.random()*(i+1));
     [opts[i],opts[j]]=[opts[j],opts[i]];
   }
-  return {...q, opts, correct: opts.indexOf(correctText)};
+  const newCorrect = opts.indexOf(correctText);
+  return {...q, opts, correct: newCorrect >= 0 ? newCorrect : 0};
+}
+
+function convertQuestion(q){
+  return shuffleOptions({
+    q: q.question,
+    opts: [q.option_a, q.option_b, q.option_c, q.option_d],
+    correct: ['A','B','C','D'].indexOf(q.correct_answer),
+    explain: q.explanation||'',
+    standard: q.standard||'',
+    category: q.category||''
+  });
 }
 
 // ── PRACTICE ──
@@ -3404,14 +3443,12 @@ function selectDomain(el,d){
   S.sessionQs=[];
   S.qIndex=0;
   S.answered=false;
-  startSession(); // async — runs in background, loadQuestion called when ready
+  startSession();
 }
-// ── SUPABASE QUESTION CACHE ──
-const SQ_CACHE = {};
 
 async function fetchQuestionsFromSupabase(category, count){
   const cacheKey = category||'Mixed';
-  if(SQ_CACHE[cacheKey] && SQ_CACHE[cacheKey].length >= count){
+  if(SQ_CACHE[cacheKey] && SQ_CACHE[cacheKey].length >= 3){
     return [...SQ_CACHE[cacheKey]].sort(()=>Math.random()-.5).slice(0,count);
   }
   try{
@@ -3426,6 +3463,81 @@ async function fetchQuestionsFromSupabase(category, count){
       mode: 'cors',
       credentials: 'omit'
     });
+    if(!res.ok){ console.log('Supabase error:',res.status,res.statusText); return null; }
+    const allData = await res.json();
+    if(!allData||allData.length===0){ console.log('No questions in Supabase'); return null; }
+
+    // Convert ALL and cache as Mixed
+    const allConverted = allData.map(convertQuestion).filter(q=>q.correct>=0&&q.q&&q.opts[0]);
+    SQ_CACHE['Mixed'] = allConverted;
+
+    // Filter by category using BOTH category field AND standard prefix
+    let filtered = allConverted;
+    if(category && category !== 'Mixed'){
+      filtered = allConverted.filter(q=>{
+        const std = (q.standard||'').toUpperCase();
+        const cat = (q.category||'').toUpperCase();
+        const target = category.toUpperCase();
+        // Match by category field first
+        if(cat === target) return true;
+        // Match by standard prefix
+        if(target==='IFRS') return std.startsWith('IFRS');
+        if(target==='IAS') return std.startsWith('IAS') && !std.startsWith('ISA');
+        if(target==='ISA') return std.startsWith('ISA');
+        if(target==='COSTING') return cat==='COSTING'||std.includes('COST')||std.startsWith('MC');
+        if(target==='FM') return cat==='FM'||std.startsWith('FM')||std.includes('MANAGEMENT');
+        if(target==='TAX') return cat==='TAX'||std.toLowerCase().includes('tax')||std.startsWith('TX');
+        return false;
+      });
+      // If no match found — don't fall back to all, show empty
+      if(filtered.length===0){
+        console.log('No questions for category:',category,'— check your uploads');
+      }
+    }
+
+    SQ_CACHE[cacheKey] = filtered;
+    const stds=[...new Set(filtered.map(q=>q.standard))];
+    console.log('✅ Loaded',filtered.length,'questions for',category,'. Standards:',stds.slice(0,8));
+    return [...filtered].sort(()=>Math.random()-.5).slice(0,count);
+  }catch(e){
+    console.log('Fetch error:',e.message);
+    return null;
+  }
+}
+
+async function fetchQuestionsForStandard(standard){
+  const cacheKey = 'std_'+standard;
+  if(SQ_CACHE[cacheKey] && SQ_CACHE[cacheKey].length >= 1){
+    return [...SQ_CACHE[cacheKey]].sort(()=>Math.random()-.5);
+  }
+  // First check Mixed cache
+  if(SQ_CACHE['Mixed']){
+    const fromCache = SQ_CACHE['Mixed'].filter(q=>q.standard===standard);
+    if(fromCache.length > 0){
+      SQ_CACHE[cacheKey] = fromCache;
+      return [...fromCache].sort(()=>Math.random()-.5);
+    }
+  }
+  try{
+    const url = SUPA_URL + '/rest/v1/questions?select=*&limit=100&standard=eq.' + encodeURIComponent(standard);
+    const res = await fetch(url, {
+      method: 'GET',
+      headers:{
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_KEY,
+        'Content-Type': 'application/json'
+      },
+      mode: 'cors',
+      credentials: 'omit'
+    });
+    if(!res.ok) return null;
+    const data = await res.json();
+    if(!data||data.length===0) return null;
+    const converted = data.map(convertQuestion).filter(q=>q.correct>=0&&q.q&&q.opts[0]);
+    SQ_CACHE[cacheKey] = converted;
+    return [...converted].sort(()=>Math.random()-.5);
+  }catch(e){ return null; }
+}
     if(!res.ok){ console.log('Supabase error:',res.status,res.statusText); return null; }
     const allData = await res.json();
     if(!allData||allData.length===0){ console.log('No questions in Supabase'); return null; }
@@ -3551,6 +3663,35 @@ function loadQuestion(){
   S.answered=false;
   S.currentBookmarked=false;
   buildProgressDots();
+
+  // Free user: check if already answered today — show question but block answering
+  if(isFree() && _isGuest){
+    const todayKey = 'fm_free_answered_' + new Date().toDateString();
+    const alreadyAnswered = parseInt(localStorage.getItem(todayKey)||'0');
+    const threshold = parseInt(localStorage.getItem('fm_guest_threshold')||'10');
+    if(alreadyAnswered >= threshold){
+      // Show question but disable options
+      setTimeout(()=>{
+        const opts = document.querySelectorAll('.opt-btn');
+        opts.forEach(o=>{
+          o.disabled = true;
+          o.style.opacity = '0.5';
+          o.style.cursor = 'not-allowed';
+        });
+        const nextBtn = document.getElementById('next-btn');
+        if(nextBtn){ nextBtn.disabled = true; nextBtn.style.opacity='0.5'; }
+        // Show register prompt
+        const msg = document.createElement('div');
+        msg.style.cssText='background:#FEF3C7;border:1px solid #F59E0B;border-radius:10px;padding:10px;font-size:12px;font-weight:600;color:#92400E;text-align:center;margin-top:8px;';
+        msg.innerHTML = '🔒 Register free to answer more questions today!<br><button onclick="document.getElementById(\'auth-screen\').style.display=\'flex\'" style="margin-top:6px;padding:6px 16px;background:#0A1F6E;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:11px;">Create Free Account</button>';
+        const optsContainer = document.getElementById('options');
+        if(optsContainer && !document.getElementById('free-block-msg')){
+          msg.id = 'free-block-msg';
+          optsContainer.appendChild(msg);
+        }
+      }, 100);
+    }
+  }
   // Update domain/standard labels in practice header
   const domLabel=document.getElementById('practice-domain-label');
   const stdLabel=document.getElementById('practice-standard-label');
@@ -6031,7 +6172,11 @@ function processNotifQueue(){
   if(n.action) bar.onclick=()=>{n.action();bar.style.transform='translateY(-80px)';bar.style.opacity='0';};
   bar.style.transform='translateY(0)';bar.style.opacity='1';
   playSound('notification');
-  setTimeout(()=>{bar.style.transform='translateY(-80px)';bar.style.opacity='0';setTimeout(processNotifQueue,500);},4000);
+  setTimeout(()=>{
+    bar.style.transform='translateY(-80px)';
+    bar.style.opacity='0';
+    window._notifTimer = setTimeout(processNotifQueue,500);
+  },4000);
 }
 
 // Trigger notifications at appropriate times
@@ -6047,7 +6192,7 @@ function checkInAppNotifications(){
     }
     // New standard update (random chance)
     if(Math.random()<0.1){
-      showInAppNotif('Standard update','IFRS 18 effective from January 2027.','📋',()=>showScreen('updates'));
+      if(S.mode==='professional') showInAppNotif('Standard update','IFRS 18 effective from January 2027.','📋',()=>{ if(S.mode==='professional') showScreen('updates'); });
     }
     // Daily challenge available (morning)
     if(h>=8&&h<=10){
