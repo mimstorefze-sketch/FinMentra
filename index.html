@@ -20,7 +20,7 @@
 <script>
 // Initialize Supabase immediately so it's available everywhere
 const SUPA_URL = 'https://vofxhqnipoywbbkmlxcp.supabase.co';
-const SUPA_KEY = 'sb_publishable_Msgu7dGioeUfmnH88XtXlA_-WFeJoQh';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvZnhocW5pcG95d2Jia21seGNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5Nzk3ODUsImV4cCI6MjA5MzU1NTc4NX0.7UDDR3oNoiebxMQPR_jPHM8fOhhOzQ2MxpmR7TpBCHQ';
 const _supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 console.log('✅ Supabase initialized');
 </script>
@@ -366,6 +366,14 @@ a{color:inherit;text-decoration:none;}
 .actionrow,.action-row{display:flex;gap:6px;align-items:center;background:var(--surface);border-top:1px solid var(--border2);padding:10px 14px;margin:8px 0 0;border-radius:12px;box-shadow:0 2px 8px rgba(10,31,110,.06);}
 /* Normal flow — no fixed/floating on practice screen */
 #screen-practice { padding-bottom: 20px; }
+#screen-multiplayer { padding: 0 !important; margin-top: 0 !important; gap: 0 !important; }
+#screen-multiplayer > * { padding: 0 14px; }
+#screen-multiplayer #ch-lobby { padding: 12px 14px; }
+#screen-multiplayer #ch-waiting { padding: 12px 14px; }
+#screen-multiplayer #ch-battle { padding: 12px 14px; }
+#screen-multiplayer #ch-results { padding: 12px 14px; }
+#screen-multiplayer #ch-matchmaking { padding: 12px 14px; }
+#screen-multiplayer #ch-countdown { padding: 12px 14px; }
 .actionrow .btn{flex:1;}
 .btn-back{height:40px;padding:0 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface);display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--navy);cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0;}
 .btn-bookmark{width:40px;height:40px;border:1px solid var(--border);border-radius:10px;background:var(--surface);display:grid;place-items:center;font-size:16px;flex-shrink:0;cursor:pointer;font-family:var(--font-body);}
@@ -3230,25 +3238,53 @@ async function doResetProgress(){
 // ── TOPICS ──
 function renderTopics(){
   const container=document.getElementById('topic-list');if(!container) return;
-  // Show tax disclaimer when tax filter active
   let disc=document.getElementById('tax-disclaimer');
-  if(!disc){disc=document.createElement('div');disc.id='tax-disclaimer';disc.style.cssText='background:var(--gold-l);border:1px solid var(--gold);border-radius:10px;padding:10px 14px;font-size:11px;color:#92400E;line-height:1.6;margin-bottom:8px;display:none;';disc.innerHTML='<strong>⚠️ Tax Disclaimer:</strong> FinMentra covers universal tax principles (IAS 12, deferred tax, transfer pricing) only. Jurisdiction-specific tax advice is not provided. Always consult a qualified tax adviser for local compliance.';container.parentElement.insertBefore(disc,container);}
+  if(!disc){disc=document.createElement('div');disc.id='tax-disclaimer';disc.style.cssText='background:var(--gold-l);border:1px solid var(--gold);border-radius:10px;padding:10px 14px;font-size:11px;color:#92400E;line-height:1.6;margin-bottom:8px;display:none;';disc.innerHTML='<strong>⚠️ Tax Disclaimer:</strong> FinMentra covers universal tax principles only. Always consult a qualified tax adviser for local compliance.';container.parentElement.insertBefore(disc,container);}
   disc.style.display=S.topicFilter==='Tax'?'block':'none';
-  const stages=['stage-egg','stage-learner','stage-prac','stage-expert','stage-master','stage-locked'];
-  const emojis={'stage-locked':'🔒','stage-egg':'🥚','stage-learner':'🌱','stage-prac':'🔥','stage-expert':'⭐','stage-master':'👑'};
+
   container.innerHTML='';
   let shown=0;
-  TOPICS.forEach(t=>{
+
+  // Group topics by category for free plan counting
+  const catCounts = {};
+
+  TOPICS.forEach((t,globalIdx)=>{
     if(S.topicFilter!=='all'&&t.cat!==S.topicFilter) return;
     if(S.topicSearch&&!(t.num+' '+t.name).toLowerCase().includes(S.topicSearch.toLowerCase())) return;
-    const stage=stages[Math.floor(Math.random()*stages.length)];
-    const btn=document.createElement('button');btn.className='topic-row';
-    btn.onclick=()=>startTopicPractice(t.num);
+
+    // Count per category for locking
+    if(!catCounts[t.cat]) catCounts[t.cat]=0;
+    const catIdx = catCounts[t.cat];
+    catCounts[t.cat]++;
+
+    // Determine if locked
+    let locked = false;
+    if(isFree() && catIdx >= 3) locked = true;
+    // Pro/Elite: all open
+
     const domainIcon={'IFRS':'📜','IAS':'🏛️','ISA':'🔍','Costing':'⚙️','Tax':'📋','FM':'📈'}[t.cat]||'📚';
     const domainCls={'IFRS':'domain-icon-ifrs','IAS':'domain-icon-ias','ISA':'domain-icon-isa','Costing':'domain-icon-cost','FM':'domain-icon-fm','Tax':'domain-icon-cost'}[t.cat]||'';
-    btn.innerHTML='<div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;" class="'+domainCls+'">'+domainIcon+'</div><div class="topic-num" style="margin-left:8px;">'+t.num+'</div><div class="topic-name"><b>'+t.name+'</b><span>'+( t.sub||'Tap to practise')+'</span></div><div class="stage-ring '+stage+'">'+emojis[stage]+'</div>';
+
+    const btn=document.createElement('button');
+    btn.className='topic-row';
+    btn.style.opacity = locked ? '0.6' : '1';
+
+    if(locked){
+      btn.onclick = ()=>checkPlanFeature('multiplayer');
+    } else {
+      btn.onclick = ()=>startTopicPractice(t.num);
+    }
+
+    const lockBadge = locked ? '<span style="margin-left:auto;font-size:10px;font-weight:700;background:#EEF2FF;color:#0A1F6E;padding:3px 8px;border-radius:999px;">🔒 Pro</span>' : '';
+    btn.innerHTML='<div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;" class="'+domainCls+'">'+domainIcon+'</div>'
+      +'<div class="topic-num" style="margin-left:8px;">'+t.num+'</div>'
+      +'<div class="topic-name"><b>'+t.name+'</b><span>'+(t.sub||'Tap to practise')+'</span></div>'
+      +lockBadge
+      +(locked ? '' : '<div style="font-size:18px;color:var(--muted);">›</div>');
+
     container.appendChild(btn);shown++;
   });
+
   if(!shown) container.innerHTML='<div style="padding:18px;text-align:center;color:var(--steel);">No standards match.</div>';
 }
 function filterTopics(val){S.topicSearch=val;renderTopics();}
@@ -3256,37 +3292,107 @@ function setTopicFilter(el,cat){
   document.querySelectorAll('#topic-filters .chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');S.topicFilter=cat;renderTopics();
 }
-function startTopicPractice(num){
-  // Set standard and domain FIRST
-  S.currentStandard=num;
-  const t=TOPICS.find(x=>x.num===num);
-  if(t) S.domain=t.cat;
-  S.sessionQs=[];
-  S.qIndex=0;
-  S.answered=false;
-  // Then build session with the correct QB pool
-  let pool=[];
-  if(QB[num] && QB[num].length>0){
-    pool=[...QB[num]];
-  } else {
-    // Fallback: filter QB_BY_DOMAIN by category
-    const cat=t?t.cat:'IFRS';
-    pool=[...(QB_BY_DOMAIN[cat]||QB_BY_DOMAIN['IFRS'])];
-    if(pool.length===0) pool=[...(QB_BY_DOMAIN['IFRS'])];
-  }
-  pool=pool.sort(()=>Math.random()-.5);
-  S.sessionQs=pool.slice(0,Math.min(8,pool.length));
-  // Update domain tab UI to match
+async function startTopicPractice(num){
+  S.currentStandard = num;
+  const t = TOPICS.find(x=>x.num===num);
+  if(t) S.domain = t.cat;
+  S.sessionQs = [];
+  S.qIndex = 0;
+  S.answered = false;
+  S.sessionQ = 0;
+  S.sessionCorrect = 0;
+
+  // Update domain tab UI
   document.querySelectorAll('.dom-tab').forEach(tab=>{
-    const d=tab.getAttribute('onclick')||'';
-    const match=d.match(/'([^']+)'\)/);
+    const d = tab.getAttribute('onclick')||'';
+    const match = d.match(/'([^']+)'\)/);
     if(match&&t&&match[1]===t.cat) tab.classList.add('active');
     else tab.classList.remove('active');
   });
-  // Now navigate
+
   showScreen('practice');
-  S.sessionQ=0; S.sessionCorrect=0;
+
+  // Show loading
+  const qt = document.getElementById('q-text');
+  const opts = document.getElementById('options');
+  if(qt) qt.textContent = 'Loading '+num+' questions...';
+  if(opts) opts.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">⏳ Fetching...</div>';
+
+  // Fetch from Supabase for THIS specific standard
+  let pool = [];
+  const supaQs = await fetchQuestionsForStandard(num);
+  if(supaQs && supaQs.length >= 1){
+    pool = supaQs;
+    console.log('✅ Topics: loaded',pool.length,'questions for',num);
+  } else {
+    // Fallback to local QB
+    pool = QB[num] ? [...QB[num]] : [...(QB_BY_DOMAIN[t?t.cat:'IFRS']||[])];
+    console.log('Topics fallback QB for',num,'count:',pool.length);
+  }
+
+  // Apply limits based on plan and position
+  const topicIdx = t ? TOPICS.filter(x=>x.cat===t.cat).findIndex(x=>x.num===num) : 0;
+  let limit = 8; // default full
+  if(isFree()){
+    if(topicIdx === 0) limit = 8; // First standard: full open
+    else if(topicIdx < 3) limit = 3; // Standards 2-3: 3 questions only
+    else limit = 0; // Rest locked
+  }
+
+  if(limit === 0){
+    if(qt) qt.textContent = '🔒 Upgrade to Pro to access '+num;
+    if(opts) opts.innerHTML = '<div style="text-align:center;padding:20px;"><button onclick="checkPlanFeature(\'multiplayer\')" style="padding:12px 24px;background:#0A1F6E;color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;">Upgrade to Pro 🚀</button></div>';
+    return;
+  }
+
+  pool = pool.sort(()=>Math.random()-.5);
+  S.sessionQs = pool.slice(0, Math.min(limit, pool.length));
   loadQuestion();
+}
+
+// Fetch questions for a SPECIFIC standard from Supabase
+async function fetchQuestionsForStandard(standard){
+  const cacheKey = 'std_'+standard;
+  if(SQ_CACHE[cacheKey] && SQ_CACHE[cacheKey].length >= 1){
+    return [...SQ_CACHE[cacheKey]].sort(()=>Math.random()-.5);
+  }
+  try{
+    const url = SUPA_URL + '/rest/v1/questions?select=*&limit=100&standard=eq.' + encodeURIComponent(standard);
+    const res = await fetch(url, {
+      method: 'GET',
+      headers:{
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_KEY,
+        'Content-Type': 'application/json'
+      },
+      mode: 'cors',
+      credentials: 'omit'
+    });
+    if(!res.ok) return null;
+    const data = await res.json();
+    if(!data || data.length === 0) return null;
+    const converted = data.map(q=>shuffleOptions({
+      q: q.question,
+      opts: [q.option_a, q.option_b, q.option_c, q.option_d],
+      correct: ['A','B','C','D'].indexOf(q.correct_answer),
+      explain: q.explanation||'',
+      standard: q.standard||''
+    })).filter(q=>q.correct>=0&&q.q&&q.opts[0]);
+    SQ_CACHE[cacheKey] = converted;
+    return converted;
+  }catch(e){ return null; }
+}
+
+// Shuffle options to avoid answer bias (Copilot tends to put correct answer as A)
+function shuffleOptions(q){
+  const opts = [...q.opts];
+  const correctText = opts[q.correct];
+  // Fisher-Yates shuffle
+  for(let i=opts.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [opts[i],opts[j]]=[opts[j],opts[i]];
+  }
+  return {...q, opts, correct: opts.indexOf(correctText)};
 }
 
 // ── PRACTICE ──
@@ -3309,20 +3415,23 @@ async function fetchQuestionsFromSupabase(category, count){
     return [...SQ_CACHE[cacheKey]].sort(()=>Math.random()-.5).slice(0,count);
   }
   try{
-    // Use REST API directly to avoid DataCloneError
     const url = SUPA_URL + '/rest/v1/questions?select=*&limit=1000';
     const res = await fetch(url, {
+      method: 'GET',
       headers:{
         'apikey': SUPA_KEY,
         'Authorization': 'Bearer ' + SUPA_KEY,
-      }
+        'Content-Type': 'application/json'
+      },
+      mode: 'cors',
+      credentials: 'omit'
     });
-    if(!res.ok){ console.log('Supabase REST error:',res.status); return null; }
+    if(!res.ok){ console.log('Supabase error:',res.status,res.statusText); return null; }
     const allData = await res.json();
     if(!allData||allData.length===0){ console.log('No questions in Supabase'); return null; }
 
-    // Cache all questions
-    const allConverted = allData.map(q=>({
+    // Shuffle options to avoid answer bias
+    const allConverted = allData.map(q=>shuffleOptions({
       q: q.question,
       opts: [q.option_a, q.option_b, q.option_c, q.option_d],
       correct: ['A','B','C','D'].indexOf(q.correct_answer),
@@ -3332,7 +3441,7 @@ async function fetchQuestionsFromSupabase(category, count){
 
     SQ_CACHE['Mixed'] = allConverted;
 
-    // Filter by category client-side
+    // Filter client-side by category
     let filtered = allConverted;
     if(category && category!=='Mixed'){
       filtered = allConverted.filter(q=>{
@@ -3345,56 +3454,61 @@ async function fetchQuestionsFromSupabase(category, count){
         if(category==='Tax') return std.toLowerCase().includes('tax')||std.startsWith('TX');
         return true;
       });
-      if(filtered.length===0) filtered = allConverted; // fallback to all
+      if(filtered.length===0) filtered = allConverted;
     }
 
     SQ_CACHE[cacheKey] = filtered;
     const stds=[...new Set(filtered.map(q=>q.standard))];
     console.log('✅ Loaded',filtered.length,'questions for',category,'. Standards:',stds.slice(0,6));
     return [...filtered].sort(()=>Math.random()-.5).slice(0,count);
-  }catch(e){ console.log('Fetch error:',e.message); return null; }
+  }catch(e){
+    console.log('Fetch error:',e.message);
+    return null;
+  }
 }
+
 
 async function startSession(){
   let pool = [];
-  // Show loading while fetching
   const qt=document.getElementById('q-text');
   const opts=document.getElementById('options');
   if(qt) qt.textContent='Loading questions...';
   if(opts) opts.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">⏳ Fetching questions...</div>';
 
-  // Try Supabase first
   const category = S.domain || 'IFRS';
-  const supaQs = await fetchQuestionsFromSupabase(category, 20);
+
+  // Fetch ALL questions from Supabase
+  const supaQs = await fetchQuestionsFromSupabase(category, 100);
   if(supaQs && supaQs.length >= 3){
-    pool = supaQs;
-    console.log('Using',pool.length,'Supabase questions');
+    // Remove recently seen questions to avoid repeats
+    const recentIds = S.recentQs || [];
+    let fresh = supaQs.filter(q => !recentIds.includes(q.q.substring(0,30)));
+    if(fresh.length < 5) fresh = supaQs; // reset if too few fresh
+    // Shuffle and take 8
+    pool = fresh.sort(()=>Math.random()-.5).slice(0, 8);
+    // Track recently seen
+    S.recentQs = pool.map(q=>q.q.substring(0,30));
+    console.log('✅ Arena: using',pool.length,'questions from Supabase for',category);
   } else {
-    // Fallback to local QB — pull randomly from ALL standards in the domain
-    console.log('Falling back to local QB for:',category);
-    if(S.currentStandard && QB[S.currentStandard]){
-      pool = [...QB[S.currentStandard]];
-    } else {
-      const domainFilter = {
-        IFRS:    k => k.startsWith('IFRS'),
-        IAS:     k => k.startsWith('IAS'),
-        ISA:     k => k.startsWith('ISA'),
-        Costing: k => k.startsWith('MC'),
-        Tax:     k => k.startsWith('TX'),
-        FM:      k => k.startsWith('FM'),
-      };
-      const fn = domainFilter[S.domain];
-      if(fn){ Object.entries(QB).forEach(([k,qs])=>{ if(fn(k)&&Array.isArray(qs)) pool.push(...qs); }); }
-      if(pool.length === 0) pool = [...(QB_BY_DOMAIN[S.domain]||QB_BY_DOMAIN['IFRS']||[])];
-    }
+    // Fallback to ALL local QB questions for this domain
+    console.log('Arena fallback to local QB for:',category);
+    const allLocal = [];
+    Object.entries(QB).forEach(([std, qs])=>{
+      const t = TOPICS.find(x=>x.num===std);
+      if(!t) return;
+      if(t.cat === category) allLocal.push(...qs);
+    });
+    pool = allLocal.length > 0
+      ? allLocal.sort(()=>Math.random()-.5).slice(0,8)
+      : [...(QB_BY_DOMAIN[category]||QB_BY_DOMAIN['IFRS']||[])].sort(()=>Math.random()-.5).slice(0,8);
   }
+
   if(pool.length === 0){
-    if(qt) qt.textContent='Questions for this standard coming soon!';
+    if(qt) qt.textContent='Questions coming soon!';
     if(opts) opts.innerHTML='';
     return;
   }
-  pool = [...pool].sort(()=>Math.random()-.5);
-  S.sessionQs = pool.slice(0, Math.min(8, pool.length));
+  S.sessionQs = pool;
   S.qIndex=0; S.sessionQ=0; S.sessionCorrect=0;
   loadQuestion();
 }
@@ -5032,12 +5146,18 @@ function closeExitConfirm(){
 function confirmExit(){
   closeExitConfirm();
   clearInterval(questionTimer);
-  // Just navigate back — XP/coins were already credited in answerQ
-  // Do NOT spawnXP here as it creates the "extra points" visual on exit
   if(S.sessionQ>0){
     toast('Session: '+S.sessionCorrect+'/'+S.sessionQ+' correct · XP saved');
   }
-  showScreen(S.prevScreen||'topics');
+  // Go back to where user came from
+  const dest = S.prevScreen && S.prevScreen !== 'practice' ? S.prevScreen : 'home';
+  S.currentStandard = null;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const target = document.getElementById('screen-'+dest);
+  if(target) target.classList.add('active');
+  S.screen = dest;
+  renderBottomNav();
+  window.scrollTo(0,0);
 }
 
 // ── FOLLOW-UP AI Q&A ──
@@ -6755,7 +6875,7 @@ const _origAnswerQ=answerQ;
 </style>
 
 <!-- ══ MULTIPLAYER CHALLENGE SCREEN ══ -->
-<div class="screen" id="screen-multiplayer" style="gap:0;padding:12px 14px;">
+<div class="screen" id="screen-multiplayer" style="gap:0;padding:0;margin-top:0;">
 
   <!-- LOBBY (choose create or join) -->
   <div id="ch-lobby">
