@@ -30,7 +30,7 @@ console.log('✅ Supabase initialized');
 <style>
 /* ── SUPABASE AUTH SCREEN ── */
 #auth-screen {
-  position:fixed;inset:0;z-index:2000;background:rgba(10,31,110,0.97);
+  position:fixed;inset:0;z-index:900;background:rgba(10,31,110,0.97);
   display:flex;align-items:center;justify-content:center;
   font-family:var(--font-body);
   backdrop-filter:blur(8px);
@@ -644,7 +644,7 @@ a{color:inherit;text-decoration:none;}
 .alert-close{font-size:15px;cursor:pointer;opacity:.6;background:none;border:none;}
 
 /* ── ONBOARDING ── */
-#onboarding{position:fixed;inset:0;z-index:1000;background:rgba(10,31,110,.96);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
+#onboarding{position:fixed;inset:0;z-index:2500;background:rgba(10,31,110,.96);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
 .ob-box,.overlay-card{background:var(--surface);border-radius:20px;padding:24px;max-width:360px;width:92%;text-align:center;animation:obIn .5s cubic-bezier(.34,1.56,.64,1);display:flex;flex-direction:column;gap:12px;}
 .ob-box{position:relative;overflow:hidden;}
 .ob-box::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--navy),var(--blue),var(--navy));}
