@@ -1554,59 +1554,6 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <!-- Already handled by hw-greeting with getMoodGreeting() -->
 
   <!-- RETURN USER / WEEKEND BADGE -->
-  <div id="return-user-banner" style="display:none;background:linear-gradient(135deg,var(--purple),#A78BFA);border-radius:14px;padding:12px 16px;color:#fff;margin-bottom:-4px;">
-    <div style="font-size:11px;font-weight:700;opacity:.8;text-transform:uppercase;letter-spacing:.08em;">Welcome back!</div>
-    <div style="font-size:14px;font-weight:700;margin-top:2px;" id="return-user-msg">Good to see you again 👋</div>
-  </div>
-  <div id="weekend-badge" style="display:none;background:linear-gradient(135deg,var(--gold),#FCD34D);border-radius:14px;padding:12px 16px;display:none;align-items:center;gap:10px;">
-    <div style="font-size:24px;">🏆</div>
-    <div><div style="font-size:13px;font-weight:800;color:var(--navy);">Weekend Challenge</div><div style="font-size:11px;color:#92400E;">Special 20Q marathon · +500 XP</div></div>
-    <button onclick="startDailyChallenge()" style="margin-left:auto;background:var(--navy);color:#fff;border:none;border-radius:10px;padding:7px 14px;font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;">Go →</button>
-  </div>
-
-  <!-- STUDY MOOD INDICATOR -->
-
-
-  <!-- NEXT UP CARD (adaptive) -->
-  <div class="card" style="display:flex;align-items:center;gap:12px;padding:14px;border-left:4px solid var(--blue);" id="next-up-card">
-    <div style="width:40px;height:40px;border-radius:12px;background:var(--blue-ll);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">📚</div>
-    <div style="flex:1;min-width:0;">
-      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Next Up</div>
-      <div style="font-size:14px;font-weight:700;color:var(--navy);margin-top:2px;" id="next-up-title">Start with IFRS 15</div>
-      <div style="font-size:11px;color:var(--steel);" id="next-up-sub">Revenue from Contracts · 8 questions</div>
-    </div>
-    <button onclick="startTopicPractice(document.getElementById('next-up-title').textContent.replace('Start with ','').replace('Continue ',''))" style="background:var(--navy);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;">Go →</button>
-  </div>
-
-  <!-- DAILY TIP CARD (swipeable) -->
-  <div style="position:relative;overflow:hidden;border-radius:var(--radius);" id="tip-container">
-    <div class="card" style="background:linear-gradient(135deg,#1F1035,#3B1060);color:#fff;" id="tip-card">
-      <div style="font-size:9px;font-weight:700;color:#C4B5FD;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">💡 Daily Tip · Swipe for next</div>
-      <div style="font-size:13px;line-height:1.6;font-weight:500;" id="tip-text">Under IFRS 9, the ECL model is <strong>forward-looking</strong> — you provision from Day 1, not only when there is evidence of default.</div>
-      <div style="display:flex;gap:4px;margin-top:10px;" id="tip-dots"></div>
-    </div>
-  </div>
-
-  <!-- STREAK HEATMAP (7-day) -->
-  <div class="card" style="padding:12px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-      <div style="font-size:12px;font-weight:700;color:var(--navy);">🔥 <span id="streak-heatmap-label">0-day streak</span></div>
-      <div style="font-size:10px;color:var(--muted);">Last 7 days</div>
-    </div>
-    <div style="display:flex;gap:5px;align-items:flex-end;" id="streak-heatmap">
-      <!-- built by JS -->
-    </div>
-  </div>
-
-  <!-- STUDY REMINDER BANNER -->
-  <div id="study-reminder" style="display:none;background:var(--teal-l);border:1px solid var(--teal);border-radius:12px;padding:10px 14px;display:none;align-items:center;gap:10px;">
-    <span style="font-size:18px;">⏰</span>
-    <div style="flex:1;font-size:12px;color:var(--teal);"><strong>Study reminder:</strong> <span id="reminder-text">You haven't studied today yet!</span></div>
-    <button onclick="showScreen('practice')" style="background:var(--teal);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-family:var(--font-body);font-size:11px;font-weight:700;cursor:pointer;">Study now</button>
-    <button onclick="document.getElementById('study-reminder').style.display='none'" style="background:none;border:none;font-size:15px;cursor:pointer;color:var(--teal);">✕</button>
-  </div>
-
-  <!-- RETURN USER / WEEKEND BADGE -->
   <div id="return-user-banner" style="display:none;background:linear-gradient(135deg,var(--purple),#A78BFA);border-radius:14px;padding:12px 16px;color:#fff;margin-bottom:8px;">
     <div style="font-size:10px;font-weight:700;opacity:.8;text-transform:uppercase;letter-spacing:.08em;">Welcome back!</div>
     <div style="font-size:14px;font-weight:700;margin-top:2px;" id="return-user-msg">Good to see you again!</div>
@@ -1618,7 +1565,15 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   </div>
 
 <!-- NEXT UP ADAPTIVE CARD -->
-
+  <div class="card" style="display:flex;align-items:center;gap:12px;padding:14px;border-left:4px solid var(--blue);" id="next-up-card" data-std="IFRS 15">
+    <div style="width:40px;height:40px;border-radius:12px;background:var(--blue-ll);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">📚</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Next Up</div>
+      <div style="font-size:14px;font-weight:700;color:var(--navy);margin-top:2px;" id="next-up-title">Start with IFRS 15</div>
+      <div style="font-size:11px;color:var(--steel);" id="next-up-sub">Revenue from Contracts · 8 questions</div>
+    </div>
+    <button onclick="goNextUp()" style="background:var(--navy);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;">Go →</button>
+  </div>
 
   <!-- DAILY TIP (swipeable) -->
   <div style="position:relative;overflow:hidden;border-radius:var(--radius);touch-action:pan-y;" id="tip-container">
@@ -1781,7 +1736,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
         <button onclick="sendFollowUp()" style="background:var(--navy);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-weight:700;font-size:12px;cursor:pointer;font-family:var(--font-body);">Ask</button>
       </div>
       <div id="followup-answer" style="display:none;margin-top:8px;padding:10px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;font-size:12px;line-height:1.7;color:var(--text);"></div>
-      <div id="followup-limit" style="font-size:10px;color:var(--muted);margin-top:4px;text-align:right;" id="followup-limit"></div>
+      <div id="followup-limit" style="font-size:10px;color:var(--muted);margin-top:4px;text-align:right;"></div>
     </div>
   </div>
   <!-- Notes -->
@@ -2853,6 +2808,7 @@ const S = {
   darkMode:false,
   topicFilter:'all', topicSearch:'',
   bubbleVisible:true,
+  completedTopics:{}, // tracks { 'IAS 1': true, 'IFRS 15': true, ... }
 };
 
 const RANKS=[
@@ -3162,7 +3118,6 @@ function switchMode(mode){
     } else {
       updateMissions();
       loadLeaderboard();
-      setTimeout(()=>{ if(typeof startSession==='function') startSession(); },200);
     }
     renderBottomNav();
     saveState();
@@ -3348,74 +3303,91 @@ function selectDomain(el,d){
 // ── SUPABASE QUESTION CACHE ──
 const SQ_CACHE = {};
 
-async function fetchQuestionsFromSupabase(category, count, standard){
-  if(typeof _supa === 'undefined'){ return null; }
-  const cacheKey = standard || category || 'Mixed';
-  if(SQ_CACHE[cacheKey] && SQ_CACHE[cacheKey].length >= 3){
-    return SQ_CACHE[cacheKey].sort(()=>Math.random()-.5).slice(0,count);
+async function fetchQuestionsFromSupabase(category, count){
+  const cacheKey = category||'Mixed';
+  if(SQ_CACHE[cacheKey] && SQ_CACHE[cacheKey].length >= count){
+    return [...SQ_CACHE[cacheKey]].sort(()=>Math.random()-.5).slice(0,count);
   }
   try{
-    let query = _supa.from('questions').select('*');
-    // Filter by standard first (most specific)
-    if(standard){
-      query = query.eq('standard', standard);
-    } else if(category && category !== 'Mixed'){
-      query = query.eq('category', category);
-    }
-    let {data, error} = await query.limit(500);
-    // If no results with category — try without filter
-    if((!data || data.length === 0) && category && category !== 'Mixed' && !standard){
-      console.log('No questions for "'+category+'" — trying all');
-      const result = await _supa.from('questions').select('*').limit(500);
-      data = result.data; error = result.error;
-    }
-    if(error){
-      console.log('Supabase error:', error.message);
-      return null;
-    }
-    if(!data || data.length === 0){
-      console.log('No questions in Supabase for:', standard||category);
-      return null;
-    }
-    const cats = [...new Set(data.map(q=>q.category))];
-    const stds = [...new Set(data.map(q=>q.standard))];
-    console.log('✅ Found',data.length,'questions. Categories:',cats,'Standards:',stds.slice(0,5));
-    const converted = data.map(q=>({
+    // Use REST API directly to avoid DataCloneError
+    const url = SUPA_URL + '/rest/v1/questions?select=*&limit=1000';
+    const res = await fetch(url, {
+      headers:{
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_KEY,
+      }
+    });
+    if(!res.ok){ console.log('Supabase REST error:',res.status); return null; }
+    const allData = await res.json();
+    if(!allData||allData.length===0){ console.log('No questions in Supabase'); return null; }
+
+    // Cache all questions
+    const allConverted = allData.map(q=>({
       q: q.question,
       opts: [q.option_a, q.option_b, q.option_c, q.option_d],
       correct: ['A','B','C','D'].indexOf(q.correct_answer),
       explain: q.explanation||'',
       standard: q.standard||''
-    })).filter(q=>q.correct >= 0 && q.q && q.opts[0]);
-    SQ_CACHE[cacheKey] = converted;
-    return converted.sort(()=>Math.random()-.5).slice(0,count);
-  }catch(e){ console.log('Supabase fetch error:',e); return null; }
+    })).filter(q=>q.correct>=0&&q.q&&q.opts[0]);
+
+    SQ_CACHE['Mixed'] = allConverted;
+
+    // Filter by category client-side
+    let filtered = allConverted;
+    if(category && category!=='Mixed'){
+      filtered = allConverted.filter(q=>{
+        const std = q.standard||'';
+        if(category==='IFRS') return std.startsWith('IFRS');
+        if(category==='IAS') return std.startsWith('IAS');
+        if(category==='ISA') return std.startsWith('ISA');
+        if(category==='Costing') return std.toLowerCase().includes('cost')||std.startsWith('MC');
+        if(category==='FM') return std.startsWith('FM')||std.includes('Management')||std.includes('Finance');
+        if(category==='Tax') return std.toLowerCase().includes('tax')||std.startsWith('TX');
+        return true;
+      });
+      if(filtered.length===0) filtered = allConverted; // fallback to all
+    }
+
+    SQ_CACHE[cacheKey] = filtered;
+    const stds=[...new Set(filtered.map(q=>q.standard))];
+    console.log('✅ Loaded',filtered.length,'questions for',category,'. Standards:',stds.slice(0,6));
+    return [...filtered].sort(()=>Math.random()-.5).slice(0,count);
+  }catch(e){ console.log('Fetch error:',e.message); return null; }
 }
 
 async function startSession(){
   let pool = [];
+  // Show loading while fetching
   const qt=document.getElementById('q-text');
   const opts=document.getElementById('options');
   if(qt) qt.textContent='Loading questions...';
   if(opts) opts.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">⏳ Fetching questions...</div>';
 
-  // If specific standard selected — fetch by standard
-  if(S.currentStandard){
-    const supaQs = await fetchQuestionsFromSupabase(null, 20, S.currentStandard);
-    if(supaQs && supaQs.length >= 1) pool = supaQs;
-    else pool = [...(QB[S.currentStandard]||[])];
+  // Try Supabase first
+  const category = S.domain || 'IFRS';
+  const supaQs = await fetchQuestionsFromSupabase(category, 20);
+  if(supaQs && supaQs.length >= 3){
+    pool = supaQs;
+    console.log('Using',pool.length,'Supabase questions');
   } else {
-    // Fetch ALL questions for this domain — truly random across ALL standards
-    const supaQs = await fetchQuestionsFromSupabase(S.domain||'IFRS', 50);
-    if(supaQs && supaQs.length >= 1){
-      pool = supaQs;
-      console.log('✅ Arena using',pool.length,'Supabase questions for domain:',S.domain);
+    // Fallback to local QB — pull randomly from ALL standards in the domain
+    console.log('Falling back to local QB for:',category);
+    if(S.currentStandard && QB[S.currentStandard]){
+      pool = [...QB[S.currentStandard]];
     } else {
-      pool = [...(QB_BY_DOMAIN[S.domain]||QB_BY_DOMAIN['IFRS']||[])];
-      console.log('Arena fallback to local QB, count:',pool.length);
+      const domainFilter = {
+        IFRS:    k => k.startsWith('IFRS'),
+        IAS:     k => k.startsWith('IAS'),
+        ISA:     k => k.startsWith('ISA'),
+        Costing: k => k.startsWith('MC'),
+        Tax:     k => k.startsWith('TX'),
+        FM:      k => k.startsWith('FM'),
+      };
+      const fn = domainFilter[S.domain];
+      if(fn){ Object.entries(QB).forEach(([k,qs])=>{ if(fn(k)&&Array.isArray(qs)) pool.push(...qs); }); }
+      if(pool.length === 0) pool = [...(QB_BY_DOMAIN[S.domain]||QB_BY_DOMAIN['IFRS']||[])];
     }
   }
-
   if(pool.length === 0){
     if(qt) qt.textContent='Questions for this standard coming soon!';
     if(opts) opts.innerHTML='';
@@ -3427,12 +3399,21 @@ async function startSession(){
   loadQuestion();
 }
 
-// Get questions for challenge — uses ALL Supabase questions randomly
+// Get questions for challenge — uses same Supabase pool as Arena
 async function getChallengeQuestionsAsync(category, count){
-  // Try ALL questions from Supabase (no category filter for multiplayer)
-  const supaQs = await fetchQuestionsFromSupabase('Mixed', count*3, null);
-  if(supaQs && supaQs.length >= 3){
-    console.log('✅ Multiplayer using',supaQs.length,'Supabase questions');
+  // For Mixed, fetch from multiple domains to guarantee enough questions
+  let supaQs = [];
+  if(category === 'Mixed' || !category){
+    const domains = ['IFRS','IAS','ISA','Costing','Tax','FM'];
+    for(const d of domains){
+      const qs = await fetchQuestionsFromSupabase(d, Math.ceil(count/2));
+      if(qs) supaQs.push(...qs);
+      if(supaQs.length >= count * 2) break;
+    }
+  } else {
+    supaQs = await fetchQuestionsFromSupabase(category, count*2) || [];
+  }
+  if(supaQs.length >= 3){
     return supaQs.sort(()=>Math.random()-.5).slice(0,count);
   }
   // Fallback to local QB
@@ -3531,13 +3512,6 @@ function answerQ(idx,btn,q){
     S.streak++;S.bestStreak=Math.max(S.bestStreak,S.streak);
     const xp=50+(S.streak>=3?25:0);const coins=10+(S.streak>=3?5:0);
     S.xp+=xp;S.coins+=coins;S.totalCorrect++;S.sessionCorrect++;
-    // Track topic progress for path unlocking
-    if(S.currentStandard){
-      if(!S.topicProgress) S.topicProgress = {};
-      if(!S.topicProgress[S.currentStandard]) S.topicProgress[S.currentStandard] = {correct:0,total:0};
-      S.topicProgress[S.currentStandard].correct++;
-      S.topicProgress[S.currentStandard].total++;
-    }
     spawnCoins();spawnXP(xp);setCharMood('correct');playSound('correct');
     if(S.streak>=3){showStreakToast();playSound('streak');}
     checkLevelUp();checkSecretBadge();
@@ -3636,7 +3610,16 @@ function nextQuestion(){
     const acc=S.sessionQ>0?Math.round(S.sessionCorrect/S.sessionQ*100):0;
     const std=S.currentStandard||S.domain;
     toast(std+' session done: '+S.sessionCorrect+'/'+S.sessionQ+' correct ('+acc+'%)');
-    // If came from a specific topic, reload that topic's questions
+    // Mark this standard as completed if accuracy ≥ 50%
+    if(S.currentStandard && acc >= 50){
+      if(!S.completedTopics) S.completedTopics = {};
+      if(!S.completedTopics[S.currentStandard]){
+        S.completedTopics[S.currentStandard] = true;
+        saveState();
+        toast('✅ ' + S.currentStandard + ' completed! Next topic unlocked →');
+        setTimeout(buildLearningPath, 400);
+      }
+    }
     if(S.currentStandard && QB[S.currentStandard] && QB[S.currentStandard].length>0){
       // Reload same topic with shuffled questions
       const pool=[...QB[S.currentStandard]].sort(()=>Math.random()-.5);
@@ -3720,7 +3703,7 @@ function closeOnboarding(){
   document.getElementById('onboarding').style.display='none';
   buildMentor();updateMentorName();
   document.getElementById('hw-greeting').textContent=getMoodGreeting();
-  if(S.mode==='professional') applyModeUI('professional');
+  applyModeUI(S.mode);
   // Only show daily reward if not already claimed today
   checkAndShowDailyReward();
 }
@@ -3996,43 +3979,42 @@ const AI_PLANS = {
 S.aiPlan = S.aiPlan || 'free';
 S.plan = S.plan || 'free'; // free, pro, elite
 
-// Plan helper functions
-function getUserPlan(){ return S.plan || 'free'; }
-function isPro(){ return S.plan==='pro' || S.plan==='elite'; }
+function isPro(){ return S.plan==='pro'||S.plan==='elite'; }
 function isElite(){ return S.plan==='elite'; }
-function isFree(){ return !S.plan || S.plan==='free'; }
+function isFree(){ return !S.plan||S.plan==='free'; }
 
-// Check if feature is available for current plan
 function checkPlanFeature(feature){
-  const plan = getUserPlan();
-  const features = {
+  const allowed = {
     multiplayer: ['pro','elite'],
-    allPathStandards: ['elite'],
-    unlimitedArena: ['pro','elite'],
+    allPath: ['elite'],
   };
-  if(!features[feature]) return true;
-  if(features[feature].includes(plan)) return true;
-  // Show upgrade prompt
-  showUpgradePrompt(feature);
-  return false;
-}
-
-function showUpgradePrompt(feature){
+  if(!allowed[feature]) return true;
+  if(allowed[feature].includes(S.plan||'free')) return true;
+  // Show upgrade popup
   const msgs = {
-    multiplayer: 'Challenge Mode is available for Pro and Elite users only!',
-    allPathStandards: 'All standards unlocked for Elite users only!',
+    multiplayer: 'Challenge & Multiplayer mode is available for Pro and Elite users only! 🚀',
+    allPath: 'All standards are unlocked for Elite users!',
   };
-  const msg = msgs[feature] || 'This feature requires a Pro or Elite plan.';
   const popup = document.createElement('div');
-  popup.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.8);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
-  popup.innerHTML = `<div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;">
-    <div style="font-size:40px;margin-bottom:12px;">🔒</div>
-    <div style="font-size:18px;font-weight:700;color:#0A1F6E;margin-bottom:8px;">Pro Feature</div>
-    <div style="font-size:13px;color:#64748B;margin-bottom:24px;line-height:1.5;">${msg}</div>
-    <button onclick="this.closest('div[style]').remove();showScreen('shop');" style="width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;">Upgrade Now 🚀</button>
-    <button onclick="this.closest('div[style]').remove();" style="width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;">Maybe Later</button>
-  </div>`;
+  popup.style.cssText='position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.8);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+  const box = document.createElement('div');
+  box.style.cssText='background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;';
+  box.innerHTML='<div style="font-size:48px;margin-bottom:12px;">🔒</div>'
+    +'<div style="font-size:18px;font-weight:700;color:#0A1F6E;margin-bottom:8px;">Pro Feature</div>'
+    +'<div style="font-size:13px;color:#64748B;margin-bottom:24px;line-height:1.5;">'+msgs[feature]+'</div>';
+  const upgradeBtn = document.createElement('button');
+  upgradeBtn.textContent='Upgrade Now 🚀';
+  upgradeBtn.style.cssText='width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:inherit;';
+  upgradeBtn.onclick=()=>{ popup.remove(); if(typeof showScreen==='function') showScreen('shop'); };
+  const cancelBtn = document.createElement('button');
+  cancelBtn.textContent='Maybe Later';
+  cancelBtn.style.cssText='width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
+  cancelBtn.onclick=()=>popup.remove();
+  box.appendChild(upgradeBtn);
+  box.appendChild(cancelBtn);
+  popup.appendChild(box);
   document.body.appendChild(popup);
+  return false;
 }
 S.aiUsedToday = S.aiUsedToday || 0;
 S.aiUsedMonth = S.aiUsedMonth || 0;
@@ -6066,144 +6048,173 @@ function initNavSoundState(){
 // LEARNING PATH — Complete topic map
 // ══════════════════════════════════════════════════
 
+// ── LEARNING PATH WORLDS ──
+// All IAS + IFRS + ISA + Costing + FM standards, grouped by world.
+// First 3 topics per world are open; the rest unlock one-by-one as each is completed.
 const PATH_WORLDS = [
   {
     id:'w1', icon:'🌍', title:'World 1 — IAS Foundations',
     color:'linear-gradient(135deg,#0A1F6E,#1D4ED8)',
     boss:{title:'The Tax Inspector',std:'IAS 12',mins:8},
     topics:[
-      {std:'IAS 1', name:'Presentation of Financial Statements'},
-      {std:'IAS 2', name:'Inventories'},
-      {std:'IAS 7', name:'Statement of Cash Flows'},
-      {std:'IAS 8', name:'Accounting Policies & Errors'},
+      {std:'IAS 1',  name:'Presentation of Financial Statements'},
+      {std:'IAS 2',  name:'Inventories'},
+      {std:'IAS 7',  name:'Statement of Cash Flows'},
+      {std:'IAS 8',  name:'Accounting Policies & Errors'},
       {std:'IAS 10', name:'Events After Reporting Period'},
       {std:'IAS 12', name:'Income Taxes'},
       {std:'IAS 16', name:'Property, Plant & Equipment'},
       {std:'IAS 19', name:'Employee Benefits'},
-      {std:'IAS 21', name:'Foreign Exchange Rates'},
+      {std:'IAS 20', name:'Government Grants'},
+      {std:'IAS 21', name:'Effects of Foreign Exchange'},
+      {std:'IAS 23', name:'Borrowing Costs'},
+      {std:'IAS 24', name:'Related Party Disclosures'},
+      {std:'IAS 27', name:'Separate Financial Statements'},
+      {std:'IAS 28', name:'Investments in Associates & JVs'},
+      {std:'IAS 32', name:'Financial Instruments: Presentation'},
+      {std:'IAS 33', name:'Earnings Per Share'},
+      {std:'IAS 34', name:'Interim Financial Reporting'},
+      {std:'IAS 36', name:'Impairment of Assets'},
+      {std:'IAS 37', name:'Provisions & Contingencies'},
+      {std:'IAS 38', name:'Intangible Assets'},
+      {std:'IAS 40', name:'Investment Property'},
+      {std:'IAS 41', name:'Agriculture'},
     ]
   },
   {
-    id:'w2', icon:'🌎', title:'World 2 — IFRS Core Standards',
+    id:'w2', icon:'🌎', title:'World 2 — IFRS Standards',
     color:'linear-gradient(135deg,#1E3A8A,#2563EB)',
     boss:{title:'The Revenue Inspector',std:'IFRS 15',mins:10},
     topics:[
-      {std:'IFRS 1', name:'First-time Adoption of IFRS'},
-      {std:'IFRS 2', name:'Share-based Payment'},
-      {std:'IFRS 3', name:'Business Combinations'},
-      {std:'IFRS 5', name:'Non-current Assets Held for Sale'},
-      {std:'IFRS 7', name:'Financial Instruments: Disclosures'},
-      {std:'IFRS 9', name:'Financial Instruments (ECL Model)'},
+      {std:'IFRS 1',  name:'First-time Adoption of IFRS'},
+      {std:'IFRS 2',  name:'Share-based Payment'},
+      {std:'IFRS 3',  name:'Business Combinations'},
+      {std:'IFRS 5',  name:'Non-current Assets Held for Sale'},
+      {std:'IFRS 6',  name:'Exploration & Evaluation of Mineral Resources'},
+      {std:'IFRS 7',  name:'Financial Instruments: Disclosures'},
+      {std:'IFRS 8',  name:'Operating Segments'},
+      {std:'IFRS 9',  name:'Financial Instruments (ECL Model)'},
       {std:'IFRS 10', name:'Consolidated Financial Statements'},
       {std:'IFRS 11', name:'Joint Arrangements'},
-      {std:'IFRS 12', name:'Disclosure of Interests'},
+      {std:'IFRS 12', name:'Disclosure of Interests in Other Entities'},
       {std:'IFRS 13', name:'Fair Value Measurement'},
-    ]
-  },
-  {
-    id:'w3', icon:'🌏', title:'World 3 — IFRS Advanced',
-    color:'linear-gradient(135deg,#1D4ED8,#0891B2)',
-    boss:{title:'The Lease Auditor',std:'IFRS 16',mins:10},
-    topics:[
+      {std:'IFRS 14', name:'Regulatory Deferral Accounts'},
       {std:'IFRS 15', name:'Revenue from Contracts with Customers'},
       {std:'IFRS 16', name:'Leases'},
       {std:'IFRS 17', name:'Insurance Contracts'},
       {std:'IFRS 18', name:'Presentation & Disclosure (New)'},
-      {std:'IAS 36', name:'Impairment of Assets'},
-      {std:'IAS 37', name:'Provisions, Contingencies'},
-      {std:'IAS 38', name:'Intangible Assets'},
-      {std:'IAS 40', name:'Investment Property'},
     ]
   },
   {
-    id:'w4', icon:'🔍', title:'World 4 — Audit & Assurance',
+    id:'w3', icon:'🔍', title:'World 3 — Audit & Assurance',
     color:'linear-gradient(135deg,#6D28D9,#7C3AED)',
     boss:{title:'The Chief Auditor',std:'ISA 700',mins:8},
     topics:[
       {std:'ISA 200', name:'Overall Objectives of the Auditor'},
+      {std:'ISA 210', name:'Agreeing Terms of Audit Engagements'},
+      {std:'ISA 220', name:'Quality Control for an Audit'},
+      {std:'ISA 230', name:'Audit Documentation'},
+      {std:'ISA 240', name:'Fraud in an Audit of Financial Statements'},
+      {std:'ISA 260', name:'Communication with Those Charged with Governance'},
+      {std:'ISA 300', name:'Planning an Audit'},
       {std:'ISA 315', name:'Risk Identification & Assessment'},
       {std:'ISA 320', name:'Materiality in Auditing'},
+      {std:'ISA 330', name:'Responses to Assessed Risks'},
+      {std:'ISA 402', name:'Audit Considerations for Entities Using Service Orgs'},
+      {std:'ISA 500', name:'Audit Evidence'},
+      {std:'ISA 505', name:'External Confirmations'},
+      {std:'ISA 520', name:'Analytical Procedures'},
+      {std:'ISA 530', name:'Audit Sampling'},
+      {std:'ISA 540', name:'Auditing Accounting Estimates'},
+      {std:'ISA 550', name:'Related Parties'},
+      {std:'ISA 560', name:'Subsequent Events'},
       {std:'ISA 570', name:'Going Concern'},
-      {std:'ISA 700', name:'Forming an Opinion'},
+      {std:'ISA 580', name:'Written Representations'},
+      {std:'ISA 700', name:'Forming an Opinion & Reporting'},
       {std:'ISA 701', name:'Key Audit Matters'},
       {std:'ISA 705', name:'Modified Audit Opinions'},
+      {std:'ISA 706', name:'Emphasis of Matter Paragraphs'},
+      {std:'ISA 720', name:'Other Information in Annual Reports'},
     ]
   },
   {
-    id:'w5', icon:'⚙️', title:'World 5 — Management Accounting',
+    id:'w4', icon:'⚙️', title:'World 4 — Management Accounting',
     color:'linear-gradient(135deg,#B45309,#D97706)',
     boss:{title:'The Cost Controller',std:'MC 7',mins:8},
     topics:[
       {std:'MC 1', name:'Cost Classification'},
       {std:'MC 2', name:'Marginal vs Absorption Costing'},
+      {std:'MC 3', name:'Job & Batch Costing'},
+      {std:'MC 4', name:'Process Costing'},
       {std:'MC 5', name:'Standard Costing & Variances'},
+      {std:'MC 6', name:'Budgeting & Flexible Budgets'},
       {std:'MC 7', name:'Capital Investment Appraisal'},
+      {std:'MC 8', name:'Activity-Based Costing'},
     ]
   },
   {
-    id:'w6', icon:'💰', title:'World 6 — Tax & Financial Management',
+    id:'w5', icon:'💰', title:'World 5 — Tax & Financial Management',
     color:'linear-gradient(135deg,#065F46,#059669)',
     boss:{title:'The Finance Director',std:'FM 3',mins:10},
     topics:[
       {std:'TX 1', name:'Corporate Tax Principles'},
-      {std:'TX 2', name:'Deferred Tax (IAS 12)'},
+      {std:'TX 2', name:'Deferred Tax — IAS 12'},
+      {std:'TX 3', name:'VAT & Indirect Taxes'},
+      {std:'TX 4', name:'Tax Planning vs Evasion'},
       {std:'TX 5', name:'Transfer Pricing'},
       {std:'FM 1', name:'Working Capital Management'},
+      {std:'FM 2', name:'Sources of Finance'},
       {std:'FM 3', name:'Cost of Capital & WACC'},
+      {std:'FM 4', name:'Capital Structure & Gearing'},
+      {std:'FM 5', name:'Dividend Policy'},
+      {std:'FM 6', name:'Business Valuation'},
       {std:'FM 7', name:'Foreign Exchange Risk'},
+      {std:'FM 8', name:'Interest Rate Risk'},
     ]
-  }
+  },
 ];
 
-// Stage thresholds: XP needed to unlock each world
-const WORLD_UNLOCK_XP = [0, 200, 500, 1000, 2000, 4000];
+// ── PER-TOPIC UNLOCK LOGIC ──
+// First 3 in every world are always open.
+// After that, each topic unlocks when the previous one is completed.
+function isTopicUnlocked(world, topicIndex){
+  // Elite — everything unlocked
+  if(isElite()) return true;
 
-function getTopicStage(std){
-  const progress = S.topicProgress || {};
-  const p = progress[std];
-  if(!p) return 'available';
-  if(p.correct >= 15) return 'mastered';
-  if(p.correct >= 8) return 'expert';
-  if(p.correct >= 3) return 'learning';
+  const ct = S.completedTopics || {};
+  const worldIdx = PATH_WORLDS.indexOf(world);
+
+  // Check if world is accessible
+  if(worldIdx > 0){
+    const prevWorld = PATH_WORLDS[worldIdx - 1];
+    const prevWorldHasCompletion = prevWorld.topics.some(t => ct[t.std]);
+    if(!prevWorldHasCompletion) return false;
+  }
+
+  // Free users — only first 3 topics in World 1
+  if(isFree()){
+    if(worldIdx > 0) return false; // only World 1 for free
+    return topicIndex < 3;
+  }
+
+  // Pro users — first 3 open, then progressive unlock
+  if(topicIndex < 3) return true;
+  // Each additional topic unlocks when previous is completed
+  const prevStd = world.topics[topicIndex - 1].std;
+  return !!ct[prevStd];
+}
+
+function getTopicStage(std, world, topicIndex){
+  const completed = S.completedTopics && S.completedTopics[std];
+  const unlocked  = isTopicUnlocked(world, topicIndex);
+  if(!unlocked)  return 'locked';
+  if(completed)  return 'mastered';
   return 'available';
 }
 
-function isTopicUnlocked(std, allTopics, worldUnlocked){
-  if(!worldUnlocked) return false;
-  if(isElite()) return true; // Elite — all unlocked
-
-  const progress = S.topicProgress || {};
-  const completedCount = allTopics.filter(t=>{
-    const stage = getTopicStage(t.std);
-    return stage === 'mastered' || stage === 'expert';
-  }).length;
-
-  const topicIndex = allTopics.findIndex(t=>t.std===std);
-
-  if(isPro()){
-    // Pro: first 3 open, unlock next when any completed
-    if(topicIndex < 3) return true;
-    // Unlock next standard when previous group has 1 completed
-    const groupIndex = Math.floor(topicIndex / 1);
-    return completedCount >= topicIndex - 2;
-  } else {
-    // Free: only first 3 open
-    if(topicIndex < 3) return true;
-    return false;
-  }
-}
-  const xpNeeded = idx * 50;
-  if(S.xp < xpNeeded) return 'locked';
-  if(S.xp >= xpNeeded + 200) return 'mastered';
-  if(S.xp >= xpNeeded + 100) return 'expert';
-  if(S.xp >= xpNeeded + 50) return 'practitioner';
-  if(S.xp >= xpNeeded + 20) return 'learner';
-  return 'beginner';
-}
-
 function getStageIcon(stage){
-  const icons={mastered:'👑',expert:'⭐',practitioner:'🔥',learner:'🌱',beginner:'🥚',locked:'🔒'};
-  return icons[stage]||'🔒';
+  const icons = { mastered:'✅', available:'▶️', locked:'🔒' };
+  return icons[stage] || '🔒';
 }
 
 function buildLearningPath(){
@@ -6211,69 +6222,68 @@ function buildLearningPath(){
   if(!container) return;
   container.innerHTML = '';
 
-  PATH_WORLDS.forEach((world, wi) => {
-    const unlocked = S.xp >= (WORLD_UNLOCK_XP[wi] || 0);
+  PATH_WORLDS.forEach((world) => {
+    const ct = S.completedTopics || {};
+    const completedCount = world.topics.filter(t => ct[t.std]).length;
+    const worldIdx = PATH_WORLDS.indexOf(world);
+    const worldLocked = worldIdx > 0 && !PATH_WORLDS[worldIdx-1].topics.some(t => ct[t.std]);
     const worldEl = document.createElement('div');
     worldEl.className = 'path-world';
     worldEl.style.marginBottom = '14px';
-
-    // World header
-    const masteredCount = world.topics.filter(t => {
-      const stage = getTopicStage(t.std);
-      return stage === 'mastered' || stage === 'expert';
-    }).length;
+    if(worldLocked) worldEl.style.opacity = '0.55';
 
     worldEl.innerHTML = `
       <div class="world-header" style="background:${world.color};">
-        <div class="world-icon">${world.icon}</div>
-        <div>
+        <div class="world-icon">${worldLocked ? '🔒' : world.icon}</div>
+        <div style="flex:1;">
           <div class="world-title">${world.title}</div>
-          <div class="world-sub">${unlocked ? masteredCount+' / '+world.topics.length+' topics progressed' : '🔒 Unlock at '+WORLD_UNLOCK_XP[wi]+' XP'}</div>
+          <div class="world-sub">${worldLocked ? 'Complete World '+(worldIdx)+' to unlock' : completedCount+' / '+world.topics.length+' completed'}</div>
         </div>
-        ${!unlocked ? '<span style="background:rgba(255,255,255,.15);padding:3px 9px;border-radius:999px;font-size:10px;color:#fff;font-weight:700;margin-left:auto;">LOCKED</span>' : ''}
+        ${worldLocked ? '<span style="background:rgba(255,255,255,.2);padding:3px 10px;border-radius:999px;font-size:10px;color:#fff;font-weight:700;">LOCKED</span>' : ''}
       </div>
       <div class="path-nodes" id="world-nodes-${world.id}"></div>
-      ${world.boss ? `<div class="path-boss" onclick="${unlocked ? "startTopicPractice('"+world.boss.std+"')" : "toast('Unlock World "+(wi+1)+" first!')"}">
-        <div class="boss-icon">👹</div>
-        <div>
-          <div class="boss-title">Boss: ${world.boss.title}</div>
-          <div class="boss-sub">${world.boss.std} · 10 questions · ${world.boss.mins} min</div>
-        </div>
-        <div class="boss-badge">${unlocked ? '⚔️ Challenge' : '🔒 Locked'}</div>
-      </div>` : ''}
+      ${world.boss ? `
+        <div class="path-boss" onclick="startTopicPractice('${world.boss.std}')">
+          <div class="boss-icon">👹</div>
+          <div>
+            <div class="boss-title">Boss: ${world.boss.title}</div>
+            <div class="boss-sub">${world.boss.std} · 10 questions · ${world.boss.mins} min</div>
+          </div>
+          <div class="boss-badge">⚔️ Challenge</div>
+        </div>` : ''}
     `;
 
-    // Build topic nodes
     const nodesContainer = worldEl.querySelector('#world-nodes-' + world.id);
     world.topics.forEach((topic, ti) => {
-      const unlocked_topic = isTopicUnlocked(topic.std, world.topics, unlocked);
-      const stage = unlocked_topic ? getTopicStage(topic.std) : 'locked';
-      const icon = getStageIcon(stage);
+      const stage = getTopicStage(topic.std, world, ti);
+      const icon  = getStageIcon(stage);
       const isLeft = ti % 2 === 0;
+
       const nodeRow = document.createElement('div');
       nodeRow.className = 'path-node-row';
       nodeRow.style.cssText = 'display:flex;align-items:center;gap:10px;margin:6px 0;';
 
+      // Lock overlay colour
+      const nodeBg = stage === 'locked' ? '#E2E8F0' : stage === 'mastered' ? '#D1FAE5' : '#EEF2FF';
+      const nodeBorder = stage === 'locked' ? '#CBD5E1' : stage === 'mastered' ? '#6EE7B7' : '#818CF8';
+
       const nodeBtn = document.createElement('button');
       nodeBtn.className = 'path-node ' + stage;
-      nodeBtn.textContent = stage === 'locked' ? '🔒' : icon;
-      nodeBtn.style.cssText = 'cursor:'+(stage==='locked'?'not-allowed':'pointer')+';font-size:20px;border:none;background:none;';
-
-      if(stage === 'locked'){
-        if(isFree() && ti >= 3){
-          nodeBtn.onclick = () => showUpgradePrompt('allPathStandards');
-        } else {
-          nodeBtn.onclick = () => toast('Complete earlier standards to unlock '+topic.std);
-        }
-      } else {
-        nodeBtn.onclick = () => startTopicPractice(topic.std);
-      }
+      nodeBtn.textContent = icon;
+      nodeBtn.style.cssText = `width:40px;height:40px;border-radius:50%;border:2px solid ${nodeBorder};background:${nodeBg};font-size:18px;display:flex;align-items:center;justify-content:center;cursor:${stage==='locked'?'not-allowed':'pointer'};flex-shrink:0;`;
+      nodeBtn.onclick = stage !== 'locked'
+        ? () => startTopicPractice(topic.std)
+        : () => toast('🔒 Complete the previous topic to unlock ' + topic.std);
 
       const labelDiv = document.createElement('div');
       labelDiv.style.cssText = 'flex:1;min-width:0;';
-      const lockLabel = stage==='locked' ? (isFree()&&ti>=3?' 🔒 Pro':'🔒') : '';
-      labelDiv.innerHTML = '<div style="font-size:12px;font-weight:700;color:'+(stage==='locked'?'var(--muted)':'var(--navy)')+';">'+topic.std+lockLabel+'</div>' +
-        '<div style="font-size:10px;color:var(--steel);margin-top:1px;">'+topic.name+'</div>';
+      const labelColor = stage === 'locked' ? 'var(--muted)' : 'var(--navy)';
+      const subColor   = stage === 'locked' ? 'var(--muted)' : 'var(--steel)';
+      const badge      = stage === 'locked' ? '<span style="font-size:9px;background:#F1F5F9;color:#94A3B8;padding:2px 7px;border-radius:999px;font-weight:700;margin-left:6px;">LOCKED</span>'
+                       : stage === 'mastered' ? '<span style="font-size:9px;background:#D1FAE5;color:#059669;padding:2px 7px;border-radius:999px;font-weight:700;margin-left:6px;">DONE ✓</span>'
+                       : '<span style="font-size:9px;background:#EEF2FF;color:#6366F1;padding:2px 7px;border-radius:999px;font-weight:700;margin-left:6px;">OPEN</span>';
+      labelDiv.innerHTML = `<div style="font-size:12px;font-weight:700;color:${labelColor};">${topic.std}${badge}</div>`
+        + `<div style="font-size:10px;color:${subColor};margin-top:1px;">${topic.name}</div>`;
 
       if(isLeft){
         nodeRow.appendChild(nodeBtn);
@@ -6591,6 +6601,7 @@ function saveState(){
       xp:S.xp,coins:S.coins,streak:S.streak,bestStreak:S.bestStreak,
       totalQ:S.totalQ,totalCorrect:S.totalCorrect,hearts:S.hearts,
       gender:S.gender,mode:S.mode,darkMode:S.darkMode,
+      completedTopics:S.completedTopics||{},
     }));
   }catch(e){}
   // Also save to Supabase if logged in
@@ -6744,7 +6755,7 @@ const _origAnswerQ=answerQ;
 </style>
 
 <!-- ══ MULTIPLAYER CHALLENGE SCREEN ══ -->
-<div class="screen" id="screen-multiplayer" style="padding-top:8px;">
+<div class="screen" id="screen-multiplayer" style="gap:0;padding:12px 14px;">
 
   <!-- LOBBY (choose create or join) -->
   <div id="ch-lobby">
@@ -6919,6 +6930,9 @@ const _origAnswerQ=answerQ;
       <div style="margin-top:8px;padding:12px;background:var(--bg);border-radius:10px;font-size:12px;color:var(--muted);text-align:center;">
         Category: <strong id="ch-wait-category">IFRS</strong> · <strong id="ch-wait-count">10</strong> Questions
       </div>
+      <button onclick="cancelWaiting()" style="width:100%;margin-top:12px;padding:12px;border-radius:12px;background:var(--red-l);color:var(--red);border:2px solid var(--red);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:6px;">
+        ✕ <span>Cancel / Quit</span>
+      </button>
     </div>
     <button class="ch-btn ch-btn-secondary" onclick="cancelChallenge()">Cancel</button>
   </div>
@@ -6954,8 +6968,12 @@ const _origAnswerQ=answerQ;
       <div id="battle-options"></div>
       <div id="battle-explanation" style="display:none;margin-top:12px;padding:12px;background:var(--blue-ll);border-radius:10px;font-size:12px;line-height:1.6;color:var(--navy);"></div>
     </div>
-    <!-- Forfeit button — visible on all devices -->
-    <button onclick="forfeitChallenge()" style="width:100%;padding:12px;border-radius:10px;background:#FEE2E2;color:#DC2626;border:2px solid #DC2626;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-body);margin-top:8px;display:block;">🏳️ Forfeit Match — counts as a loss</button>
+    <!-- Quit/Forfeit button — visible on all screen sizes -->
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button onclick="forfeitChallenge()" style="flex:1;padding:12px;border-radius:12px;background:var(--red-l);color:var(--red);border:2px solid var(--red);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:6px;">
+        🏳️ <span>Quit / Forfeit</span>
+      </button>
+    </div>
   </div>
 
   <!-- RESULTS SCREEN -->
@@ -7700,6 +7718,19 @@ function endChallenge(challengeData){
 
 function copyCode(){
   navigator.clipboard&&navigator.clipboard.writeText(CH.code).then(()=>toast('Code copied! Share it with your friend 🎉'));
+}
+
+function cancelWaiting(){
+  // Cancel the hosted challenge while still in waiting room
+  try{
+    if(CH.challengeId){
+      _supa.from('challenges').update({status:'cancelled'}).eq('id',CH.challengeId).then(()=>{});
+    }
+    if(CH.subscription){ CH.subscription.unsubscribe(); CH.subscription = null; }
+  }catch(e){}
+  CH.challengeId = null; CH.code = null; CH.role = null;
+  showChallengeSection('lobby');
+  toast('Challenge cancelled');
 }
 
 function forfeitChallenge(){
