@@ -181,6 +181,9 @@ a{color:inherit;text-decoration:none;}
 .shell{padding-top:112px;padding-bottom:80px;min-height:100vh;}
 .screen{display:none;max-width:720px;margin:0 auto;padding:16px 14px;flex-direction:column;gap:14px;}
 .screen.active{display:flex;}
+/* Challenge screen: remove shell's padding-top so no blank space */
+#screen-multiplayer.active{padding-top:0 !important;margin-top:0 !important;}
+.shell>#screen-multiplayer.active{padding-top:0 !important;}
 
 /* ── CARD (index.html style) ── */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);}
@@ -7078,6 +7081,12 @@ const _origAnswerQ=answerQ;
 
   <!-- BATTLE SCREEN -->
   <div id="ch-battle" style="display:none;">
+    <!-- Exit button — always at top, always visible for ALL users -->
+    <div style="display:flex;justify-content:flex-end;padding:4px 0 6px;">
+      <button onclick="forfeitChallenge()" style="padding:7px 16px;border-radius:999px;background:#FEE2E2;color:#DC2626;border:2px solid #DC2626;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);display:inline-flex;align-items:center;gap:5px;">
+        🚪 Exit Game
+      </button>
+    </div>
     <div class="battle-header">
       <div class="battle-scores">
         <div class="battle-player">
@@ -7091,17 +7100,10 @@ const _origAnswerQ=answerQ;
         </div>
       </div>
       <div class="battle-timer">
-        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
-          <div style="flex:1;">
-            <div class="battle-timer-text" id="battle-timer">20</div>
-            <div class="battle-timer-bar"><div class="battle-timer-fill" id="battle-timer-fill" style="width:100%;"></div></div>
-            <div class="battle-q-num" id="battle-q-num">Question 1 of 10</div>
-            <div style="font-size:9px;color:rgba(255,255,255,.5);text-align:center;margin-top:2px;">⚡ Fast = 3pts · Med = 2pts · Slow = 1pt</div>
-          </div>
-          <button onclick="forfeitChallenge()" style="margin-left:10px;padding:6px 12px;border-radius:999px;background:rgba(220,38,38,.25);color:#FCA5A5;border:1.5px solid rgba(220,38,38,.5);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0;">
-            🚪 Exit
-          </button>
-        </div>
+        <div class="battle-timer-text" id="battle-timer">20</div>
+        <div class="battle-timer-bar"><div class="battle-timer-fill" id="battle-timer-fill" style="width:100%;"></div></div>
+        <div class="battle-q-num" id="battle-q-num">Question 1 of 10</div>
+        <div style="font-size:9px;color:rgba(255,255,255,.5);text-align:center;margin-top:2px;">⚡ Fast = 3pts · Med = 2pts · Slow = 1pt</div>
       </div>
     </div>
 
@@ -7695,12 +7697,40 @@ function subscribeToChallenge(challengeId){
           _supa.from('challenges').update({started_at: battleStartsAt}).eq('id', CH.challengeId).then(()=>{});
           startCountdown({player_name: guestName});
         }
-        if(updated.status==='finished' && !CH.myFinished){
-          // Other player finished first — end for us too
+        if(updated.status==='forfeited'){
+          // Opponent forfeited — show win screen without using 999
+          if(!_endChallengeCalled){
+            _endChallengeCalled = true;
+            clearInterval(CH.timerInterval);
+            showChallengeSection('results');
+            const heroEl = document.getElementById('result-hero');
+            if(heroEl) heroEl.style.background = 'linear-gradient(135deg,#0A6E3A,#16A34A)';
+            document.getElementById('result-trophy').textContent = '🏆';
+            document.getElementById('result-title').textContent = 'You Won! 🎉';
+            document.getElementById('result-sub').textContent = 'Opponent forfeited the match! +150 XP';
+            const myRealScore = CH.myScore;
+            const oppRealScore = CH.opponentScore;
+            document.getElementById('result-host-score').textContent = CH.role==='host' ? myRealScore : oppRealScore;
+            document.getElementById('result-guest-score').textContent = CH.role==='guest' ? myRealScore : oppRealScore;
+            document.getElementById('result-host-label').textContent = CH.role==='host' ? 'You' : 'Opponent (forfeited)';
+            document.getElementById('result-guest-label').textContent = CH.role==='guest' ? 'You' : 'Opponent (forfeited)';
+            document.getElementById('result-xp-text').textContent = '+150 XP earned!';
+            document.getElementById('result-breakdown').innerHTML = '<div style="padding:12px;text-align:center;color:var(--muted);font-size:12px;">Opponent left the game early</div>';
+            CH.wins = (CH.wins||0)+1; CH.winStreak = (CH.winStreak||0)+1;
+            saveChallengeStats(); loadChallengeStats();
+            S.xp += 150; S.coins += 30; updateHUD(); saveState();
+            // Confetti
+            const colors=['#F59E0B','#10B981','#3B82F6','#8B5CF6'];
+            for(let i=0;i<40;i++){
+              const c=document.createElement('div');
+              c.style.cssText='position:fixed;top:-10px;left:'+(Math.random()*100)+'%;width:8px;height:8px;background:'+colors[Math.floor(Math.random()*colors.length)]+';border-radius:50%;z-index:9999;pointer-events:none;animation:confettiFall '+(1.5+Math.random()*2)+'s ease-in forwards;';
+              document.body.appendChild(c);
+              setTimeout(()=>c.remove(),4000);
+            }
+          }
+        } else if(updated.status==='finished' && !CH.myFinished){
           endChallenge(updated);
         } else if(updated.status==='finished' && CH.myFinished){
-          // We already called endChallenge via timeout — but update with latest DB scores
-          // (The timeout may have fired before opponent wrote their score)
           endChallenge(updated);
         }
       }
@@ -8058,22 +8088,32 @@ function forfeitChallenge(){
 
 async function confirmForfeit(){
   clearInterval(CH.timerInterval);
-  if(CH.subscription) CH.subscription.unsubscribe();
-  // Update Supabase — forfeiter gets 0, opponent gets max score so they win
+  if(CH.subscription){ CH.subscription.unsubscribe(); CH.subscription = null; }
+  _endChallengeCalled = true; // prevent endChallenge firing again from subscription
+
+  const myCurrentScore = CH.myScore;
+  const oppCurrentScore = CH.opponentScore;
+
+  // Update Supabase — forfeiter keeps their actual score, opponent gets +5 bonus
   if(CH.challengeId){
     try{
       const updateData = {
-        status:'finished',
+        status: 'forfeited',
         finished_at: new Date().toISOString(),
         winner: CH.role==='host' ? 'guest' : 'host',
       };
-      // Give opponent a guaranteed winning score
-      if(CH.role==='host'){ updateData.host_score=0; updateData.guest_score=999; }
-      else { updateData.guest_score=0; updateData.host_score=999; }
-      await _supa.from('challenges').update(updateData).eq('id',CH.challengeId);
+      // Forfeiter keeps real score, opponent gets their real score + small forfeit bonus
+      if(CH.role==='host'){
+        updateData.host_score = myCurrentScore;
+        updateData.guest_score = Math.max(oppCurrentScore, myCurrentScore + 3);
+      } else {
+        updateData.guest_score = myCurrentScore;
+        updateData.host_score = Math.max(oppCurrentScore, myCurrentScore + 3);
+      }
+      await _supa.from('challenges').update(updateData).eq('id', CH.challengeId);
     }catch(e){}
   }
-  // Remove from queue
+  // Clean up queue
   if(MM.myPlayerId){
     try{ await _supa.from('matchmaking_queue').delete().eq('player_id',MM.myPlayerId); }catch(e){}
   }
@@ -8081,14 +8121,24 @@ async function confirmForfeit(){
   CH.losses = (CH.losses||0)+1;
   CH.winStreak = 0;
   saveChallengeStats();
-  // Update rating
   if(CH.isOnlineMatch) await updatePlayerRating('loss', 1200);
-  // Show results as loss
   S.xp += 25; S.coins += 5;
   updateHUD(); saveState();
-  showChallengeSection('lobby');
+  // Show forfeiter a loss result screen (not blank)
+  showChallengeSection('results');
+  const heroEl = document.getElementById('result-hero');
+  if(heroEl) heroEl.style.background = 'linear-gradient(135deg,#7F1D1D,#DC2626)';
+  document.getElementById('result-trophy').textContent = '🏳️';
+  document.getElementById('result-title').textContent = 'You Forfeited';
+  document.getElementById('result-sub').textContent = 'Counted as a loss. Keep practicing!';
+  document.getElementById('result-host-score').textContent = CH.role==='host' ? myCurrentScore : Math.max(oppCurrentScore, myCurrentScore+3);
+  document.getElementById('result-guest-score').textContent = CH.role==='guest' ? myCurrentScore : Math.max(oppCurrentScore, myCurrentScore+3);
+  document.getElementById('result-host-label').textContent = CH.role==='host' ? 'You (forfeited)' : 'Opponent';
+  document.getElementById('result-guest-label').textContent = CH.role==='guest' ? 'You (forfeited)' : 'Opponent';
+  document.getElementById('result-xp-text').textContent = '+25 XP earned';
+  document.getElementById('result-breakdown').innerHTML = '';
   loadChallengeStats();
-  toast('Match forfeited — counted as a loss 🏳️');
+  toast('Match forfeited 🏳️');
 }
 
 function cancelChallenge(){
