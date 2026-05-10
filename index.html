@@ -7608,10 +7608,30 @@ async function joinChallenge(){
       return;
     }
 
-    // Subscribe and start battle
+    // Subscribe first, then wait for host's battleStartsAt signal
     subscribeToChallenge(challenge.id);
-    startBattle(challenge.host_name, myName);
-    toast('Joined! Battle starts now! ⚔️');
+    toast('Joined! Waiting for host to start... ⚔️');
+    // Poll for started_at from Supabase (host sets it when guest joins)
+    let attempts = 0;
+    const waitForStart = setInterval(async()=>{
+      attempts++;
+      try{
+        const {data:ch} = await _supa.from('challenges')
+          .select('started_at,host_name,guest_name')
+          .eq('id', challenge.id).single();
+        if(ch && ch.started_at && ch.started_at !== challenge.started_at){
+          clearInterval(waitForStart);
+          CH.battleStartsAt = ch.started_at;
+          startCountdown({player_name: ch.host_name||'Host'});
+        }
+      }catch(e){}
+      // After 8s fallback — start immediately
+      if(attempts >= 16){
+        clearInterval(waitForStart);
+        CH.battleStartsAt = new Date(Date.now() + 1500).toISOString();
+        startCountdown({player_name: challenge.host_name||'Host'});
+      }
+    }, 500);
   }catch(e){ toast('Error joining challenge','error'); }
 }
 
@@ -7622,9 +7642,15 @@ function subscribeToChallenge(challengeId){
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'challenges',filter:'id=eq.'+challengeId},
       (payload)=>{
         const updated = payload.new;
-        // Private challenge: host starts countdown when guest joins
-        if(updated.status==='active' && CH.role==='host' && !CH.isOnlineMatch){
+        // Private challenge: host starts countdown ONCE when guest first joins
+        if(updated.status==='active' && CH.role==='host' && !CH.isOnlineMatch && !CH.battleStarted){
+          CH.battleStarted = true;
           const guestName = updated.guest_name||'Opponent';
+          // Set shared battle start time so both devices sync
+          const battleStartsAt = new Date(Date.now() + 4000).toISOString();
+          CH.battleStartsAt = battleStartsAt;
+          // Save to Supabase so guest can read it
+          _supa.from('challenges').update({started_at: battleStartsAt}).eq('id', CH.challengeId).then(()=>{});
           startCountdown({player_name: guestName});
         }
         if(updated.status==='finished'){
@@ -7725,10 +7751,11 @@ async function submitBattleAnswer(answerIdx){
     exEl.style.display='block';
   }
 
+  // Speed bonus: answer in <7s = 3pts, <14s = 2pts, else 1pt (calculated regardless for DB)
+  const speedBonus = CH.timerSeconds>=13?3:CH.timerSeconds>=6?2:1;
+
   // Update score
   if(isCorrect){
-    // Speed bonus: answer in <7s = 3pts, <14s = 2pts, else 1pt
-    const speedBonus = CH.timerSeconds>=13?3:CH.timerSeconds>=6?2:1;
     CH.myScore += speedBonus;
     // Show speed bonus flash
     const bonusFlash = document.createElement('div');
@@ -7750,7 +7777,7 @@ async function submitBattleAnswer(answerIdx){
 
   // Send move to Supabase
   try{
-    const myPlayerId = _currentUser ? _currentUser.id : MM.myPlayerId;
+    const myPlayerId = _currentUser ? _currentUser.id : (MM.myPlayerId || getMyPlayerId());
     await _supa.from('challenge_moves').insert({
       challenge_id: CH.challengeId,
       player_id: myPlayerId,
@@ -7952,7 +7979,7 @@ function cancelWaiting(){
     }
     if(CH.subscription){ CH.subscription.unsubscribe(); CH.subscription = null; }
   }catch(e){}
-  CH.challengeId = null; CH.code = null; CH.role = null;
+  CH.challengeId = null; CH.code = null; CH.role = null; CH.battleStarted = false;
   showChallengeSection('lobby');
   toast('Challenge cancelled');
 }
@@ -8030,7 +8057,7 @@ function playAgain(){
   // Reset all CH state
   CH.challengeId=null; CH.code=null; CH.role=null; CH.isOnlineMatch=false;
   CH.questions=[]; CH.currentQ=0; CH.myScore=0; CH.opponentScore=0;
-  CH.myAnswers=[]; CH.opponentAnswers=[]; CH.battleStartsAt=null;
+  CH.myAnswers=[]; CH.opponentAnswers=[]; CH.battleStartsAt=null; CH.battleStarted=false;
   // Refresh player info
   MM.myPlayerId = getMyPlayerId();
   MM.myName = getMyDisplayName();
