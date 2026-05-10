@@ -181,9 +181,6 @@ a{color:inherit;text-decoration:none;}
 .shell{padding-top:112px;padding-bottom:80px;min-height:100vh;}
 .screen{display:none;max-width:720px;margin:0 auto;padding:16px 14px;flex-direction:column;gap:14px;}
 .screen.active{display:flex;}
-/* Challenge screen overrides shell padding – content starts immediately below mode-pill */
-#screen-multiplayer.active{padding:0;margin-top:0;gap:0;overflow-y:auto;}
-#screen-multiplayer #ch-lobby{padding:12px 14px;}
 
 /* ── CARD (index.html style) ── */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);}
@@ -369,15 +366,8 @@ a{color:inherit;text-decoration:none;}
 .actionrow,.action-row{display:flex;gap:6px;align-items:center;background:var(--surface);border-top:1px solid var(--border2);padding:10px 14px;margin:8px 0 0;border-radius:12px;box-shadow:0 2px 8px rgba(10,31,110,.06);}
 /* Normal flow — no fixed/floating on practice screen */
 #screen-practice { padding-bottom: 20px; }
-#screen-multiplayer { padding: 0 !important; margin-top: 0 !important; gap: 0 !important; overflow-y: auto; }
+#screen-multiplayer { padding: 0 !important; margin-top: 0 !important; gap: 0 !important; }
 #screen-multiplayer > * { padding: 0 14px; }
-/* Fix: shell adds padding-top:112px, so the challenge screen content area needs scroll from top of screen-multiplayer */
-#screen-multiplayer #ch-lobby,
-#screen-multiplayer #ch-waiting,
-#screen-multiplayer #ch-battle,
-#screen-multiplayer #ch-results,
-#screen-multiplayer #ch-matchmaking,
-#screen-multiplayer #ch-countdown { padding-top: 0; }
 #screen-multiplayer #ch-lobby { padding: 12px 14px; }
 #screen-multiplayer #ch-waiting { padding: 12px 14px; }
 #screen-multiplayer #ch-battle { padding: 12px 14px; }
@@ -4101,44 +4091,15 @@ const AI_PLANS = {
 };
 // AI usage tracking
 S.aiPlan = S.aiPlan || 'free';
-S.plan = 'elite'; // ← TESTING: Elite unlocked — revert to: S.plan = S.plan || 'free'
+S.plan = S.plan || 'free'; // free, pro, elite
 
 function isPro(){ return S.plan==='pro'||S.plan==='elite'; }
 function isElite(){ return S.plan==='elite'; }
 function isFree(){ return !S.plan||S.plan==='free'; }
 
 function checkPlanFeature(feature){
-  const allowed = {
-    multiplayer: ['pro','elite'],
-    allPath: ['elite'],
-  };
-  if(!allowed[feature]) return true;
-  if(allowed[feature].includes(S.plan||'free')) return true;
-  // Show upgrade popup
-  const msgs = {
-    multiplayer: 'Challenge & Multiplayer mode is available for Pro and Elite users only! 🚀',
-    allPath: 'All standards are unlocked for Elite users!',
-  };
-  const popup = document.createElement('div');
-  popup.style.cssText='position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.8);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
-  const box = document.createElement('div');
-  box.style.cssText='background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;';
-  box.innerHTML='<div style="font-size:48px;margin-bottom:12px;">🔒</div>'
-    +'<div style="font-size:18px;font-weight:700;color:#0A1F6E;margin-bottom:8px;">Pro Feature</div>'
-    +'<div style="font-size:13px;color:#64748B;margin-bottom:24px;line-height:1.5;">'+msgs[feature]+'</div>';
-  const upgradeBtn = document.createElement('button');
-  upgradeBtn.textContent='Upgrade Now 🚀';
-  upgradeBtn.style.cssText='width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:inherit;';
-  upgradeBtn.onclick=()=>{ popup.remove(); if(typeof showScreen==='function') showScreen('shop'); };
-  const cancelBtn = document.createElement('button');
-  cancelBtn.textContent='Maybe Later';
-  cancelBtn.style.cssText='width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
-  cancelBtn.onclick=()=>popup.remove();
-  box.appendChild(upgradeBtn);
-  box.appendChild(cancelBtn);
-  popup.appendChild(box);
-  document.body.appendChild(popup);
-  return false;
+  // ← TESTING OVERRIDE: always allow all features — remove this line before production
+  return true;
 }
 S.aiUsedToday = S.aiUsedToday || 0;
 S.aiUsedMonth = S.aiUsedMonth || 0;
@@ -4223,7 +4184,7 @@ function updateMissions(){
   const todayQ = S.todayQ || 0;
   const streak = S.streak || 0;
   const acc = S.totalQ > 0 ? Math.round(S.totalCorrect/S.totalQ*100) : 0;
-  const bestAcc = (S.totalQ > 0 && S.bestAcc) ? S.bestAcc : null;
+  const bestAcc = S.bestAcc || 0;
   // Q mission
   const qSub = document.getElementById('mission-q-sub');
   const qBar = document.getElementById('mission-q-bar');
@@ -4237,7 +4198,7 @@ function updateMissions(){
   // Accuracy mission
   const aSub = document.getElementById('mission-a-sub');
   const aBar = document.getElementById('mission-a-bar');
-  if(aSub) aSub.textContent = 'Current best: ' + (bestAcc !== null ? bestAcc + '%' : '—');
+  if(aSub) aSub.textContent = 'Current best: ' + (bestAcc||'—') + '%';
   if(aBar) aBar.style.width = Math.min(acc,100) + '%';
 }
 
@@ -6753,6 +6714,7 @@ function loadState(){
 }
 // Auto-save every 30s and on answer
 loadState();
+S.plan = 'elite'; // ← TESTING OVERRIDE — remove before production
 setInterval(saveState,30000);
 const _origAnswerQ=answerQ;
 // Already handled in answerQ — also save after each answer
