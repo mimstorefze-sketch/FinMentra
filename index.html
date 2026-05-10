@@ -8351,8 +8351,11 @@ async function findOnlineMatch(){
   MM.myName = getMyDisplayName();
   const category = document.getElementById('mm-category')?.value||'Mixed';
 
-  // Clean up old queue entry
-  await _supa.from('matchmaking_queue').delete().eq('player_id',MM.myPlayerId);
+  // Clean up own old entry + any stuck 'matching' entries from previous sessions
+  await _supa.from('matchmaking_queue').delete().eq('player_id', MM.myPlayerId);
+  await _supa.from('matchmaking_queue')
+    .delete().eq('status','matching')
+    .lt('created_at', new Date(Date.now()-30000).toISOString());
 
   // Enter queue
   const {error} = await _supa.from('matchmaking_queue').insert({
@@ -8364,7 +8367,20 @@ async function findOnlineMatch(){
 
   if(error){ toast('Could not enter matchmaking. Try again.','error'); return; }
 
-  // Show searching UI
+  // Reset all matchmaking UI before showing
+  const _resetUI = (id, val) => { const e=document.getElementById(id); if(e) e.textContent=val; };
+  const _resetClass = (id, cls) => { const e=document.getElementById(id); if(e) e.classList.remove(cls); };
+  _resetUI('mm-opp-name', '...');
+  _resetUI('mm-opp-rating', '---');
+  _resetUI('mm-opp-status', '⏳');
+  _resetUI('mm-search-title', 'Finding your opponent...');
+  _resetUI('mm-search-sub', 'Matching you with a player at your level');
+  _resetUI('mm-search-timer', '0:00');
+  _resetUI('mm-search-hint', 'Tip: More players online on weekday evenings');
+  _resetClass('mm-opponent-card', 'found');
+  const _av = document.getElementById('mm-opp-avatar');
+  if(_av) _av.textContent = '🎯';
+
   showChallengeSection('matchmaking');
   document.getElementById('mm-topic-display').textContent = 'Topic: '+category;
   document.getElementById('mm-your-rating-display').textContent = MM.myRating;
@@ -8410,14 +8426,21 @@ async function findOnlineMatch(){
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'challenges',filter:'guest_id=eq.'+MM.myPlayerId},
       async(payload)=>{
         if(!payload.new || !payload.new.id) return;
-        if(MM.isMatching) return; // already being matched, ignore
-        if(CH.challengeId) return; // already in a game, ignore
+        if(MM.isMatching) return;
+        if(CH.challengeId) return;
+        // Verify this challenge is actually for us
+        if(payload.new.guest_id !== MM.myPlayerId) return;
         MM.isMatching = true;
         clearInterval(MM.searchTimer);
         clearInterval(MM.searchInterval);
         MM.searchInterval = null;
         MM.searchTimer = null;
-        console.log('✅ Matched as GUEST via realtime for challenge:', payload.new.id);
+        // Show opponent found UI for guest too
+        showOpponentFound({
+          player_name: payload.new.host_name||'Opponent',
+          player_rating: 1000
+        });
+        console.log('✅ Matched as GUEST for challenge:', payload.new.id);
         await onMatchFound(payload.new.id, payload.new.host_id, payload.new.category||category, 'guest');
       }
     ).subscribe();
@@ -8533,19 +8556,13 @@ async function onMatchFound(challengeId, oppId, category, myRole, oppData, quest
   CH.isOnlineMatch = true;
 
   if(myRole === 'host'){
-    // Use questions already saved to Supabase in searchForOpponent
+    // Questions and started_at were already saved in the INSERT in searchForOpponent
+    // DO NOT do any extra UPDATE here — it would double-trigger the guest's subscription
     CH.questions = questions && questions.length > 0 ? questions
       : await getChallengeQuestionsAsync(category||'Mixed', 10);
-    // Save battle start time so both devices countdown from same moment
-    const battleStartsAt = new Date(Date.now() + 4000).toISOString(); // 4s from now
-    try{
-      await _supa.from('challenges').update({
-        questions: JSON.stringify(CH.questions),
-        started_at: battleStartsAt
-      }).eq('id', challengeId);
-      CH.battleStartsAt = battleStartsAt;
-      console.log('✅ Host saved questions + battle start time');
-    }catch(e){ console.log('Could not save to Supabase:', e); CH.battleStartsAt = null; }
+    // Use the battleStartsAt that was set in searchForOpponent insert
+    CH.battleStartsAt = new Date(Date.now() + 4000).toISOString();
+    console.log('✅ Host ready with', CH.questions.length, 'questions');
 
   } else {
     // Guest — fetch EXACT same questions + battle start time from Supabase
