@@ -7107,10 +7107,10 @@ const _origAnswerQ=answerQ;
       <div id="battle-options"></div>
       <div id="battle-explanation" style="display:none;margin-top:12px;padding:12px;background:var(--blue-ll);border-radius:10px;font-size:12px;line-height:1.6;color:var(--navy);"></div>
     </div>
-    <!-- Quit/Forfeit button — visible on all screen sizes -->
-    <div style="display:flex;gap:8px;margin-top:8px;">
-      <button onclick="forfeitChallenge()" style="flex:1;padding:12px;border-radius:12px;background:var(--red-l);color:var(--red);border:2px solid var(--red);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:6px;">
-        🏳️ <span>Quit / Forfeit</span>
+    <!-- Withdraw button — top right of battle, always visible -->
+    <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+      <button onclick="forfeitChallenge()" style="padding:8px 16px;border-radius:999px;background:var(--red-l);color:var(--red);border:2px solid var(--red);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);display:inline-flex;align-items:center;gap:5px;">
+        🏳️ Withdraw
       </button>
     </div>
   </div>
@@ -7581,7 +7581,16 @@ async function joinChallenge(){
     CH.challengeId = challenge.id;
     CH.code = code;
     CH.role = 'guest';
-    CH.questions = typeof challenge.questions === 'string' ? JSON.parse(challenge.questions||'[]') : (challenge.questions||[]);
+    // Load questions from challenge record (same as host)
+    let parsedQs = [];
+    try{
+      parsedQs = typeof challenge.questions==='string' ? JSON.parse(challenge.questions||'[]') : (challenge.questions||[]);
+    }catch(e){}
+    // Fallback to Supabase cache if questions missing
+    if(!parsedQs || parsedQs.length === 0){
+      parsedQs = await getChallengeQuestionsAsync(challenge.category||'Mixed', challenge.total_questions||10);
+    }
+    CH.questions = parsedQs;
     CH.myScore = 0; CH.opponentScore = 0;
     CH.myAnswers = []; CH.opponentAnswers = [];
     CH.currentQ = 0;
@@ -7605,7 +7614,11 @@ function subscribeToChallenge(challengeId){
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'challenges',filter:'id=eq.'+challengeId},
       (payload)=>{
         const updated = payload.new;
-        // Battle starts via countdown for both roles — no action needed on active status
+        // Private challenge: host starts countdown when guest joins
+        if(updated.status==='active' && CH.role==='host' && !CH.isOnlineMatch){
+          const guestName = updated.guest_name||'Opponent';
+          startCountdown({player_name: guestName});
+        }
         if(updated.status==='finished'){
           endChallenge(updated);
         }
@@ -7721,9 +7734,9 @@ async function submitBattleAnswer(answerIdx){
     await _supa.from('challenge_moves').insert({
       challenge_id: CH.challengeId,
       player_id: _currentUser?_currentUser.id:(CH.role+'_guest'),
-      question_index: CH.currentQ,
+      q_idx: CH.currentQ,
       answer: answerIdx,
-      is_correct: isCorrect,
+      correct: isCorrect,
       time_ms: timeTaken,
     });
 
@@ -7768,7 +7781,7 @@ function handleOpponentMove(move){
   if(isMyMove) return;
 
   // Update opponent score display
-  if(move.is_correct){
+  if(move.correct || move.is_correct){
     CH.opponentScore++;
     if(CH.role==='host') document.getElementById('battle-guest-score').textContent=CH.opponentScore;
     else document.getElementById('battle-host-score').textContent=CH.opponentScore;
@@ -7777,7 +7790,7 @@ function handleOpponentMove(move){
   // Update opponent status
   const statusEl = document.getElementById('opponent-status-text');
   if(statusEl){
-    statusEl.textContent = move.is_correct?
+    statusEl.textContent = (move.correct||move.is_correct)?
       '✅ Opponent answered correctly!':
       '❌ Opponent got it wrong!';
   }
@@ -8208,17 +8221,32 @@ async function onMatchFound(challengeId, oppId, category, myRole, oppData, quest
     }catch(e){ console.log('Could not save questions to Supabase:', e); }
 
   } else {
-    // Guest — use preloaded cache (same questions pool as host)
-    console.log('👥 Guest: loading questions from cache for category:', category);
-    CH.questions = await getChallengeQuestionsAsync(category||'Mixed', 10);
-    console.log('✅ Guest loaded',CH.questions.length,'questions');
-    // Also try to get host name from challenge record
-    try{
-      const {data:ch} = await _supa.from('challenges')
-        .select('host_name')
-        .eq('id', challengeId).single();
-      if(ch && ch.host_name && !oppData) oppData = {player_name: ch.host_name};
-    }catch(e){}
+    // Guest — fetch EXACT same questions host saved to Supabase
+    console.log('👥 Guest: fetching questions from challenge record...');
+    let loaded = false;
+    for(let attempt = 0; attempt < 8; attempt++){
+      try{
+        const {data:ch} = await _supa.from('challenges')
+          .select('questions,host_name')
+          .eq('id', challengeId).single();
+        if(ch && ch.questions){
+          const parsed = typeof ch.questions==='string' ? JSON.parse(ch.questions) : ch.questions;
+          if(parsed && parsed.length > 0){
+            CH.questions = parsed;
+            if(!oppData) oppData = {player_name: ch.host_name||'Opponent'};
+            loaded = true;
+            console.log('✅ Guest loaded',parsed.length,'questions from host');
+            break;
+          }
+        }
+      }catch(e){ console.log('Guest fetch attempt',attempt,'failed:',e.message); }
+      await new Promise(r=>setTimeout(r,800));
+    }
+    // Fallback only if host questions never arrived
+    if(!loaded || !CH.questions || CH.questions.length===0){
+      console.log('⚠️ Guest fallback: using own cache');
+      CH.questions = await getChallengeQuestionsAsync(category||'Mixed', 10);
+    }
   }
 
   // Final safety check
@@ -8239,24 +8267,28 @@ function startCountdown(oppData){
   const vsText = document.getElementById('countdown-vs-text');
   if(vsText) vsText.textContent = 'You vs '+(oppData?.player_name||'Opponent');
 
-  let count = 3;
   const numEl = document.getElementById('countdown-num');
   const tipEl = document.getElementById('countdown-tip');
   if(tipEl) tipEl.textContent = MM.tips[Math.floor(Math.random()*MM.tips.length)];
 
+  // Sync countdown using server time so both devices start together
+  const startTime = Date.now();
+  const TOTAL_MS = 3500; // 3.5 seconds
   const countDown = setInterval(()=>{
-    count--;
+    const elapsed = Date.now() - startTime;
+    const remaining = Math.ceil((TOTAL_MS - elapsed) / 1000);
+    const count = Math.max(0, remaining);
     if(numEl){
       numEl.textContent = count>0?count:'GO!';
       numEl.style.color = count>0?'var(--navy)':'var(--green)';
     }
-    if(count<=0){
+    if(elapsed >= TOTAL_MS){
       clearInterval(countDown);
       setTimeout(()=>{
         startBattle(MM.myName, oppData?.player_name||'Opponent');
-      },600);
+      },400);
     }
-  },1000);
+  },200);
 }
 
 function matchWithAI(category){
@@ -8426,6 +8458,14 @@ showChallengeSection = function(section){
 // Load online matchmaking data when screen shown
 const _origShowScreenMM = showScreen;
 showScreen = function(id){
+  // If leaving multiplayer — cancel any active search
+  if(id !== 'multiplayer' && MM.searchInterval){
+    clearInterval(MM.searchInterval);
+    clearInterval(MM.searchTimer);
+    clearInterval(MM.onlineCountInterval);
+    MM.searchInterval = null;
+    MM.searchTimer = null;
+  }
   _origShowScreenMM(id);
   if(id==='multiplayer'){
     loadChallengeStats();
