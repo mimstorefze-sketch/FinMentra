@@ -4125,6 +4125,11 @@ S.aiUsedToday = S.aiUsedToday || 0;
 S.aiUsedMonth = S.aiUsedMonth || 0;
 S.aiLastDate = S.aiLastDate || '';
 function getAIPlan(){ return AI_PLANS[S.aiPlan] || AI_PLANS.free; }
+// API key stored securely in Vercel environment variables — accessed via /api/ai proxy
+function canUseAI(){
+  const check = checkAILimit();
+  return !check.blocked;
+}
 function checkAILimit(){
   const today = new Date().toDateString();
   if(S.aiLastDate !== today){ S.aiUsedToday=0; S.aiLastDate=today; }
@@ -4175,7 +4180,7 @@ function sendChat(){
   msgs.appendChild(typing);
   msgs.scrollTop=msgs.scrollHeight;
   // Call Claude API
-  fetch('https://api.anthropic.com/v1/messages',{
+  fetch('/api/ai',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
@@ -5252,29 +5257,43 @@ function sendFollowUp(){
   const std=S.currentStandard||S.domain;
   const lower=q.toLowerCase();
   
-  setTimeout(function(){
-    let answer='';
-    if(lower.includes('why')||lower.includes('correct')){
-      answer='The correct answer relates to <strong>'+std+'</strong>. The key principle is that the standard requires specific recognition criteria to be met before any accounting treatment applies. The wrong answers are common misconceptions: typically they apply either the old standard treatment (e.g. IAS 17/IAS 18 approach) or confuse recognition with measurement.';
-    } else if(lower.includes('worked example')||lower.includes('example')){
-      answer='<strong>Worked Example ('+std+'):</strong><br>Assume a company has a transaction requiring application of '+std+'. The entity must first identify all components, then measure each at its appropriate amount, and finally recognise in the correct period. Journal entry:<br><em>Dr [Asset/Expense]... Cr [Revenue/Liability]</em><br>Always confirm the paragraph reference matches the scenario in the exam question.';
-    } else if(lower.includes('exam trap')||lower.includes('trap')){
-      answer='<strong>Common Exam Traps for '+std+':</strong><br>1. Applying old standards (pre-IFRS 9/15/16) — always check the effective date<br>2. Confusing recognition timing with measurement<br>3. Ignoring disclosure requirements (often worth marks)<br>4. Missing the "probable" or "reliable estimate" threshold<br>5. Applying gross instead of net presentation (or vice versa)';
-    } else if(lower.includes('paragraph')||lower.includes('para')||lower.includes('reference')){
-      const paraRefs={'IFRS 15':'Para 9 (contract criteria), 22 (POs), 31 (control transfer), 47 (transaction price), 73 (allocation), 105 (recognition)','IFRS 16':'Para 22 (initial recognition), 26 (lease liability measurement), 31 (ROU asset)','IFRS 9':'Para 4.1.2 (classification), 5.5.1 (ECL), 5.5.3 (Stage 2 SICR)','IAS 36':'Para 18 (recoverable amount), 60 (impairment loss), 96 (goodwill annual test), 124 (reversal prohibition)','IAS 37':'Para 14 (recognition criteria), 36 (best estimate), 45 (onerous contracts)'};
-      answer='<strong>Key Paragraph References — '+std+':</strong><br>'+(paraRefs[std]||'Refer to the full standard text for specific paragraph numbers. In exams, citing "'+std+' Para X" strengthens your answer even if the exact number is approximate.');
-    } else {
-      answer='Under <strong>'+std+'</strong>, the principle you are asking about relates to how entities account for transactions in accordance with IFRS. The standard requires careful analysis of: (1) the substance of the transaction, (2) whether recognition criteria are met, and (3) how measurement should be applied. Always refer to the specific paragraph when writing exam answers.';
-    }
-    // Build answer DOM (avoid nested quotes)
-    ansDiv.innerHTML='';
-    const aWrap=document.createElement('div');aWrap.style.fontSize='12px';aWrap.style.lineHeight='1.7';aWrap.innerHTML=answer;
-    const cWrap=document.createElement('div');cWrap.style.cssText='margin-top:8px;text-align:right;';
-    const cBtn=document.createElement('button');cBtn.style.cssText='font-size:10px;color:var(--muted);background:none;border:none;cursor:pointer;';
-    cBtn.textContent='\u2715 Close';cBtn.onclick=function(){ansDiv.style.display='none';};
-    cWrap.appendChild(cBtn);ansDiv.appendChild(aWrap);ansDiv.appendChild(cWrap);
-    inp.value='';
-  }, 700);
+  // Cache-first AI — check Supabase cache before calling API
+  // This saves cost: same question answered once, reused for all users forever
+  const currentQ = S.currentQuestion || {};
+  const questionText = currentQ.q || '';
+  const opts = currentQ.opts || [];
+  const correctIdx = typeof currentQ.correct === 'number' ? currentQ.correct : 0;
+  const correctAns = opts[correctIdx] || '';
+
+  // Build cache key from question text (first 80 chars) + student query type
+  const qKey = (questionText.substring(0, 80) + '_' + q.substring(0, 30))
+    .toLowerCase().replace(/[^a-z0-9]/g, '_');
+
+  // Cache-first: check Supabase cache, then call API
+  var aiPrompt = 'Standard: ' + std + ' | Question: ' + questionText + ' | Correct answer: ' + correctAns + ' | Student asks: ' + q;
+  var aiSystem = 'You are Mr. Ledger AI, a finance and accounting tutor for FinMentra. Help students understand IFRS, IAS, ISA, Tax, Costing, FM. Give concise exam-focused answers under 120 words. Bold key terms with **. Reference standard paragraphs. End with one exam tip.';
+  function doAICall() {
+    fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 400, system: aiSystem, messages: [{ role: 'user', content: aiPrompt }] })
+    }).then(function(r){ return r.json(); }).then(function(data){
+      var text = data.content && data.content[0] ? data.content[0].text : 'Sorry, could not get a response.';
+      var html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+      ansDiv.innerHTML = '<div style="font-size:13px;line-height:1.6;color:var(--navy);">' + html + '</div>';
+      _supa.from('ai_explanations').upsert({ cache_key: qKey, question: questionText.substring(0,200), student_query: q.substring(0,100), answer: html, standard: std, created_at: new Date().toISOString() }, { onConflict: 'cache_key' }).then(function(){}).catch(function(){});
+    }).catch(function(){
+      ansDiv.innerHTML = '<div style="color:var(--red);font-size:12px;">AI temporarily unavailable. Please try again.</div>';
+    });
+  }
+  // Check cache first
+  _supa.from('ai_explanations').select('answer').eq('cache_key', qKey).single()
+    .then(function(res){
+      if(res.data && res.data.answer){
+        ansDiv.innerHTML = '<div style="font-size:13px;line-height:1.6;color:var(--navy);">' + res.data.answer + '<br><span style="font-size:10px;color:var(--muted);">⚡ Instant answer</span></div>';
+      } else { doAICall(); }
+    }).catch(function(){ doAICall(); });
+  callAIAndCache(false);
 }
 
 
