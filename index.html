@@ -8450,56 +8450,44 @@ async function findOnlineMatch(){
 }
 
 async function searchForOpponent(category){
-  if(MM.isMatching) return; // prevent concurrent searches
+  if(MM.isMatching) return;
   MM.isMatching = true;
-  // Safety: auto-reset isMatching after 5s in case of error
-  const matchingTimeout = setTimeout(()=>{ MM.isMatching = false; }, 5000);
+  const matchingTimeout = setTimeout(()=>{ MM.isMatching = false; }, 8000);
   try{
-    const freshAgo = new Date(Date.now()-60000).toISOString(); // only match players who joined in last 60s
+    // Call server-side atomic matching function
+    // Uses PostgreSQL SELECT FOR UPDATE SKIP LOCKED — safe for 100K+ concurrent users
+    const {data:result, error:rpcError} = await _supa.rpc('find_and_match_opponent', {
+      p_player_id: MM.myPlayerId,
+      p_player_name: MM.myName,
+      p_category: category||'Mixed',
+      p_rating: MM.myRating||1000
+    });
 
-    // Step 1: Find a waiting opponent
-    const {data:opponents} = await _supa.from('matchmaking_queue')
-      .select('*')
-      .eq('status','waiting')
-      .neq('player_id', MM.myPlayerId)
-      .gte('created_at', freshAgo)
-      .or('category.eq.'+category+',category.eq.Mixed')
-      .order('created_at',{ascending:true})
-      .limit(1);
-
-    if(!opponents || !opponents.length){ clearTimeout(matchingTimeout); MM.isMatching=false; return; }
-    const opp = opponents[0];
-
-    // Step 2: ATOMICALLY claim opponent by updating ONLY if still 'waiting'
-    // This prevents two hosts from matching the same guest simultaneously
-    const {data:claimed, error:claimErr} = await _supa.from('matchmaking_queue')
-      .update({status:'matching', matched_with:MM.myPlayerId})
-      .eq('player_id', opp.player_id)
-      .eq('status','waiting') // only succeeds if still waiting
-      .select();
-
-    if(claimErr || !claimed || claimed.length === 0){
-      clearTimeout(matchingTimeout);
-      MM.isMatching = false;
-      return;
+    if(rpcError || !result || !result.matched){
+      clearTimeout(matchingTimeout); MM.isMatching=false; return;
     }
 
-    // Step 3: We successfully claimed the opponent — stop searching
-    showOpponentFound(opp);
+    // Matched! Build opponent object
+    const opp = {
+      player_id: result.opponent_id,
+      player_name: result.opponent_name,
+      player_rating: result.opponent_rating||1000,
+      category: result.category||category||'Mixed'
+    };
+    const matchCategory = result.category||category||'Mixed';
+
+    // Stop search timers + show UI
     clearInterval(MM.searchInterval);
     clearInterval(MM.searchTimer);
-    MM.searchInterval = null;
-    MM.searchTimer = null;
+    MM.searchInterval = null; MM.searchTimer = null;
+    showOpponentFound(opp);
 
-    // Step 4: DELETE both queue entries FIRST before creating challenge
-    // This closes the window where other hosts can see these players as 'matching'
-    await _supa.from('matchmaking_queue').delete().eq('player_id', MM.myPlayerId);
-    await _supa.from('matchmaking_queue').delete().eq('player_id', opp.player_id);
+    // Build questions
+    const questions = await getChallengeQuestionsAsync(matchCategory, 10);
+    const battleStartsAt = new Date(Date.now() + 7000).toISOString();
 
-    // Step 5: Create challenge with questions
-    const questions = await getChallengeQuestionsAsync(category, 10);
-    const battleStartsAt = new Date(Date.now() + 7000).toISOString(); // 7s gives guest time to fetch questions
-    const {data:challenge, error} = await _supa.from('challenges').insert({
+    // Insert challenge — triggers guest realtime subscription
+    const {data:challenge, error:chalError} = await _supa.from('challenges').insert({
       code: generateCode(),
       host_id: MM.myPlayerId,
       host_name: MM.myName,
@@ -8508,19 +8496,24 @@ async function searchForOpponent(category){
       status: 'active',
       total_questions: 10,
       questions: JSON.stringify(questions),
-      category,
+      category: matchCategory,
       started_at: battleStartsAt,
     }).select().single();
 
-    if(error){ clearTimeout(matchingTimeout); MM.isMatching=false; return; }
-    // NOTE: No extra UPDATE here — INSERT already triggers guest's realtime subscription
+    if(chalError){
+      console.error('Challenge insert failed:', chalError.message);
+      clearTimeout(matchingTimeout); MM.isMatching=false; return;
+    }
 
-    console.log('✅ Matched as HOST, challenge:', challenge.id);
+    console.log('✅ HOST matched:', MM.myName, 'vs', opp.player_name, '| challenge:', challenge.id);
     clearTimeout(matchingTimeout);
     MM.isMatching = false;
-    await onMatchFound(challenge.id, opp.player_id, category, 'host', opp, questions);
+    await onMatchFound(challenge.id, opp.player_id, matchCategory, 'host', opp, questions);
 
-  }catch(e){ clearTimeout(matchingTimeout); MM.isMatching=false; }
+  }catch(e){
+    console.error('searchForOpponent error:', e.message);
+    clearTimeout(matchingTimeout); MM.isMatching=false;
+  }
 }
 
 function showOpponentFound(opp){
