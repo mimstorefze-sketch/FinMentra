@@ -8266,12 +8266,16 @@ async function findOnlineMatch(){
   },1000);
 
   // Subscribe to queue — watch for match
-  MM.queueSubscription = _supa.channel('mm_'+MM.myPlayerId)
-    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'matchmaking_queue',filter:'player_id=eq.'+MM.myPlayerId},
+  // Watch challenges table for a new challenge where we are the guest
+  MM.queueSubscription = _supa.channel('mm_guest_'+MM.myPlayerId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'challenges',filter:'guest_id=eq.'+MM.myPlayerId},
       async(payload)=>{
-        if(payload.new.status==='matched' && payload.new.challenge_id){
+        if(payload.new && payload.new.id){
           clearInterval(MM.searchTimer);
-          await onMatchFound(payload.new.challenge_id, payload.new.matched_with, category, 'guest');
+          clearInterval(MM.searchInterval);
+          MM.searchInterval = null;
+          MM.searchTimer = null;
+          await onMatchFound(payload.new.id, payload.new.host_id, payload.new.category||category, 'guest');
         }
       }
     ).subscribe();
@@ -8338,14 +8342,16 @@ async function searchForOpponent(category){
 
     if(error){ MM.isMatching=false; return; }
 
-    // Step 5: Update both queue entries as matched
-    await _supa.from('matchmaking_queue').update({
-      status:'matched', matched_with:opp.player_id, challenge_id:challenge.id
-    }).eq('player_id', MM.myPlayerId);
+    // Step 5: DELETE both queue entries — remove from pool immediately
+    // This prevents any other searcher from picking up these players
+    await _supa.from('matchmaking_queue').delete().eq('player_id', MM.myPlayerId);
+    await _supa.from('matchmaking_queue').delete().eq('player_id', opp.player_id);
 
-    await _supa.from('matchmaking_queue').update({
-      status:'matched', matched_with:MM.myPlayerId, challenge_id:challenge.id
-    }).eq('player_id', opp.player_id);
+    // Still update opponent's entry with challenge_id so their subscription fires
+    // We use a separate notification channel for this
+    await _supa.from('challenges').update({
+      host_id: MM.myPlayerId, guest_id: opp.player_id
+    }).eq('id', challenge.id);
 
     MM.isMatching = false;
     await onMatchFound(challenge.id, opp.player_id, category, 'host', opp, questions);
@@ -8375,6 +8381,9 @@ function showOpponentFound(opp){
 }
 
 async function onMatchFound(challengeId, oppId, category, myRole, oppData, questions){
+  // IMMEDIATELY remove ourselves from queue so no one else can match with us
+  try{ await _supa.from('matchmaking_queue').delete().eq('player_id', MM.myPlayerId); }catch(e){}
+
   CH.challengeId = challengeId;
   CH.role = myRole;
   CH.isOnlineMatch = true;
@@ -8525,10 +8534,22 @@ async function cancelMatchmaking(silent){
 async function cleanStaleQueueEntries(){
   try{
     const threeMinAgo = new Date(Date.now()-180000).toISOString();
+    const thirtySecAgo = new Date(Date.now()-30000).toISOString();
+    // Clean old waiting entries
     await _supa.from('matchmaking_queue')
       .delete()
       .eq('status','waiting')
       .lt('created_at', threeMinAgo);
+    // Clean stuck 'matching' entries older than 30s
+    await _supa.from('matchmaking_queue')
+      .delete()
+      .eq('status','matching')
+      .lt('created_at', thirtySecAgo);
+    // Clean matched entries older than 1 min (should have been deleted already)
+    await _supa.from('matchmaking_queue')
+      .delete()
+      .eq('status','matched')
+      .lt('created_at', new Date(Date.now()-60000).toISOString());
   }catch(e){}
 }
 
