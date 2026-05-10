@@ -7758,6 +7758,7 @@ async function submitBattleAnswer(answerIdx){
       answer: answerIdx,
       correct: isCorrect,
       time_ms: timeTaken,
+      points: isCorrect ? speedBonus : 0,
     });
 
     // Update challenge scores in DB
@@ -7814,18 +7815,20 @@ function handleOpponentMove(move){
   const isMyMove = move.player_id === myPlayerId;
   if(isMyMove) return;
 
-  // Update opponent score display
+  // Update opponent score — use exact points they earned (speed bonus included)
   if(move.correct || move.is_correct){
-    CH.opponentScore++;
+    const pts = move.points || 1;
+    CH.opponentScore += pts;
     if(CH.role==='host') document.getElementById('battle-guest-score').textContent=CH.opponentScore;
     else document.getElementById('battle-host-score').textContent=CH.opponentScore;
   }
 
-  // Update opponent status
+  // Update opponent status with their points
   const statusEl = document.getElementById('opponent-status-text');
   if(statusEl){
+    const pts = move.points || 1;
     statusEl.textContent = (move.correct||move.is_correct)?
-      '✅ Opponent answered correctly!':
+      '✅ Opponent answered correctly! +'+pts+'pt'+(pts>1?'s!':'!'):
       '❌ Opponent got it wrong!';
   }
   CH.opponentAnswers.push(move);
