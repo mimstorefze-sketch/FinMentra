@@ -7731,9 +7731,10 @@ async function submitBattleAnswer(answerIdx){
 
   // Send move to Supabase
   try{
+    const myPlayerId = _currentUser ? _currentUser.id : MM.myPlayerId;
     await _supa.from('challenge_moves').insert({
       challenge_id: CH.challengeId,
-      player_id: _currentUser?_currentUser.id:(CH.role+'_guest'),
+      player_id: myPlayerId,
       q_idx: CH.currentQ,
       answer: answerIdx,
       correct: isCorrect,
@@ -7752,15 +7753,27 @@ async function submitBattleAnswer(answerIdx){
     if(CH.currentQ >= CH.questions.length-1){
       updateData.status = 'finished';
       updateData.finished_at = new Date().toISOString();
-      // End using local data — don't wait for DB which may lag
-      setTimeout(()=>{
-        endChallenge({
-          host_score: CH.role==='host' ? CH.myScore : CH.opponentScore,
-          guest_score: CH.role==='guest' ? CH.myScore : CH.opponentScore,
-          host_name: CH.role==='host' ? MM.myName : null,
-          guest_name: CH.role==='guest' ? MM.myName : null,
-        });
-      }, 1500);
+      // Wait for both scores to be written, then fetch final result from DB
+      setTimeout(async()=>{
+        try{
+          const {data:final} = await _supa.from('challenges')
+            .select('*').eq('id',CH.challengeId).single();
+          if(final) endChallenge(final);
+          else endChallenge({
+            host_score: CH.role==='host'?CH.myScore:CH.opponentScore,
+            guest_score: CH.role==='guest'?CH.myScore:CH.opponentScore,
+            host_name: CH.role==='host'?MM.myName:'Opponent',
+            guest_name: CH.role==='guest'?MM.myName:'Opponent',
+          });
+        }catch(e){
+          endChallenge({
+            host_score: CH.role==='host'?CH.myScore:CH.opponentScore,
+            guest_score: CH.role==='guest'?CH.myScore:CH.opponentScore,
+            host_name: CH.role==='host'?MM.myName:'Opponent',
+            guest_name: CH.role==='guest'?MM.myName:'Opponent',
+          });
+        }
+      }, 2500);
     }
 
     await _supa.from('challenges').update(updateData).eq('id',CH.challengeId);
@@ -7777,9 +7790,9 @@ async function submitBattleAnswer(answerIdx){
 
 // ── HANDLE OPPONENT MOVE ──
 function handleOpponentMove(move){
-  // Only process opponent's moves
-  const isMyMove = (_currentUser&&move.player_id===_currentUser.id)||
-                   (!_currentUser&&move.player_id===CH.role+'_guest');
+  // Only process opponent's moves — skip our own
+  const myPlayerId = _currentUser ? _currentUser.id : MM.myPlayerId;
+  const isMyMove = move.player_id === myPlayerId;
   if(isMyMove) return;
 
   // Update opponent score display
@@ -7809,11 +7822,13 @@ function endChallenge(challengeData){
   S.screen = 'multiplayer';
   renderBottomNav();
 
-  // Use local scores as primary (DB scores may lag) — fallback to DB if local is 0
-  const dbMyScore = CH.role==='host'?challengeData.host_score:challengeData.guest_score;
-  const dbOppScore = CH.role==='host'?challengeData.guest_score:challengeData.host_score;
-  const myScore = (CH.myScore > 0 || dbMyScore === 0) ? CH.myScore : dbMyScore;
-  const oppScore = (CH.opponentScore > 0 || dbOppScore === 0) ? CH.opponentScore : dbOppScore;
+  // My score: always use local (most accurate)
+  // Opponent score: use DB (they wrote it themselves — authoritative)
+  const myScore = CH.myScore;
+  const dbOppScore = CH.role==='host'
+    ? (challengeData.guest_score||0)
+    : (challengeData.host_score||0);
+  const oppScore = dbOppScore > 0 ? dbOppScore : CH.opponentScore;
   const myName = CH.role==='host'?challengeData.host_name:challengeData.guest_name;
   const oppName = CH.role==='host'?challengeData.guest_name:challengeData.host_name;
 
@@ -7834,13 +7849,38 @@ function endChallenge(challengeData){
   // Show results
   showChallengeSection('results');
 
-  // Hero
-  document.getElementById('result-trophy').textContent = didWin?'🏆':isDraw?'🤝':'😤';
-  document.getElementById('result-title').textContent = didWin?'You Won!':isDraw?'It\'s a Draw!':'You Lost!';
+  // Hero — colour changes per result
+  const heroEl = document.getElementById('result-hero');
+  if(heroEl){
+    heroEl.style.background = didWin
+      ? 'linear-gradient(135deg,#0A6E3A,#16A34A)'
+      : isDraw
+      ? 'linear-gradient(135deg,#1E3A8A,#4A6CF7)'
+      : 'linear-gradient(135deg,#7F1D1D,#DC2626)';
+  }
+  document.getElementById('result-trophy').textContent = didWin?'🏆':isDraw?'🤝':'😢';
+  document.getElementById('result-title').textContent = didWin?'You Won! 🎉':isDraw?"It's a Draw!":'You Lost!';
   document.getElementById('result-sub').textContent = didWin?
     'Outstanding performance! +'+xpReward+' XP':
     isDraw?'Neck and neck! +'+xpReward+' XP':
-    'Keep practicing! +'+xpReward+' XP';
+    'Better luck next time! +'+xpReward+' XP';
+
+  // Confetti for winner
+  if(didWin){
+    const colors=['#F59E0B','#10B981','#3B82F6','#8B5CF6','#EC4899','#FBBF24'];
+    for(let i=0;i<60;i++){
+      const c=document.createElement('div');
+      c.style.cssText='position:fixed;top:-10px;left:'+(Math.random()*100)+'%;width:'+(6+Math.random()*8)+'px;height:'+(6+Math.random()*8)+'px;background:'+colors[Math.floor(Math.random()*colors.length)]+';border-radius:50%;z-index:9999;pointer-events:none;animation:confettiFall '+(1.5+Math.random()*2)+'s ease-in forwards;';
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(),4000);
+    }
+    if(!document.getElementById('confetti-style')){
+      const s=document.createElement('style');
+      s.id='confetti-style';
+      s.textContent='@keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);opacity:1;}100%{transform:translateY(100vh) rotate(720deg);opacity:0;}}';
+      document.head.appendChild(s);
+    }
+  }
 
   // Scores
   document.getElementById('result-host-score').textContent = myScore;
@@ -8259,7 +8299,7 @@ async function onMatchFound(challengeId, oppId, category, myRole, oppData, quest
     if(!loaded || !CH.questions || CH.questions.length===0){
       console.log('⚠️ Guest fallback: using own cache');
       CH.questions = await getChallengeQuestionsAsync(category||'Mixed', 10);
-      CH.battleStartsAt = null;
+      CH.battleStartsAt = new Date(Date.now() + 3500).toISOString();
     }
   }
 
