@@ -7817,7 +7817,10 @@ function endChallenge(challengeData){
   clearInterval(CH.timerInterval);
   clearInterval(MM.searchInterval);
   clearInterval(MM.searchTimer);
-  if(CH.subscription) CH.subscription.unsubscribe();
+  MM.searchInterval = null;
+  MM.searchTimer = null;
+  if(CH.subscription){ CH.subscription.unsubscribe(); CH.subscription = null; }
+  if(MM.queueSubscription){ MM.queueSubscription.unsubscribe(); MM.queueSubscription = null; }
   // Make sure we are on the multiplayer screen
   S.screen = 'multiplayer';
   renderBottomNav();
@@ -7989,12 +7992,32 @@ function cancelChallenge(){
 }
 
 function playAgain(){
-  CH.challengeId = null;
-  CH.role = null;
-  showChallengeSection('lobby');
-  CH.challengeId=null; CH.code=null; CH.role=null;
+  // Full cleanup of previous match state
+  clearInterval(MM.searchInterval);
+  clearInterval(MM.searchTimer);
+  clearInterval(MM.onlineCountInterval);
+  MM.searchInterval = null;
+  MM.searchTimer = null;
+  MM.searchSeconds = 0;
+  if(MM.queueSubscription){ MM.queueSubscription.unsubscribe(); MM.queueSubscription = null; }
+  if(CH.subscription){ CH.subscription.unsubscribe(); CH.subscription = null; }
+  // Clean up queue entry from previous match
+  if(MM.myPlayerId){
+    _supa.from('matchmaking_queue').delete().eq('player_id', MM.myPlayerId).then(()=>{});
+  }
+  // Reset all CH state
+  CH.challengeId=null; CH.code=null; CH.role=null; CH.isOnlineMatch=false;
   CH.questions=[]; CH.currentQ=0; CH.myScore=0; CH.opponentScore=0;
-  CH.myAnswers=[]; CH.opponentAnswers=[];
+  CH.myAnswers=[]; CH.opponentAnswers=[]; CH.battleStartsAt=null;
+  // Refresh player info
+  MM.myPlayerId = getMyPlayerId();
+  MM.myName = getMyDisplayName();
+  // Reset timer display
+  const timerEl = document.getElementById('mm-search-timer');
+  if(timerEl) timerEl.textContent = '0:00';
+  const hintEl = document.getElementById('mm-search-hint');
+  if(hintEl) hintEl.textContent = 'Tip: More players online on weekday evenings';
+  showChallengeSection('lobby');
 }
 
 // ══════════════════════════════════════════
@@ -8107,7 +8130,18 @@ async function updateOnlineCount(){
 // ── FIND ONLINE MATCH ──
 async function findOnlineMatch(){
   if(!checkPlanFeature('multiplayer')) return;
+
+  // Full cleanup of any previous search
+  clearInterval(MM.searchInterval);
+  clearInterval(MM.searchTimer);
+  MM.searchInterval = null;
+  MM.searchTimer = null;
+  MM.searchSeconds = 0;
+  if(MM.queueSubscription){ MM.queueSubscription.unsubscribe(); MM.queueSubscription = null; }
+
+  // Refresh player info fresh
   MM.myPlayerId = getMyPlayerId();
+  MM.myName = getMyDisplayName();
   const category = document.getElementById('mm-category')?.value||'Mixed';
 
   // Clean up old queue entry
@@ -8128,14 +8162,16 @@ async function findOnlineMatch(){
   document.getElementById('mm-topic-display').textContent = 'Topic: '+category;
   document.getElementById('mm-your-rating-display').textContent = MM.myRating;
 
-  // Start search timer
+  // Start search timer — fresh
   MM.searchSeconds = 0;
+  const timerDisplayEl = document.getElementById('mm-search-timer');
+  if(timerDisplayEl) timerDisplayEl.textContent = '0:00';
   MM.searchTimer = setInterval(()=>{
     MM.searchSeconds++;
-    const m=Math.floor(MM.searchSeconds/60);
-    const s=MM.searchSeconds%60;
-    const el=document.getElementById('mm-search-timer');
-    if(el) el.textContent=m+':'+(s<10?'0':'')+s;
+    const m = Math.floor(MM.searchSeconds/60);
+    const s = MM.searchSeconds%60;
+    const el = document.getElementById('mm-search-timer');
+    if(el) el.textContent = m+':'+(s<10?'0':'')+s;
     // After 30s show encouraging message
     if(MM.searchSeconds===30){
       const hint=document.getElementById('mm-search-hint');
@@ -8385,8 +8421,14 @@ function simulateAIOpponent(){
 async function cancelMatchmaking(silent){
   clearInterval(MM.searchInterval);
   clearInterval(MM.searchTimer);
-  if(MM.queueSubscription) MM.queueSubscription.unsubscribe();
+  MM.searchInterval = null;
+  MM.searchTimer = null;
+  MM.searchSeconds = 0;
+  if(MM.queueSubscription){ MM.queueSubscription.unsubscribe(); MM.queueSubscription = null; }
   try{ await _supa.from('matchmaking_queue').delete().eq('player_id',MM.myPlayerId); }catch(e){}
+  // Reset timer display
+  const el = document.getElementById('mm-search-timer');
+  if(el) el.textContent = '0:00';
   if(!silent){ showChallengeSection('lobby'); toast('Search cancelled'); }
 }
 
