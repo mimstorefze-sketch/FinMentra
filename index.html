@@ -8445,8 +8445,12 @@ async function findOnlineMatch(){
       }
     ).subscribe();
 
-  // Also actively search for waiting opponent every 1.5 seconds
-  MM.searchInterval = setInterval(()=>searchForOpponent(category), 2500);
+  // Poll with random stagger so simultaneous users don't all fire at same moment
+  // e.g. 4 users will poll at slightly different times reducing collision chance
+  const staggerDelay = Math.floor(Math.random() * 1500); // 0-1500ms random offset
+  setTimeout(()=>{
+    MM.searchInterval = setInterval(()=>searchForOpponent(category), 2500);
+  }, staggerDelay);
 }
 
 async function searchForOpponent(category){
