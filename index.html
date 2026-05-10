@@ -8099,6 +8099,7 @@ const MM = {
   searchTimer: null,
   queueSubscription: null,
   onlineCountInterval: null,
+  isMatching: false,
   tips: [
     'Faster correct answers earn more points! ⚡',
     'Speed bonus: answer in <7s = 3pts, <14s = 2pts, else 1pt ⚡',
@@ -8280,30 +8281,49 @@ async function findOnlineMatch(){
 }
 
 async function searchForOpponent(category){
+  if(MM.isMatching) return; // prevent concurrent searches
+  MM.isMatching = true;
   try{
-    // Only match with players who joined queue in last 150 seconds
-    const thirtySecAgo = new Date(Date.now()-150000).toISOString();
+    const freshAgo = new Date(Date.now()-150000).toISOString();
+
+    // Step 1: Find a waiting opponent
     const {data:opponents} = await _supa.from('matchmaking_queue')
       .select('*')
       .eq('status','waiting')
-      .neq('player_id',MM.myPlayerId)
-      .gte('created_at', thirtySecAgo)  // Only fresh entries!
-      .or('category.eq.'+category+',category.eq.Mixed,category.eq.'+category)
+      .neq('player_id', MM.myPlayerId)
+      .gte('created_at', freshAgo)
+      .or('category.eq.'+category+',category.eq.Mixed')
       .order('created_at',{ascending:true})
       .limit(1);
 
-    if(!opponents||!opponents.length) return;
+    if(!opponents || !opponents.length){ MM.isMatching=false; return; }
     const opp = opponents[0];
 
-    // Show opponent found animation
-    showOpponentFound(opp);
+    // Step 2: ATOMICALLY claim opponent by updating ONLY if still 'waiting'
+    // This prevents two hosts from matching the same guest simultaneously
+    const {data:claimed, error:claimErr} = await _supa.from('matchmaking_queue')
+      .update({status:'matching', matched_with:MM.myPlayerId})
+      .eq('player_id', opp.player_id)
+      .eq('status','waiting') // only succeeds if still waiting
+      .select();
 
+    if(claimErr || !claimed || claimed.length === 0){
+      // Another host already claimed this opponent — keep searching
+      MM.isMatching = false;
+      return;
+    }
+
+    // Step 3: We successfully claimed the opponent — stop searching
+    showOpponentFound(opp);
     clearInterval(MM.searchInterval);
     clearInterval(MM.searchTimer);
+    MM.searchInterval = null;
+    MM.searchTimer = null;
 
-    // Create challenge with questions from Supabase or local QB
+    // Step 4: Create challenge with questions
     const questions = await getChallengeQuestionsAsync(category, 10);
-    const {data:challenge,error} = await _supa.from('challenges').insert({
+    const battleStartsAt = new Date(Date.now() + 5000).toISOString();
+    const {data:challenge, error} = await _supa.from('challenges').insert({
       code: generateCode(),
       host_id: MM.myPlayerId,
       host_name: MM.myName,
@@ -8313,23 +8333,24 @@ async function searchForOpponent(category){
       total_questions:10,
       questions: JSON.stringify(questions),
       category,
-      started_at:new Date().toISOString(),
+      started_at: battleStartsAt,
     }).select().single();
 
-    if(error) return;
+    if(error){ MM.isMatching=false; return; }
 
-    // Update both queue entries
+    // Step 5: Update both queue entries as matched
     await _supa.from('matchmaking_queue').update({
       status:'matched', matched_with:opp.player_id, challenge_id:challenge.id
-    }).eq('player_id',MM.myPlayerId);
+    }).eq('player_id', MM.myPlayerId);
 
     await _supa.from('matchmaking_queue').update({
       status:'matched', matched_with:MM.myPlayerId, challenge_id:challenge.id
-    }).eq('player_id',opp.player_id);
+    }).eq('player_id', opp.player_id);
 
+    MM.isMatching = false;
     await onMatchFound(challenge.id, opp.player_id, category, 'host', opp, questions);
 
-  }catch(e){}
+  }catch(e){ MM.isMatching=false; }
 }
 
 function showOpponentFound(opp){
@@ -8491,6 +8512,7 @@ async function cancelMatchmaking(silent){
   MM.searchInterval = null;
   MM.searchTimer = null;
   MM.searchSeconds = 0;
+  MM.isMatching = false;
   if(MM.queueSubscription){ MM.queueSubscription.unsubscribe(); MM.queueSubscription = null; }
   try{ await _supa.from('matchmaking_queue').delete().eq('player_id',MM.myPlayerId); }catch(e){}
   // Reset timer display
