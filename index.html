@@ -8091,14 +8091,18 @@ function cancelWaiting(){
 }
 
 function forfeitChallenge(){
+  // Remove any existing popup first
+  const existing = document.getElementById('forfeit-popup');
+  if(existing) existing.remove();
   const box = document.createElement('div');
+  box.id = 'forfeit-popup';
   box.style.cssText='position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
   box.innerHTML=`<div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);">
     <div style="font-size:40px;margin-bottom:12px;">🏳️</div>
     <div style="font-size:18px;font-weight:700;color:#DC2626;margin-bottom:8px;">Forfeit Match?</div>
     <div style="font-size:13px;color:#64748B;margin-bottom:24px;line-height:1.5;">This counts as a <strong style="color:#DC2626;">loss</strong> and your rating will drop.<br>Your opponent wins automatically.</div>
-    <button onclick="confirmForfeit();this.closest('div[style]').remove();" style="width:100%;padding:12px;border-radius:12px;background:#DC2626;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;">Yes, Forfeit</button>
-    <button onclick="this.closest('div[style]').remove();" style="width:100%;padding:10px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;">Keep Playing</button>
+    <button onclick="document.getElementById('forfeit-popup').remove();confirmForfeit();" style="width:100%;padding:12px;border-radius:12px;background:#DC2626;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;">Yes, Forfeit</button>
+    <button onclick="document.getElementById('forfeit-popup').remove();" style="width:100%;padding:10px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;">Keep Playing</button>
   </div>`;
   document.body.appendChild(box);
 }
@@ -8141,21 +8145,12 @@ async function confirmForfeit(){
   if(CH.isOnlineMatch) await updatePlayerRating('loss', 1200);
   S.xp += 25; S.coins += 5;
   updateHUD(); saveState();
-  // Show forfeiter a loss result screen (not blank)
-  showChallengeSection('results');
-  const heroEl = document.getElementById('result-hero');
-  if(heroEl) heroEl.style.background = 'linear-gradient(135deg,#7F1D1D,#DC2626)';
-  document.getElementById('result-trophy').textContent = '🏳️';
-  document.getElementById('result-title').textContent = 'You Forfeited';
-  document.getElementById('result-sub').textContent = 'Counted as a loss. Keep practicing!';
-  document.getElementById('result-host-score').textContent = CH.role==='host' ? myCurrentScore : Math.max(oppCurrentScore, myCurrentScore+3);
-  document.getElementById('result-guest-score').textContent = CH.role==='guest' ? myCurrentScore : Math.max(oppCurrentScore, myCurrentScore+3);
-  document.getElementById('result-host-label').textContent = CH.role==='host' ? 'You (forfeited)' : 'Opponent';
-  document.getElementById('result-guest-label').textContent = CH.role==='guest' ? 'You (forfeited)' : 'Opponent';
-  document.getElementById('result-xp-text').textContent = '+25 XP earned';
-  document.getElementById('result-breakdown').innerHTML = '<div style="padding:16px 0 0;text-align:center;"><button onclick="resetCH();loadChallengeStats();loadPlayerRating();showChallengeSection(\'lobby\')" style="width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);">🏠 Back to Lobby</button></div>';
+  // Go directly to challenge lobby
+  resetCH();
   loadChallengeStats();
-  toast('Match forfeited 🏳️');
+  loadPlayerRating();
+  showChallengeSection('lobby');
+  toast('Match forfeited — counted as a loss 🏳️');
 }
 
 function cancelChallenge(){
@@ -8379,16 +8374,16 @@ async function findOnlineMatch(){
   MM.queueSubscription = _supa.channel('match_'+MM.myPlayerId)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'challenges',filter:'guest_id=eq.'+MM.myPlayerId},
       async(payload)=>{
-        if(payload.new && payload.new.id){
-          if(MM.isMatching) return; // host role already claimed, ignore
-          clearInterval(MM.searchTimer);
-          clearInterval(MM.searchInterval);
-          MM.searchInterval = null;
-          MM.searchTimer = null;
-          MM.isMatching = true;
-          console.log('✅ Matched as GUEST via realtime for challenge:', payload.new.id);
-          await onMatchFound(payload.new.id, payload.new.host_id, payload.new.category||category, 'guest');
-        }
+        if(!payload.new || !payload.new.id) return;
+        if(MM.isMatching) return; // already being matched, ignore
+        if(CH.challengeId) return; // already in a game, ignore
+        MM.isMatching = true;
+        clearInterval(MM.searchTimer);
+        clearInterval(MM.searchInterval);
+        MM.searchInterval = null;
+        MM.searchTimer = null;
+        console.log('✅ Matched as GUEST via realtime for challenge:', payload.new.id);
+        await onMatchFound(payload.new.id, payload.new.host_id, payload.new.category||category, 'guest');
       }
     ).subscribe();
 
@@ -8399,6 +8394,8 @@ async function findOnlineMatch(){
 async function searchForOpponent(category){
   if(MM.isMatching) return; // prevent concurrent searches
   MM.isMatching = true;
+  // Safety: auto-reset isMatching after 5s in case of error
+  const matchingTimeout = setTimeout(()=>{ MM.isMatching = false; }, 5000);
   try{
     const freshAgo = new Date(Date.now()-150000).toISOString();
 
@@ -8412,7 +8409,7 @@ async function searchForOpponent(category){
       .order('created_at',{ascending:true})
       .limit(1);
 
-    if(!opponents || !opponents.length){ MM.isMatching=false; return; }
+    if(!opponents || !opponents.length){ clearTimeout(matchingTimeout); MM.isMatching=false; return; }
     const opp = opponents[0];
 
     // Step 2: ATOMICALLY claim opponent by updating ONLY if still 'waiting'
@@ -8424,7 +8421,7 @@ async function searchForOpponent(category){
       .select();
 
     if(claimErr || !claimed || claimed.length === 0){
-      // Another host already claimed this opponent — keep searching
+      clearTimeout(matchingTimeout);
       MM.isMatching = false;
       return;
     }
@@ -8452,24 +8449,20 @@ async function searchForOpponent(category){
       started_at: battleStartsAt,
     }).select().single();
 
-    if(error){ MM.isMatching=false; return; }
+    if(error){ clearTimeout(matchingTimeout); MM.isMatching=false; return; }
 
     // Step 5: DELETE both queue entries — remove from pool immediately
-    // This prevents any other searcher from picking up these players
     await _supa.from('matchmaking_queue').delete().eq('player_id', MM.myPlayerId);
     await _supa.from('matchmaking_queue').delete().eq('player_id', opp.player_id);
-
-    // Still update opponent's entry with challenge_id so their subscription fires
-    // We use a separate notification channel for this
-    await _supa.from('challenges').update({
-      host_id: MM.myPlayerId, guest_id: opp.player_id
-    }).eq('id', challenge.id);
+    // NOTE: Do NOT do any extra UPDATE on challenges here — the INSERT already
+    // triggers the guest's realtime subscription. A second UPDATE would fire it again.
 
     console.log('✅ Matched as HOST, challenge:', challenge.id);
+    clearTimeout(matchingTimeout);
     MM.isMatching = false;
     await onMatchFound(challenge.id, opp.player_id, category, 'host', opp, questions);
 
-  }catch(e){ MM.isMatching=false; }
+  }catch(e){ clearTimeout(matchingTimeout); MM.isMatching=false; }
 }
 
 function showOpponentFound(opp){
@@ -8494,6 +8487,7 @@ function showOpponentFound(opp){
 }
 
 async function onMatchFound(challengeId, oppId, category, myRole, oppData, questions){
+  MM.isMatching = false; // allow future searches if needed
   // IMMEDIATELY remove ourselves from queue so no one else can match with us
   try{ await _supa.from('matchmaking_queue').delete().eq('player_id', MM.myPlayerId); }catch(e){}
 
