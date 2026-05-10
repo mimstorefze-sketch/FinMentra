@@ -7143,7 +7143,7 @@ const _origAnswerQ=answerQ;
     </div>
 
     <button class="ch-btn ch-btn-primary" onclick="playAgain()">⚔️ Play Again</button>
-    <button class="ch-btn ch-btn-secondary" onclick="showChallengeSection('lobby')">Back to Lobby</button>
+    <button class="ch-btn ch-btn-secondary" onclick="CH.challengeId=null;CH.role=null;loadChallengeStats();loadPlayerRating();loadGlobalRankings();showChallengeSection('lobby')">Back to Lobby</button>
   </div>
 
 </div>
@@ -7802,7 +7802,12 @@ function handleOpponentMove(move){
 // ── END CHALLENGE ──
 function endChallenge(challengeData){
   clearInterval(CH.timerInterval);
+  clearInterval(MM.searchInterval);
+  clearInterval(MM.searchTimer);
   if(CH.subscription) CH.subscription.unsubscribe();
+  // Make sure we are on the multiplayer screen
+  S.screen = 'multiplayer';
+  renderBottomNav();
 
   // Use local scores as primary (DB scores may lag) — fallback to DB if local is 0
   const dbMyScore = CH.role==='host'?challengeData.host_score:challengeData.guest_score;
@@ -7944,6 +7949,8 @@ function cancelChallenge(){
 }
 
 function playAgain(){
+  CH.challengeId = null;
+  CH.role = null;
   showChallengeSection('lobby');
   CH.challengeId=null; CH.code=null; CH.role=null;
   CH.questions=[]; CH.currentQ=0; CH.myScore=0; CH.opponentScore=0;
@@ -8463,8 +8470,8 @@ showChallengeSection = function(section){
 // Load online matchmaking data when screen shown
 const _origShowScreenMM = showScreen;
 showScreen = function(id){
-  // If leaving multiplayer — cancel any active search
-  if(id !== 'multiplayer' && MM.searchInterval){
+  // If leaving multiplayer — cancel any active search (but not if in battle)
+  if(id !== 'multiplayer' && MM.searchInterval && !CH.challengeId){
     clearInterval(MM.searchInterval);
     clearInterval(MM.searchTimer);
     clearInterval(MM.onlineCountInterval);
@@ -8473,11 +8480,18 @@ showScreen = function(id){
   }
   _origShowScreenMM(id);
   if(id==='multiplayer'){
-    loadChallengeStats();
-    loadPlayerRating();
-    loadGlobalRankings();
-    cleanStaleQueueEntries();
-    showChallengeSection('lobby');
+    // Only reset to lobby if NOT currently in a battle or results
+    const inBattle = CH.challengeId && 
+      (document.getElementById('ch-battle')?.style.display==='block' ||
+       document.getElementById('ch-results')?.style.display==='block' ||
+       document.getElementById('ch-countdown')?.style.display==='block');
+    if(!inBattle){
+      loadChallengeStats();
+      loadPlayerRating();
+      loadGlobalRankings();
+      cleanStaleQueueEntries();
+      showChallengeSection('lobby');
+    }
     clearInterval(MM.onlineCountInterval);
     MM.onlineCountInterval = setInterval(updateOnlineCount, 30000);
   }
