@@ -7354,17 +7354,22 @@ async function loadUserProgress() {
     }
   } catch(e){ console.log('Progress load error:', e); }
 
-  // Always navigate to correct home screen after login — never restore mid-session screens
-  const safeStartScreen = S.mode === 'professional' ? 'pro-home' : 'home';
   // Reset any in-progress challenge/battle state
   CH.challengeId = null; CH.role = null; CH.isOnlineMatch = false;
   CH.battleStarted = false; CH.myFinished = false;
-  // Sync mode pill UI with actual S.mode
+
+  // If onboarding is still showing — don't navigate, let onboarding complete its own flow
+  const onboardingEl = document.getElementById('onboarding');
+  const onboardingVisible = onboardingEl && onboardingEl.style.display !== 'none';
+  if(onboardingVisible){ updateHUD(); return; }
+
+  // Navigate to correct home screen
+  const safeStartScreen = S.mode === 'professional' ? 'pro-home' : 'home';
   const sBtn = document.getElementById('ms-student');
   const pBtn = document.getElementById('ms-pro');
   const isPro = S.mode === 'professional';
-  if(sBtn){ sBtn.classList.toggle('active', !isPro); }
-  if(pBtn){ pBtn.classList.toggle('active', isPro); }
+  if(sBtn) sBtn.classList.toggle('active', !isPro);
+  if(pBtn) pBtn.classList.toggle('active', isPro);
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const homeTarget = document.getElementById('screen-' + safeStartScreen);
   if(homeTarget) homeTarget.classList.add('active');
@@ -8148,13 +8153,7 @@ async function confirmForfeit(){
   document.getElementById('result-host-label').textContent = CH.role==='host' ? 'You (forfeited)' : 'Opponent';
   document.getElementById('result-guest-label').textContent = CH.role==='guest' ? 'You (forfeited)' : 'Opponent';
   document.getElementById('result-xp-text').textContent = '+25 XP earned';
-  document.getElementById('result-breakdown').innerHTML = '''
-    <div style="padding:16px 0 0;text-align:center;">
-      <button onclick="resetCH();loadChallengeStats();loadPlayerRating();showChallengeSection('lobby')" 
-        style="width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);">
-        🏠 Back to Lobby
-      </button>
-    </div>''';
+  document.getElementById('result-breakdown').innerHTML = '<div style="padding:16px 0 0;text-align:center;"><button onclick="resetCH();loadChallengeStats();loadPlayerRating();showChallengeSection(\'lobby\')" style="width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);">🏠 Back to Lobby</button></div>';
   loadChallengeStats();
   toast('Match forfeited 🏳️');
 }
