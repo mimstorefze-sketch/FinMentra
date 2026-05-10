@@ -7094,6 +7094,7 @@ const _origAnswerQ=answerQ;
         <div class="battle-timer-text" id="battle-timer">20</div>
         <div class="battle-timer-bar"><div class="battle-timer-fill" id="battle-timer-fill" style="width:100%;"></div></div>
         <div class="battle-q-num" id="battle-q-num">Question 1 of 10</div>
+      <div style="font-size:9px;color:rgba(255,255,255,.5);text-align:center;margin-top:2px;">⚡ Fast answer = 3pts · Medium = 2pts · Slow = 1pt</div>
       </div>
     </div>
 
@@ -7123,7 +7124,10 @@ const _origAnswerQ=answerQ;
       <div class="result-sub" id="result-sub">Great performance!</div>
     </div>
 
-    <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Correct Answers</div>
+    <div style="text-align:center;margin-bottom:8px;">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;">Points Scored</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:3px;">⚡ Fast answer = 3pts &nbsp;·&nbsp; Medium = 2pts &nbsp;·&nbsp; Slow = 1pt</div>
+    </div>
     <div class="result-scores" style="display:flex;align-items:center;gap:12px;">
       <div class="result-score-card" id="result-host-card" style="flex:1;text-align:center;">
         <div class="result-score-num" id="result-host-score">0</div>
@@ -7723,9 +7727,20 @@ async function submitBattleAnswer(answerIdx){
 
   // Update score
   if(isCorrect){
-    // Speed bonus: faster = more points (max 3, min 1)
-    const speedBonus = CH.timerSeconds>=15?3:CH.timerSeconds>=10?2:1;
+    // Speed bonus: answer in <7s = 3pts, <14s = 2pts, else 1pt
+    const speedBonus = CH.timerSeconds>=13?3:CH.timerSeconds>=6?2:1;
     CH.myScore += speedBonus;
+    // Show speed bonus flash
+    const bonusFlash = document.createElement('div');
+    bonusFlash.textContent = '+'+speedBonus+(speedBonus===3?' ⚡⚡⚡':speedBonus===2?' ⚡⚡':' ⚡');
+    bonusFlash.style.cssText='position:fixed;top:40%;left:50%;transform:translateX(-50%);font-size:28px;font-weight:900;color:'+(speedBonus===3?'#F59E0B':speedBonus===2?'#10B981':'#64748B')+';z-index:9999;pointer-events:none;animation:bonusPop .8s ease-out forwards;';
+    document.body.appendChild(bonusFlash);
+    setTimeout(()=>bonusFlash.remove(), 900);
+    if(!document.getElementById('bonus-pop-style')){
+      const s=document.createElement('style');s.id='bonus-pop-style';
+      s.textContent='@keyframes bonusPop{0%{opacity:1;transform:translateX(-50%) scale(1);}100%{opacity:0;transform:translateX(-50%) translateY(-60px) scale(1.4);}}';
+      document.head.appendChild(s);
+    }
     if(CH.role==='host') document.getElementById('battle-host-score').textContent=CH.myScore;
     else document.getElementById('battle-guest-score').textContent=CH.myScore;
   }
@@ -8038,7 +8053,7 @@ const MM = {
   onlineCountInterval: null,
   tips: [
     'Faster correct answers earn more points! ⚡',
-    'Speed bonus: answer in 5s = 3 pts, 10s = 2 pts, 20s = 1 pt',
+    'Speed bonus: answer in <7s = 3pts, <14s = 2pts, else 1pt ⚡',
     'Win 3 in a row for a hot streak bonus 🔥',
     'Wrong answers still give 0 — never guess randomly!',
     'Your rating goes up with every win 📈',
