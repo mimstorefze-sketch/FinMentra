@@ -7740,24 +7740,26 @@ async function submitBattleAnswer(answerIdx){
       time_ms: timeTaken,
     });
 
-    // Update challenge scores
+    // Update challenge scores in DB
     const updateData = {};
     if(CH.role==='host'){
       updateData.host_score = CH.myScore;
-      updateData.host_answers = JSON.stringify(CH.myAnswers);
     } else {
       updateData.guest_score = CH.myScore;
-      updateData.guest_answers = JSON.stringify(CH.myAnswers);
     }
 
     // If last question, mark finished
     if(CH.currentQ >= CH.questions.length-1){
       updateData.status = 'finished';
       updateData.finished_at = new Date().toISOString();
-      // Determine winner after a moment
-      setTimeout(async()=>{
-        const {data:final} = await _supa.from('challenges').select('*').eq('id',CH.challengeId).single();
-        if(final) endChallenge(final);
+      // End using local data — don't wait for DB which may lag
+      setTimeout(()=>{
+        endChallenge({
+          host_score: CH.role==='host' ? CH.myScore : CH.opponentScore,
+          guest_score: CH.role==='guest' ? CH.myScore : CH.opponentScore,
+          host_name: CH.role==='host' ? MM.myName : null,
+          guest_name: CH.role==='guest' ? MM.myName : null,
+        });
       }, 1500);
     }
 
@@ -7802,8 +7804,11 @@ function endChallenge(challengeData){
   clearInterval(CH.timerInterval);
   if(CH.subscription) CH.subscription.unsubscribe();
 
-  const myScore = CH.role==='host'?challengeData.host_score:challengeData.guest_score;
-  const oppScore = CH.role==='host'?challengeData.guest_score:challengeData.host_score;
+  // Use local scores as primary (DB scores may lag) — fallback to DB if local is 0
+  const dbMyScore = CH.role==='host'?challengeData.host_score:challengeData.guest_score;
+  const dbOppScore = CH.role==='host'?challengeData.guest_score:challengeData.host_score;
+  const myScore = (CH.myScore > 0 || dbMyScore === 0) ? CH.myScore : dbMyScore;
+  const oppScore = (CH.opponentScore > 0 || dbOppScore === 0) ? CH.opponentScore : dbOppScore;
   const myName = CH.role==='host'?challengeData.host_name:challengeData.guest_name;
   const oppName = CH.role==='host'?challengeData.guest_name:challengeData.host_name;
 
