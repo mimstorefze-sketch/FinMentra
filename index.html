@@ -3411,7 +3411,9 @@ const SQ_CACHE = {};
 
 async function fetchQuestionsFromSupabase(category, count){
   const cacheKey = category||'Mixed';
+  console.log('  🔍 fetchQuestionsFromSupabase:', cacheKey, 'need:', count, 'cached:', SQ_CACHE[cacheKey]?.length||0);
   if(SQ_CACHE[cacheKey] && SQ_CACHE[cacheKey].length >= count){
+    console.log('  ✅ Cache hit for', cacheKey);
     return [...SQ_CACHE[cacheKey]].sort(()=>Math.random()-.5).slice(0,count);
   }
   try{
@@ -3515,22 +3517,26 @@ async function startSession(){
 
 // Get questions for challenge — uses same Supabase pool as Arena
 async function getChallengeQuestionsAsync(category, count){
-  // For Mixed, fetch from multiple domains to guarantee enough questions
+  console.log('🎯 getChallengeQuestionsAsync called:', category, count);
+  console.log('📦 SQ_CACHE status:', Object.keys(SQ_CACHE).map(k=>k+':'+SQ_CACHE[k].length));
   let supaQs = [];
   if(category === 'Mixed' || !category){
     const domains = ['IFRS','IAS','ISA','Costing','Tax','FM'];
     for(const d of domains){
       const qs = await fetchQuestionsFromSupabase(d, Math.ceil(count/2));
+      console.log('  Domain',d,':',qs?qs.length:'null','questions');
       if(qs) supaQs.push(...qs);
       if(supaQs.length >= count * 2) break;
     }
   } else {
     supaQs = await fetchQuestionsFromSupabase(category, count*2) || [];
+    console.log('  Category',category,':',supaQs.length,'questions');
   }
+  console.log('📊 Total supaQs:', supaQs.length);
   if(supaQs.length >= 3){
     return supaQs.sort(()=>Math.random()-.5).slice(0,count);
   }
-  // Fallback to local QB
+  console.warn('⚠️ Falling back to local QB - supaQs too few:', supaQs.length);
   return getChallengeQuestions(category, count);
 }
 function buildProgressDots(){
@@ -4726,7 +4732,7 @@ function toggleCheckItem(item){
   // Pre-warm Supabase question cache for Arena + Challenge
   (async function preloadQuestions(){
     try{
-      const url = SUPA_URL + '/rest/v1/questions?select=*&limit=1000&is_active=eq.true';
+      const url = SUPA_URL + '/rest/v1/questions?select=*&limit=1000';
       const res = await fetch(url, {
         headers:{
           'apikey': SUPA_KEY,
@@ -8202,32 +8208,17 @@ async function onMatchFound(challengeId, oppId, category, myRole, oppData, quest
     }catch(e){ console.log('Could not save questions to Supabase:', e); }
 
   } else {
-    // Guest — fetch questions from Supabase (host saved them)
-    let loaded = false;
-    for(let attempt=0; attempt<5; attempt++){
-      try{
-        const {data:ch} = await _supa.from('challenges')
-          .select('questions,host_name,guest_name')
-          .eq('id', challengeId).single();
-        if(ch && ch.questions){
-          const parsed = typeof ch.questions==='string'?JSON.parse(ch.questions):ch.questions;
-          if(parsed && parsed.length > 0){
-            CH.questions = parsed;
-            if(!oppData) oppData = {player_name: ch.host_name};
-            loaded = true;
-            console.log('✅ Guest loaded',parsed.length,'questions from Supabase');
-            break;
-          }
-        }
-      }catch(e){}
-      // Wait before retry
-      await new Promise(r=>setTimeout(r,1000));
-    }
-    // If still no questions — generate same way as host
-    if(!loaded || !CH.questions || CH.questions.length === 0){
-      console.log('Guest fallback: generating questions locally');
-      CH.questions = await getChallengeQuestionsAsync(category||'Mixed', 10);
-    }
+    // Guest — use preloaded cache (same questions pool as host)
+    console.log('👥 Guest: loading questions from cache for category:', category);
+    CH.questions = await getChallengeQuestionsAsync(category||'Mixed', 10);
+    console.log('✅ Guest loaded',CH.questions.length,'questions');
+    // Also try to get host name from challenge record
+    try{
+      const {data:ch} = await _supa.from('challenges')
+        .select('host_name')
+        .eq('id', challengeId).single();
+      if(ch && ch.host_name && !oppData) oppData = {player_name: ch.host_name};
+    }catch(e){}
   }
 
   // Final safety check
