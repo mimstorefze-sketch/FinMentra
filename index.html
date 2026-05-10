@@ -8455,7 +8455,7 @@ async function searchForOpponent(category){
   // Safety: auto-reset isMatching after 5s in case of error
   const matchingTimeout = setTimeout(()=>{ MM.isMatching = false; }, 5000);
   try{
-    const freshAgo = new Date(Date.now()-150000).toISOString();
+    const freshAgo = new Date(Date.now()-60000).toISOString(); // only match players who joined in last 60s
 
     // Step 1: Find a waiting opponent
     const {data:opponents} = await _supa.from('matchmaking_queue')
@@ -8491,29 +8491,29 @@ async function searchForOpponent(category){
     MM.searchInterval = null;
     MM.searchTimer = null;
 
-    // Step 4: Create challenge with questions
+    // Step 4: DELETE both queue entries FIRST before creating challenge
+    // This closes the window where other hosts can see these players as 'matching'
+    await _supa.from('matchmaking_queue').delete().eq('player_id', MM.myPlayerId);
+    await _supa.from('matchmaking_queue').delete().eq('player_id', opp.player_id);
+
+    // Step 5: Create challenge with questions
     const questions = await getChallengeQuestionsAsync(category, 10);
-    const battleStartsAt = new Date(Date.now() + 5000).toISOString();
+    const battleStartsAt = new Date(Date.now() + 7000).toISOString(); // 7s gives guest time to fetch questions
     const {data:challenge, error} = await _supa.from('challenges').insert({
       code: generateCode(),
       host_id: MM.myPlayerId,
       host_name: MM.myName,
       guest_id: opp.player_id,
       guest_name: opp.player_name,
-      status:'active',
-      total_questions:10,
+      status: 'active',
+      total_questions: 10,
       questions: JSON.stringify(questions),
       category,
       started_at: battleStartsAt,
     }).select().single();
 
     if(error){ clearTimeout(matchingTimeout); MM.isMatching=false; return; }
-
-    // Step 5: DELETE both queue entries — remove from pool immediately
-    await _supa.from('matchmaking_queue').delete().eq('player_id', MM.myPlayerId);
-    await _supa.from('matchmaking_queue').delete().eq('player_id', opp.player_id);
-    // NOTE: Do NOT do any extra UPDATE on challenges here — the INSERT already
-    // triggers the guest's realtime subscription. A second UPDATE would fire it again.
+    // NOTE: No extra UPDATE here — INSERT already triggers guest's realtime subscription
 
     console.log('✅ Matched as HOST, challenge:', challenge.id);
     clearTimeout(matchingTimeout);
@@ -8616,11 +8616,15 @@ function startCountdown(oppData){
   const tipEl = document.getElementById('countdown-tip');
   if(tipEl) tipEl.textContent = MM.tips[Math.floor(Math.random()*MM.tips.length)];
 
-  // Use shared server timestamp so BOTH devices start at exactly the same moment
-  const battleTime = CH.battleStartsAt
+  // Use shared server timestamp — if it's already past (late load), add 2s buffer
+  let battleTime = CH.battleStartsAt
     ? new Date(CH.battleStartsAt).getTime()
-    : Date.now() + 3500;
-  console.log('⏱ Battle starts at:', new Date(battleTime).toISOString());
+    : Date.now() + 4000;
+  if(battleTime < Date.now() + 1000){
+    battleTime = Date.now() + 2000; // ensure at least 2s countdown
+    console.log('⏱ Battle time adjusted (late load)');
+  }
+  console.log('⏱ Battle starts at:', new Date(battleTime).toISOString(), '| now:', new Date().toISOString());
 
   const countDown = setInterval(()=>{
     const msLeft = battleTime - Date.now();
