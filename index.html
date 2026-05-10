@@ -4098,7 +4098,7 @@ function isElite(){ return S.plan==='elite'; }
 function isFree(){ return !S.plan||S.plan==='free'; }
 
 function checkPlanFeature(feature){
-  // ← TESTING OVERRIDE: always allow all features — remove this line before production
+  // ← TESTING OVERRIDE: always allow all features — remove before production
   return true;
 }
 S.aiUsedToday = S.aiUsedToday || 0;
@@ -7558,10 +7558,7 @@ function subscribeToChallenge(challengeId){
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'challenges',filter:'id=eq.'+challengeId},
       (payload)=>{
         const updated = payload.new;
-        if(updated.status==='active' && CH.role==='host'){
-          // Guest joined — start battle
-          startBattle(updated.host_name, updated.guest_name);
-        }
+        // Battle starts via countdown for both roles — no action needed on active status
         if(updated.status==='finished'){
           endChallenge(updated);
         }
@@ -8224,7 +8221,6 @@ function startCountdown(oppData){
     if(count<=0){
       clearInterval(countDown);
       setTimeout(()=>{
-        subscribeToChallenge(CH.challengeId);
         startBattle(MM.myName, oppData?.player_name||'Opponent');
       },600);
     }
