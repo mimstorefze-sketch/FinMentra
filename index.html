@@ -8219,45 +8219,47 @@ async function onMatchFound(challengeId, oppId, category, myRole, oppData, quest
   CH.currentQ = 0;
 
   if(myRole === 'host'){
-    // Host has questions already passed in
-    if(questions && questions.length > 0){
-      CH.questions = questions;
-    } else {
-      CH.questions = await getChallengeQuestionsAsync(category||'Mixed', 10);
-    }
-    // Save questions to Supabase so guest can fetch them
+    // Use questions already saved to Supabase in searchForOpponent
+    CH.questions = questions && questions.length > 0 ? questions
+      : await getChallengeQuestionsAsync(category||'Mixed', 10);
+    // Save battle start time so both devices countdown from same moment
+    const battleStartsAt = new Date(Date.now() + 4000).toISOString(); // 4s from now
     try{
       await _supa.from('challenges').update({
-        questions: JSON.stringify(CH.questions)
+        questions: JSON.stringify(CH.questions),
+        started_at: battleStartsAt
       }).eq('id', challengeId);
-    }catch(e){ console.log('Could not save questions to Supabase:', e); }
+      CH.battleStartsAt = battleStartsAt;
+      console.log('✅ Host saved questions + battle start time');
+    }catch(e){ console.log('Could not save to Supabase:', e); CH.battleStartsAt = null; }
 
   } else {
-    // Guest — fetch EXACT same questions host saved to Supabase
+    // Guest — fetch EXACT same questions + battle start time from Supabase
     console.log('👥 Guest: fetching questions from challenge record...');
     let loaded = false;
-    for(let attempt = 0; attempt < 8; attempt++){
+    for(let attempt = 0; attempt < 10; attempt++){
       try{
         const {data:ch} = await _supa.from('challenges')
-          .select('questions,host_name')
+          .select('questions,host_name,started_at')
           .eq('id', challengeId).single();
         if(ch && ch.questions){
           const parsed = typeof ch.questions==='string' ? JSON.parse(ch.questions) : ch.questions;
           if(parsed && parsed.length > 0){
             CH.questions = parsed;
+            CH.battleStartsAt = ch.started_at || null;
             if(!oppData) oppData = {player_name: ch.host_name||'Opponent'};
             loaded = true;
-            console.log('✅ Guest loaded',parsed.length,'questions from host');
+            console.log('✅ Guest loaded',parsed.length,'questions, battle starts:',ch.started_at);
             break;
           }
         }
       }catch(e){ console.log('Guest fetch attempt',attempt,'failed:',e.message); }
-      await new Promise(r=>setTimeout(r,800));
+      await new Promise(r=>setTimeout(r,500));
     }
-    // Fallback only if host questions never arrived
     if(!loaded || !CH.questions || CH.questions.length===0){
       console.log('⚠️ Guest fallback: using own cache');
       CH.questions = await getChallengeQuestionsAsync(category||'Mixed', 10);
+      CH.battleStartsAt = null;
     }
   }
 
@@ -8283,24 +8285,31 @@ function startCountdown(oppData){
   const tipEl = document.getElementById('countdown-tip');
   if(tipEl) tipEl.textContent = MM.tips[Math.floor(Math.random()*MM.tips.length)];
 
-  // Sync countdown using server time so both devices start together
-  const startTime = Date.now();
-  const TOTAL_MS = 3500; // 3.5 seconds
+  // Use shared server timestamp so BOTH devices start at exactly the same moment
+  const battleTime = CH.battleStartsAt
+    ? new Date(CH.battleStartsAt).getTime()
+    : Date.now() + 3500;
+  console.log('⏱ Battle starts at:', new Date(battleTime).toISOString());
+
   const countDown = setInterval(()=>{
-    const elapsed = Date.now() - startTime;
-    const remaining = Math.ceil((TOTAL_MS - elapsed) / 1000);
-    const count = Math.max(0, remaining);
+    const msLeft = battleTime - Date.now();
+    const count = Math.ceil(msLeft / 1000);
     if(numEl){
-      numEl.textContent = count>0?count:'GO!';
-      numEl.style.color = count>0?'var(--navy)':'var(--green)';
+      if(count > 0){
+        numEl.textContent = Math.min(count, 3);
+        numEl.style.color = 'var(--navy)';
+      } else {
+        numEl.textContent = 'GO!';
+        numEl.style.color = 'var(--green)';
+      }
     }
-    if(elapsed >= TOTAL_MS){
+    if(msLeft <= 0){
       clearInterval(countDown);
       setTimeout(()=>{
         startBattle(MM.myName, oppData?.player_name||'Opponent');
-      },400);
+      }, 200);
     }
-  },200);
+  }, 100);
 }
 
 function matchWithAI(category){
