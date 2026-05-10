@@ -7494,7 +7494,15 @@ function saveChallengeStats(){
 }
 
 function showChallengeSection(section){
-  ['lobby','waiting','battle','results'].forEach(s=>{
+  // Always ensure multiplayer screen is active — fixes "goes to wrong tab" on all devices
+  const mpScreen = document.getElementById('screen-multiplayer');
+  if(mpScreen && !mpScreen.classList.contains('active')){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    mpScreen.classList.add('active');
+    S.screen = 'multiplayer';
+    renderBottomNav();
+  }
+  ['lobby','waiting','battle','results','matchmaking','countdown'].forEach(s=>{
     const el=document.getElementById('ch-'+s);
     if(el) el.style.display = s===section?'block':'none';
   });
@@ -7972,8 +7980,7 @@ function endChallenge(challengeData){
   if(CH.subscription){ CH.subscription.unsubscribe(); CH.subscription = null; }
   if(MM.queueSubscription){ MM.queueSubscription.unsubscribe(); MM.queueSubscription = null; }
   // Make sure we are on the multiplayer screen
-  S.screen = 'multiplayer';
-  renderBottomNav();
+  showScreen('multiplayer');
 
   // Use DB scores as single source of truth — both players wrote their own scores
   const myScore = CH.role==='host'
@@ -8149,6 +8156,7 @@ async function confirmForfeit(){
   resetCH();
   loadChallengeStats();
   loadPlayerRating();
+  showScreen('multiplayer');
   showChallengeSection('lobby');
   toast('Match forfeited — counted as a loss 🏳️');
 }
@@ -8188,6 +8196,33 @@ function playAgain(){
   if(timerEl) timerEl.textContent = '0:00';
   const hintEl = document.getElementById('mm-search-hint');
   if(hintEl) hintEl.textContent = 'Tip: More players online on weekday evenings';
+  // Reset result screen labels so old names don't show
+  const rhl = document.getElementById('result-host-label');
+  const rgl = document.getElementById('result-guest-label');
+  const rhs = document.getElementById('result-host-score');
+  const rgs = document.getElementById('result-guest-score');
+  const rhc = document.getElementById('result-host-card');
+  const rgc = document.getElementById('result-guest-card');
+  if(rhl) rhl.textContent = 'You';
+  if(rgl) rgl.textContent = 'Opponent';
+  if(rhs) rhs.textContent = '0';
+  if(rgs) rgs.textContent = '0';
+  if(rhc) rhc.classList.remove('winner');
+  if(rgc) rgc.classList.remove('winner');
+  // Reset matchmaking screen name displays
+  const oppNameEl = document.getElementById('mm-opp-name');
+  const oppRatingEl = document.getElementById('mm-opp-rating');
+  const oppStatusEl = document.getElementById('mm-opp-status');
+  const oppCard = document.getElementById('mm-opponent-card');
+  if(oppNameEl) oppNameEl.textContent = '...';
+  if(oppRatingEl) oppRatingEl.textContent = '---';
+  if(oppStatusEl) oppStatusEl.textContent = '⏳';
+  if(oppCard) oppCard.classList.remove('found');
+  const title = document.getElementById('mm-search-title');
+  const sub = document.getElementById('mm-search-sub');
+  if(title) title.textContent = 'Finding your opponent...';
+  if(sub) sub.textContent = 'Matching you with a player at your level';
+  showScreen('multiplayer');
   showChallengeSection('lobby');
 }
 
