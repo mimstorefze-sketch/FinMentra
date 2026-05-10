@@ -7339,6 +7339,24 @@ async function loadUserProgress() {
       });
     }
   } catch(e){ console.log('Progress load error:', e); }
+
+  // Always navigate to correct home screen after login — never restore mid-session screens
+  const safeStartScreen = S.mode === 'professional' ? 'pro-home' : 'home';
+  // Reset any in-progress challenge/battle state
+  CH.challengeId = null; CH.role = null; CH.isOnlineMatch = false;
+  CH.battleStarted = false; CH.myFinished = false;
+  // Apply mode UI and go home
+  const sBtn = document.getElementById('ms-student');
+  const pBtn = document.getElementById('ms-pro');
+  if(sBtn) sBtn.classList.toggle('active', S.mode !== 'professional');
+  if(pBtn) pBtn.classList.toggle('active', S.mode === 'professional');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const homeTarget = document.getElementById('screen-' + safeStartScreen);
+  if(homeTarget) homeTarget.classList.add('active');
+  S.screen = safeStartScreen;
+  renderBottomNav();
+  updateMissions();
+  updateHUD();
 }
 
 // ── SAVE USER PROGRESS TO SUPABASE ──
@@ -8267,21 +8285,24 @@ async function findOnlineMatch(){
 
   // Subscribe to queue — watch for match
   // Watch challenges table for a new challenge where we are the guest
-  MM.queueSubscription = _supa.channel('mm_guest_'+MM.myPlayerId)
+  MM.queueSubscription = _supa.channel('match_'+MM.myPlayerId)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'challenges',filter:'guest_id=eq.'+MM.myPlayerId},
       async(payload)=>{
         if(payload.new && payload.new.id){
+          if(MM.isMatching) return; // host role already claimed, ignore
           clearInterval(MM.searchTimer);
           clearInterval(MM.searchInterval);
           MM.searchInterval = null;
           MM.searchTimer = null;
+          MM.isMatching = true;
+          console.log('✅ Matched as GUEST via realtime for challenge:', payload.new.id);
           await onMatchFound(payload.new.id, payload.new.host_id, payload.new.category||category, 'guest');
         }
       }
     ).subscribe();
 
   // Also actively search for waiting opponent every 1.5 seconds
-  MM.searchInterval = setInterval(()=>searchForOpponent(category), 1500);
+  MM.searchInterval = setInterval(()=>searchForOpponent(category), 2500);
 }
 
 async function searchForOpponent(category){
@@ -8353,6 +8374,7 @@ async function searchForOpponent(category){
       host_id: MM.myPlayerId, guest_id: opp.player_id
     }).eq('id', challenge.id);
 
+    console.log('✅ Matched as HOST, challenge:', challenge.id);
     MM.isMatching = false;
     await onMatchFound(challenge.id, opp.player_id, category, 'host', opp, questions);
 
