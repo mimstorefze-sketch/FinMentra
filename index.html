@@ -7108,10 +7108,10 @@ const _origAnswerQ=answerQ;
       <div id="battle-options"></div>
       <div id="battle-explanation" style="display:none;margin-top:12px;padding:12px;background:var(--blue-ll);border-radius:10px;font-size:12px;line-height:1.6;color:var(--navy);"></div>
     </div>
-    <!-- Withdraw button — top right of battle, always visible -->
-    <div style="display:flex;justify-content:flex-end;margin-top:8px;">
-      <button onclick="forfeitChallenge()" style="padding:8px 16px;border-radius:999px;background:var(--red-l);color:var(--red);border:2px solid var(--red);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);display:inline-flex;align-items:center;gap:5px;">
-        🏳️ Withdraw
+    <!-- Exit button — always visible, top right -->
+    <div style="display:flex;justify-content:flex-end;margin-top:8px;margin-bottom:4px;">
+      <button onclick="forfeitChallenge()" style="padding:8px 18px;border-radius:999px;background:#FEE2E2;color:#DC2626;border:2px solid #DC2626;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(220,38,38,.2);">
+        🚪 Exit Game
       </button>
     </div>
   </div>
@@ -7653,7 +7653,12 @@ function subscribeToChallenge(challengeId){
           _supa.from('challenges').update({started_at: battleStartsAt}).eq('id', CH.challengeId).then(()=>{});
           startCountdown({player_name: guestName});
         }
-        if(updated.status==='finished'){
+        if(updated.status==='finished' && !CH.myFinished){
+          // Other player finished first — end for us too
+          endChallenge(updated);
+        } else if(updated.status==='finished' && CH.myFinished){
+          // We already called endChallenge via timeout — but update with latest DB scores
+          // (The timeout may have fired before opponent wrote their score)
           endChallenge(updated);
         }
       }
@@ -7796,34 +7801,37 @@ async function submitBattleAnswer(answerIdx){
       updateData.guest_score = CH.myScore;
     }
 
-    // If last question, mark finished
+    // Always update my score in DB
+    await _supa.from('challenges').update(updateData).eq('id',CH.challengeId);
+
+    // If last question — mark my side done and wait for final result
     if(CH.currentQ >= CH.questions.length-1){
-      updateData.status = 'finished';
-      updateData.finished_at = new Date().toISOString();
-      // Wait for both scores to be written, then fetch final result from DB
+      CH.myFinished = true;
+      // Wait 3.5s for opponent to also write their final score, then fetch
       setTimeout(async()=>{
         try{
           const {data:final} = await _supa.from('challenges')
             .select('*').eq('id',CH.challengeId).single();
-          if(final) endChallenge(final);
-          else endChallenge({
-            host_score: CH.role==='host'?CH.myScore:CH.opponentScore,
-            guest_score: CH.role==='guest'?CH.myScore:CH.opponentScore,
-            host_name: CH.role==='host'?MM.myName:'Opponent',
-            guest_name: CH.role==='guest'?MM.myName:'Opponent',
-          });
+          if(final){
+            // Mark as finished (whoever gets here first)
+            if(final.status !== 'finished'){
+              await _supa.from('challenges').update({
+                status:'finished',
+                finished_at: new Date().toISOString()
+              }).eq('id',CH.challengeId);
+              final.status = 'finished';
+            }
+            endChallenge(final);
+          }
         }catch(e){
           endChallenge({
-            host_score: CH.role==='host'?CH.myScore:CH.opponentScore,
-            guest_score: CH.role==='guest'?CH.myScore:CH.opponentScore,
-            host_name: CH.role==='host'?MM.myName:'Opponent',
-            guest_name: CH.role==='guest'?MM.myName:'Opponent',
+            host_score: CH.role==='host'?CH.myScore:0,
+            guest_score: CH.role==='guest'?CH.myScore:0,
+            host_name: MM.myName, guest_name:'Opponent',
           });
         }
-      }, 2500);
+      }, 3500);
     }
-
-    await _supa.from('challenges').update(updateData).eq('id',CH.challengeId);
   }catch(e){}
 
   // Next question after delay
@@ -7862,7 +7870,11 @@ function handleOpponentMove(move){
 }
 
 // ── END CHALLENGE ──
+let _endChallengeCalled = false;
 function endChallenge(challengeData){
+  if(_endChallengeCalled) return; // prevent double-firing
+  _endChallengeCalled = true;
+  setTimeout(()=>{ _endChallengeCalled = false; }, 5000); // reset after 5s
   clearInterval(CH.timerInterval);
   clearInterval(MM.searchInterval);
   clearInterval(MM.searchTimer);
@@ -7874,15 +7886,20 @@ function endChallenge(challengeData){
   S.screen = 'multiplayer';
   renderBottomNav();
 
-  // My score: always use local (most accurate)
-  // Opponent score: use DB (they wrote it themselves — authoritative)
-  const myScore = CH.myScore;
-  const dbOppScore = CH.role==='host'
-    ? (challengeData.guest_score||0)
-    : (challengeData.host_score||0);
-  const oppScore = dbOppScore > 0 ? dbOppScore : CH.opponentScore;
-  const myName = CH.role==='host'?challengeData.host_name:challengeData.guest_name;
-  const oppName = CH.role==='host'?challengeData.guest_name:challengeData.host_name;
+  // Use DB scores as single source of truth — both players wrote their own scores
+  const myScore = CH.role==='host'
+    ? (challengeData.host_score || CH.myScore)
+    : (challengeData.guest_score || CH.myScore);
+  const oppScore = CH.role==='host'
+    ? (challengeData.guest_score || CH.opponentScore)
+    : (challengeData.host_score || CH.opponentScore);
+  const myName = CH.role==='host'
+    ? (challengeData.host_name || MM.myName)
+    : (challengeData.guest_name || MM.myName);
+  const oppName = CH.role==='host'
+    ? (challengeData.guest_name || 'Opponent')
+    : (challengeData.host_name || 'Opponent');
+  console.log('🏁 Final scores — Me ('+CH.role+'):',myScore,'Opp:',oppScore);
 
   const didWin = myScore > oppScore;
   const isDraw = myScore === oppScore;
@@ -8000,17 +8017,17 @@ function forfeitChallenge(){
 async function confirmForfeit(){
   clearInterval(CH.timerInterval);
   if(CH.subscription) CH.subscription.unsubscribe();
-  // Update Supabase — mark as finished, forfeiter loses
-  if(CH.challengeId && !CH.challengeId.startsWith('ai_')){
+  // Update Supabase — forfeiter gets 0, opponent gets max score so they win
+  if(CH.challengeId){
     try{
       const updateData = {
         status:'finished',
         finished_at: new Date().toISOString(),
         winner: CH.role==='host' ? 'guest' : 'host',
       };
-      // Set forfeiter score to 0
-      if(CH.role==='host') updateData.host_score = 0;
-      else updateData.guest_score = 999;
+      // Give opponent a guaranteed winning score
+      if(CH.role==='host'){ updateData.host_score=0; updateData.guest_score=999; }
+      else { updateData.guest_score=0; updateData.host_score=999; }
       await _supa.from('challenges').update(updateData).eq('id',CH.challengeId);
     }catch(e){}
   }
@@ -8057,7 +8074,8 @@ function playAgain(){
   // Reset all CH state
   CH.challengeId=null; CH.code=null; CH.role=null; CH.isOnlineMatch=false;
   CH.questions=[]; CH.currentQ=0; CH.myScore=0; CH.opponentScore=0;
-  CH.myAnswers=[]; CH.opponentAnswers=[]; CH.battleStartsAt=null; CH.battleStarted=false;
+  CH.myAnswers=[]; CH.opponentAnswers=[]; CH.battleStartsAt=null;
+  CH.battleStarted=false; CH.myFinished=false;
   // Refresh player info
   MM.myPlayerId = getMyPlayerId();
   MM.myName = getMyDisplayName();
