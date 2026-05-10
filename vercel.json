@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/auth/callback", "destination": "/auth/callback/index.html" }
+  ]
+}
