@@ -4723,6 +4723,47 @@ function toggleCheckItem(item){
   // Init topics
   renderTopics();
 
+  // Pre-warm Supabase question cache for Arena + Challenge
+  (async function preloadQuestions(){
+    try{
+      const url = SUPA_URL + '/rest/v1/questions?select=*&limit=1000&is_active=eq.true';
+      const res = await fetch(url, {
+        headers:{
+          'apikey': SUPA_KEY,
+          'Authorization': 'Bearer ' + SUPA_KEY,
+          'Content-Type': 'application/json'
+        },
+        mode: 'cors', credentials: 'omit'
+      });
+      if(!res.ok) return;
+      const allData = await res.json();
+      if(!allData || !allData.length) return;
+      const allConverted = allData.map(q=>({
+        q: q.question,
+        opts: [q.option_a, q.option_b, q.option_c, q.option_d],
+        correct: ['A','B','C','D'].indexOf(q.correct_answer),
+        explain: q.explanation||'',
+        standard: q.standard||''
+      })).filter(q=>q.correct>=0&&q.q&&q.opts[0]);
+      // Cache by Mixed and each category
+      SQ_CACHE['Mixed'] = allConverted;
+      ['IFRS','IAS','ISA','Costing','FM','Tax'].forEach(cat=>{
+        SQ_CACHE[cat] = allConverted.filter(q=>{
+          const std = q.standard||'';
+          if(cat==='IFRS') return std.startsWith('IFRS');
+          if(cat==='IAS') return std.startsWith('IAS');
+          if(cat==='ISA') return std.startsWith('ISA');
+          if(cat==='Costing') return std.toLowerCase().includes('cost')||std.startsWith('MC');
+          if(cat==='FM') return std.startsWith('FM')||std.includes('Management')||std.includes('Finance');
+          if(cat==='Tax') return std.toLowerCase().includes('tax')||std.startsWith('TX');
+          return true;
+        });
+        if(!SQ_CACHE[cat].length) SQ_CACHE[cat] = allConverted;
+      });
+      console.log('✅ Preloaded',allConverted.length,'questions from Supabase into cache');
+    }catch(e){ console.log('Preload failed:',e.message); }
+  })();
+
   // Init session
   startSession();
 
