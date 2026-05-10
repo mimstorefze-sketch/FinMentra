@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinMentra — Signing you in...</title>
+  <style>
+    *{ margin:0; padding:0; box-sizing:border-box; }
+    body{
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0A1F6E;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .logo{
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+    .logo span{ color: #F59E0B; }
+    .spinner{
+      width: 44px; height: 44px;
+      border: 4px solid rgba(255,255,255,0.2);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin{ to{ transform: rotate(360deg); } }
+    .msg{
+      color: rgba(255,255,255,0.8);
+      font-size: 15px;
+      font-weight: 500;
+    }
+    .error{
+      color: #FCA5A5;
+      font-size: 14px;
+      text-align: center;
+      max-width: 300px;
+      line-height: 1.5;
+      display: none;
+    }
+    .retry{
+      display: none;
+      padding: 10px 24px;
+      background: #fff;
+      color: #0A1F6E;
+      border: none;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">Fin<span>Mentra</span></div>
+  <div class="spinner" id="spinner"></div>
+  <div class="msg" id="msg">Signing you in...</div>
+  <div class="error" id="error"></div>
+  <button class="retry" id="retry" onclick="window.location.href='https://www.finmentra.com'">
+    Back to FinMentra
+  </button>
+
+  <script>
+    // Supabase project config
+    const SUPA_URL = 'https://vofxhqnipoywbbkmlxcp.supabase.co';
+    const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvZnhocW5pcG95d2Jia21seGNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5Nzk3ODUsImV4cCI6MjA5MzU1NTc4NX0.7UDDR3oNoiebxMQPR_jPHM8fOhhOzQ2MxpmR7TpBCHQ';
+
+    function showError(msg){
+      document.getElementById('spinner').style.display = 'none';
+      document.getElementById('msg').style.display = 'none';
+      document.getElementById('error').style.display = 'block';
+      document.getElementById('error').textContent = msg;
+      document.getElementById('retry').style.display = 'block';
+    }
+
+    async function handleCallback(){
+      try{
+        // Get hash params from URL (Supabase puts tokens in hash)
+        const hash = window.location.hash.substring(1);
+        const params = new URLSearchParams(hash);
+
+        // Also check query params
+        const query = new URLSearchParams(window.location.search);
+
+        const accessToken = params.get('access_token') || query.get('access_token');
+        const refreshToken = params.get('refresh_token') || query.get('refresh_token');
+        const error = params.get('error') || query.get('error');
+        const errorDesc = params.get('error_description') || query.get('error_description');
+
+        if(error){
+          showError('Login failed: ' + (errorDesc || error));
+          return;
+        }
+
+        if(!accessToken){
+          // No token — maybe already handled, redirect to app
+          window.location.replace('https://www.finmentra.com');
+          return;
+        }
+
+        // Store session in localStorage so main app can pick it up
+        const sessionData = {
+          access_token: accessToken,
+          refresh_token: refreshToken,
+          token_type: params.get('token_type') || 'bearer',
+          expires_in: parseInt(params.get('expires_in') || '3600'),
+          expires_at: parseInt(params.get('expires_at') || (Date.now()/1000 + 3600)),
+        };
+
+        // Get user info
+        const userRes = await fetch(SUPA_URL + '/auth/v1/user', {
+          headers: {
+            'Authorization': 'Bearer ' + accessToken,
+            'apikey': SUPA_KEY
+          }
+        });
+
+        if(userRes.ok){
+          const userData = await userRes.json();
+          sessionData.user = userData;
+        }
+
+        // Store in localStorage with Supabase's expected key format
+        const storageKey = 'sb-vofxhqnipoywbbkmlxcp-auth-token';
+        localStorage.setItem(storageKey, JSON.stringify(sessionData));
+
+        document.getElementById('msg').textContent = 'Signed in! Redirecting...';
+
+        // Redirect to main app
+        setTimeout(()=>{
+          window.location.replace('https://www.finmentra.com');
+        }, 800);
+
+      }catch(e){
+        showError('Something went wrong. Please try again.');
+        console.error(e);
+      }
+    }
+
+    handleCallback();
+  </script>
+</body>
+</html>
