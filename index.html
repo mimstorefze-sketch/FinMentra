@@ -181,9 +181,15 @@ a{color:inherit;text-decoration:none;}
 .shell{padding-top:112px;padding-bottom:80px;min-height:100vh;}
 .screen{display:none;max-width:720px;margin:0 auto;padding:16px 14px;flex-direction:column;gap:14px;}
 .screen.active{display:flex;}
-/* Challenge screen: remove shell's padding-top so no blank space */
-#screen-multiplayer.active{padding-top:0 !important;margin-top:0 !important;}
-.shell>#screen-multiplayer.active{padding-top:0 !important;}
+/* Challenge screen: cancel shell's 112px padding-top with negative margin */
+#screen-multiplayer.active{
+  padding-top:0 !important;
+  margin-top:-112px !important;
+  padding-bottom:0 !important;
+}
+@media(max-width:480px){
+  #screen-multiplayer.active{ margin-top:-100px !important; }
+}
 
 /* ── CARD (index.html style) ── */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);}
@@ -3103,6 +3109,11 @@ function showScreen(id){
 }
 
 function switchMode(mode){
+  // Always sync button UI first regardless of current mode
+  const sBtn = document.getElementById('ms-student');
+  const pBtn = document.getElementById('ms-pro');
+  if(sBtn) sBtn.classList.toggle('active', S.mode==='student'||S.mode===undefined||S.mode===null);
+  if(pBtn) pBtn.classList.toggle('active', S.mode==='professional');
   if(mode === S.mode) return;
   const toLabel = mode === 'professional' ? '💼 Professional' : '🎓 Student';
   showModeConfirm(toLabel, function(){
@@ -7348,11 +7359,12 @@ async function loadUserProgress() {
   // Reset any in-progress challenge/battle state
   CH.challengeId = null; CH.role = null; CH.isOnlineMatch = false;
   CH.battleStarted = false; CH.myFinished = false;
-  // Apply mode UI and go home
+  // Sync mode pill UI with actual S.mode
   const sBtn = document.getElementById('ms-student');
   const pBtn = document.getElementById('ms-pro');
-  if(sBtn) sBtn.classList.toggle('active', S.mode !== 'professional');
-  if(pBtn) pBtn.classList.toggle('active', S.mode === 'professional');
+  const isPro = S.mode === 'professional';
+  if(sBtn){ sBtn.classList.toggle('active', !isPro); }
+  if(pBtn){ pBtn.classList.toggle('active', isPro); }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const homeTarget = document.getElementById('screen-' + safeStartScreen);
   if(homeTarget) homeTarget.classList.add('active');
@@ -8136,7 +8148,13 @@ async function confirmForfeit(){
   document.getElementById('result-host-label').textContent = CH.role==='host' ? 'You (forfeited)' : 'Opponent';
   document.getElementById('result-guest-label').textContent = CH.role==='guest' ? 'You (forfeited)' : 'Opponent';
   document.getElementById('result-xp-text').textContent = '+25 XP earned';
-  document.getElementById('result-breakdown').innerHTML = '';
+  document.getElementById('result-breakdown').innerHTML = '''
+    <div style="padding:16px 0 0;text-align:center;">
+      <button onclick="resetCH();loadChallengeStats();loadPlayerRating();showChallengeSection('lobby')" 
+        style="width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);">
+        🏠 Back to Lobby
+      </button>
+    </div>''';
   loadChallengeStats();
   toast('Match forfeited 🏳️');
 }
