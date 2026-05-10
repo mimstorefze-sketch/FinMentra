@@ -7091,10 +7091,17 @@ const _origAnswerQ=answerQ;
         </div>
       </div>
       <div class="battle-timer">
-        <div class="battle-timer-text" id="battle-timer">20</div>
-        <div class="battle-timer-bar"><div class="battle-timer-fill" id="battle-timer-fill" style="width:100%;"></div></div>
-        <div class="battle-q-num" id="battle-q-num">Question 1 of 10</div>
-      <div style="font-size:9px;color:rgba(255,255,255,.5);text-align:center;margin-top:2px;">⚡ Fast answer = 3pts · Medium = 2pts · Slow = 1pt</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+          <div style="flex:1;">
+            <div class="battle-timer-text" id="battle-timer">20</div>
+            <div class="battle-timer-bar"><div class="battle-timer-fill" id="battle-timer-fill" style="width:100%;"></div></div>
+            <div class="battle-q-num" id="battle-q-num">Question 1 of 10</div>
+            <div style="font-size:9px;color:rgba(255,255,255,.5);text-align:center;margin-top:2px;">⚡ Fast = 3pts · Med = 2pts · Slow = 1pt</div>
+          </div>
+          <button onclick="forfeitChallenge()" style="margin-left:10px;padding:6px 12px;border-radius:999px;background:rgba(220,38,38,.25);color:#FCA5A5;border:1.5px solid rgba(220,38,38,.5);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0;">
+            🚪 Exit
+          </button>
+        </div>
       </div>
     </div>
 
@@ -7107,12 +7114,6 @@ const _origAnswerQ=answerQ;
       <div class="battle-question" id="battle-question">Loading question...</div>
       <div id="battle-options"></div>
       <div id="battle-explanation" style="display:none;margin-top:12px;padding:12px;background:var(--blue-ll);border-radius:10px;font-size:12px;line-height:1.6;color:var(--navy);"></div>
-    </div>
-    <!-- Exit button — always visible, top right -->
-    <div style="display:flex;justify-content:flex-end;margin-top:8px;margin-bottom:4px;">
-      <button onclick="forfeitChallenge()" style="padding:8px 18px;border-radius:999px;background:#FEE2E2;color:#DC2626;border:2px solid #DC2626;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(220,38,38,.2);">
-        🚪 Exit Game
-      </button>
     </div>
   </div>
 
@@ -7540,9 +7541,31 @@ function getChallengeQuestions(category, count){
   return result;
 }
 
+// ── RESET ALL CHALLENGE STATE ──
+function resetCH(){
+  clearInterval(CH.timerInterval);
+  if(CH.subscription){ CH.subscription.unsubscribe(); CH.subscription = null; }
+  CH.challengeId=null; CH.code=null; CH.role=null;
+  CH.isOnlineMatch=false; CH.isAIMatch=false;
+  CH.questions=[]; CH.currentQ=0;
+  CH.myScore=0; CH.opponentScore=0;
+  CH.myAnswers=[]; CH.opponentAnswers=[];
+  CH.battleStartsAt=null; CH.battleStarted=false;
+  CH.myFinished=false; CH.answered=false;
+  CH.timerSeconds=20;
+  // Reset score display
+  const hs=document.getElementById('battle-host-score');
+  const gs=document.getElementById('battle-guest-score');
+  if(hs) hs.textContent='0';
+  if(gs) gs.textContent='0';
+  console.log('✅ CH state fully reset');
+  _endChallengeCalled = false;
+}
+
 // ── CREATE CHALLENGE ──
 async function createChallenge(){
   if(!checkPlanFeature('multiplayer')) return;
+  resetCH();
   const category = document.getElementById('ch-create-category').value;
   const count = document.getElementById('ch-create-count').value;
   const code = generateCode();
@@ -7583,6 +7606,7 @@ async function createChallenge(){
 // ── JOIN CHALLENGE ──
 async function joinChallenge(){
   if(!checkPlanFeature('multiplayer')) return;
+  resetCH();
   const code = document.getElementById('ch-join-code').value.trim().toUpperCase();
   if(code.length !== 6){ toast('Enter a 6-letter code','error'); return; }
   const myName = _currentUser ? ('User '+_currentUser.id.substring(0,6)) : 'Guest';
@@ -8406,12 +8430,11 @@ async function onMatchFound(challengeId, oppId, category, myRole, oppData, quest
   // IMMEDIATELY remove ourselves from queue so no one else can match with us
   try{ await _supa.from('matchmaking_queue').delete().eq('player_id', MM.myPlayerId); }catch(e){}
 
+  // Full state reset before starting new match
+  resetCH();
   CH.challengeId = challengeId;
   CH.role = myRole;
   CH.isOnlineMatch = true;
-  CH.myScore = 0; CH.opponentScore = 0;
-  CH.myAnswers = []; CH.opponentAnswers = [];
-  CH.currentQ = 0;
 
   if(myRole === 'host'){
     // Use questions already saved to Supabase in searchForOpponent
