@@ -5273,10 +5273,10 @@ function sendFollowUp(){
   var aiPrompt = 'Standard: ' + std + ' | Question: ' + questionText + ' | Correct answer: ' + correctAns + ' | Student asks: ' + q;
   var aiSystem = 'You are Mr. Ledger AI, a finance and accounting tutor for FinMentra. Help students understand IFRS, IAS, ISA, Tax, Costing, FM. Give concise exam-focused answers under 120 words. Bold key terms with **. Reference standard paragraphs. End with one exam tip.';
   function doAICall() {
-    fetch('https://api.anthropic.com/v1/messages', {
+    fetch('/api/ai', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 400, system: aiSystem, messages: [{ role: 'user', content: aiPrompt }] })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: q, question: questionText, standard: std, correctAnswer: correctAns })
     }).then(function(r){ return r.json(); }).then(function(data){
       var text = data.content && data.content[0] ? data.content[0].text : 'Sorry, could not get a response.';
       var html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
@@ -5293,7 +5293,6 @@ function sendFollowUp(){
         ansDiv.innerHTML = '<div style="font-size:13px;line-height:1.6;color:var(--navy);">' + res.data.answer + '<br><span style="font-size:10px;color:var(--muted);">⚡ Instant answer</span></div>';
       } else { doAICall(); }
     }).catch(function(){ doAICall(); });
-  callAIAndCache(false);
 }
 
 
