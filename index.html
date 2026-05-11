@@ -3587,6 +3587,7 @@ function loadQuestion(){
   const fi=document.getElementById('followup-input');if(fi) fi.value='';
   const pm=document.getElementById('prog-meta');if(pm) pm.textContent=(S.qIndex+1)+' / '+S.sessionQs.length;
   const q=S.sessionQs[S.qIndex];if(!q) return;
+  S.currentQuestion = q; // store for AI context
   const label=S.currentStandard||S.domain;
   const qs=document.getElementById('q-standard');
   if(qs){
@@ -5271,7 +5272,7 @@ function sendFollowUp(){
 
   // Cache-first: check Supabase cache, then call API
   var aiPrompt = 'Standard: ' + std + ' | Question: ' + questionText + ' | Correct answer: ' + correctAns + ' | Student asks: ' + q;
-  var aiSystem = 'You are Mr. Ledger AI, a finance and accounting tutor for FinMentra. Help students understand IFRS, IAS, ISA, Tax, Costing, FM. Give concise exam-focused answers under 120 words. Bold key terms with **. Reference standard paragraphs. End with one exam tip.';
+  var aiSystem = 'You are Mr. Ledger AI, an expert finance and accounting tutor for FinMentra. Answer ANY finance, accounting, IFRS, IAS, ISA, Tax, Costing, or FM question the student asks. Use the provided question context only as background — focus on what the student actually asked. Give concise exam-focused answers under 150 words. Bold key terms with **text**. Reference specific standard paragraphs where relevant. End with one practical exam tip.';
   function doAICall() {
     fetch('/api/ai', {
       method: 'POST',
