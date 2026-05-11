@@ -14,6 +14,15 @@ export default async function handler(req, res) {
   try {
     const { prompt, system, question, standard, correctAnswer } = req.body;
 
+    // Build smart context message
+    let userMessage = prompt || '';
+    if (question && question.length > 5) {
+      userMessage = 'Topic: ' + (standard || 'General Accounting') +
+        '\nQuestion being studied: ' + question +
+        (correctAnswer ? '\nCorrect answer: ' + correctAnswer : '') +
+        '\nStudent asks: ' + (prompt || '');
+    }
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -24,11 +33,8 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 400,
-        system: system || 'You are Mr. Ledger AI, an expert finance and accounting tutor for FinMentra. Help students understand IFRS, IAS, ISA, Tax, Costing, and Financial Management. Give concise exam-focused answers under 120 words. Use ** for key terms. Reference specific standard paragraphs. End with one exam tip.',
-        messages: [{
-          role: 'user',
-          content: 'Standard: ' + (standard || '') + '\nQuestion: ' + (question || '') + '\nCorrect answer: ' + (correctAnswer || '') + '\nStudent asks: ' + (prompt || '')
-        }]
+        system: system || 'You are Mr. Ledger AI, an expert finance and accounting tutor for FinMentra. Answer ANY finance, accounting, IFRS, IAS, ISA, Tax, Costing, or FM question the student asks. Use the provided question context only as background — focus on what the student actually asked. Give concise exam-focused answers under 150 words. Bold key terms with **text**. Reference specific standard paragraphs where relevant. End with one practical exam tip.',
+        messages: [{ role: 'user', content: userMessage }]
       })
     });
 
