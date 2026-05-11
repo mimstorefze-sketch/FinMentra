@@ -5274,17 +5274,25 @@ function sendFollowUp(){
   var aiPrompt = 'Standard: ' + std + ' | Question: ' + questionText + ' | Correct answer: ' + correctAns + ' | Student asks: ' + q;
   var aiSystem = 'You are Mr. Ledger AI, an expert finance and accounting tutor for FinMentra. Answer ANY finance, accounting, IFRS, IAS, ISA, Tax, Costing, or FM question the student asks. Use the provided question context only as background — focus on what the student actually asked. Give concise exam-focused answers under 150 words. Bold key terms with **text**. Reference specific standard paragraphs where relevant. End with one practical exam tip.';
   function doAICall() {
+    console.log('🤖 Calling AI proxy with:', { prompt: q, question: questionText, standard: std });
     fetch('/api/ai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt: q, question: questionText, standard: std, correctAnswer: correctAns })
-    }).then(function(r){ return r.json(); }).then(function(data){
-      var text = data.content && data.content[0] ? data.content[0].text : 'Sorry, could not get a response.';
+    }).then(function(r){
+      console.log('AI response status:', r.status);
+      return r.json();
+    }).then(function(data){
+      console.log('AI response data:', data);
+      var text = data.content && data.content[0] ? data.content[0].text : null;
+      if(!text && data.error) text = 'Error: ' + data.error;
+      if(!text) text = 'Sorry, could not get a response.';
       var html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
       ansDiv.innerHTML = '<div style="font-size:13px;line-height:1.6;color:var(--navy);">' + html + '</div>';
       _supa.from('ai_explanations').upsert({ cache_key: qKey, question: questionText.substring(0,200), student_query: q.substring(0,100), answer: html, standard: std, created_at: new Date().toISOString() }, { onConflict: 'cache_key' }).then(function(){}).catch(function(){});
-    }).catch(function(){
-      ansDiv.innerHTML = '<div style="color:var(--red);font-size:12px;">AI temporarily unavailable. Please try again.</div>';
+    }).catch(function(err){
+      console.error('AI fetch error:', err);
+      ansDiv.innerHTML = '<div style="color:var(--red);font-size:12px;">AI error: ' + err.message + '</div>';
     });
   }
   // Check cache first
