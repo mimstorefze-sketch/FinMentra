@@ -4206,17 +4206,15 @@ function sendChat(){
         var text = data.content&&data.content[0]&&data.content[0].text ? data.content[0].text : 'Sorry, I could not get a response. Please try again.';
         var html = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
         addChatMsg('ai', html, true);
-        // Save to cache
-        if(_currentUser){
-          _supa.from('ai_explanations').upsert({
-            cache_key: chatCacheKey,
-            question: msg.substring(0,200),
-            student_query: msg.substring(0,100),
-            answer: html,
-            standard: S.currentStandard||S.domain||'General',
-            created_at: new Date().toISOString()
-          }, { onConflict: 'cache_key' }).then(function(){}).catch(function(){});
-        }
+        // Save to cache for all users
+        _supa.from('ai_explanations').upsert({
+          cache_key: chatCacheKey,
+          question: msg.substring(0,200),
+          student_query: msg.substring(0,100),
+          answer: html,
+          standard: S.currentStandard||S.domain||'General',
+          created_at: new Date().toISOString()
+        }, { onConflict: 'cache_key' }).then(function(){}).catch(function(){});
       }).catch(function(){
         typing.remove();
         addChatMsg('ai','Sorry, the AI is temporarily unavailable. Please try again in a moment.',true);
@@ -5327,8 +5325,8 @@ function sendFollowUp(){
       if(!text) text = 'Sorry, could not get a response.';
       var html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
       ansDiv.innerHTML = '<div style="font-size:13px;line-height:1.6;color:var(--navy);">' + html + '</div>';
-      // Cache answer for future users (only if logged in to avoid RLS issues)
-      if(_currentUser){ _supa.from('ai_explanations').upsert({ cache_key: qKey, question: questionText.substring(0,200), student_query: q.substring(0,100), answer: html, standard: std, created_at: new Date().toISOString() }, { onConflict: 'cache_key' }).then(function(){}).catch(function(){}); }
+      // Cache answer for all users
+      _supa.from('ai_explanations').upsert({ cache_key: qKey, question: questionText.substring(0,200), student_query: q.substring(0,100), answer: html, standard: std, created_at: new Date().toISOString() }, { onConflict: 'cache_key' }).then(function(){}).catch(function(){});
     }).catch(function(err){
       console.error('AI fetch error:', err);
       ansDiv.innerHTML = '<div style="color:var(--red);font-size:12px;">AI error: ' + err.message + '</div>';
