@@ -7615,7 +7615,7 @@ function saveChallengeStats(){
 }
 
 function showChallengeSection(section){
-  // Always ensure multiplayer screen is active — fixes "goes to wrong tab" on all devices
+  // Always ensure multiplayer screen is active
   const mpScreen = document.getElementById('screen-multiplayer');
   if(mpScreen && !mpScreen.classList.contains('active')){
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -7627,6 +7627,20 @@ function showChallengeSection(section){
     const el=document.getElementById('ch-'+s);
     if(el) el.style.display = s===section?'block':'none';
   });
+  // Remove shell padding entirely when challenge screen is active
+  const shell = document.querySelector('.shell');
+  if(shell){
+    shell.style.paddingTop = '0';
+    shell.style.marginTop = '0';
+  }
+}
+
+function restoreShellPadding(){
+  const shell = document.querySelector('.shell');
+  if(shell){
+    shell.style.paddingTop = '';
+    shell.style.marginTop = '';
+  }
 }
 
 // Generate random 6-char code
@@ -9000,6 +9014,9 @@ showScreen = function(id){
     MM.searchTimer = null;
   }
   _origShowScreenMM(id);
+  if(id !== 'multiplayer'){
+    restoreShellPadding(); // restore when leaving challenge screen
+  }
   if(id==='multiplayer'){
     // Only reset to lobby if NOT currently in a battle or results
     const inBattle = CH.challengeId && 
