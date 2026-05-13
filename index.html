@@ -3651,6 +3651,8 @@ function answerQ(idx,btn,q){
     if(S.streak>=3){showStreakToast();playSound('streak');}
     checkLevelUp();checkSecretBadge();
   } else {
+    // Haptic feedback for wrong answer
+    try{ if(window.FinMentra) window.FinMentra.vibrate(200); }catch(e){}
     btn.classList.add('wrong');
     if(optsContainer){const all=optsContainer.querySelectorAll('.opt');if(all[q.correct]) all[q.correct].classList.add('correct');}
     S.streak=0;loseHeart();setCharMood('wrong');playSound('wrong');
@@ -6906,6 +6908,14 @@ function saveState(){
       gender:S.gender,mode:S.mode,darkMode:S.darkMode,
       completedTopics:S.completedTopics||{},
     }));
+  }catch(e){}
+  // Update Android widget with latest data
+  try{
+    if(window.FinMentra && window.FinMentra.updateWidgetData){
+      const userName = _currentUser?.user_metadata?.full_name || S.username || 'Scholar';
+      const xpToday = S.xpToday || 0;
+      window.FinMentra.updateWidgetData(S.streak||0, xpToday, userName);
+    }
   }catch(e){}
   // Also save to Supabase if logged in
   if(typeof saveUserProgress === 'function') saveUserProgress();
