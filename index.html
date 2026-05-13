@@ -178,14 +178,14 @@ a{color:inherit;text-decoration:none;}
 .bn-pip.show{display:block;}
 
 /* ── SHELL ── */
-.shell{padding-top:112px;padding-bottom:80px;min-height:100vh;}
+.shell{padding-top:max(112px, calc(112px + env(safe-area-inset-top)));padding-bottom:max(80px, calc(80px + env(safe-area-inset-bottom)));min-height:100vh;}
 .screen{display:none;max-width:720px;margin:0 auto;padding:16px 14px;flex-direction:column;gap:14px;}
 .screen.active{display:flex;}
 /* Challenge screen: cancel shell's 112px padding-top with negative margin */
 #screen-multiplayer.active{
   padding-top:0 !important;
   margin-top:-112px !important;
-  padding-bottom:0 !important;
+  padding-bottom:max(80px, calc(80px + env(safe-area-inset-bottom))) !important;
 }
 @media(max-width:480px){
   #screen-multiplayer.active{ margin-top:-100px !important; }
@@ -1540,11 +1540,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 
 <!-- ══ STUDENT HOME ══ -->
 <div class="screen active" id="screen-home">
-  <div class="alert-banner" id="ifrs-alert">
-    <div class="alert-icon">🔔</div>
-    <div class="alert-text"><strong>IFRS 18</strong> — New standard issued. 24 new questions added.</div>
-    <button class="alert-close" onclick="this.parentElement.style.display='none'">✕</button>
-  </div>
+
   <div class="home-welcome noise-texture">
     <div class="hw-greeting" id="hw-greeting">Good morning</div>
     <div class="hw-name" id="home-mentor-name">Welcome, Scholar</div>
@@ -4242,7 +4238,30 @@ function reactMsg(btn,emoji){btn.textContent=emoji+' 1';btn.style.opacity='1';bt
 function saveToVault(btn){toast('Answer saved to Mistake Vault');btn.textContent='Saved ✓';btn.style.color='var(--green)';}
 
 // ── UPDATE MISSIONS DYNAMICALLY ──
+function updateNextUp(){
+  const standards = [
+    {std:'IFRS 15', name:'Revenue from Contracts', q:8},
+    {std:'IFRS 16', name:'Leases', q:7},
+    {std:'IFRS 9', name:'Financial Instruments', q:9},
+    {std:'IAS 36', name:'Impairment of Assets', q:6},
+    {std:'IAS 12', name:'Income Taxes', q:8},
+    {std:'IAS 2', name:'Inventories', q:5},
+    {std:'IAS 16', name:'Property, Plant & Equipment', q:7},
+    {std:'ISA 315', name:'Risk Assessment', q:6},
+    {std:'IAS 38', name:'Intangible Assets', q:6},
+    {std:'IFRS 3', name:'Business Combinations', q:8},
+  ];
+  const pick = standards[Math.floor(Math.random() * standards.length)];
+  const title = document.getElementById('next-up-title');
+  const sub = document.getElementById('next-up-sub');
+  const card = document.getElementById('next-up-card');
+  if(title) title.textContent = 'Study ' + pick.std;
+  if(sub) sub.textContent = pick.name + ' · ' + pick.q + ' questions';
+  if(card) card.dataset.std = pick.std;
+}
+
 function updateMissions(){
+  updateNextUp();
   const todayQ = S.todayQ || 0;
   const streak = S.streak || 0;
   const acc = S.totalQ > 0 ? Math.round(S.totalCorrect/S.totalQ*100) : 0;
@@ -4409,7 +4428,31 @@ function loadBossQuestion(){
   if(qn) qn.textContent=(bossQ+1)+'/10';if(qt) qt.textContent=q.q;
   if(opts){opts.innerHTML='';q.opts.forEach((o,i)=>{const btn=document.createElement('button');btn.className='opt';btn.innerHTML=`<span class="opt-key">${String.fromCharCode(65+i)}</span><span>${o}</span>`;btn.onclick=()=>{opts.querySelectorAll('.opt').forEach(x=>x.classList.add('disabled'));if(i===q.correct){btn.classList.add('correct');bossScore++;spawnXP(75);}else{btn.classList.add('wrong');opts.querySelectorAll('.opt')[q.correct].classList.add('correct');}const sc=document.getElementById('bb-score');const ac=document.getElementById('bb-acc');if(sc) sc.textContent=bossScore;if(ac) ac.textContent=Math.round(bossScore/(bossQ+1)*100)+'%';bossQ++;setTimeout(loadBossQuestion,1200);};opts.appendChild(btn);});}
 }
-function endBossMode(){clearInterval(bossTimer);const acc=bossQ>0?Math.round(bossScore/bossQ*100):0;const xpWon=bossScore*75;S.xp+=xpWon;S.coins+=bossScore*20;updateHUD();if(acc>=60){spawnConfetti();showBadgeToast('Boss Slayer 🏆 — '+acc+'% accuracy!');}toast('Boss: '+bossScore+'/'+Math.min(bossQ,10)+' correct · +'+xpWon+' XP!');showScreen('home');}
+function showResultPopup(title, result, xp, goTo){
+  const existing = document.getElementById('result-popup-overlay');
+  if(existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'result-popup-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(10,31,110,.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+  overlay.innerHTML = '<div style="background:#fff;border-radius:20px;padding:32px 24px;max-width:320px;width:90%;text-align:center;">' +
+    '<div style="font-size:36px;margin-bottom:12px;">🎉</div>' +
+    '<div style="font-size:18px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">' + title + '</div>' +
+    '<div style="font-size:14px;color:#64748B;margin-bottom:6px;">' + result + '</div>' +
+    '<div style="font-size:16px;font-weight:700;color:#10B981;margin-bottom:24px;">' + xp + '</div>' +
+    '<button onclick="document.getElementById('result-popup-overlay').remove();showScreen(''+goTo+'');" style="width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);">Continue</button>' +
+    '</div>';
+  document.body.appendChild(overlay);
+}
+
+function endBossMode(){
+  clearInterval(bossTimer);
+  bossTimer = null;
+  const acc=bossQ>0?Math.round(bossScore/bossQ*100):0;
+  const xpWon=bossScore*75;
+  S.xp+=xpWon;S.coins+=bossScore*20;updateHUD();
+  if(acc>=60){spawnConfetti();showBadgeToast('Boss Slayer 🏆 — '+acc+'% accuracy!');}
+  showResultPopup('👹 Boss Battle Complete!', bossScore+'/'+Math.min(bossQ,10)+' correct · '+acc+'% accuracy', '+'+xpWon+' XP earned!', 'home');
+}
 
 // ── TIME ATTACK ──
 let taTimer,taTime=180,taScore=0,taTotal=0;
@@ -4420,8 +4463,11 @@ function showTimeAttack(){
     content.innerHTML=`<div class="time-attack-header"><div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:3px;">⚡ TIME ATTACK</div><div class="ta-timer" id="ta-timer">3:00</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;" id="ta-score">0 correct · 0 answered</div><div style="height:5px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden;margin-top:9px;"><div id="ta-bar" style="height:100%;background:white;border-radius:3px;width:100%;transition:width .1s;"></div></div></div>
     <div class="qcard-q"><div class="qtext" id="ta-q-text">Loading...</div><div class="opts" id="ta-options"></div></div>
     <button class="btn btn-secondary btn-block" style="margin-top:8px;" onclick="endTimeAttack()">← Stop</button>`;
-    taTime=180;taScore=0;taTotal=0;loadTAQuestion();
+    taTime=180;taScore=0;taTotal=0;
+    clearInterval(taTimer); // clear any existing timer first
+    loadTAQuestion();
     taTimer=setInterval(tickTA,1000);
+    window._gameActive = "timeattack";
   },100);
 }
 function tickTA(){taTime--;const m=Math.floor(taTime/60);const s=taTime%60;const t=document.getElementById('ta-timer');const b=document.getElementById('ta-bar');if(t) t.textContent=m+':'+(s<10?'0':'')+s;if(b) b.style.width=(taTime/180*100)+'%';if(taTime<=0) endTimeAttack();}
@@ -4460,7 +4506,16 @@ function loadTAQuestion(){
     });
   }
 }
-function endTimeAttack(){clearInterval(taTimer);const xpWon=taScore*30;S.xp+=xpWon;S.coins+=taScore*5;updateHUD();if(taTotal>=10&&taScore/taTotal>=0.8) showBadgeToast('Speed Demon ⚡ — incredible pace!');toast('Time Attack: '+taScore+'/'+taTotal+' · +'+xpWon+' XP!');showScreen('home');}
+function endTimeAttack(){
+  clearInterval(taTimer);
+  taTimer = null;
+  if(taTotal === 0) { showScreen('home'); return; } // navigated away before answering
+  const xpWon=taScore*30;
+  S.xp+=xpWon;S.coins+=taScore*5;updateHUD();
+  if(taTotal>=10&&taScore/taTotal>=0.8) showBadgeToast('Speed Demon ⚡ — incredible pace!');
+  // Show popup instead of just toast
+  showResultPopup('⚡ Time Attack Complete!', taScore+'/'+taTotal+' correct', '+'+xpWon+' XP earned!', 'home');
+}
 
 // ── QUICK REF ──
 function toggleQRef(header){const arrow=header.querySelector('.qref-arrow');const body=header.nextElementSibling;const isOpen=body.classList.contains('open');document.querySelectorAll('.qref-body').forEach(b=>b.classList.remove('open'));document.querySelectorAll('.qref-arrow').forEach(a=>a.classList.remove('open'));if(!isOpen){body.classList.add('open');arrow.classList.add('open');}}
@@ -6143,7 +6198,7 @@ function checkInAppNotifications(){
     }
     // New standard update (random chance)
     if(Math.random()<0.1){
-      showInAppNotif('Standard update','IFRS 18 effective from January 2027.','📋',()=>showScreen('updates'));
+      // Standard update notification removed
     }
     // Daily challenge available (morning)
     if(h>=8&&h<=10){
@@ -8889,6 +8944,30 @@ showChallengeSection = function(section){
     const el=document.getElementById('ch-'+s);
     if(el) el.style.display=s===section?'block':'none';
   });
+};
+
+// Clear game timers when navigating away
+const _origShowScreenTimers = showScreen;
+showScreen = function(id){
+  // Confirm exit if in active game
+  if(window._gameActive && id !== 'challenge'){
+    if(!confirm('Leave this game? Your progress will be lost.')){
+      return; // stay
+    }
+    window._gameActive = null;
+  }
+  // Stop Time Attack if running
+  if(id !== 'challenge' && typeof taTimer !== 'undefined' && taTimer){
+    clearInterval(taTimer);
+    taTimer = null;
+    taTime = 0;
+  }
+  // Stop Boss Battle if running  
+  if(id !== 'challenge' && typeof bossTimer !== 'undefined' && bossTimer){
+    clearInterval(bossTimer);
+    bossTimer = null;
+  }
+  _origShowScreenTimers(id);
 };
 
 // Load online matchmaking data when screen shown
