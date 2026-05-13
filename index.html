@@ -4439,7 +4439,7 @@ function showResultPopup(title, result, xp, goTo){
     '<div style="font-size:18px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">' + title + '</div>' +
     '<div style="font-size:14px;color:#64748B;margin-bottom:6px;">' + result + '</div>' +
     '<div style="font-size:16px;font-weight:700;color:#10B981;margin-bottom:24px;">' + xp + '</div>' +
-    '<button onclick="document.getElementById('result-popup-overlay').remove();showScreen(''+goTo+'');" style="width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);">Continue</button>' +
+    '<button onclick="document.getElementById(\'result-popup-overlay\').remove();showScreen(\''+goTo+'\')" style="width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);">Continue</button>' +
     '</div>';
   document.body.appendChild(overlay);
 }
