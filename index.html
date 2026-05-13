@@ -138,8 +138,10 @@ a{color:inherit;text-decoration:none;}
 /* ── TOP NAV (index.html style) ── */
 .nav {
   position:fixed;top:0;left:0;right:0;z-index:500;
-  height:60px; background:var(--navy); color:#fff;
-  display:flex;align-items:center;padding:0 12px;gap:8px;
+  height:calc(60px + env(safe-area-inset-top));
+  padding-top:env(safe-area-inset-top);
+  background:var(--navy); color:#fff;
+  display:flex;align-items:center;padding-left:12px;padding-right:12px;gap:8px;
   box-shadow:0 2px 20px rgba(10,31,110,.3);
 }
 .nav-brand{font-family:var(--font-display);font-size:22px;font-weight:600;letter-spacing:.2px;flex:0 0 auto;margin-right:auto;}
@@ -155,7 +157,7 @@ a{color:inherit;text-decoration:none;}
 
 /* ── MODE PILL (index.html style) ── */
 .mode-switch{
-  position:fixed;top:68px;left:50%;transform:translateX(-50%);z-index:490;
+  position:fixed;top:calc(68px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:490;
   display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);
   border-radius:999px;padding:4px;width:max-content;box-shadow:var(--shadow);
 }
@@ -178,7 +180,7 @@ a{color:inherit;text-decoration:none;}
 .bn-pip.show{display:block;}
 
 /* ── SHELL ── */
-.shell{padding-top:max(112px, calc(112px + env(safe-area-inset-top)));padding-bottom:max(80px, calc(80px + env(safe-area-inset-bottom)));min-height:100vh;}
+.shell{padding-top:calc(112px + env(safe-area-inset-top));padding-bottom:calc(80px + env(safe-area-inset-bottom));min-height:100vh;}
 .screen{display:none;max-width:720px;margin:0 auto;padding:16px 14px;flex-direction:column;gap:14px;}
 .screen.active{display:flex;}
 /* Challenge screen: cancel shell's 112px padding-top with negative margin */
@@ -728,7 +730,7 @@ a{color:inherit;text-decoration:none;}
 .center{text-align:center;}
 .referral-code{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:9px 13px;font-family:var(--font-mono);font-size:12px;font-weight:500;color:var(--navy);}
 
-@media(max-width:480px){.shell{padding:100px 0 80px;}.screen{padding:12px 10px;}.qa-grid{gap:8px;}}
+@media(max-width:480px){.shell{padding-top:calc(100px + env(safe-area-inset-top));padding-bottom:calc(80px + env(safe-area-inset-bottom));padding-left:0;padding-right:0;}.screen{padding:12px 10px;}.qa-grid{gap:8px;}}
 
 /* ── TIMELINE ── */
 .timeline-item { position: relative; }
@@ -8951,10 +8953,26 @@ const _origShowScreenTimers = showScreen;
 showScreen = function(id){
   // Confirm exit if in active game
   if(window._gameActive && id !== 'challenge'){
-    if(!confirm('Leave this game? Your progress will be lost.')){
-      return; // stay
-    }
-    window._gameActive = null;
+    // Show custom popup instead of browser confirm()
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(10,31,110,.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+    overlay.innerHTML = '<div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:300px;width:90%;text-align:center;">' +
+      '<div style="font-size:36px;margin-bottom:12px;">⚠️</div>' +
+      '<div style="font-size:17px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Leave Game?</div>' +
+      '<div style="font-size:13px;color:#64748B;margin-bottom:24px;line-height:1.5;">Your progress in this game will be lost.</div>' +
+      '<button id="exit-yes-btn" style="width:100%;padding:12px;border-radius:12px;background:#DC2626;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:var(--font-body);">Yes, Leave</button>' +
+      '<button id="exit-no-btn" style="width:100%;padding:10px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);">Keep Playing</button>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    document.getElementById('exit-no-btn').onclick = function(){ overlay.remove(); };
+    document.getElementById('exit-yes-btn').onclick = function(){
+      overlay.remove();
+      window._gameActive = null;
+      if(typeof taTimer !== 'undefined') clearInterval(taTimer);
+      if(typeof bossTimer !== 'undefined') clearInterval(bossTimer);
+      _origShowScreenTimers(id);
+    };
+    return; // don't navigate yet
   }
   // Stop Time Attack if running
   if(id !== 'challenge' && typeof taTimer !== 'undefined' && taTimer){
