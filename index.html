@@ -188,6 +188,8 @@ a{color:inherit;text-decoration:none;}
   padding-top:0 !important;
   margin-top:calc(-112px - env(safe-area-inset-top)) !important;
   padding-bottom:calc(80px + env(safe-area-inset-bottom)) !important;
+  overscroll-behavior-y: none !important;
+  overflow-y: auto !important;
 }
 @media(max-width:480px){
   #screen-multiplayer.active{ margin-top:calc(-100px - env(safe-area-inset-top)) !important; }
@@ -7632,6 +7634,7 @@ function showChallengeSection(section){
   if(shell){
     shell.style.paddingTop = '0';
     shell.style.marginTop = '0';
+    shell.style.overscrollBehaviorY = 'none';
   }
 }
 
@@ -7640,6 +7643,7 @@ function restoreShellPadding(){
   if(shell){
     shell.style.paddingTop = '';
     shell.style.marginTop = '';
+    shell.style.overscrollBehaviorY = '';
   }
 }
 
