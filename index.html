@@ -3434,6 +3434,11 @@ function shuffleOptions(q){
 
 // ── PRACTICE ──
 function selectDomain(el,d){
+  // Check daily limit before switching domain
+  if(isFree() && !checkDailyQLimit()){
+    showDailyLimitPopup();
+    return;
+  }
   document.querySelectorAll('.dom-tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
   S.domain=d;
@@ -3441,7 +3446,7 @@ function selectDomain(el,d){
   S.sessionQs=[];
   S.qIndex=0;
   S.answered=false;
-  startSession(); // async — runs in background, loadQuestion called when ready
+  startSession();
 }
 // ── SUPABASE QUESTION CACHE ──
 const SQ_CACHE = {};
@@ -3509,7 +3514,8 @@ async function fetchQuestionsFromSupabase(category, count){
 
 async function startSession(){
   // Check daily limit for free users
-  if(!checkDailyQLimit()){
+  const dailyRemaining = getDailyQRemaining();
+  if(isFree() && dailyRemaining <= 0){
     showDailyLimitPopup();
     return;
   }
@@ -3543,10 +3549,12 @@ async function startSession(){
       if(!t) return;
       if(t.cat === category) allLocal.push(...qs);
     });
-    const localRemaining = isFree() ? Math.min(8, getDailyQRemaining()) : 8;
+    const localRemaining = isFree() ? getDailyQRemaining() : 8;
+    if(isFree() && localRemaining <= 0){ showDailyLimitPopup(); return; }
+    const localLimit = Math.min(8, Math.max(1, localRemaining));
     pool = allLocal.length > 0
-      ? allLocal.sort(()=>Math.random()-.5).slice(0, localRemaining)
-      : [...(QB_BY_DOMAIN[category]||QB_BY_DOMAIN['IFRS']||[])].sort(()=>Math.random()-.5).slice(0, localRemaining);
+      ? allLocal.sort(()=>Math.random()-.5).slice(0, localLimit)
+      : [...(QB_BY_DOMAIN[category]||QB_BY_DOMAIN['IFRS']||[])].sort(()=>Math.random()-.5).slice(0, localLimit);
   }
 
   if(pool.length === 0){
@@ -3599,7 +3607,7 @@ function buildProgressDots(){
 }
 function loadQuestion(){
   // Hard stop for free users who hit daily limit
-  if(isFree() && !checkDailyQLimit()){
+  if(isFree() && getDailyQRemaining() <= 0){
     showDailyLimitPopup();
     return;
   }
@@ -3777,11 +3785,11 @@ function goBack(){
 }
 function nextQuestion(){
   // Check daily limit before moving to next question
-  if(isFree() && !checkDailyQLimit()){
+  if(isFree() && getDailyQRemaining() <= 0){
     showDailyLimitPopup();
     return;
   }
-  if(isFree() && !checkDailyQLimit()){ showDailyLimitPopup(); return; }
+  if(isFree() && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
   S.qIndex++;
   if(S.qIndex>=S.sessionQs.length){
     // Session complete — show results then loop back for more practice
