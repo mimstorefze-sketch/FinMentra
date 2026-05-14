@@ -7598,14 +7598,23 @@ async function handleAuth() {
     let result;
     if(isSignup){
       const name = document.getElementById('auth-name').value.trim();
-      result = await _supa.auth.signUp({ email, password, options:{ data:{ full_name: name } } });
+      result = await _supa.auth.signUp({ email, password, options:{ data:{ full_name: name }, emailRedirectTo: 'https://www.finmentra.com' } });
     } else {
       result = await _supa.auth.signInWithPassword({ email, password });
     }
     if(result.error){ errEl.textContent=result.error.message; errEl.style.display='block'; loadEl.style.display='none'; return; }
+    loadEl.style.display='none';
+    // Check if email confirmation is required
+    if(isSignup && result.data.user && !result.data.session){
+      errEl.style.display='block';
+      errEl.style.color='#10B981';
+      errEl.textContent='Check your email to confirm your account, then login below.';
+      document.getElementById('auth-btn').textContent='Login';
+      document.getElementById('auth-name-row').style.display='none';
+      return;
+    }
     _currentUser = result.data.user;
     _isGuest = false;
-    loadEl.style.display='none';
     document.getElementById('auth-screen').style.display='none';
     closeRegPopup();
     await loadUserProgress();
