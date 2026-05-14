@@ -7564,7 +7564,7 @@ async function signInWithGoogle(){
 async function signInWithLinkedIn(){
   const { error } = await _supa.auth.signInWithOAuth({
     provider: 'linkedin_oidc',
-    options: { redirectTo: 'https://www.finmentra.com' }
+    options: { redirectTo: 'https://www.finmentra.com/auth/callback' }
   });
   if(error) toast('LinkedIn login failed: ' + error.message);
 }
