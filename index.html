@@ -1822,7 +1822,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <!-- Usage banner -->
   <div style="display:flex;align-items:center;gap:8px;background:var(--gold-l);border:1px solid var(--gold);border-radius:12px;padding:10px 14px;">
     <span style="font-size:16px;">🔒</span>
-    <div style="flex:1;font-size:12px;color:#92400E;"><strong>Free Plan:</strong> 2 of 3 daily questions used.</div>
+    <div style="flex:1;font-size:12px;color:#92400E;"><strong>Free Plan:</strong> 15 questions/day · 5 AI questions/day.</div>
     <button class="btn btn-primary" style="padding:5px 12px;font-size:11px;flex-shrink:0;">Upgrade Pro</button>
   </div>
   <!-- Suggestion chips -->
@@ -1839,7 +1839,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <span style="font-size:20px;">🤖</span>
       <div>
         <div id="ai-chat-name" style="font-weight:700;font-size:13px;">Mr. Ledger AI</div>
-      <div style="font-size:9px;color:var(--blue-l);margin-top:1px;" id="ai-plan-label">Free plan</div>
+      <div style="font-size:9px;color:var(--blue-l);margin-top:1px;" id="ai-plan-label">Free · 5 AI/day</div>
         <div style="font-size:10px;color:var(--blue-l);opacity:.85;">IFRS · IAS · ISA specialist</div>
       </div>
       <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
@@ -2042,8 +2042,8 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--navy);">Free</div>
     <div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--navy);margin:6px 0;">$0<span style="font-size:13px;color:var(--steel);font-weight:400;">/month</span></div>
     <ul style="list-style:none;font-size:12px;display:flex;flex-direction:column;gap:5px;margin-bottom:12px;">
-      <li>✓ 10 questions/day</li>
-      <li>✓ 3 AI questions/day</li>
+      <li>✓ 15 questions/day</li>
+      <li>✓ 5 AI questions/day <span style="color:var(--muted);font-size:10px;">(30/month cap)</span></li>
       <li>✓ Basic progress tracking</li>
       <li style="color:var(--muted);">✗ Pro tools</li>
       <li style="color:var(--muted);">✗ CPD certificates</li>
@@ -2055,33 +2055,36 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div class="card premium" style="position:relative;">
     <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),#FCD34D);color:var(--navy);font-size:9px;font-weight:800;padding:3px 12px;border-radius:999px;letter-spacing:.1em;">MOST POPULAR</div>
     <div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--navy);margin-top:8px;">Pro</div>
-    <div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--navy);margin:6px 0;">$3<span style="font-size:13px;color:var(--steel);font-weight:400;">/month</span></div>
+    <div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--navy);margin:6px 0;">$5<span style="font-size:13px;color:var(--steel);font-weight:400;">/month</span></div>
     <div style="font-size:10px;color:var(--green);font-weight:700;margin-bottom:8px;">7-day free trial included</div>
     <ul style="list-style:none;font-size:12px;display:flex;flex-direction:column;gap:5px;margin-bottom:12px;">
       <li>✓ Unlimited questions</li>
-      <li>✓ <strong>20 AI questions/month</strong></li>
+      <li>✓ <strong>50 AI questions/month</strong></li>
       <li>✓ All Pro tools (FS Builder, JE, CPD)</li>
       <li>✓ CPD certificates</li>
       <li>✓ Study buddy matching</li>
-      <li>✓ 7-day free trial</li>
+      <li>✓ Multiplayer & challenge mode</li>
+      <li>✓ AI follow-up threads</li>
     </ul>
     <button class="btn btn-primary" style="width:100%;background:linear-gradient(135deg,var(--gold),#FCD34D);color:var(--navy);" onclick="startProTrial()">Start 7-day free trial →</button>
   </div>
-  <!-- ELITE PLAN -->
-  <div class="card" style="border:1.5px solid var(--purple);position:relative;">
-    <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--purple);color:#fff;font-size:9px;font-weight:800;padding:3px 12px;border-radius:999px;letter-spacing:.1em;">ELITE</div>
-    <div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--purple);margin-top:8px;">Elite</div>
-    <div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--purple);margin:6px 0;">$5<span style="font-size:13px;color:var(--steel);font-weight:400;">/month</span></div>
-    <div style="font-size:10px;color:var(--purple);font-weight:700;margin-bottom:8px;">Priority AI · Advanced analytics</div>
-    <ul style="list-style:none;font-size:12px;display:flex;flex-direction:column;gap:5px;margin-bottom:12px;">
+  <!-- ELITE WAITLIST -->
+  <div class="card" style="border:2px dashed var(--purple);position:relative;background:var(--purple-l);">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <div style="font-size:28px;">💎</div>
+      <div>
+        <div style="font-family:var(--font-display);font-size:20px;font-weight:600;color:var(--purple);">Elite <span style="font-size:11px;font-weight:700;background:var(--purple);color:#fff;padding:2px 8px;border-radius:999px;vertical-align:middle;">COMING SOON</span></div>
+        <div style="font-size:11px;color:var(--purple);margin-top:2px;font-weight:600;">Priority AI · Team accounts · Advanced analytics</div>
+      </div>
+    </div>
+    <ul style="list-style:none;font-size:12px;display:flex;flex-direction:column;gap:5px;margin-bottom:14px;color:var(--purple);opacity:.85;">
       <li>✓ Everything in Pro</li>
-      <li>✓ <strong>50 AI questions/month</strong></li>
-      <li>✓ AI follow-up threads</li>
-      <li>✓ Priority support</li>
-      <li>✓ Early access to new features</li>
-      <li>✓ Offline mode</li>
+      <li>✓ Unlimited AI questions</li>
+      <li>✓ Team / group accounts</li>
+      <li>✓ Advanced performance analytics</li>
+      <li>✓ Priority support & early access</li>
     </ul>
-    <button class="btn btn-primary" style="width:100%;background:var(--purple);" onclick="toast('Upgrade to Elite — coming soon!')">Choose Elite</button>
+    <button class="btn" style="width:100%;background:var(--purple);color:#fff;" onclick="joinEliteWaitlist()">Join the waitlist →</button>
   </div>
   <div class="sec-label">Account</div>
   <div class="card">
@@ -2357,6 +2360,9 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   </div>
 
   <button class="btn btn-block" style="background:var(--navy);color:#fff;margin-top:8px;" onclick="logoutUser()">🚪 Logout</button>
+
+  <!-- Version footer — tap 5× to toggle Pro test mode -->
+  <div onclick="_devTap()" style="text-align:center;margin-top:18px;padding-bottom:8px;font-size:10px;color:var(--muted);cursor:default;user-select:none;">FinMentra v1.0 · Built with ❤️ for finance learners</div>
 </div>
 
 <!-- ══ BOOKMARKS ══ -->
@@ -3281,9 +3287,16 @@ function renderTopics(){
     const catIdx = catCounts[t.cat];
     catCounts[t.cat]++;
 
-    // Determine if locked
+    // Determine if locked for free users
     let locked = false;
-    if(isFree() && catIdx >= 3) locked = true;
+    if(isFree()){
+      // Free: only first 3 topics in IFRS category are open, everything else locked
+      if(t.cat !== 'IFRS') {
+        locked = true;
+      } else {
+        locked = catIdx >= 3;
+      }
+    }
     // Pro/Elite: all open
 
     const domainIcon={'IFRS':'📜','IAS':'🏛️','ISA':'🔍','Costing':'⚙️','Tax':'📋','FM':'📈'}[t.cat]||'📚';
@@ -3294,7 +3307,7 @@ function renderTopics(){
     btn.style.opacity = locked ? '0.6' : '1';
 
     if(locked){
-      btn.onclick = ()=>checkPlanFeature('multiplayer');
+      btn.onclick = ()=>{ toast('🔒 Upgrade to Pro to unlock all topics'); setTimeout(()=>showScreen('profile'),900); };
     } else {
       btn.onclick = ()=>startTopicPractice(t.num);
     }
@@ -3516,7 +3529,7 @@ async function startSession(){
     let fresh = supaQs.filter(q => !recentIds.includes(q.q.substring(0,30)));
     if(fresh.length < 5) fresh = supaQs; // reset if too few fresh
     // Cap to remaining daily questions for free users
-    const remaining = isFree() ? Math.min(8, 10 - (S.dailyQCount||0)) : 8;
+    const remaining = isFree() ? Math.min(8, 15 - (S.dailyQCount||0)) : 8;
     pool = fresh.sort(()=>Math.random()-.5).slice(0, remaining);
     // Track recently seen
     S.recentQs = pool.map(q=>q.q.substring(0,30));
@@ -3853,7 +3866,9 @@ function obNext(step){
 function selectMentor(g){S.gender=g;document.getElementById('ob-male').classList.toggle('active',g==='male');document.getElementById('ob-female').classList.toggle('active',g==='female');buildMentor();}
 function selectObMode(mode){S.mode=mode;document.getElementById('ob-student-btn').classList.toggle('active',mode==='student');document.getElementById('ob-pro-btn').classList.toggle('active',mode==='professional');}
 function closeOnboarding(){
+  S.onboardingDone = true;
   document.getElementById('onboarding').style.display='none';
+  saveState();
   buildMentor();updateMentorName();
   document.getElementById('hw-greeting').textContent=getMoodGreeting();
   applyModeUI(S.mode);
@@ -4111,6 +4126,32 @@ function checkSecretBadge(){
 }
 function showBadgeToast(msg){const t=document.getElementById('badgeToast');const m=document.getElementById('badgeMsg');if(!t||!m) return;m.textContent=msg;t.classList.add('show');playSound('notification');clearTimeout(badgeTimer);badgeTimer=setTimeout(()=>t.classList.remove('show'),3500);}
 function toast(msg){let host=document.querySelector('.toast-host');if(!host){host=document.createElement('div');host.className='toast-host';document.body.appendChild(host);}const t=document.createElement('div');t.className='toast';t.textContent=msg;host.appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transition='.3s';},2200);setTimeout(()=>t.remove(),2700);}
+
+// ── DEV / TEST MODE ── (secret: type "GOPRO" in console, or tap version 5×)
+let _devTaps=0,_devTimer=null;
+function _devTap(){
+  _devTaps++;
+  clearTimeout(_devTimer);
+  _devTimer=setTimeout(()=>_devTaps=0,2000);
+  if(_devTaps>=5){ _devTaps=0; _toggleTestPro(); }
+}
+function _toggleTestPro(){
+  const isPro = S.plan==='pro'||S.tier==='pro';
+  if(isPro){
+    S.plan='free'; S.tier='free'; S.aiPlan='free';
+    try{localStorage.removeItem('fm_tier');}catch(e){}
+    saveState(); updateHUD(); renderTopics && renderTopics();
+    toast('🔓 DEV: Switched to FREE mode');
+  } else {
+    S.plan='pro'; S.tier='pro'; S.aiPlan='pro'; S.aiUsedMonth=0;
+    try{localStorage.setItem('fm_tier','pro');}catch(e){}
+    saveState(); updateHUD(); renderTopics && renderTopics();
+    spawnConfetti();
+    toast('🚀 DEV: Switched to PRO mode — all features unlocked');
+  }
+}
+// Also expose in console: type _toggleTestPro() anytime
+
 const PREV_RANK_IDX={idx:0};
 function checkLevelUp(){const r=getRank(S.xp);const idx=RANKS.indexOf(r);if(idx>PREV_RANK_IDX.idx){PREV_RANK_IDX.idx=idx;document.getElementById('lu-emblem').textContent=r.emblem;document.getElementById('lu-title').textContent=r.emblem+' '+r.title;document.getElementById('levelup-overlay').classList.add('show');spawnConfetti();setCharMood('levelup');}}
 function closeLevelUp(){document.getElementById('levelup-overlay').classList.remove('show');}
@@ -4124,9 +4165,8 @@ const AI_LIMITS={
 };
 // ── AI SUBSCRIPTION PLANS ──
 const AI_PLANS = {
-  free:  { daily:3,   monthly:null, label:'Free',  aed:0,  cost_aed:0   },
-  pro:   { daily:null, monthly:20,  label:'Pro',   aed:11, cost_aed:5   },
-  elite: { daily:null, monthly:50,  label:'Elite', aed:18, cost_aed:10  },
+  free:  { daily:5, monthlyMax:30, monthly:null, label:'Free',  aed:0,  cost_aed:0   },
+  pro:   { daily:null, monthlyMax:null, monthly:50,  label:'Pro',   aed:18, cost_aed:5   },
 };
 // AI usage tracking
 S.aiPlan = S.aiPlan || 'free';
@@ -4145,7 +4185,7 @@ function checkDailyQLimit(){
     S.dailyQCount = 0;
     saveState();
   }
-  return S.dailyQCount < 10;
+  return S.dailyQCount < 15;
 }
 
 function incrementDailyQ(){
@@ -4161,14 +4201,15 @@ function incrementDailyQ(){
 
 function showDailyLimitPopup(){
   const overlay = document.createElement('div');
+  overlay.className='daily-limit-overlay';
   overlay.style.cssText='position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
   overlay.innerHTML='<div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;">'+
     '<div style="font-size:48px;margin-bottom:12px;">🎯</div>'+
     '<div style="font-size:18px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Daily Limit Reached</div>'+
-    '<div style="font-size:13px;color:#64748B;margin-bottom:6px;line-height:1.5;">You've used your <strong>10 free questions</strong> for today.</div>'+
+    '<div style="font-size:13px;color:#64748B;margin-bottom:6px;line-height:1.5;">You have used your <strong>15 free questions</strong> for today.</div>'+
     '<div style="font-size:12px;color:#94A3B8;margin-bottom:24px;">Resets at midnight · Upgrade for unlimited access</div>'+
-    '<button onclick="this.closest('div[style*=fixed]').remove();showScreen('shop')" style="width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:var(--font-body);">Upgrade to Pro 🚀</button>'+
-    '<button onclick="this.closest('div[style*=fixed]').remove()" style="width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);">Come Back Tomorrow</button>'+
+    '<button onclick="document.querySelectorAll(\'.daily-limit-overlay\').forEach(e=>e.remove());showScreen(\'profile\')" style="width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:var(--font-body);">Upgrade to Pro 🚀</button>'+
+    '<button onclick="document.querySelectorAll(\'.daily-limit-overlay\').forEach(e=>e.remove())" style="width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);">Come Back Tomorrow</button>'+
     '</div>';
   document.body.appendChild(overlay);
 }
@@ -4220,6 +4261,12 @@ function checkAILimit(){
   const today = new Date().toDateString();
   if(S.aiLastDate !== today){ S.aiUsedToday=0; S.aiLastDate=today; }
   const plan = getAIPlan();
+  // Free: 5/day AND 30/month cap
+  if(isFree()){
+    if(S.aiUsedToday >= 5) return {blocked:true, daily:true};
+    if((S.aiUsedMonth||0) >= 30) return {blocked:true, daily:false, monthlyFree:true};
+    return {blocked:false};
+  }
   if(plan.daily && S.aiUsedToday >= plan.daily) return {blocked:true, daily:true};
   if(plan.monthly && S.aiUsedMonth >= plan.monthly) return {blocked:true, daily:false};
   return {blocked:false};
@@ -4231,21 +4278,40 @@ function recordAIUse(){
        localStorage.setItem('fm_ai_month', S.aiUsedMonth.toString()); }catch(e){}
 }
 function getAILimitText(){
+  if(isFree()){
+    const dayLeft = Math.max(0, 5 - (S.aiUsedToday||0));
+    const monLeft = Math.max(0, 30 - (S.aiUsedMonth||0));
+    return dayLeft + '/5 daily · ' + monLeft + '/30 monthly left';
+  }
   const plan=getAIPlan();
   if(plan.daily) return (plan.daily - S.aiUsedToday) + '/' + plan.daily + ' daily questions left';
   return (plan.monthly - S.aiUsedMonth) + '/' + plan.monthly + ' monthly AI questions remaining';
 }
-function startProTrial(){
-  S.aiPlan='pro'; S.aiUsedMonth=0;
-  toast('7-day Pro trial started! 20 AI questions/month activated.');
-  setTimeout(()=>updateHUD(),100);
+function joinEliteWaitlist(){
+  // Show a waitlist confirmation popup
+  const overlay = document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:3000;background:rgba(124,58,237,0.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+  overlay.innerHTML='<div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;">'+
+    '<div style="font-size:48px;margin-bottom:12px;">💎</div>'+
+    '<div style="font-size:18px;font-weight:800;color:var(--purple);margin-bottom:8px;">You\'re on the list!</div>'+
+    '<div style="font-size:13px;color:#64748B;margin-bottom:20px;line-height:1.5;">We\'ll notify you when Elite launches. You\'ll get <strong>early access + a founding member discount.</strong></div>'+
+    '<button id="waitlist-close" style="width:100%;padding:13px;border-radius:12px;background:var(--purple);color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);">Got it — can\'t wait! 🚀</button>'+
+    '</div>';
+  document.body.appendChild(overlay);
+  document.getElementById('waitlist-close').onclick=function(){ overlay.remove(); toast('You are on the Elite waitlist! 🎉'); };
 }
+
 
 function sendChat(){
   if(!canUseAI()){
-    const plan=AI_PLANS[S.aiPlan]||AI_PLANS.free;
-    const isDaily=plan.daily!==null;
-    addChatMsg('ai','<div style="background:var(--gold-l);border-radius:8px;padding:10px;"><div style="font-weight:700;color:#92400E;">🔒 '+(isDaily?'Daily':'Monthly')+' AI limit reached</div><div style="font-size:11px;color:var(--steel);margin-top:4px;">'+(isDaily?'Free plan: 3 questions/day.':'Pro plan: 20 AI questions per month. Upgrade to Elite for 50/month.')+' Upgrade for more.</div><button onclick="startProTrial()" style="margin-top:8px;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font-body);">'+(isDaily?'Upgrade to Pro':'Upgrade to Elite')+'</button></div>');
+    const check=checkAILimit();
+    const isDaily=check.daily;
+    const isMonthlyFree=check.monthlyFree;
+    let msg='';
+    if(isDaily) msg='Free plan: 5 AI questions/day. Upgrade to Pro for 50/month.';
+    else if(isMonthlyFree) msg='Free plan: 30 AI questions/month limit reached. Upgrade to Pro for 50/month.';
+    else msg='Pro plan: 50 AI questions/month used. Your limit resets next month.';
+    addChatMsg('ai','<div style="background:var(--gold-l);border-radius:8px;padding:10px;"><div style="font-weight:700;color:#92400E;">🔒 AI limit reached</div><div style="font-size:11px;color:var(--steel);margin-top:4px;">'+msg+'</div>'+(isFree()?'<button onclick="startProTrial()" style="margin-top:8px;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font-body);">Upgrade to Pro</button>':'')+'</div>');
     return;
   }
   recordAIUse();
@@ -5410,7 +5476,7 @@ function sendFollowUp(){
   }
   recordAIUse();
   // Check subscription gate
-  const freeLimit=3;
+  const freeLimit=5;
   if(S.followUpUsed>=freeLimit){
     ansDiv.style.display='block';
     // Build upgrade prompt with DOM (avoid quote nesting)
@@ -6309,15 +6375,6 @@ function checkInAppNotifications(){
 setTimeout(checkInAppNotifications, 3000); // Check 3s after load
 
 
-// ── AI SUBSCRIPTION TIERS & MONTHLY LIMITS ──
-function startProTrial(){
-  S.aiPlan = 'pro';
-  S.aiMonthlyUsed = 0;
-  saveState();
-  toast('7-day Pro trial started! 20 AI questions/month activated.');
-  updateAILimitDisplay();
-}
-
 
 // ── MENTOR EXPRESSION STATES ──
 function setMentorExpression(expr){
@@ -6349,8 +6406,9 @@ function matchStudyBuddy(){
 // ── PRO TRIAL ──
 S.tier = S.tier || 'free';
 function startProTrial(){
-  S.tier='pro';
+  S.plan='pro'; S.tier='pro'; S.aiPlan='pro'; S.aiUsedMonth=0;
   try{localStorage.setItem('fm_tier','pro');}catch(e){}
+  saveState();
   spawnConfetti();
   toast('Pro trial activated! 7 days free. Enjoy all features.');
   showBadgeToast('Welcome to Pro! 🎉 All features unlocked.');
@@ -7036,7 +7094,7 @@ const _origAnswerQ=answerQ;
     <div class="auth-loading" id="auth-loading">Please wait...</div>
 
     <!-- Skip / guest option -->
-    <span class="auth-skip" onclick="startAsGuest()" style="display:block;margin-top:14px;padding:12px;background:var(--bg);border:2px dashed #4A6CF7;border-radius:12px;text-align:center;font-size:13px;font-weight:700;color:#4A6CF7;text-decoration:none;cursor:pointer;">🎯 Try 10 free questions — no account needed</span>
+    <span class="auth-skip" onclick="startAsGuest()" style="display:block;margin-top:14px;padding:12px;background:var(--bg);border:2px dashed #4A6CF7;border-radius:12px;text-align:center;font-size:13px;font-weight:700;color:#4A6CF7;text-decoration:none;cursor:pointer;">🎯 Try 15 free questions — no account needed</span>
 
     <div style="margin-top:12px;font-size:10px;color:#94A3B8;">
       By continuing you agree to our <a href="https://www.finmentra.com/privacy" target="_blank" style="color:#4A6CF7;text-decoration:none;font-weight:700;">Terms & Privacy Policy</a>
@@ -7490,9 +7548,15 @@ function showEmailAuth(){
 
 // ── SOCIAL LOGIN ──
 async function signInWithGoogle(){
+  // On mobile apps use deep link so OS returns to app after OAuth
+  const isMobileApp = window.navigator.userAgent.includes('FinMentra') ||
+                      window.location.protocol === 'capacitor:' ||
+                      window.location.protocol === 'ionic:' ||
+                      /Android|iPhone|iPad/i.test(navigator.userAgent) && window.matchMedia('(display-mode: standalone)').matches;
+  const redirectTo = isMobileApp ? 'finmentra://auth/callback' : 'https://www.finmentra.com';
   const { error } = await _supa.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: 'https://www.finmentra.com/auth/callback' }
+    options: { redirectTo }
   });
   if(error) toast('Google login failed: ' + error.message);
 }
@@ -7500,7 +7564,7 @@ async function signInWithGoogle(){
 async function signInWithLinkedIn(){
   const { error } = await _supa.auth.signInWithOAuth({
     provider: 'linkedin_oidc',
-    options: { redirectTo: 'https://www.finmentra.com/auth/callback' }
+    options: { redirectTo: 'https://www.finmentra.com' }
   });
   if(error) toast('LinkedIn login failed: ' + error.message);
 }
@@ -7585,10 +7649,14 @@ async function loadUserProgress() {
   CH.challengeId = null; CH.role = null; CH.isOnlineMatch = false;
   CH.battleStarted = false; CH.myFinished = false;
 
-  // If onboarding is still showing — don't navigate, let onboarding complete its own flow
+  // If onboarding is still showing — only block navigation for brand new users
+  // Returning users (who have completed onboarding) should skip straight to home
   const onboardingEl = document.getElementById('onboarding');
   const onboardingVisible = onboardingEl && onboardingEl.style.display !== 'none';
-  if(onboardingVisible){ updateHUD(); return; }
+  const hasCompletedOnboarding = S.onboardingDone || S.mode || S.gender || (S.xp > 0);
+  if(onboardingVisible && !hasCompletedOnboarding){ updateHUD(); return; }
+  // Hide onboarding for returning users coming back from OAuth redirect
+  if(onboardingEl && hasCompletedOnboarding) onboardingEl.style.display='none';
 
   // Set display name from Google account
   const displayName = getDisplayName(_currentUser);
