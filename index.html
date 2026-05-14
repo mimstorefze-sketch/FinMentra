@@ -3535,8 +3535,9 @@ async function startSession(){
     let fresh = supaQs.filter(q => !recentIds.includes(q.q.substring(0,30)));
     if(fresh.length < 5) fresh = supaQs; // reset if too few fresh
     // Cap to remaining daily questions for free users
-    const remaining = isFree() ? Math.min(8, 15 - (S.dailyQCount||0)) : 8;
-    pool = fresh.sort(()=>Math.random()-.5).slice(0, remaining);
+    const remaining = isFree() ? Math.min(8, getDailyQRemaining()) : 8;
+    if(isFree() && remaining <= 0){ showDailyLimitPopup(); return; }
+    pool = fresh.sort(()=>Math.random()-.5).slice(0, Math.max(1, remaining));
     // Track recently seen
     S.recentQs = pool.map(q=>q.q.substring(0,30));
     console.log('✅ Arena: using',pool.length,'questions from Supabase for',category);
