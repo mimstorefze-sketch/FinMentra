@@ -21,7 +21,15 @@
 // Initialize Supabase immediately so it's available everywhere
 const SUPA_URL = 'https://vofxhqnipoywbbkmlxcp.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvZnhocW5pcG95d2Jia21seGNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5Nzk3ODUsImV4cCI6MjA5MzU1NTc4NX0.7UDDR3oNoiebxMQPR_jPHM8fOhhOzQ2MxpmR7TpBCHQ';
-const _supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storageKey: 'sb-vofxhqnipoywbbkmlxcp-auth-token',
+    storage: window.localStorage
+  }
+});
 console.log('✅ Supabase initialized');
 </script>
 <style>
@@ -383,7 +391,7 @@ a{color:inherit;text-decoration:none;}
 #screen-multiplayer > * { padding: 0 14px; }
 #screen-multiplayer #ch-lobby { padding: 12px 14px; }
 #screen-multiplayer #ch-waiting { padding: 12px 14px; }
-#screen-multiplayer #ch-battle { padding: 12px 14px; }
+#screen-multiplayer #ch-battle { padding: 12px 14px; padding-bottom: calc(90px + env(safe-area-inset-bottom)); overflow-y: auto; }
 #screen-multiplayer #ch-results { padding: 12px 14px; }
 #screen-multiplayer #ch-matchmaking { padding: 12px 14px; }
 #screen-multiplayer #ch-countdown { padding: 12px 14px; }
@@ -2819,6 +2827,8 @@ const S = {
   totalQ:0, totalCorrect:0,
   sessionQ:0, sessionCorrect:0,
   answered:false, qIndex:0, sessionQs:[],
+  dailyQCount:0, dailyQDate:'', // tracks daily questions for free users
+  challengeUsed:false, // free users get 1 challenge ever
   domain:'IFRS', currentStandard:null,
   bookmarks:new Set(),
   hearts:3, maxHearts:3,
@@ -3485,6 +3495,11 @@ async function fetchQuestionsFromSupabase(category, count){
 
 
 async function startSession(){
+  // Check daily limit for free users
+  if(!checkDailyQLimit()){
+    showDailyLimitPopup();
+    return;
+  }
   let pool = [];
   const qt=document.getElementById('q-text');
   const opts=document.getElementById('options');
@@ -3500,8 +3515,9 @@ async function startSession(){
     const recentIds = S.recentQs || [];
     let fresh = supaQs.filter(q => !recentIds.includes(q.q.substring(0,30)));
     if(fresh.length < 5) fresh = supaQs; // reset if too few fresh
-    // Shuffle and take 8
-    pool = fresh.sort(()=>Math.random()-.5).slice(0, 8);
+    // Cap to remaining daily questions for free users
+    const remaining = isFree() ? Math.min(8, 10 - (S.dailyQCount||0)) : 8;
+    pool = fresh.sort(()=>Math.random()-.5).slice(0, remaining);
     // Track recently seen
     S.recentQs = pool.map(q=>q.q.substring(0,30));
     console.log('✅ Arena: using',pool.length,'questions from Supabase for',category);
@@ -4120,15 +4136,54 @@ function isPro(){ return S.plan==='pro'||S.plan==='elite'; }
 function isElite(){ return S.plan==='elite'; }
 function isFree(){ return !S.plan||S.plan==='free'; }
 
+// Daily question limit for free users
+function checkDailyQLimit(){
+  if(!isFree()) return true; // paid users unlimited
+  const today = new Date().toDateString();
+  if(S.dailyQDate !== today){
+    S.dailyQDate = today;
+    S.dailyQCount = 0;
+    saveState();
+  }
+  return S.dailyQCount < 10;
+}
+
+function incrementDailyQ(){
+  if(!isFree()) return;
+  const today = new Date().toDateString();
+  if(S.dailyQDate !== today){
+    S.dailyQDate = today;
+    S.dailyQCount = 0;
+  }
+  S.dailyQCount++;
+  saveState();
+}
+
+function showDailyLimitPopup(){
+  const overlay = document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+  overlay.innerHTML='<div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;">'+
+    '<div style="font-size:48px;margin-bottom:12px;">🎯</div>'+
+    '<div style="font-size:18px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Daily Limit Reached</div>'+
+    '<div style="font-size:13px;color:#64748B;margin-bottom:6px;line-height:1.5;">You've used your <strong>10 free questions</strong> for today.</div>'+
+    '<div style="font-size:12px;color:#94A3B8;margin-bottom:24px;">Resets at midnight · Upgrade for unlimited access</div>'+
+    '<button onclick="this.closest('div[style*=fixed]').remove();showScreen('shop')" style="width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:var(--font-body);">Upgrade to Pro 🚀</button>'+
+    '<button onclick="this.closest('div[style*=fixed]').remove()" style="width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);">Come Back Tomorrow</button>'+
+    '</div>';
+  document.body.appendChild(overlay);
+}
+
 function checkPlanFeature(feature){
   const allowed = {
     multiplayer: ['pro','elite'],
+    onlineMatch: ['pro','elite'],
     allPath: ['elite'],
   };
   if(!allowed[feature]) return true;
   if(allowed[feature].includes(S.plan||'free')) return true;
   const msgs = {
-    multiplayer: 'Challenge & Multiplayer mode is available for Pro and Elite users only! 🚀',
+    multiplayer: 'Challenge mode is available for Pro and Elite users only! 🚀',
+    onlineMatch: 'Online Multiplayer is available for Pro and Elite users only! 🚀',
     allPath: 'All standards are unlocked for Elite users!',
   };
   const popup = document.createElement('div');
@@ -6907,6 +6962,9 @@ function saveState(){
       totalQ:S.totalQ,totalCorrect:S.totalCorrect,hearts:S.hearts,
       gender:S.gender,mode:S.mode,darkMode:S.darkMode,
       completedTopics:S.completedTopics||{},
+      dailyQCount:S.dailyQCount||0,
+      dailyQDate:S.dailyQDate||'',
+      challengeUsed:S.challengeUsed||false,
     }));
   }catch(e){}
   // Update Android widget with latest data
@@ -7492,6 +7550,14 @@ async function handleAuth() {
 }
 
 // ── LOAD USER PROGRESS FROM SUPABASE ──
+function getDisplayName(user) {
+  if(!user) return 'Scholar';
+  return user.user_metadata?.full_name ||
+         user.user_metadata?.name ||
+         user.email?.split('@')[0] ||
+         'Scholar';
+}
+
 async function loadUserProgress() {
   if(!_currentUser) return;
   try {
@@ -7523,6 +7589,12 @@ async function loadUserProgress() {
   const onboardingEl = document.getElementById('onboarding');
   const onboardingVisible = onboardingEl && onboardingEl.style.display !== 'none';
   if(onboardingVisible){ updateHUD(); return; }
+
+  // Set display name from Google account
+  const displayName = getDisplayName(_currentUser);
+  const nameEl = document.getElementById('home-mentor-name');
+  if(nameEl) nameEl.textContent = 'Welcome, ' + displayName;
+  S.username = displayName;
 
   // Navigate to correct home screen
   const safeStartScreen = S.mode === 'professional' ? 'pro-home' : 'home';
@@ -8507,13 +8579,16 @@ async function updateOnlineCount(){
       .select('*',{count:'exact',head:true})
       .gte('created_at',fiveMinAgo);
     const el = document.getElementById('online-count');
-    if(el) el.textContent = (count||0)+Math.floor(Math.random()*8+12); // show realistic number
+    const baseCount = 100; // base online users
+    const realCount = count || 0;
+    const displayed = baseCount + realCount;
+    if(el) el.textContent = displayed;
   }catch(e){}
 }
 
 // ── FIND ONLINE MATCH ──
 async function findOnlineMatch(){
-  if(!checkPlanFeature('multiplayer')) return;
+  if(!checkPlanFeature('onlineMatch')) return;
 
   // Full cleanup of any previous search
   clearInterval(MM.searchInterval);
