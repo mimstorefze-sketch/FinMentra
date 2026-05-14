@@ -3598,6 +3598,11 @@ function buildProgressDots(){
   }
 }
 function loadQuestion(){
+  // Hard stop for free users who hit daily limit
+  if(isFree() && !checkDailyQLimit()){
+    showDailyLimitPopup();
+    return;
+  }
   S.answered=false;
   S.currentBookmarked=false;
   buildProgressDots();
@@ -3771,6 +3776,12 @@ function goBack(){
   }
 }
 function nextQuestion(){
+  // Check daily limit before moving to next question
+  if(isFree() && !checkDailyQLimit()){
+    showDailyLimitPopup();
+    return;
+  }
+  if(isFree() && !checkDailyQLimit()){ showDailyLimitPopup(); return; }
   S.qIndex++;
   if(S.qIndex>=S.sessionQs.length){
     // Session complete — show results then loop back for more practice
@@ -3788,9 +3799,16 @@ function nextQuestion(){
       }
     }
     if(S.currentStandard && QB[S.currentStandard] && QB[S.currentStandard].length>0){
+      // Check daily limit before loading more questions
+      const remaining = getDailyQRemaining();
+      if(isFree() && remaining <= 0){
+        showDailyLimitPopup();
+        return;
+      }
       // Reload same topic with shuffled questions
       const pool=[...QB[S.currentStandard]].sort(()=>Math.random()-.5);
-      S.sessionQs=pool.slice(0,Math.min(8,pool.length));
+      const limit = isFree() ? Math.min(8, remaining) : 8;
+      S.sessionQs=pool.slice(0, limit);
       S.qIndex=0; S.sessionQ=0; S.sessionCorrect=0; S.answered=false;
       updateSessionBar();
       loadQuestion();
