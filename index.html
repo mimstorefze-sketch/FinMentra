@@ -3543,9 +3543,10 @@ async function startSession(){
       if(!t) return;
       if(t.cat === category) allLocal.push(...qs);
     });
+    const localRemaining = isFree() ? Math.min(8, getDailyQRemaining()) : 8;
     pool = allLocal.length > 0
-      ? allLocal.sort(()=>Math.random()-.5).slice(0,8)
-      : [...(QB_BY_DOMAIN[category]||QB_BY_DOMAIN['IFRS']||[])].sort(()=>Math.random()-.5).slice(0,8);
+      ? allLocal.sort(()=>Math.random()-.5).slice(0, localRemaining)
+      : [...(QB_BY_DOMAIN[category]||QB_BY_DOMAIN['IFRS']||[])].sort(()=>Math.random()-.5).slice(0, localRemaining);
   }
 
   if(pool.length === 0){
@@ -3817,6 +3818,17 @@ function loseHeart(){if(S.hearts>0){S.hearts--;updateHeartsDisplay();}if(S.heart
 function refillHearts(){if(S.coins>=30){S.coins-=30;S.hearts=S.maxHearts;updateHeartsDisplay();updateHUD();toast('Hearts refilled! ❤️❤️❤️');}else toast('Need 30 🪙 to refill.');}
 
 // ── HUD ──
+function updateDailyQDisplay(){
+  if(!isFree()) return;
+  const remaining = getDailyQRemaining();
+  const el = document.getElementById('daily-q-display');
+  if(el){
+    el.textContent = remaining > 0 ? remaining + ' questions left today' : 'Daily limit reached';
+    el.style.color = remaining > 3 ? 'var(--green)' : '#DC2626';
+    el.style.display = 'block';
+  }
+}
+
 function updateHUD(){
   const r=getRank(S.xp);const pct=Math.min(99,((S.xp-r.min)/(r.xpNext-r.min))*100);
   const set=(id,v)=>{const e=document.getElementById(id);if(e) e.textContent=v;};
@@ -4253,6 +4265,15 @@ S.aiUsedMonth = S.aiUsedMonth || 0;
 S.aiLastDate = S.aiLastDate || '';
 function getAIPlan(){ return AI_PLANS[S.aiPlan] || AI_PLANS.free; }
 // API key stored securely in Vercel environment variables — accessed via /api/ai proxy
+// Fix keyboard on Android WebView
+document.addEventListener('focusout', function(e){
+  if(window.FinMentra){
+    setTimeout(function(){
+      window.scrollTo(0,0);
+      document.body.scrollTop = 0;
+    }, 100);
+  }
+});
 function canUseAI(){
   const check = checkAILimit();
   return !check.blocked;
@@ -7023,6 +7044,7 @@ function saveState(){
       dailyQCount:S.dailyQCount||0,
       dailyQDate:S.dailyQDate||'',
       challengeUsed:S.challengeUsed||false,
+      onboardingDone:S.onboardingDone||false,
     }));
   }catch(e){}
   // Update Android widget with latest data
@@ -7660,7 +7682,7 @@ async function loadUserProgress() {
 
   // Check if this is a new user who needs onboarding
   const onboardingEl = document.getElementById('onboarding');
-  const hasCompletedOnboarding = S.onboardingDone === true || (S.gender && S.xp > 0);
+  const hasCompletedOnboarding = S.onboardingDone === true || S.gender || S.mode || S.xp > 0;
   
   if(!hasCompletedOnboarding){
     // New user — show onboarding
