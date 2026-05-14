@@ -3731,6 +3731,7 @@ function answerQ(idx,btn,q){
     }
   }
   S.totalQ++;S.sessionQ++;
+  incrementDailyQ(); // track daily usage for free users
   // Track today's questions for missions
   S.todayQ = (S.todayQ||0) + 1;
   // Add wrong answers to vault
@@ -3765,6 +3766,7 @@ function skipQuestion(){
   if(S.answered) return; // Already answered
   // Count skip as a miss (no XP, no penalty)
   S.sessionQ++;
+  incrementDailyQ(); // track daily usage
   updateSessionBar();
   toast('Question skipped — it will return later');
   // Move on
