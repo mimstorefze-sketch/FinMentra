@@ -4216,26 +4216,27 @@ function isElite(){ return S.plan==='elite'; }
 function isFree(){ return !S.plan||S.plan==='free'; }
 
 // Daily question limit for free users
+function getDailyQKey(){
+  return 'fm_dq_' + new Date().toDateString().replace(/ /g,'_');
+}
+
+function getDailyQRemaining(){
+  if(!isFree()) return 999;
+  const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
+  return Math.max(0, 10 - used);
+}
+
 function checkDailyQLimit(){
-  if(!isFree()) return true; // paid users unlimited
-  const today = new Date().toDateString();
-  if(S.dailyQDate !== today){
-    S.dailyQDate = today;
-    S.dailyQCount = 0;
-    saveState();
-  }
-  return S.dailyQCount < 15;
+  if(!isFree()) return true;
+  return getDailyQRemaining() > 0;
 }
 
 function incrementDailyQ(){
   if(!isFree()) return;
-  const today = new Date().toDateString();
-  if(S.dailyQDate !== today){
-    S.dailyQDate = today;
-    S.dailyQCount = 0;
-  }
-  S.dailyQCount++;
-  saveState();
+  const key = getDailyQKey();
+  const used = parseInt(localStorage.getItem(key) || '0');
+  localStorage.setItem(key, String(used + 1));
+  S.dailyQCount = used + 1;
 }
 
 function showDailyLimitPopup(){
