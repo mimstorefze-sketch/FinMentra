@@ -4225,12 +4225,24 @@ function getDailyQKey(){
 function getDailyQRemaining(){
   if(!isFree()) return 999;
   const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
-  return Math.max(0, 10 - used);
+  return Math.max(0, 15 - used); // 15 total: 10 + 5 bonus
+}
+
+function getDailyQUsed(){
+  return parseInt(localStorage.getItem(getDailyQKey()) || '0');
 }
 
 function checkDailyQLimit(){
   if(!isFree()) return true;
-  return getDailyQRemaining() > 0;
+  const used = getDailyQUsed();
+  if(used >= 15) return false; // hard stop at 15
+  if(used >= 10){
+    // Check if bonus was unlocked today
+    const bonusKey = 'fm_bonus_used_' + new Date().toDateString().replace(/ /g,'_');
+    const bonusUsed = localStorage.getItem(bonusKey);
+    if(!bonusUsed) return false; // show popup to unlock bonus
+  }
+  return true;
 }
 
 function incrementDailyQ(){
@@ -7575,8 +7587,8 @@ function showRegisterPopup(){
   const stats = document.getElementById('reg-popup-stats');
   const skipBtn = document.getElementById('reg-popup-skip-btn');
   if(stats) stats.textContent = 'You earned ' + S.xp + ' XP • ' + S.totalCorrect + ' correct answers';
-  // If they already used the "5 more" bonus — hide skip button
-  if(skipBtn) skipBtn.style.display = _guestBonusUsed ? 'none' : 'block';
+  // Hide skip button if daily limit reached or bonus already used
+  if(skipBtn) skipBtn.style.display = (_guestBonusUsed || (isFree() && getDailyQRemaining() <= 0)) ? 'none' : 'block';
   if(popup) popup.classList.add('show');
 }
 
@@ -7586,12 +7598,8 @@ function closeRegPopup(){
 }
 
 function continueAsGuest(){
-  // Give them 5 more questions then force register
   _guestBonusUsed = true;
-  _guestQCount = 0;
-  localStorage.setItem('fm_guest_threshold', '5');
   closeRegPopup();
-  toast('5 more questions — then save your progress! 🎯');
 }
 
 function showEmailAuth(){
