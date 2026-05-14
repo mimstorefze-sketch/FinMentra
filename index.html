@@ -2360,6 +2360,9 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   </div>
 
   <button class="btn btn-block" style="background:var(--navy);color:#fff;margin-top:8px;" onclick="logoutUser()">🚪 Logout</button>
+
+  <!-- Version footer — tap 5× to toggle Pro test mode -->
+  <div onclick="_devTap()" style="text-align:center;margin-top:18px;padding-bottom:8px;font-size:10px;color:var(--muted);cursor:default;user-select:none;">FinMentra v1.0 · Built with ❤️ for finance learners</div>
 </div>
 
 <!-- ══ BOOKMARKS ══ -->
@@ -3284,9 +3287,16 @@ function renderTopics(){
     const catIdx = catCounts[t.cat];
     catCounts[t.cat]++;
 
-    // Determine if locked
+    // Determine if locked for free users
     let locked = false;
-    if(isFree() && catIdx >= 3) locked = true;
+    if(isFree()){
+      // Free: only first 3 topics in IFRS category are open, everything else locked
+      if(t.cat !== 'IFRS') {
+        locked = true;
+      } else {
+        locked = catIdx >= 3;
+      }
+    }
     // Pro/Elite: all open
 
     const domainIcon={'IFRS':'📜','IAS':'🏛️','ISA':'🔍','Costing':'⚙️','Tax':'📋','FM':'📈'}[t.cat]||'📚';
@@ -3297,7 +3307,7 @@ function renderTopics(){
     btn.style.opacity = locked ? '0.6' : '1';
 
     if(locked){
-      btn.onclick = ()=>checkPlanFeature('multiplayer');
+      btn.onclick = ()=>{ toast('🔒 Upgrade to Pro to unlock all topics'); setTimeout(()=>showScreen('profile'),900); };
     } else {
       btn.onclick = ()=>startTopicPractice(t.num);
     }
@@ -4116,6 +4126,32 @@ function checkSecretBadge(){
 }
 function showBadgeToast(msg){const t=document.getElementById('badgeToast');const m=document.getElementById('badgeMsg');if(!t||!m) return;m.textContent=msg;t.classList.add('show');playSound('notification');clearTimeout(badgeTimer);badgeTimer=setTimeout(()=>t.classList.remove('show'),3500);}
 function toast(msg){let host=document.querySelector('.toast-host');if(!host){host=document.createElement('div');host.className='toast-host';document.body.appendChild(host);}const t=document.createElement('div');t.className='toast';t.textContent=msg;host.appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transition='.3s';},2200);setTimeout(()=>t.remove(),2700);}
+
+// ── DEV / TEST MODE ── (secret: type "GOPRO" in console, or tap version 5×)
+let _devTaps=0,_devTimer=null;
+function _devTap(){
+  _devTaps++;
+  clearTimeout(_devTimer);
+  _devTimer=setTimeout(()=>_devTaps=0,2000);
+  if(_devTaps>=5){ _devTaps=0; _toggleTestPro(); }
+}
+function _toggleTestPro(){
+  const isPro = S.plan==='pro'||S.tier==='pro';
+  if(isPro){
+    S.plan='free'; S.tier='free'; S.aiPlan='free';
+    try{localStorage.removeItem('fm_tier');}catch(e){}
+    saveState(); updateHUD(); renderTopics && renderTopics();
+    toast('🔓 DEV: Switched to FREE mode');
+  } else {
+    S.plan='pro'; S.tier='pro'; S.aiPlan='pro'; S.aiUsedMonth=0;
+    try{localStorage.setItem('fm_tier','pro');}catch(e){}
+    saveState(); updateHUD(); renderTopics && renderTopics();
+    spawnConfetti();
+    toast('🚀 DEV: Switched to PRO mode — all features unlocked');
+  }
+}
+// Also expose in console: type _toggleTestPro() anytime
+
 const PREV_RANK_IDX={idx:0};
 function checkLevelUp(){const r=getRank(S.xp);const idx=RANKS.indexOf(r);if(idx>PREV_RANK_IDX.idx){PREV_RANK_IDX.idx=idx;document.getElementById('lu-emblem').textContent=r.emblem;document.getElementById('lu-title').textContent=r.emblem+' '+r.title;document.getElementById('levelup-overlay').classList.add('show');spawnConfetti();setCharMood('levelup');}}
 function closeLevelUp(){document.getElementById('levelup-overlay').classList.remove('show');}
@@ -7512,9 +7548,15 @@ function showEmailAuth(){
 
 // ── SOCIAL LOGIN ──
 async function signInWithGoogle(){
+  // On mobile apps use deep link so OS returns to app after OAuth
+  const isMobileApp = window.navigator.userAgent.includes('FinMentra') ||
+                      window.location.protocol === 'capacitor:' ||
+                      window.location.protocol === 'ionic:' ||
+                      /Android|iPhone|iPad/i.test(navigator.userAgent) && window.matchMedia('(display-mode: standalone)').matches;
+  const redirectTo = isMobileApp ? 'finmentra://auth/callback' : 'https://www.finmentra.com';
   const { error } = await _supa.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: 'https://www.finmentra.com' }
+    options: { redirectTo }
   });
   if(error) toast('Google login failed: ' + error.message);
 }
