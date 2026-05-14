@@ -7727,6 +7727,27 @@ async function doLogout(){
 
 // ── CHECK IF ALREADY LOGGED IN (returning user) ──
 (async function checkSession() {
+  // Handle token in URL hash (Supabase redirects here with token)
+  if(window.location.hash && window.location.hash.includes('access_token')){
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const refreshToken = hashParams.get('refresh_token');
+    if(accessToken){
+      const storageKey = 'sb-vofxhqnipoywbbkmlxcp-auth-token';
+      const sessionData = {
+        access_token: accessToken,
+        refresh_token: refreshToken || '',
+        token_type: 'bearer',
+        expires_in: parseInt(hashParams.get('expires_in') || '3600'),
+        expires_at: parseInt(hashParams.get('expires_at') || (Math.floor(Date.now()/1000) + 3600))
+      };
+      localStorage.setItem(storageKey, JSON.stringify(sessionData));
+      window.history.replaceState({}, document.title, window.location.pathname);
+      window.location.reload();
+      return;
+    }
+  }
+
   const { data } = await _supa.auth.getSession();
   if(data.session){
     _currentUser = data.session.user;
