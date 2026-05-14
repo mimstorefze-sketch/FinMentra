@@ -7564,7 +7564,7 @@ async function signInWithGoogle(){
 async function signInWithLinkedIn(){
   const { error } = await _supa.auth.signInWithOAuth({
     provider: 'linkedin_oidc',
-    options: { redirectTo: 'https://www.finmentra.com/auth/callback' }
+    options: { redirectTo: 'https://www.finmentra.com' }
   });
   if(error) toast('LinkedIn login failed: ' + error.message);
 }
@@ -7649,14 +7649,18 @@ async function loadUserProgress() {
   CH.challengeId = null; CH.role = null; CH.isOnlineMatch = false;
   CH.battleStarted = false; CH.myFinished = false;
 
-  // If onboarding is still showing — only block navigation for brand new users
-  // Returning users (who have completed onboarding) should skip straight to home
+  // Check if this is a new user who needs onboarding
   const onboardingEl = document.getElementById('onboarding');
-  const onboardingVisible = onboardingEl && onboardingEl.style.display !== 'none';
-  const hasCompletedOnboarding = S.onboardingDone || S.mode || S.gender || (S.xp > 0);
-  if(onboardingVisible && !hasCompletedOnboarding){ updateHUD(); return; }
-  // Hide onboarding for returning users coming back from OAuth redirect
-  if(onboardingEl && hasCompletedOnboarding) onboardingEl.style.display='none';
+  const hasCompletedOnboarding = S.onboardingDone === true || (S.gender && S.xp > 0);
+  
+  if(!hasCompletedOnboarding){
+    // New user — show onboarding
+    if(onboardingEl) onboardingEl.style.display = 'flex';
+    updateHUD();
+    return;
+  }
+  // Returning user — hide onboarding
+  if(onboardingEl) onboardingEl.style.display = 'none';
 
   // Set display name from Google account
   const displayName = getDisplayName(_currentUser);
