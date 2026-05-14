@@ -12,78 +12,79 @@
     .logo span{color:#F59E0B;}
     .spinner{width:44px;height:44px;border:4px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;}
     @keyframes spin{to{transform:rotate(360deg);}}
-    .msg{color:rgba(255,255,255,0.8);font-size:15px;font-weight:500;text-align:center;}
-    .error{color:#FCA5A5;font-size:13px;text-align:center;max-width:300px;line-height:1.5;display:none;}
-    .btn{display:none;padding:12px 28px;background:#F59E0B;color:#0A1F6E;border:none;border-radius:999px;font-size:14px;font-weight:700;cursor:pointer;}
+    .msg{color:rgba(255,255,255,0.8);font-size:15px;font-weight:500;text-align:center;max-width:300px;line-height:1.6;}
+    .btn{padding:12px 28px;background:#F59E0B;color:#0A1F6E;border:none;border-radius:999px;font-size:14px;font-weight:700;cursor:pointer;display:none;}
   </style>
 </head>
 <body>
   <div class="logo">Fin<span>Mentra</span></div>
   <div class="spinner" id="spinner"></div>
   <div class="msg" id="msg">Signing you in...</div>
-  <div class="error" id="error"></div>
-  <button class="btn" id="btn" onclick="window.location.replace('https://www.finmentra.com')">Go to App</button>
+  <button class="btn" id="btn" onclick="window.location.replace('https://www.finmentra.com')">Open FinMentra</button>
   <script>
     var SUPA_URL='https://vofxhqnipoywbbkmlxcp.supabase.co';
     var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvZnhocW5pcG95d2Jia21seGNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5Nzk3ODUsImV4cCI6MjA5MzU1NTc4NX0.7UDDR3oNoiebxMQPR_jPHM8fOhhOzQ2MxpmR7TpBCHQ';
     var STORAGE_KEY='sb-vofxhqnipoywbbkmlxcp-auth-token';
 
-    function redirectToApp(){
-      document.getElementById('msg').textContent='Signed in! Redirecting...';
+    function done(){
       document.getElementById('spinner').style.display='none';
-      setTimeout(function(){ window.location.replace('https://www.finmentra.com'); },600);
+      document.getElementById('msg').textContent='Signed in! Opening app...';
+      document.getElementById('btn').style.display='block';
+      setTimeout(function(){ window.location.replace('https://www.finmentra.com'); },1000);
     }
 
-    function showError(msg){
+    function fail(msg){
       document.getElementById('spinner').style.display='none';
-      document.getElementById('error').style.display='block';
-      document.getElementById('error').textContent=msg;
+      document.getElementById('msg').textContent=msg||'Login failed. Please try again.';
       document.getElementById('btn').style.display='block';
     }
 
+    // Initialize Supabase with PKCE support
     var _supa=supabase.createClient(SUPA_URL,SUPA_KEY,{
-      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:STORAGE_KEY,storage:window.localStorage}
-    });
-
-    // Listen for Supabase to process the URL automatically
-    _supa.auth.onAuthStateChange(function(event,session){
-      if((event==='SIGNED_IN'||event==='TOKEN_REFRESHED')&&session){
-        redirectToApp();
+      auth:{
+        persistSession:true,
+        autoRefreshToken:true,
+        detectSessionInUrl:true,
+        flowType:'pkce',
+        storageKey:STORAGE_KEY,
+        storage:window.localStorage
       }
     });
 
-    // Fallback after 2 seconds
-    setTimeout(function(){
-      _supa.auth.getSession().then(function(result){
-        if(result.data&&result.data.session){
-          redirectToApp();
-          return;
-        }
-        // Manual hash extraction fallback
-        var hash=window.location.hash.substring(1);
-        var params=new URLSearchParams(hash);
-        var query=new URLSearchParams(window.location.search);
-        var accessToken=params.get('access_token')||query.get('access_token');
-        var error=params.get('error')||query.get('error');
+    // Supabase automatically exchanges the code in the URL
+    // onAuthStateChange fires when it's done
+    var redirected=false;
+    _supa.auth.onAuthStateChange(function(event,session){
+      if(redirected) return;
+      if(session && (event==='SIGNED_IN'||event==='INITIAL_SESSION'||event==='TOKEN_REFRESHED')){
+        redirected=true;
+        done();
+      }
+    });
 
-        if(error){
-          showError('Login failed: '+(params.get('error_description')||error));
-        } else if(accessToken){
-          var sessionData={
-            access_token:accessToken,
-            refresh_token:params.get('refresh_token')||'',
-            token_type:'bearer',
-            expires_in:parseInt(params.get('expires_in')||'3600'),
-            expires_at:parseInt(params.get('expires_at')||(Math.floor(Date.now()/1000)+3600))
-          };
-          localStorage.setItem(STORAGE_KEY,JSON.stringify(sessionData));
-          redirectToApp();
-        } else {
-          // No token — just go home, main app will check session
-          window.location.replace('https://www.finmentra.com');
+    // Also check immediately
+    _supa.auth.getSession().then(function(r){
+      if(redirected) return;
+      if(r.data&&r.data.session){
+        redirected=true;
+        done();
+        return;
+      }
+      // If no session after 4 seconds, show button
+      setTimeout(function(){
+        if(!redirected){
+          // Check one more time
+          _supa.auth.getSession().then(function(r2){
+            if(r2.data&&r2.data.session){
+              redirected=true;
+              done();
+            } else {
+              fail('Taking longer than expected. Tap below to continue.');
+            }
+          });
         }
-      });
-    },2000);
+      },4000);
+    });
   </script>
 </body>
 </html>
