@@ -2041,37 +2041,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <button class="toggle" id="dark-toggle" onclick="toggleDarkMode()"></button>
   </div>
   <div class="sec-label">Your Plan</div>
-  <!-- FREE PLAN -->
-  <div class="card" style="border:1.5px solid var(--border);position:relative;">
-    <div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--navy);">Free</div>
-    <div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--navy);margin:6px 0;">$0<span style="font-size:13px;color:var(--steel);font-weight:400;">/month</span></div>
-    <ul style="list-style:none;font-size:12px;display:flex;flex-direction:column;gap:5px;margin-bottom:12px;">
-      <li>✓ 15 questions/day</li>
-      <li>✓ 5 AI questions/day <span style="color:var(--muted);font-size:10px;">(30/month cap)</span></li>
-      <li>✓ Basic progress tracking</li>
-      <li style="color:var(--muted);">✗ Pro tools</li>
-      <li style="color:var(--muted);">✗ CPD certificates</li>
-    </ul>
-    <div style="position:absolute;top:12px;right:12px;font-size:9px;padding:3px 8px;border-radius:999px;background:var(--green-l);color:var(--green);font-weight:700;">CURRENT</div>
-    <button class="btn btn-secondary" style="width:100%;" onclick="toast('You are on the Free plan')">Current plan</button>
-  </div>
-  <!-- PRO PLAN -->
-  <div class="card premium" style="position:relative;">
-    <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),#FCD34D);color:var(--navy);font-size:9px;font-weight:800;padding:3px 12px;border-radius:999px;letter-spacing:.1em;">MOST POPULAR</div>
-    <div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--navy);margin-top:8px;">Pro</div>
-    <div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--navy);margin:6px 0;">$5<span style="font-size:13px;color:var(--steel);font-weight:400;">/month</span></div>
-    <div style="font-size:10px;color:var(--green);font-weight:700;margin-bottom:8px;">7-day free trial included</div>
-    <ul style="list-style:none;font-size:12px;display:flex;flex-direction:column;gap:5px;margin-bottom:12px;">
-      <li>✓ Unlimited questions</li>
-      <li>✓ <strong>50 AI questions/month</strong></li>
-      <li>✓ All Pro tools (FS Builder, JE, CPD)</li>
-      <li>✓ CPD certificates</li>
-      <li>✓ Study buddy matching</li>
-      <li>✓ Multiplayer & challenge mode</li>
-      <li>✓ AI follow-up threads</li>
-    </ul>
-    <button class="btn btn-primary" style="width:100%;background:linear-gradient(135deg,var(--gold),#FCD34D);color:var(--navy);" onclick="startProTrial()">Start 7-day free trial →</button>
-  </div>
+  <div id="plan-cards-container"><!-- rendered by updatePlanUI() --></div>
   <!-- ELITE WAITLIST -->
   <div class="card" style="border:2px dashed var(--purple);position:relative;background:var(--purple-l);">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
@@ -3127,6 +3097,7 @@ function showScreen(id){
   if(id==='home'){ updateMissions(); loadLeaderboard(); renderStreakHeatmap(); }
   if(id==='topics'){ if(typeof renderTopics==='function') renderTopics(); }
   if(id==='vault'){ renderVault(); }
+  if(id==='profile'){ if(typeof updatePlanUI==='function') updatePlanUI(); }
   // Fix: shell padding for multiplayer/challenge screen
   const shell = document.querySelector('.shell');
   if(id==='multiplayer'){
@@ -4233,6 +4204,59 @@ const AI_PLANS = {
 // AI usage tracking
 S.aiPlan = S.aiPlan || 'free';
 S.plan = S.plan || 'free'; // free, pro, elite
+
+function updatePlanUI(){
+  const container = document.getElementById('plan-cards-container');
+  if(!container) return;
+  const pro = isPro();
+  const free = isFree();
+
+  const freeBadge = free
+    ? '<div style="position:absolute;top:12px;right:12px;font-size:9px;padding:3px 8px;border-radius:999px;background:var(--green-l);color:var(--green);font-weight:700;">✓ CURRENT PLAN</div>'
+    : '';
+  const proBadge = pro
+    ? '<div style="position:absolute;top:12px;right:12px;font-size:9px;padding:3px 8px;border-radius:999px;background:var(--green-l);color:var(--green);font-weight:700;">✓ ACTIVE</div>'
+    : '<div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),#FCD34D);color:var(--navy);font-size:9px;font-weight:800;padding:3px 12px;border-radius:999px;letter-spacing:.1em;">MOST POPULAR</div>';
+  const proBtn = pro
+    ? '<button class="btn btn-secondary" style="width:100%;background:var(--green-l);color:var(--green);border:1.5px solid var(--green);font-weight:800;" onclick="toast('You are subscribed to Pro ✓')">✓ Pro Plan Active</button>'
+    : '<button class="btn btn-primary" style="width:100%;background:linear-gradient(135deg,var(--gold),#FCD34D);color:var(--navy);" onclick="startProTrial()">Start 7-day free trial →</button>';
+  const proSubtitle = pro
+    ? '<div style="font-size:10px;color:var(--green);font-weight:700;margin-bottom:8px;">✓ Your plan is active</div>'
+    : '<div style="font-size:10px;color:var(--green);font-weight:700;margin-bottom:8px;">7-day free trial included</div>';
+
+  container.innerHTML = `
+  <!-- FREE PLAN -->
+  <div class="card" style="border:1.5px solid ${free?'var(--navy)':'var(--border)'};position:relative;margin-bottom:12px;">
+    ${freeBadge}
+    <div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--navy);">Free</div>
+    <div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--navy);margin:6px 0;">$0<span style="font-size:13px;color:var(--steel);font-weight:400;">/month</span></div>
+    <ul style="list-style:none;font-size:12px;display:flex;flex-direction:column;gap:5px;margin-bottom:12px;">
+      <li>✓ 15 questions/day</li>
+      <li>✓ 5 AI questions/day <span style="color:var(--muted);font-size:10px;">(30/month cap)</span></li>
+      <li>✓ Basic progress tracking</li>
+      <li style="color:var(--muted);">✗ Pro tools</li>
+      <li style="color:var(--muted);">✗ CPD certificates</li>
+    </ul>
+    ${free ? '<button class="btn btn-secondary" style="width:100%;" onclick="toast('You are on the Free plan')">Current plan</button>' : '<button class="btn btn-secondary" style="width:100%;opacity:.5;cursor:default;">Free plan</button>'}
+  </div>
+  <!-- PRO PLAN -->
+  <div class="card premium" style="position:relative;border:${pro?'2px solid var(--green)':'1px solid var(--gold)'};">
+    ${proBadge}
+    <div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--navy);margin-top:8px;">Pro</div>
+    <div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--navy);margin:6px 0;">$5<span style="font-size:13px;color:var(--steel);font-weight:400;">/month</span></div>
+    ${proSubtitle}
+    <ul style="list-style:none;font-size:12px;display:flex;flex-direction:column;gap:5px;margin-bottom:12px;">
+      <li>✓ Unlimited questions</li>
+      <li>✓ <strong>50 AI questions/month</strong></li>
+      <li>✓ All Pro tools (FS Builder, JE, CPD)</li>
+      <li>✓ CPD certificates</li>
+      <li>✓ Study buddy matching</li>
+      <li>✓ Multiplayer & challenge mode</li>
+      <li>✓ AI follow-up threads</li>
+    </ul>
+    ${proBtn}
+  </div>`;
+}
 
 function showAuthPopup(){
   // Show the login/register overlay
@@ -6547,6 +6571,7 @@ function startProTrial(){
   updateHUD();
   if(typeof renderTopics === 'function') renderTopics();
   if(typeof updateAIBanner === 'function') updateAIBanner();
+  if(typeof updatePlanUI === 'function') updatePlanUI();
 }
 
 // ── DOMAIN ACCENT COLORS on practice screen ──
@@ -7790,6 +7815,8 @@ async function loadUserProgress() {
       }
       updateHUD();
       if(typeof renderTopics === 'function') renderTopics(); // refresh lock state
+      if(typeof updatePlanUI === 'function') updatePlanUI();
+      if(typeof updateAIBanner === 'function') updateAIBanner();
     } else {
       await _supa.from('user_progress').insert({
         user_id: _currentUser.id,
@@ -7912,8 +7939,20 @@ async function doLogout(){
   if(data.session){
     _currentUser = data.session.user;
     _isGuest = false;
+    // Demo account: set pro immediately before async Supabase load
+    if(_currentUser && _currentUser.email === 'demo@finmentra.com'){
+      S.plan='pro'; S.tier='pro'; S.aiPlan='pro';
+      try{ localStorage.setItem('fm_tier','pro'); }catch(e){}
+    } else {
+      // Restore plan from localStorage while Supabase loads (prevents flash of free)
+      try{
+        const lt = localStorage.getItem('fm_tier');
+        if(lt && lt !== 'free'){ S.plan=lt; S.tier=lt; S.aiPlan=lt; }
+      }catch(e){}
+    }
     document.getElementById('auth-screen').style.display = 'none';
     await loadUserProgress();
+    updatePlanUI();
     // Show daily reward if not claimed today
     setTimeout(checkAndShowDailyReward, 1000);
   }
@@ -7922,9 +7961,15 @@ async function doLogout(){
     if(event === 'SIGNED_IN' && session){
       _currentUser = session.user;
       _isGuest = false;
+      // Demo account: set pro immediately before async load
+      if(_currentUser && _currentUser.email === 'demo@finmentra.com'){
+        S.plan='pro'; S.tier='pro'; S.aiPlan='pro';
+        try{ localStorage.setItem('fm_tier','pro'); }catch(e){}
+      }
       document.getElementById('auth-screen').style.display = 'none';
       closeRegPopup();
       await loadUserProgress();
+      updatePlanUI();
       toast('Welcome to FinMentra! 🎉');
     }
   });
