@@ -3900,11 +3900,23 @@ function selectMentor(g){S.gender=g;document.getElementById('ob-male').classList
 function selectObMode(mode){S.mode=mode;document.getElementById('ob-student-btn').classList.toggle('active',mode==='student');document.getElementById('ob-pro-btn').classList.toggle('active',mode==='professional');}
 function closeOnboarding(){
   S.onboardingDone = true;
+  if(!S.mode) S.mode = 'student';
+  if(!S.gender) S.gender = 'male';
   document.getElementById('onboarding').style.display='none';
   saveState();
+  if(typeof saveUserProgress === 'function') saveUserProgress();
   buildMentor();updateMentorName();
   document.getElementById('hw-greeting').textContent=getMoodGreeting();
   applyModeUI(S.mode);
+  // Navigate to correct home screen
+  const homeId = S.mode === 'professional' ? 'screen-pro-home' : 'screen-home';
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const homeEl = document.getElementById(homeId);
+  if(homeEl) homeEl.classList.add('active');
+  S.screen = S.mode === 'professional' ? 'pro-home' : 'home';
+  renderBottomNav();
+  updateHUD();
+  updateMissions();
   // Only show daily reward if not already claimed today
   checkAndShowDailyReward();
 }
@@ -7833,15 +7845,21 @@ async function loadUserProgress() {
 
   // Check if this is a new user who needs onboarding
   const onboardingEl = document.getElementById('onboarding');
-  const hasCompletedOnboarding = S.onboardingDone === true || S.gender || S.mode || S.xp > 0;
+  // Demo account and any user with Supabase data: always skip onboarding
+  const isDemoAccount = _currentUser && _currentUser.email === 'demo@finmentra.com';
+  const hasSupabaseData = !!(data && (data.xp > 0 || data.total_questions > 0));
+  const hasCompletedOnboarding = isDemoAccount || hasSupabaseData || S.onboardingDone === true || S.gender || S.mode || S.xp > 0;
   
   if(!hasCompletedOnboarding){
-    // New user — show onboarding
+    // Brand new user — show onboarding
     if(onboardingEl) onboardingEl.style.display = 'flex';
     updateHUD();
     return;
   }
-  // Returning user — hide onboarding
+  // Returning user — hide onboarding, set defaults if missing
+  if(!S.mode) S.mode = 'student';
+  if(!S.gender) S.gender = 'male';
+  S.onboardingDone = true;
   if(onboardingEl) onboardingEl.style.display = 'none';
 
   // Set display name from Google account
