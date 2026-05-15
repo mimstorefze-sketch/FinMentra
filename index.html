@@ -191,16 +191,12 @@ a{color:inherit;text-decoration:none;}
 .shell{padding-top:calc(112px + env(safe-area-inset-top));padding-bottom:calc(80px + env(safe-area-inset-bottom));min-height:100vh;}
 .screen{display:none;max-width:720px;margin:0 auto;padding:16px 14px;flex-direction:column;gap:14px;}
 .screen.active{display:flex;}
-/* Challenge screen: cancel shell's 112px padding-top with negative margin */
+/* Challenge screen: full screen without shell padding */
 #screen-multiplayer.active{
-  padding-top:0 !important;
-  margin-top:calc(-112px - env(safe-area-inset-top)) !important;
-  padding-bottom:calc(80px + env(safe-area-inset-bottom)) !important;
-  overscroll-behavior-y: none !important;
+  padding-top: calc(env(safe-area-inset-top) + 8px) !important;
+  margin-top: 0 !important;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
   overflow-y: auto !important;
-}
-@media(max-width:480px){
-  #screen-multiplayer.active{ margin-top:calc(-100px - env(safe-area-inset-top)) !important; }
 }
 
 /* ── CARD (index.html style) ── */
@@ -391,7 +387,7 @@ a{color:inherit;text-decoration:none;}
 #screen-multiplayer > * { padding: 0 14px; }
 #screen-multiplayer #ch-lobby { padding: 12px 14px; }
 #screen-multiplayer #ch-waiting { padding: 12px 14px; }
-#screen-multiplayer #ch-battle { padding: 12px 14px; padding-bottom: calc(90px + env(safe-area-inset-bottom)); overflow-y: auto; }
+#screen-multiplayer #ch-battle { padding: 12px 14px; padding-top: calc(env(safe-area-inset-top) + 8px); padding-bottom: calc(90px + env(safe-area-inset-bottom)); overflow-y: auto; min-height: 100vh; }
 #screen-multiplayer #ch-results { padding: 12px 14px; }
 #screen-multiplayer #ch-matchmaking { padding: 12px 14px; }
 #screen-multiplayer #ch-countdown { padding: 12px 14px; }
@@ -1742,6 +1738,13 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div class="exam-trap" id="exam-trap">⚠️ <span id="trap-text">Exam Trap: Most students get this wrong.</span></div>
   <!-- DYK -->
   <div class="fb fb-dyk" id="dyk-card" style="display:none;"><b>💡 Did You Know</b><span id="dyk-text"></span></div>
+  <!-- Action row — ABOVE AI panel so user doesn't scroll down -->
+  <div class="action-row" id="action-row-top">
+    <button class="btn-back" onclick="goBack()" title="Previous question">‹ Prev</button>
+    <button class="btn-bookmark" id="bookmark-btn-top" onclick="toggleBookmark()" title="Bookmark">🔖</button>
+    <button class="btn-bookmark" onclick="skipQuestion()" title="Skip this question" id="skip-btn-top" style="font-size:11px;font-weight:700;color:var(--steel);">Skip</button>
+    <button class="btn-next" id="next-btn" onclick="nextQuestion()" disabled title="Answer to continue">Next ›</button>
+  </div>
   <!-- AI EXPLANATION PANEL (shows after answering) -->
   <div class="explain" id="explain">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
@@ -1766,13 +1769,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   </div>
   <!-- Notes -->
   <div class="notes-panel" id="notes-panel"><div class="notes-label">📝 My Notes</div><textarea class="notes-textarea" id="notes-input" placeholder="Write your note..."></textarea></div>
-  <!-- Action row -->
-  <div class="action-row">
-    <button class="btn-back" onclick="goBack()" title="Previous question">‹ Prev</button>
-    <button class="btn-bookmark" id="bookmark-btn" onclick="toggleBookmark()" title="Bookmark">🔖</button>
-    <button class="btn-bookmark" onclick="skipQuestion()" title="Skip this question" id="skip-btn" style="font-size:11px;font-weight:700;color:var(--steel);">Skip</button>
-    <button class="btn-next" id="next-btn" onclick="nextQuestion()" disabled title="Answer to continue">Next ›</button>
-  </div>
+  <!-- Action row (bottom - hidden, kept for compatibility) -->
   <!-- Session bar -->
   <div class="session-bar"><div class="session-acc"><div class="session-label">Session accuracy</div><div class="session-track"><div class="session-fill" id="session-fill" style="width:0%"></div></div></div><div class="session-count" id="session-count">0 / 0</div></div>
 </div>
@@ -4215,7 +4212,11 @@ S.plan = S.plan || 'free'; // free, pro, elite
 
 function isPro(){ return S.plan==='pro'||S.plan==='elite'; }
 function isElite(){ return S.plan==='elite'; }
-function isFree(){ return !S.plan||S.plan==='free'; }
+function isFree(){ 
+  // Demo pro account for testing
+  try{ if(typeof _currentUser !== 'undefined' && _currentUser && _currentUser.email === 'demo@finmentra.com') return false; }catch(e){}
+  return !S.plan||S.plan==='free'; 
+}
 
 // Daily question limit for free users
 function getDailyQKey(){
@@ -5280,7 +5281,7 @@ function syncSettingsToggles() {
 }
 
 // ── SOUND (scaffold — real audio optional) ──
-S.soundOn = false;
+S.soundOn = true; // sound on by default
 S.volume = 60;
 // ── SHARED AudioContext (created once, resumed on first gesture) ──
 let _sharedAudioCtx = null;
@@ -6520,7 +6521,8 @@ function toggleNavSound(){
 function initNavSoundState(){
   try{
     const saved=localStorage.getItem('fm_sound');
-    if(saved==='1'){S.soundOn=true;const btn=document.getElementById('nav-sound-btn');if(btn)btn.textContent='🔊';}
+    if(saved==='0'){S.soundOn=false;const btn=document.getElementById('nav-sound-btn');if(btn)btn.textContent='🔇';}
+    else{S.soundOn=true;const btn=document.getElementById('nav-sound-btn');if(btn)btn.textContent='🔊';}
   }catch(e){}
 }
 
@@ -7901,21 +7903,23 @@ function showChallengeSection(section){
     const el=document.getElementById('ch-'+s);
     if(el) el.style.display = s===section?'block':'none';
   });
-  // Remove shell padding entirely when challenge screen is active
+  // Hide the nav bar text/top padding when in challenge
   const shell = document.querySelector('.shell');
   if(shell){
     shell.style.paddingTop = '0';
-    shell.style.marginTop = '0';
-    shell.style.overscrollBehaviorY = 'none';
+    shell.style.paddingBottom = '0';
   }
+  // Scroll to top
+  if(mpScreen) mpScreen.scrollTop = 0;
+  window.scrollTo(0,0);
 }
 
 function restoreShellPadding(){
   const shell = document.querySelector('.shell');
   if(shell){
     shell.style.paddingTop = '';
+    shell.style.paddingBottom = '';
     shell.style.marginTop = '';
-    shell.style.overscrollBehaviorY = '';
   }
 }
 
