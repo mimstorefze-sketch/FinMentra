@@ -1820,11 +1820,14 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 
 <!-- ══ AI CHAT ══ -->
 <div class="screen" id="screen-askai">
-  <!-- Usage banner -->
-  <div style="display:flex;align-items:center;gap:8px;background:var(--gold-l);border:1px solid var(--gold);border-radius:12px;padding:10px 14px;">
+  <!-- Usage banner — updated dynamically by updateAIBanner() -->
+  <div id="ai-usage-banner" style="display:flex;align-items:center;gap:8px;background:var(--gold-l);border:1px solid var(--gold);border-radius:12px;padding:10px 14px;">
     <span style="font-size:16px;">🔒</span>
     <div style="flex:1;font-size:12px;color:#92400E;"><strong>Free Plan:</strong> 15 questions/day · 5 AI questions/day.</div>
-    <button class="btn btn-primary" style="padding:5px 12px;font-size:11px;flex-shrink:0;">Upgrade Pro</button>
+    <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+      <button class="btn btn-primary" style="padding:5px 12px;font-size:11px;" onclick="startProTrial()">Upgrade Pro</button>
+      <button class="btn" style="padding:5px 12px;font-size:11px;background:var(--surface);color:var(--navy);border:1px solid var(--border);" onclick="showAuthPopup()">Sign Up / Login</button>
+    </div>
   </div>
   <!-- Suggestion chips -->
   <div class="chips">
@@ -3123,6 +3126,15 @@ function showScreen(id){
   // Dynamic screen updates
   if(id==='home'){ updateMissions(); loadLeaderboard(); }
   if(id==='vault'){ renderVault(); }
+  // Fix: shell padding for multiplayer/challenge screen
+  const shell = document.querySelector('.shell');
+  if(id==='multiplayer'){
+    if(shell){ shell.style.paddingTop='0'; shell.style.paddingBottom='0'; }
+  } else {
+    if(shell){ shell.style.paddingTop=''; shell.style.paddingBottom=''; }
+  }
+  // Fix: update AI banner on entering askai screen
+  if(id==='askai'){ if(typeof updateAIBanner==='function') updateAIBanner(); }
 }
 
 function switchMode(mode){
@@ -4214,6 +4226,39 @@ const AI_PLANS = {
 S.aiPlan = S.aiPlan || 'free';
 S.plan = S.plan || 'free'; // free, pro, elite
 
+function showAuthPopup(){
+  // Show the login/register overlay
+  const lr = document.getElementById('login-reward');
+  if(lr){ lr.classList.add('show'); return; }
+  // Fallback: show email auth
+  if(typeof showEmailAuth === 'function') showEmailAuth();
+}
+
+function updateAIBanner(){
+  const banner = document.getElementById('ai-usage-banner');
+  if(!banner) return;
+  const pro = isPro();
+  const loggedIn = !!(typeof _currentUser !== 'undefined' && _currentUser);
+  if(pro){
+    // Pro user — show green pro banner, no upgrade needed
+    banner.style.background = 'var(--green-l, #DCFCE7)';
+    banner.style.borderColor = '#22c55e';
+    const aiLeft = S.aiUsedMonth != null ? Math.max(0, 50 - (S.aiUsedMonth||0)) : 50;
+    banner.innerHTML = '<span style="font-size:16px;">✅</span><div style="flex:1;font-size:12px;color:#166534;"><strong>Pro Plan:</strong> Unlimited questions · '+aiLeft+' AI questions left this month.</div>';
+  } else {
+    // Free user — show upgrade + signup/login buttons
+    const showAuth = !loggedIn;
+    banner.style.background = 'var(--gold-l)';
+    banner.style.borderColor = 'var(--gold)';
+    banner.innerHTML = '<span style="font-size:16px;">🔒</span>'+
+      '<div style="flex:1;font-size:12px;color:#92400E;"><strong>Free Plan:</strong> 15 questions/day · 5 AI questions/day.</div>'+
+      '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">'+
+        '<button class="btn btn-primary" style="padding:5px 12px;font-size:11px;" onclick="startProTrial()">Upgrade Pro</button>'+
+        (showAuth ? '<button class="btn" style="padding:5px 12px;font-size:11px;background:var(--surface);color:var(--navy);border:1px solid var(--border);" onclick="showAuthPopup()">Sign Up / Login</button>' : '')+
+      '</div>';
+  }
+}
+
 function isPro(){ 
   try{ if(typeof _currentUser !== 'undefined' && _currentUser && _currentUser.email === 'demo@finmentra.com') return true; }catch(e){}
   return S.plan==='pro'||S.plan==='elite'; 
@@ -4271,6 +4316,7 @@ function showDailyLimitPopup(){
     '<div style="font-size:13px;color:#64748B;margin-bottom:6px;line-height:1.5;">You have used your <strong>15 free questions</strong> for today.</div>'+
     '<div style="font-size:12px;color:#94A3B8;margin-bottom:24px;">Resets at midnight · Upgrade for unlimited access</div>'+
     '<button onclick="document.querySelectorAll(\'.daily-limit-overlay\').forEach(e=>e.remove());showScreen(\'profile\')" style="width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:var(--font-body);">Upgrade to Pro 🚀</button>'+
+    ((!window._currentUser)?'<button onclick="document.querySelectorAll(\'.daily-limit-overlay\').forEach(e=>e.remove());showAuthPopup()" style="width:100%;padding:11px;border-radius:12px;background:#4A6CF7;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:var(--font-body);">Sign Up / Login</button>':'')+
     '<button onclick="document.querySelectorAll(\'.daily-limit-overlay\').forEach(e=>e.remove())" style="width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);">Come Back Tomorrow</button>'+
     '</div>';
   document.body.appendChild(overlay);
@@ -4386,7 +4432,7 @@ function sendChat(){
     if(isDaily) msg='Free plan: 5 AI questions/day. Upgrade to Pro for 50/month.';
     else if(isMonthlyFree) msg='Free plan: 30 AI questions/month limit reached. Upgrade to Pro for 50/month.';
     else msg='Pro plan: 50 AI questions/month used. Your limit resets next month.';
-    addChatMsg('ai','<div style="background:var(--gold-l);border-radius:8px;padding:10px;"><div style="font-weight:700;color:#92400E;">🔒 AI limit reached</div><div style="font-size:11px;color:var(--steel);margin-top:4px;">'+msg+'</div>'+(isFree()?'<button onclick="startProTrial()" style="margin-top:8px;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font-body);">Upgrade to Pro</button>':'')+'</div>');
+    addChatMsg('ai','<div style="background:var(--gold-l);border-radius:8px;padding:10px;"><div style="font-weight:700;color:#92400E;">🔒 AI limit reached</div><div style="font-size:11px;color:var(--steel);margin-top:4px;">'+msg+'</div>'+(isFree()?'<div style="display:flex;gap:6px;margin-top:8px;"><button onclick="startProTrial()" style="flex:1;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font-body);">Upgrade Pro</button>'+(!window._currentUser?'<button onclick="showAuthPopup()" style="flex:1;background:#4A6CF7;color:#fff;border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font-body);">Sign Up</button>':'')+'</div>':'')+'</div>');
     return;
   }
   recordAIUse();
