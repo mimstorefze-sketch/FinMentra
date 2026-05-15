@@ -36,9 +36,12 @@ console.log('✅ Supabase initialized');
 /* ── SUPABASE AUTH SCREEN ── */
 #auth-screen {
   position:fixed;inset:0;z-index:2000;background:rgba(10,31,110,0.97);
-  display:flex;align-items:center;justify-content:center;
+  display:none;align-items:center;justify-content:center;
   font-family:var(--font-body);
   backdrop-filter:blur(8px);
+}
+#auth-screen.show {
+  display:flex;
 }
 .auth-box {
   background:#fff;border-radius:24px;padding:32px 24px 24px;
@@ -7676,7 +7679,7 @@ let _guestBonusUsed = false;
 function startAsGuest(){
   _isGuest = true;
   _guestQCount = 0;
-  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('auth-screen').classList.remove('show');
   // Check if day 2 (came back without registering)
   try {
     const lastVisit = localStorage.getItem('fm_last_visit');
@@ -7727,7 +7730,7 @@ function continueAsGuest(){
 }
 
 function showEmailAuth(){
-  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('auth-screen').classList.add('show');
 }
 
 // ── SOCIAL LOGIN ──
@@ -7799,7 +7802,7 @@ async function handleAuth() {
     }
     _currentUser = result.data.user;
     _isGuest = false;
-    document.getElementById('auth-screen').style.display='none';
+    document.getElementById('auth-screen').classList.remove('show');
     closeRegPopup();
     await loadUserProgress();
     toast('Welcome to FinMentra! 🎉');
@@ -7942,7 +7945,7 @@ async function doLogout(){
   _isGuest = false;
   _guestQCount = 0;
   _guestBonusUsed = false;
-  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('auth-screen').classList.add('show');
 }
 
 // ── CHECK IF ALREADY LOGGED IN (returning user) ──
@@ -7969,6 +7972,10 @@ async function doLogout(){
   }
 
   const { data } = await _supa.auth.getSession();
+  if(!data.session){
+    // No logged-in session — show auth screen
+    document.getElementById('auth-screen').classList.add('show');
+  }
   if(data.session){
     _currentUser = data.session.user;
     _isGuest = false;
@@ -7983,7 +7990,7 @@ async function doLogout(){
         if(lt && lt !== 'free'){ S.plan=lt; S.tier=lt; S.aiPlan=lt; }
       }catch(e){}
     }
-    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('auth-screen').classList.remove('show');
     await loadUserProgress();
     updatePlanUI();
     // Show daily reward if not claimed today
@@ -7999,7 +8006,7 @@ async function doLogout(){
         S.plan='pro'; S.tier='pro'; S.aiPlan='pro';
         try{ localStorage.setItem('fm_tier','pro'); }catch(e){}
       }
-      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('auth-screen').classList.remove('show');
       closeRegPopup();
       await loadUserProgress();
       updatePlanUI();
