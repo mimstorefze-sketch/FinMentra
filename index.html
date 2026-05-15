@@ -8057,6 +8057,26 @@ async function doLogout(){
   _isGuest = false;
   _guestQCount = 0;
   _guestBonusUsed = false;
+
+  // Clear ALL user-specific localStorage so next visitor starts fresh
+  const keysToRemove = [
+    'fm_tier', 'fm_state', 'fm_ai_today', 'fm_ai_month',
+    'fm_last_reward_date', 'fm_login_streak', 'fm_guest_threshold',
+    'fm_ch_stats', 'fm_dark'
+  ];
+  keysToRemove.forEach(k => { try{ localStorage.removeItem(k); }catch(e){} });
+  // Also clear any daily question keys (fm_dq_*)
+  try{
+    Object.keys(localStorage).forEach(k => {
+      if(k.startsWith('fm_dq_') || k.startsWith('fm_bonus_used_')) localStorage.removeItem(k);
+    });
+  }catch(e){}
+
+  // Reset in-memory state to defaults
+  S.plan = 'free'; S.tier = 'free'; S.aiPlan = 'free';
+  S.xp = 0; S.coins = 240; S.streak = 0; S.username = '';
+  S.onboardingDone = false; S.mode = null; S.gender = null;
+
   document.getElementById('auth-screen').classList.add('show');
 }
 
