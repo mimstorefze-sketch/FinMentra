@@ -4354,11 +4354,9 @@ function showEditNamePopup(){
 }
 
 function showAuthPopup(){
-  // Show the login/register overlay
-  const lr = document.getElementById('login-reward');
-  if(lr){ lr.classList.add('show'); return; }
-  // Fallback: show email auth
-  if(typeof showEmailAuth === 'function') showEmailAuth();
+  // Show the main auth screen (login/signup)
+  const authScreen = document.getElementById('auth-screen');
+  if(authScreen){ authScreen.classList.add('show'); return; }
 }
 
 function updateAIBanner(){
@@ -7786,18 +7784,12 @@ let _guestBonusUsed = false;
 function startAsGuest(){
   _isGuest = true;
   _guestQCount = 0;
+  _guestBonusUsed = false;
   document.getElementById('auth-screen').classList.remove('show');
-  // Check if day 2 (came back without registering)
+  // Always start with 10 question threshold — day-2 logic removed as it caused early interruptions
   try {
-    const lastVisit = localStorage.getItem('fm_last_visit');
-    const today = new Date().toDateString();
-    if(lastVisit && lastVisit !== today){
-      // Day 2+ user — they came back! Lower threshold to 3
-      localStorage.setItem('fm_guest_threshold', '3');
-    } else {
-      localStorage.setItem('fm_guest_threshold', '10');
-    }
-    localStorage.setItem('fm_last_visit', today);
+    localStorage.setItem('fm_guest_threshold', '10');
+    localStorage.setItem('fm_last_visit', new Date().toDateString());
   } catch(e){}
 }
 
@@ -7809,7 +7801,8 @@ function getGuestThreshold(){
 function checkGuestPrompt(){
   if(_currentUser || !_isGuest) return;
   _guestQCount++;
-  const threshold = _guestBonusUsed ? 9999 : getGuestThreshold();
+  // Minimum 10 questions before showing register popup (never interrupt early)
+  const threshold = _guestBonusUsed ? 9999 : Math.max(10, getGuestThreshold());
   if(_guestQCount >= threshold){
     showRegisterPopup();
   }
@@ -7842,7 +7835,6 @@ function showEmailAuth(){
 
 // ── SOCIAL LOGIN ──
 async function signInWithGoogle(){
-  // On mobile apps use deep link so OS returns to app after OAuth
   const isMobileApp = window.navigator.userAgent.includes('FinMentra') ||
                       window.location.protocol === 'capacitor:' ||
                       window.location.protocol === 'ionic:' ||
@@ -7850,7 +7842,13 @@ async function signInWithGoogle(){
   const redirectTo = isMobileApp ? 'finmentra://auth/callback' : 'https://www.finmentra.com';
   const { error } = await _supa.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo }
+    options: {
+      redirectTo,
+      queryParams: {
+        prompt: 'select_account',   // always show account picker
+        access_type: 'offline'
+      }
+    }
   });
   if(error) toast('Google login failed: ' + error.message);
 }
