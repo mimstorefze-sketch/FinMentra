@@ -3124,7 +3124,8 @@ function showScreen(id){
   const nci2=document.getElementById('nav-coin-icon');if(nci2) nci2.innerHTML=coinSVG(14);
   window.scrollTo(0,0);
   // Dynamic screen updates
-  if(id==='home'){ updateMissions(); loadLeaderboard(); }
+  if(id==='home'){ updateMissions(); loadLeaderboard(); renderStreakHeatmap(); }
+  if(id==='topics'){ if(typeof renderTopics==='function') renderTopics(); }
   if(id==='vault'){ renderVault(); }
   // Fix: shell padding for multiplayer/challenge screen
   const shell = document.querySelector('.shell');
@@ -3877,6 +3878,13 @@ function updateHUD(){
   set('nav-xp',S.xp.toLocaleString());
   set('nav-streak',S.streak);
   set('nav-coins',S.coins);
+  // FIX: Update home dashboard stats on every HUD refresh
+  set('stat-q', S.totalQ || 0);
+  set('stat-best', S.bestStreak || 0);
+  const accEl = document.getElementById('stat-acc');
+  if(accEl) accEl.textContent = S.totalQ > 0 ? Math.round((S.totalCorrect/S.totalQ)*100)+'%' : '—';
+  const hlEl = document.getElementById('streak-heatmap-label');
+  if(hlEl) hlEl.textContent = (S.streak||0) + '-day streak';
   const nci=document.getElementById('nav-coin-icon');if(nci) nci.innerHTML=coinSVG(14);
   const xpBar=document.getElementById('nav-xp-bar');if(xpBar) xpBar.style.width=pct+'%';
   updateHeartsDisplay();
@@ -4379,6 +4387,8 @@ function canUseAI(){
   return !check.blocked;
 }
 function checkAILimit(){
+  // Pro/Elite users: never block AI
+  if(isPro() || isElite()) return {blocked:false};
   const today = new Date().toDateString();
   if(S.aiLastDate !== today){ S.aiUsedToday=0; S.aiLastDate=today; }
   const plan = getAIPlan();
@@ -6530,10 +6540,13 @@ function startProTrial(){
   S.plan='pro'; S.tier='pro'; S.aiPlan='pro'; S.aiUsedMonth=0;
   try{localStorage.setItem('fm_tier','pro');}catch(e){}
   saveState();
+  if(typeof saveUserProgress === 'function') saveUserProgress(); // persist plan to Supabase
   spawnConfetti();
   toast('Pro trial activated! 7 days free. Enjoy all features.');
   showBadgeToast('Welcome to Pro! 🎉 All features unlocked.');
   updateHUD();
+  if(typeof renderTopics === 'function') renderTopics();
+  if(typeof updateAIBanner === 'function') updateAIBanner();
 }
 
 // ── DOMAIN ACCENT COLORS on practice screen ──
@@ -7762,7 +7775,21 @@ async function loadUserProgress() {
       S.totalQ = data.total_questions || 0;
       S.totalCorrect = data.total_correct || 0;
       S.hearts = data.hearts || 3;
+      // FIX: Load plan/tier from Supabase so Pro persists on refresh
+      if(data.plan && data.plan !== 'free'){
+        S.plan = data.plan;
+        S.tier = data.plan;
+        S.aiPlan = data.plan;
+        try{ localStorage.setItem('fm_tier', data.plan); }catch(e){}
+      } else {
+        // Also check localStorage as fallback
+        try{
+          const lt = localStorage.getItem('fm_tier');
+          if(lt && lt !== 'free'){ S.plan=lt; S.tier=lt; S.aiPlan=lt; }
+        }catch(e){}
+      }
       updateHUD();
+      if(typeof renderTopics === 'function') renderTopics(); // refresh lock state
     } else {
       await _supa.from('user_progress').insert({
         user_id: _currentUser.id,
@@ -7825,6 +7852,7 @@ async function saveUserProgress() {
       xp: S.xp, coins: S.coins, streak: S.streak,
       best_streak: S.bestStreak, total_questions: S.totalQ,
       total_correct: S.totalCorrect, hearts: S.hearts,
+      plan: S.plan || 'free',
       updated_at: new Date().toISOString()
     }, { onConflict: 'user_id' });
   } catch(e){ saveState(); }
