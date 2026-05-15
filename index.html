@@ -4508,9 +4508,29 @@ function checkPlanFeature(feature){
     '<div style="font-size:18px;font-weight:700;color:#0A1F6E;margin-bottom:8px;">Pro Feature</div>'+
     '<div style="font-size:13px;color:#64748B;margin-bottom:24px;line-height:1.5;">'+msgs[feature]+'</div>';
   const upgradeBtn = document.createElement('button');
-  upgradeBtn.textContent='Upgrade Now 🚀';
+  const loggedIn = !!(typeof _currentUser !== 'undefined' && _currentUser);
+
+  upgradeBtn.textContent = loggedIn ? 'Upgrade to Pro 🚀' : 'Sign Up Free 🚀';
   upgradeBtn.style.cssText='width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:var(--font-body);';
-  upgradeBtn.onclick=()=>{ popup.remove(); if(typeof showScreen==='function') showScreen('shop'); };
+  upgradeBtn.onclick=()=>{
+    popup.remove();
+    if(loggedIn){
+      // Already signed in — go to profile to upgrade plan
+      if(typeof showScreen==='function') showScreen('profile');
+    } else {
+      // Not signed in — show signup/login screen first
+      if(typeof showAuthPopup==='function') showAuthPopup();
+    }
+  };
+
+  // If logged in, also show a "Sign Up first" hint below
+  if(!loggedIn){
+    const hint = document.createElement('div');
+    hint.style.cssText = 'font-size:11px;color:#94A3B8;margin-bottom:10px;';
+    hint.textContent = 'Create a free account, then upgrade to Pro';
+    box.appendChild(hint);
+  }
+
   const cancelBtn = document.createElement('button');
   cancelBtn.textContent='Maybe Later';
   cancelBtn.style.cssText='width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);';
