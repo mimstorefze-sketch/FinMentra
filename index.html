@@ -1994,6 +1994,10 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div class="profile-h">
     <div class="av" id="profile-avatar">👨</div>
     <h2 id="profile-name">Your Profile</h2>
+    <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:2px;">
+      <span id="profile-email-label" style="font-size:11px;color:rgba(255,255,255,.55);"></span>
+      <button onclick="showEditNamePopup()" style="background:rgba(255,255,255,.15);border:none;border-radius:999px;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;cursor:pointer;">✏️ Edit Name</button>
+    </div>
     <div class="profile-rank" id="profile-rank-text">🌱 Initiate</div>
     <div class="profile-badges"><span class="badge">🔥 0 Streak</span><span class="badge">⚡ 0 XP</span></div>
     <!-- Peer comparison -->
@@ -3100,7 +3104,16 @@ function showScreen(id){
   if(id==='home'){ updateMissions(); loadLeaderboard(); if(typeof renderStreakHeatmap==='function') renderStreakHeatmap(); }
   if(id==='topics'){ if(typeof renderTopics==='function') renderTopics(); }
   if(id==='vault'){ renderVault(); }
-  if(id==='profile'){ if(typeof updatePlanUI==='function') updatePlanUI(); }
+  if(id==='profile'){
+    if(typeof updatePlanUI==='function') updatePlanUI();
+    // Show user email on profile
+    const emailLabel = document.getElementById('profile-email-label');
+    if(emailLabel && typeof _currentUser !== 'undefined' && _currentUser){
+      emailLabel.textContent = _currentUser.email || '';
+    }
+    // Update name
+    if(typeof updateMentorName === 'function') updateMentorName();
+  }
   // Fix: shell padding for multiplayer/challenge screen
   const shell = document.querySelector('.shell');
   if(id==='multiplayer'){
@@ -3926,6 +3939,8 @@ function closeOnboarding(){
 
 function checkAndShowDailyReward(){
   try{
+    // Pro users who are already logged in: don't show reward popup on every refresh
+    if(isPro() && typeof _currentUser !== 'undefined' && _currentUser) return;
     const today = new Date().toDateString();
     const lastClaim = localStorage.getItem('fm_last_reward_date');
     if(lastClaim === today) return; // Already claimed today — don't show
@@ -4142,6 +4157,14 @@ function buildMentor(){
 function updateMentorName(){
   const hm=document.getElementById('home-mentor');if(hm) hm.textContent=S.gender==='female'?'Ms. Ledger':'Mr. Ledger';
   const ac=document.getElementById('ai-chat-name');if(ac) ac.textContent=(S.gender==='female'?'Ms.':'Mr.')+' Ledger AI';
+  // Update user display name everywhere
+  const displayName = (typeof _currentUser !== 'undefined' && _currentUser)
+    ? (S.username || getDisplayName(_currentUser))
+    : (S.username || 'Scholar');
+  const nameEl = document.getElementById('home-mentor-name');
+  if(nameEl) nameEl.textContent = 'Welcome, ' + displayName;
+  const profileNameEl = document.getElementById('profile-name');
+  if(profileNameEl) profileNameEl.textContent = displayName;
 }
 function setCharMood(mood){
   const m=document.getElementById('mentor');if(!m) return;
@@ -4288,6 +4311,48 @@ function updatePlanUI(){
   proCard.appendChild(proBtn);
   container.appendChild(proCard);
 }
+function showEditNamePopup(){
+  const existing = document.getElementById('edit-name-popup');
+  if(existing) existing.remove();
+  const popup = document.createElement('div');
+  popup.id = 'edit-name-popup';
+  popup.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:20px;padding:24px;max-width:300px;width:90%;text-align:center;';
+  const title = document.createElement('div');
+  title.style.cssText = 'font-size:16px;font-weight:800;color:#0A1F6E;margin-bottom:16px;';
+  title.textContent = '✏️ Edit Your Name';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.placeholder = 'Your display name';
+  input.value = S.username || '';
+  input.style.cssText = 'width:100%;padding:11px 14px;border:1.5px solid #C8D8FF;border-radius:10px;font-size:14px;font-family:inherit;outline:none;margin-bottom:12px;color:#0B1430;box-sizing:border-box;';
+  const saveBtn = document.createElement('button');
+  saveBtn.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-bottom:8px;';
+  saveBtn.textContent = 'Save Name';
+  saveBtn.onclick = function(){
+    const newName = input.value.trim();
+    if(!newName){ toast('Please enter a name'); return; }
+    S.username = newName;
+    saveState();
+    if(typeof saveUserProgress === 'function') saveUserProgress();
+    updateMentorName();
+    popup.remove();
+    toast('Name updated to ' + newName + ' ✓');
+  };
+  const cancelBtn = document.createElement('button');
+  cancelBtn.style.cssText = 'width:100%;padding:10px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.onclick = function(){ popup.remove(); };
+  box.appendChild(title);
+  box.appendChild(input);
+  box.appendChild(saveBtn);
+  box.appendChild(cancelBtn);
+  popup.appendChild(box);
+  document.body.appendChild(popup);
+  setTimeout(()=>input.focus(), 100);
+}
+
 function showAuthPopup(){
   // Show the login/register overlay
   const lr = document.getElementById('login-reward');
@@ -4373,18 +4438,50 @@ function incrementDailyQ(){
 }
 
 function showDailyLimitPopup(){
+  // Pro users should never see this
+  if(isPro()) return;
+  // Remove any existing
+  document.querySelectorAll('.daily-limit-overlay').forEach(e=>e.remove());
+
+  const loggedIn = !!(typeof _currentUser !== 'undefined' && _currentUser);
   const overlay = document.createElement('div');
-  overlay.className='daily-limit-overlay';
-  overlay.style.cssText='position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
-  overlay.innerHTML='<div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;">'+
-    '<div style="font-size:48px;margin-bottom:12px;">🎯</div>'+
-    '<div style="font-size:18px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Daily Limit Reached</div>'+
-    '<div style="font-size:13px;color:#64748B;margin-bottom:6px;line-height:1.5;">You have used your <strong>15 free questions</strong> for today.</div>'+
-    '<div style="font-size:12px;color:#94A3B8;margin-bottom:24px;">Resets at midnight · Upgrade for unlimited access</div>'+
-    '<button onclick="document.querySelectorAll(\'.daily-limit-overlay\').forEach(e=>e.remove());showScreen(\'profile\')" style="width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:var(--font-body);">Upgrade to Pro 🚀</button>'+
-    ((!window._currentUser)?'<button onclick="document.querySelectorAll(\'.daily-limit-overlay\').forEach(e=>e.remove());showAuthPopup()" style="width:100%;padding:11px;border-radius:12px;background:#4A6CF7;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:var(--font-body);">Sign Up / Login</button>':'')+
-    '<button onclick="document.querySelectorAll(\'.daily-limit-overlay\').forEach(e=>e.remove())" style="width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);">Come Back Tomorrow</button>'+
-    '</div>';
+  overlay.className = 'daily-limit-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;';
+
+  box.innerHTML =
+    '<div style="font-size:48px;margin-bottom:12px;">🎯</div>' +
+    '<div style="font-size:18px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Daily Limit Reached</div>' +
+    '<div style="font-size:13px;color:#64748B;margin-bottom:6px;line-height:1.5;">You have used your <strong>15 free questions</strong> for today.</div>' +
+    '<div style="font-size:12px;color:#94A3B8;margin-bottom:24px;">Resets at midnight · Upgrade for unlimited access</div>';
+
+  function dismiss(){ overlay.remove(); }
+
+  if(!loggedIn){
+    // Guest: offer Sign Up (primary) and Come Back Tomorrow
+    const signupBtn = document.createElement('button');
+    signupBtn.style.cssText = 'width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:inherit;';
+    signupBtn.textContent = "Sign Up — It's Free 🚀";
+    signupBtn.onclick = function(){ dismiss(); showAuthPopup(); };
+    box.appendChild(signupBtn);
+  } else {
+    // Logged-in free user: offer Upgrade to Pro (no Sign Up button)
+    const upgradeBtn = document.createElement('button');
+    upgradeBtn.style.cssText = 'width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:inherit;';
+    upgradeBtn.textContent = 'Upgrade to Pro 🚀';
+    upgradeBtn.onclick = function(){ dismiss(); showScreen('profile'); };
+    box.appendChild(upgradeBtn);
+  }
+
+  const tomorrowBtn = document.createElement('button');
+  tomorrowBtn.style.cssText = 'width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
+  tomorrowBtn.textContent = 'Come Back Tomorrow';
+  tomorrowBtn.onclick = dismiss;
+  box.appendChild(tomorrowBtn);
+
+  overlay.appendChild(box);
   document.body.appendChild(overlay);
 }
 
@@ -7895,11 +7992,11 @@ async function loadUserProgress() {
   S.onboardingDone = true;
   if(onboardingEl) onboardingEl.style.display = 'none';
 
-  // Set display name from Google account
-  const displayName = getDisplayName(_currentUser);
-  const nameEl = document.getElementById('home-mentor-name');
-  if(nameEl) nameEl.textContent = 'Welcome, ' + displayName;
-  S.username = displayName;
+  // Set display name from Google/LinkedIn/email account
+  if(!S.username || S.username === 'Scholar'){
+    S.username = getDisplayName(_currentUser);
+  }
+  updateMentorName();
 
   // Navigate to correct home screen
   const safeStartScreen = S.mode === 'professional' ? 'pro-home' : 'home';
