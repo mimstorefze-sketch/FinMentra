@@ -3094,7 +3094,7 @@ function showScreen(id){
   const nci2=document.getElementById('nav-coin-icon');if(nci2) nci2.innerHTML=coinSVG(14);
   window.scrollTo(0,0);
   // Dynamic screen updates
-  if(id==='home'){ updateMissions(); loadLeaderboard(); renderStreakHeatmap(); }
+  if(id==='home'){ updateMissions(); loadLeaderboard(); if(typeof renderStreakHeatmap==='function') renderStreakHeatmap(); }
   if(id==='topics'){ if(typeof renderTopics==='function') renderTopics(); }
   if(id==='vault'){ renderVault(); }
   if(id==='profile'){ if(typeof updatePlanUI==='function') updatePlanUI(); }
@@ -4223,53 +4223,68 @@ function updatePlanUI(){
   const pro = isPro();
   const free = isFree();
 
-  const freeBadge = free
-    ? '<div style="position:absolute;top:12px;right:12px;font-size:9px;padding:3px 8px;border-radius:999px;background:var(--green-l);color:var(--green);font-weight:700;">✓ CURRENT PLAN</div>'
-    : '';
-  const proBadge = pro
-    ? '<div style="position:absolute;top:12px;right:12px;font-size:9px;padding:3px 8px;border-radius:999px;background:var(--green-l);color:var(--green);font-weight:700;">✓ ACTIVE</div>'
-    : '<div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),#FCD34D);color:var(--navy);font-size:9px;font-weight:800;padding:3px 12px;border-radius:999px;letter-spacing:.1em;">MOST POPULAR</div>';
-  const proBtn = pro
-    ? '<button class="btn btn-secondary" style="width:100%;background:var(--green-l);color:var(--green);border:1.5px solid var(--green);font-weight:800;" onclick="toast('You are subscribed to Pro ✓')">✓ Pro Plan Active</button>'
-    : '<button class="btn btn-primary" style="width:100%;background:linear-gradient(135deg,var(--gold),#FCD34D);color:var(--navy);" onclick="startProTrial()">Start 7-day free trial →</button>';
-  const proSubtitle = pro
-    ? '<div style="font-size:10px;color:var(--green);font-weight:700;margin-bottom:8px;">✓ Your plan is active</div>'
-    : '<div style="font-size:10px;color:var(--green);font-weight:700;margin-bottom:8px;">7-day free trial included</div>';
+  container.innerHTML = '';
 
-  container.innerHTML = `
-  <!-- FREE PLAN -->
-  <div class="card" style="border:1.5px solid ${free?'var(--navy)':'var(--border)'};position:relative;margin-bottom:12px;">
-    ${freeBadge}
-    <div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--navy);">Free</div>
-    <div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--navy);margin:6px 0;">$0<span style="font-size:13px;color:var(--steel);font-weight:400;">/month</span></div>
-    <ul style="list-style:none;font-size:12px;display:flex;flex-direction:column;gap:5px;margin-bottom:12px;">
-      <li>✓ 15 questions/day</li>
-      <li>✓ 5 AI questions/day <span style="color:var(--muted);font-size:10px;">(30/month cap)</span></li>
-      <li>✓ Basic progress tracking</li>
-      <li style="color:var(--muted);">✗ Pro tools</li>
-      <li style="color:var(--muted);">✗ CPD certificates</li>
-    </ul>
-    ${free ? '<button class="btn btn-secondary" style="width:100%;" onclick="toast('You are on the Free plan')">Current plan</button>' : '<button class="btn btn-secondary" style="width:100%;opacity:.5;cursor:default;">Free plan</button>'}
-  </div>
-  <!-- PRO PLAN -->
-  <div class="card premium" style="position:relative;border:${pro?'2px solid var(--green)':'1px solid var(--gold)'};">
-    ${proBadge}
-    <div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--navy);margin-top:8px;">Pro</div>
-    <div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--navy);margin:6px 0;">$5<span style="font-size:13px;color:var(--steel);font-weight:400;">/month</span></div>
-    ${proSubtitle}
-    <ul style="list-style:none;font-size:12px;display:flex;flex-direction:column;gap:5px;margin-bottom:12px;">
-      <li>✓ Unlimited questions</li>
-      <li>✓ <strong>50 AI questions/month</strong></li>
-      <li>✓ All Pro tools (FS Builder, JE, CPD)</li>
-      <li>✓ CPD certificates</li>
-      <li>✓ Study buddy matching</li>
-      <li>✓ Multiplayer & challenge mode</li>
-      <li>✓ AI follow-up threads</li>
-    </ul>
-    ${proBtn}
-  </div>`;
+  // FREE PLAN CARD
+  const freeCard = document.createElement('div');
+  freeCard.className = 'card';
+  freeCard.style.cssText = 'border:1.5px solid ' + (free ? 'var(--navy)' : 'var(--border)') + ';position:relative;margin-bottom:12px;';
+  freeCard.innerHTML =
+    (free ? '<div style="position:absolute;top:12px;right:12px;font-size:9px;padding:3px 8px;border-radius:999px;background:var(--green-l);color:var(--green);font-weight:700;">✓ CURRENT PLAN</div>' : '') +
+    '<div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--navy);">Free</div>' +
+    '<div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--navy);margin:6px 0;">$0<span style="font-size:13px;color:var(--steel);font-weight:400;">/month</span></div>' +
+    '<ul style="list-style:none;font-size:12px;display:flex;flex-direction:column;gap:5px;margin-bottom:12px;">' +
+      '<li>✓ 15 questions/day</li>' +
+      '<li>✓ 5 AI questions/day <span style="color:var(--muted);font-size:10px;">(30/month cap)</span></li>' +
+      '<li>✓ Basic progress tracking</li>' +
+      '<li style="color:var(--muted);">✗ Pro tools</li>' +
+      '<li style="color:var(--muted);">✗ CPD certificates</li>' +
+    '</ul>';
+  const freeBtn = document.createElement('button');
+  freeBtn.className = 'btn btn-secondary';
+  freeBtn.style.width = '100%';
+  if(free){ freeBtn.textContent = 'Current plan'; freeBtn.onclick = function(){ toast('You are on the Free plan'); }; }
+  else { freeBtn.textContent = 'Free plan'; freeBtn.style.opacity = '0.5'; freeBtn.style.cursor = 'default'; }
+  freeCard.appendChild(freeBtn);
+  container.appendChild(freeCard);
+
+  // PRO PLAN CARD
+  const proCard = document.createElement('div');
+  proCard.className = 'card premium';
+  proCard.style.cssText = 'position:relative;border:' + (pro ? '2px solid var(--green)' : '1px solid var(--gold)') + ';';
+  proCard.innerHTML =
+    (pro
+      ? '<div style="position:absolute;top:12px;right:12px;font-size:9px;padding:3px 8px;border-radius:999px;background:var(--green-l);color:var(--green);font-weight:700;">✓ ACTIVE</div>'
+      : '<div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),#FCD34D);color:var(--navy);font-size:9px;font-weight:800;padding:3px 12px;border-radius:999px;letter-spacing:.1em;">MOST POPULAR</div>') +
+    '<div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--navy);margin-top:8px;">Pro</div>' +
+    '<div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--navy);margin:6px 0;">$5<span style="font-size:13px;color:var(--steel);font-weight:400;">/month</span></div>' +
+    (pro
+      ? '<div style="font-size:10px;color:var(--green);font-weight:700;margin-bottom:8px;">✓ Your plan is active</div>'
+      : '<div style="font-size:10px;color:var(--green);font-weight:700;margin-bottom:8px;">7-day free trial included</div>') +
+    '<ul style="list-style:none;font-size:12px;display:flex;flex-direction:column;gap:5px;margin-bottom:12px;">' +
+      '<li>✓ Unlimited questions</li>' +
+      '<li>✓ <strong>50 AI questions/month</strong></li>' +
+      '<li>✓ All Pro tools (FS Builder, JE, CPD)</li>' +
+      '<li>✓ CPD certificates</li>' +
+      '<li>✓ Study buddy matching</li>' +
+      '<li>✓ Multiplayer & challenge mode</li>' +
+      '<li>✓ AI follow-up threads</li>' +
+    '</ul>';
+  const proBtn = document.createElement('button');
+  if(pro){
+    proBtn.className = 'btn btn-secondary';
+    proBtn.style.cssText = 'width:100%;background:var(--green-l);color:var(--green);border:1.5px solid var(--green);font-weight:800;';
+    proBtn.textContent = '✓ Pro Plan Active';
+    proBtn.onclick = function(){ toast('You are subscribed to Pro ✓'); };
+  } else {
+    proBtn.className = 'btn btn-primary';
+    proBtn.style.cssText = 'width:100%;background:linear-gradient(135deg,var(--gold),#FCD34D);color:var(--navy);';
+    proBtn.textContent = 'Start 7-day free trial →';
+    proBtn.onclick = startProTrial;
+  }
+  proCard.appendChild(proBtn);
+  container.appendChild(proCard);
 }
-
 function showAuthPopup(){
   // Show the login/register overlay
   const lr = document.getElementById('login-reward');
