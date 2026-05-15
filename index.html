@@ -198,6 +198,10 @@ a{color:inherit;text-decoration:none;}
   padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
   overflow-y: auto !important;
 }
+/* Remove shell top padding when multiplayer screen is active */
+.shell:has(#screen-multiplayer.active){
+  padding-top: 0 !important;
+}
 
 /* ── CARD (index.html style) ── */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);}
@@ -387,7 +391,7 @@ a{color:inherit;text-decoration:none;}
 #screen-multiplayer > * { padding: 0 14px; }
 #screen-multiplayer #ch-lobby { padding: 12px 14px; }
 #screen-multiplayer #ch-waiting { padding: 12px 14px; }
-#screen-multiplayer #ch-battle { padding: 12px 14px; padding-top: calc(env(safe-area-inset-top) + 8px); padding-bottom: calc(90px + env(safe-area-inset-bottom)); overflow-y: auto; min-height: 100vh; }
+#screen-multiplayer #ch-battle { padding: 12px 14px; padding-top: calc(env(safe-area-inset-top) + 8px); padding-bottom: calc(90px + env(safe-area-inset-bottom)); overflow-y: auto; min-height: 0; flex: 1; }
 #screen-multiplayer #ch-results { padding: 12px 14px; }
 #screen-multiplayer #ch-matchmaking { padding: 12px 14px; }
 #screen-multiplayer #ch-countdown { padding: 12px 14px; }
@@ -3547,9 +3551,9 @@ async function startSession(){
       if(!t) return;
       if(t.cat === category) allLocal.push(...qs);
     });
-    const localRemaining = isFree() ? getDailyQRemaining() : 8;
+    const localRemaining = isFree() ? getDailyQRemaining() : 20;
     if(isFree() && localRemaining <= 0){ showDailyLimitPopup(); return; }
-    const localLimit = Math.min(8, Math.max(1, localRemaining));
+    const localLimit = Math.min(20, Math.max(1, localRemaining));
     pool = allLocal.length > 0
       ? allLocal.sort(()=>Math.random()-.5).slice(0, localLimit)
       : [...(QB_BY_DOMAIN[category]||QB_BY_DOMAIN['IFRS']||[])].sort(()=>Math.random()-.5).slice(0, localLimit);
@@ -3815,7 +3819,7 @@ function nextQuestion(){
       }
       // Reload same topic with shuffled questions
       const pool=[...QB[S.currentStandard]].sort(()=>Math.random()-.5);
-      const limit = isFree() ? Math.min(8, remaining) : 8;
+      const limit = isFree() ? Math.min(8, remaining) : 20;
       S.sessionQs=pool.slice(0, limit);
       S.qIndex=0; S.sessionQ=0; S.sessionCorrect=0; S.answered=false;
       updateSessionBar();
@@ -4210,7 +4214,10 @@ const AI_PLANS = {
 S.aiPlan = S.aiPlan || 'free';
 S.plan = S.plan || 'free'; // free, pro, elite
 
-function isPro(){ return S.plan==='pro'||S.plan==='elite'; }
+function isPro(){ 
+  try{ if(typeof _currentUser !== 'undefined' && _currentUser && _currentUser.email === 'demo@finmentra.com') return true; }catch(e){}
+  return S.plan==='pro'||S.plan==='elite'; 
+}
 function isElite(){ return S.plan==='elite'; }
 function isFree(){ 
   // Demo pro account for testing
@@ -4270,6 +4277,10 @@ function showDailyLimitPopup(){
 }
 
 function checkPlanFeature(feature){
+  // Demo account has all pro features
+  try{ 
+    if(typeof _currentUser !== 'undefined' && _currentUser && _currentUser.email === 'demo@finmentra.com') return true; 
+  }catch(e){}
   const allowed = {
     multiplayer: ['pro','elite'],
     onlineMatch: ['pro','elite'],
