@@ -4327,8 +4327,12 @@ function isPro(){
 }
 function isElite(){ return S.plan==='elite'; }
 function isFree(){ 
-  // Demo pro account for testing
+  // Demo account always pro
   try{ if(typeof _currentUser !== 'undefined' && _currentUser && _currentUser.email === 'demo@finmentra.com') return false; }catch(e){}
+  // Logged-in user with pro in localStorage: treat as pro while Supabase loads
+  if(typeof _currentUser !== 'undefined' && _currentUser){
+    try{ const lt = localStorage.getItem('fm_tier'); if(lt === 'pro' || lt === 'elite') return false; }catch(e){}
+  }
   return !S.plan||S.plan==='free'; 
 }
 
@@ -6591,10 +6595,16 @@ function matchStudyBuddy(){
 // ── PRO TRIAL ──
 S.tier = S.tier || 'free';
 function startProTrial(){
+  // Must be logged in to activate Pro
+  if(!_currentUser){
+    toast('Please sign up or login first to upgrade to Pro.');
+    if(typeof showAuthPopup === 'function') showAuthPopup();
+    return;
+  }
   S.plan='pro'; S.tier='pro'; S.aiPlan='pro'; S.aiUsedMonth=0;
   try{localStorage.setItem('fm_tier','pro');}catch(e){}
   saveState();
-  if(typeof saveUserProgress === 'function') saveUserProgress(); // persist plan to Supabase
+  if(typeof saveUserProgress === 'function') saveUserProgress();
   spawnConfetti();
   toast('Pro trial activated! 7 days free. Enjoy all features.');
   showBadgeToast('Welcome to Pro! 🎉 All features unlocked.');
@@ -7843,8 +7853,13 @@ async function loadUserProgress() {
           if(lt && lt !== 'free'){ S.plan=lt; S.tier=lt; S.aiPlan=lt; }
         }catch(e){}
       }
+      // Always enforce demo account as pro (even if DB has 'free')
+      if(_currentUser && _currentUser.email === 'demo@finmentra.com'){
+        S.plan='pro'; S.tier='pro'; S.aiPlan='pro';
+        try{ localStorage.setItem('fm_tier','pro'); }catch(e){}
+      }
       updateHUD();
-      if(typeof renderTopics === 'function') renderTopics(); // refresh lock state
+      if(typeof renderTopics === 'function') renderTopics();
       if(typeof updatePlanUI === 'function') updatePlanUI();
       if(typeof updateAIBanner === 'function') updateAIBanner();
     } else {
@@ -8010,7 +8025,12 @@ async function doLogout(){
       closeRegPopup();
       await loadUserProgress();
       updatePlanUI();
-      toast('Welcome to FinMentra! 🎉');
+      // Update display name immediately
+      const dn = getDisplayName(_currentUser);
+      const ne = document.getElementById('home-mentor-name');
+      if(ne) ne.textContent = 'Welcome, ' + dn;
+      S.username = dn;
+      toast('Welcome, ' + dn + '! 🎉');
     }
   });
 })();
