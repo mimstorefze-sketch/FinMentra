@@ -205,7 +205,6 @@ a{color:inherit;text-decoration:none;}
 .screen.active{display:flex;}
 /* Challenge screen: true fullscreen — override everything */
 #screen-multiplayer.active{
-  display: flex !important;
   flex-direction: column;
   background: #f0f4ff;
   min-height: calc(100vh - 80px);
@@ -426,7 +425,7 @@ a{color:inherit;text-decoration:none;}
 .actionrow,.action-row{display:flex;gap:6px;align-items:center;background:var(--surface);border-top:1px solid var(--border2);padding:10px 14px;margin:8px 0 0;border-radius:12px;box-shadow:0 2px 8px rgba(10,31,110,.06);}
 /* Normal flow — no fixed/floating on practice screen */
 #screen-practice { padding-bottom: 20px; }
-#screen-multiplayer { padding: 0 !important; margin: 0 !important; gap: 0 !important; display: flex; flex-direction: column; }
+#screen-multiplayer { padding: 0 !important; margin: 0 !important; gap: 0 !important; flex-direction: column; }
 #screen-multiplayer > *:not(style):not(script) { flex-shrink: 0; }
 #screen-multiplayer #ch-lobby { padding: calc(env(safe-area-inset-top) + 8px) 14px calc(70px + env(safe-area-inset-bottom)) 14px; overflow-y: auto; height: 100%; box-sizing: border-box; }
 #screen-multiplayer #ch-waiting { padding: calc(env(safe-area-inset-top) + 8px) 14px calc(70px + env(safe-area-inset-bottom)) 14px; overflow-y: auto; height: 100%; box-sizing: border-box; }
