@@ -3,5 +3,14 @@
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/privacy", "destination": "/privacy.html" },
     { "source": "/auth/callback", "destination": "/auth/callback/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/.well-known/assetlinks.json",
+      "headers": [
+        { "key": "Content-Type", "value": "application/json" },
+        { "key": "Cache-Control", "value": "no-cache" }
+      ]
+    }
   ]
 }
