@@ -9712,9 +9712,24 @@ document.addEventListener('visibilitychange', ()=>{
     clearInterval(MM.searchTimer);
   }
   // When app comes back to foreground — re-check plan from Supabase
-  // (user may have just paid on the website)
   if(!document.hidden && typeof _currentUser !== 'undefined' && _currentUser){
-    if(typeof loadUserProgress === 'function') loadUserProgress();
+    // Poll every 3 seconds for up to 30 seconds (webhook may have slight delay)
+    let pollCount = 0;
+    const planPoller = setInterval(async () => {
+      pollCount++;
+      await loadUserProgress();
+      // Stop polling once Pro is confirmed or after 10 attempts
+      if(isPro() || pollCount >= 10){
+        clearInterval(planPoller);
+        if(isPro()){
+          // Clear any limit popups and update UI
+          document.querySelectorAll('.daily-limit-overlay').forEach(e=>e.remove());
+          if(typeof updatePlanUI==='function') updatePlanUI();
+          if(typeof updateAIBanner==='function') updateAIBanner();
+          if(typeof renderTopics==='function') renderTopics();
+        }
+      }
+    }, 3000);
   }
 });
 
