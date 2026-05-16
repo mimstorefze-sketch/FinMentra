@@ -3939,15 +3939,12 @@ function closeOnboarding(){
 
 function checkAndShowDailyReward(){
   try{
-    // Only show for logged-in users
-    if(!_currentUser) return;
-    // Never show for Pro users
-    if(isPro()) return;
-    // Never show if already claimed today
+    // Pro users who are already logged in: don't show reward popup on every refresh
+    if(isPro() && typeof _currentUser !== 'undefined' && _currentUser) return;
     const today = new Date().toDateString();
     const lastClaim = localStorage.getItem('fm_last_reward_date');
-    if(lastClaim === today) return;
-    // Build and show reward popup
+    if(lastClaim === today) return; // Already claimed today — don't show
+    // Build the reward popup with real data
     buildLoginRewardUI();
     setTimeout(()=>document.getElementById('login-reward').classList.add('show'),600);
   }catch(e){}
@@ -4305,11 +4302,6 @@ function updatePlanUI(){
     proBtn.style.cssText = 'width:100%;background:var(--green-l);color:var(--green);border:1.5px solid var(--green);font-weight:800;';
     proBtn.textContent = '✓ Pro Plan Active';
     proBtn.onclick = function(){ toast('You are subscribed to Pro ✓'); };
-  // Add cancel subscription link below
-  const cancelLink = document.createElement('div');
-  cancelLink.style.cssText = 'text-align:center;margin-top:10px;font-size:11px;color:#94A3B8;';
-  cancelLink.innerHTML = '<span style="cursor:pointer;text-decoration:underline;" onclick="showCancelConfirm()">Cancel subscription</span>';
-  proCard.appendChild(cancelLink);
   } else {
     proBtn.className = 'btn btn-primary';
     proBtn.style.cssText = 'width:100%;background:linear-gradient(135deg,var(--gold),#FCD34D);color:var(--navy);';
@@ -4319,54 +4311,6 @@ function updatePlanUI(){
   proCard.appendChild(proBtn);
   container.appendChild(proCard);
 }
-function showCancelConfirm(){
-  const popup = document.createElement('div');
-  popup.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.8);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
-  const box = document.createElement('div');
-  box.style.cssText = 'background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;';
-  box.innerHTML =
-    '<div style="font-size:40px;margin-bottom:12px;">😢</div>'+
-    '<div style="font-size:17px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Cancel Pro?</div>'+
-    '<div style="font-size:13px;color:#64748B;margin-bottom:20px;line-height:1.5;">You will lose access to unlimited questions, AI tutor, and challenge mode at the end of your billing period.</div>';
-  const confirmBtn = document.createElement('button');
-  confirmBtn.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:#EF4444;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:8px;font-family:inherit;';
-  confirmBtn.textContent = 'Yes, Cancel Subscription';
-  confirmBtn.onclick = async function(){
-    confirmBtn.textContent = 'Cancelling...';
-    confirmBtn.disabled = true;
-    try{
-      const resp = await fetch('/api/cancel-subscription', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ userId: _currentUser.id })
-      });
-      const data = await resp.json();
-      if(data.success){
-        popup.remove();
-        S.plan='free'; S.tier='free'; S.aiPlan='free';
-        try{ localStorage.setItem('fm_tier','free'); }catch(e){}
-        saveState();
-        updateHUD(); updatePlanUI(); updateAIBanner();
-        toast('Subscription cancelled. You keep Pro until end of billing period.');
-      } else {
-        toast('Could not cancel. Please contact support@finmentra.com');
-        popup.remove();
-      }
-    }catch(err){
-      toast('Error cancelling. Please contact support@finmentra.com');
-      popup.remove();
-    }
-  };
-  const keepBtn = document.createElement('button');
-  keepBtn.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
-  keepBtn.textContent = 'Keep My Pro ✓';
-  keepBtn.onclick = ()=> popup.remove();
-  box.appendChild(confirmBtn);
-  box.appendChild(keepBtn);
-  popup.appendChild(box);
-  document.body.appendChild(popup);
-}
-
 function showEditNamePopup(){
   const existing = document.getElementById('edit-name-popup');
   if(existing) existing.remove();
@@ -4410,54 +4354,11 @@ function showEditNamePopup(){
 }
 
 function showAuthPopup(){
-  const authScreen = document.getElementById('auth-screen');
-  if(authScreen){ authScreen.classList.add('show'); return; }
-}
-
-function checkStripeReturn(){
-  // If coming back from Stripe payment, show congrats popup
-  const params = new URLSearchParams(window.location.search);
-  if(!params.get('session_id')) return;
-  // Remove session_id from URL without reload
-  window.history.replaceState({}, '', window.location.pathname);
-  // Wait for plan to load then show congrats
-  const check = setInterval(()=>{
-    if(!_planLoaded) return;
-    clearInterval(check);
-    if(isPro()){
-      // Clear any limit popups
-      document.querySelectorAll('.daily-limit-overlay').forEach(e=>e.remove());
-      const lr=document.getElementById('login-reward'); if(lr) lr.classList.remove('show');
-      // Show congrats
-      const popup = document.createElement('div');
-      popup.style.cssText = 'position:fixed;inset:0;z-index:4000;background:rgba(10,31,110,0.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
-      const box = document.createElement('div');
-      box.style.cssText = 'background:#fff;border-radius:24px;padding:32px 24px;max-width:340px;width:92%;text-align:center;';
-      box.innerHTML =
-        '<div style="font-size:56px;margin-bottom:12px;">🎉</div>'+
-        '<div style="font-family:var(--font-display);font-size:24px;font-weight:700;color:#0A1F6E;margin-bottom:8px;">Welcome to Pro!</div>'+
-        '<div style="font-size:13px;color:#64748B;line-height:1.6;margin-bottom:20px;">You now have unlimited questions, AI tutor, challenge mode and all Pro features unlocked!</div>'+
-        '<div style="background:#EEF2FF;border-radius:12px;padding:12px;margin-bottom:20px;text-align:left;">'+
-          '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">✅ Unlimited questions</div>'+
-          '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">✅ 50 AI questions/month</div>'+
-          '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">✅ Challenge & multiplayer</div>'+
-          '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">✅ All Pro tools unlocked</div>'+
-        '</div>';
-      const btn = document.createElement('button');
-      btn.style.cssText = 'width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#0A1F6E,#4A6CF7);color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
-      btn.textContent = 'Start Learning! 🚀';
-      btn.onclick = ()=>{ popup.remove(); spawnConfetti(); };
-      box.appendChild(btn);
-      popup.appendChild(box);
-      document.body.appendChild(popup);
-      spawnConfetti();
-    }
-  }, 300);
-}
-
-function showAuthPopup(){
-  const authScreen = document.getElementById('auth-screen');
-  if(authScreen){ authScreen.classList.add('show'); return; }
+  // Show the login/register overlay
+  const lr = document.getElementById('login-reward');
+  if(lr){ lr.classList.add('show'); return; }
+  // Fallback: show email auth
+  if(typeof showEmailAuth === 'function') showEmailAuth();
 }
 
 function updateAIBanner(){
@@ -4506,13 +4407,9 @@ function getDailyQKey(){
 }
 
 function getDailyQRemaining(){
-  // Always return 999 for pro users — check localStorage too for race condition
   if(!isFree()) return 999;
-  try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return 999; }catch(e){}
-  // Logged-in users: wait until plan confirmed loaded
-  if(_currentUser && !_planLoaded) return 999;
   const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
-  return Math.max(0, 15 - used);
+  return Math.max(0, 15 - used); // 15 total: 10 + 5 bonus
 }
 
 function getDailyQUsed(){
@@ -4521,8 +4418,6 @@ function getDailyQUsed(){
 
 function checkDailyQLimit(){
   if(!isFree()) return true;
-  try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return true; }catch(e){}
-  if(_currentUser && !_planLoaded) return true; // wait for plan to load
   const used = getDailyQUsed();
   if(used >= 15) return false; // hard stop at 15
   if(used >= 10){
@@ -4543,9 +4438,8 @@ function incrementDailyQ(){
 }
 
 function showDailyLimitPopup(){
-  // Pro users and logged-in users with pro in localStorage never see this
+  // Pro users should never see this
   if(isPro()) return;
-  try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return; }catch(e){}
   // Remove any existing
   document.querySelectorAll('.daily-limit-overlay').forEach(e=>e.remove());
 
@@ -4616,29 +4510,9 @@ function checkPlanFeature(feature){
     '<div style="font-size:18px;font-weight:700;color:#0A1F6E;margin-bottom:8px;">Pro Feature</div>'+
     '<div style="font-size:13px;color:#64748B;margin-bottom:24px;line-height:1.5;">'+msgs[feature]+'</div>';
   const upgradeBtn = document.createElement('button');
-  const loggedIn = !!(typeof _currentUser !== 'undefined' && _currentUser);
-
-  upgradeBtn.textContent = loggedIn ? 'Upgrade to Pro 🚀' : 'Sign Up Free 🚀';
+  upgradeBtn.textContent='Upgrade Now 🚀';
   upgradeBtn.style.cssText='width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:var(--font-body);';
-  upgradeBtn.onclick=()=>{
-    popup.remove();
-    if(loggedIn){
-      // Already signed in — go to profile to upgrade plan
-      if(typeof showScreen==='function') showScreen('profile');
-    } else {
-      // Not signed in — show signup/login screen first
-      if(typeof showAuthPopup==='function') showAuthPopup();
-    }
-  };
-
-  // If logged in, also show a "Sign Up first" hint below
-  if(!loggedIn){
-    const hint = document.createElement('div');
-    hint.style.cssText = 'font-size:11px;color:#94A3B8;margin-bottom:10px;';
-    hint.textContent = 'Create a free account, then upgrade to Pro';
-    box.appendChild(hint);
-  }
-
+  upgradeBtn.onclick=()=>{ popup.remove(); if(typeof showScreen==='function') showScreen('shop'); };
   const cancelBtn = document.createElement('button');
   cancelBtn.textContent='Maybe Later';
   cancelBtn.style.cssText='width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);';
@@ -6817,41 +6691,24 @@ function matchStudyBuddy(){
 
 // ── PRO TRIAL ──
 S.tier = S.tier || 'free';
-async function startProTrial(){
-  // Must be logged in to upgrade to Pro
+function startProTrial(){
+  // Must be logged in to activate Pro
   if(!_currentUser){
     toast('Please sign up or login first to upgrade to Pro.');
     if(typeof showAuthPopup === 'function') showAuthPopup();
     return;
   }
-  // Already Pro
-  if(isPro()){
-    toast('You are already on Pro! ✓');
-    return;
-  }
-  // Show loading state
-  toast('Redirecting to secure payment... 🔒');
-  try{
-    const resp = await fetch('/api/create-checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId: _currentUser.id,
-        userEmail: _currentUser.email
-      })
-    });
-    const data = await resp.json();
-    if(data.url){
-      // Redirect to Stripe Checkout
-      window.location.href = data.url;
-    } else {
-      toast('Payment setup failed. Please try again.');
-      console.error('Stripe error:', data.error);
-    }
-  } catch(err){
-    toast('Connection error. Please try again.');
-    console.error('Checkout error:', err);
-  }
+  S.plan='pro'; S.tier='pro'; S.aiPlan='pro'; S.aiUsedMonth=0;
+  try{localStorage.setItem('fm_tier','pro');}catch(e){}
+  saveState();
+  if(typeof saveUserProgress === 'function') saveUserProgress();
+  spawnConfetti();
+  toast('Pro trial activated! 7 days free. Enjoy all features.');
+  showBadgeToast('Welcome to Pro! 🎉 All features unlocked.');
+  updateHUD();
+  if(typeof renderTopics === 'function') renderTopics();
+  if(typeof updateAIBanner === 'function') updateAIBanner();
+  if(typeof updatePlanUI === 'function') updatePlanUI();
 }
 
 // ── DOMAIN ACCENT COLORS on practice screen ──
@@ -7924,18 +7781,23 @@ let _currentUser = null;
 let _isGuest = false;
 let _guestQCount = 0;
 let _guestBonusUsed = false;
-let _planLoaded = false; // becomes true after Supabase plan is confirmed
 
 // ── GUEST MODE ──
 function startAsGuest(){
   _isGuest = true;
   _guestQCount = 0;
-  _guestBonusUsed = false;
   document.getElementById('auth-screen').classList.remove('show');
-  // Always start with 10 question threshold — day-2 logic removed as it caused early interruptions
+  // Check if day 2 (came back without registering)
   try {
-    localStorage.setItem('fm_guest_threshold', '10');
-    localStorage.setItem('fm_last_visit', new Date().toDateString());
+    const lastVisit = localStorage.getItem('fm_last_visit');
+    const today = new Date().toDateString();
+    if(lastVisit && lastVisit !== today){
+      // Day 2+ user — they came back! Lower threshold to 3
+      localStorage.setItem('fm_guest_threshold', '3');
+    } else {
+      localStorage.setItem('fm_guest_threshold', '10');
+    }
+    localStorage.setItem('fm_last_visit', today);
   } catch(e){}
 }
 
@@ -7947,8 +7809,7 @@ function getGuestThreshold(){
 function checkGuestPrompt(){
   if(_currentUser || !_isGuest) return;
   _guestQCount++;
-  // Minimum 10 questions before showing register popup (never interrupt early)
-  const threshold = _guestBonusUsed ? 9999 : Math.max(10, getGuestThreshold());
+  const threshold = _guestBonusUsed ? 9999 : getGuestThreshold();
   if(_guestQCount >= threshold){
     showRegisterPopup();
   }
@@ -7981,6 +7842,7 @@ function showEmailAuth(){
 
 // ── SOCIAL LOGIN ──
 async function signInWithGoogle(){
+  // On mobile apps use deep link so OS returns to app after OAuth
   const isMobileApp = window.navigator.userAgent.includes('FinMentra') ||
                       window.location.protocol === 'capacitor:' ||
                       window.location.protocol === 'ionic:' ||
@@ -7988,13 +7850,7 @@ async function signInWithGoogle(){
   const redirectTo = isMobileApp ? 'finmentra://auth/callback' : 'https://www.finmentra.com';
   const { error } = await _supa.auth.signInWithOAuth({
     provider: 'google',
-    options: {
-      redirectTo,
-      queryParams: {
-        prompt: 'select_account',   // always show account picker
-        access_type: 'offline'
-      }
-    }
+    options: { redirectTo }
   });
   if(error) toast('Google login failed: ' + error.message);
 }
@@ -8081,8 +7937,6 @@ async function loadUserProgress() {
       S.totalQ = data.total_questions || 0;
       S.totalCorrect = data.total_correct || 0;
       S.hearts = data.hearts || 3;
-      // FIX: Load onboarding status from Supabase
-      if(data.onboarding_done) S.onboardingDone = true;
       // FIX: Load plan/tier from Supabase so Pro persists on refresh
       if(data.plan && data.plan !== 'free'){
         S.plan = data.plan;
@@ -8100,16 +7954,6 @@ async function loadUserProgress() {
       if(_currentUser && _currentUser.email === 'demo@finmentra.com'){
         S.plan='pro'; S.tier='pro'; S.aiPlan='pro';
         try{ localStorage.setItem('fm_tier','pro'); }catch(e){}
-      }
-      _planLoaded = true; // plan confirmed from Supabase
-      // If pro — clear daily question count so no limit popup shows
-      if(isPro()){
-        try{
-          Object.keys(localStorage).forEach(k => {
-            if(k.startsWith('fm_dq_') || k.startsWith('fm_bonus_used_')) localStorage.removeItem(k);
-          });
-          document.querySelectorAll('.daily-limit-overlay').forEach(e=>e.remove());
-        }catch(e){}
       }
       updateHUD();
       if(typeof renderTopics === 'function') renderTopics();
@@ -8134,7 +7978,7 @@ async function loadUserProgress() {
   // Demo account and any user with Supabase data: always skip onboarding
   const isDemoAccount = _currentUser && _currentUser.email === 'demo@finmentra.com';
   const hasSupabaseData = !!(data && (data.xp > 0 || data.total_questions > 0));
-  const hasCompletedOnboarding = isDemoAccount || hasSupabaseData || S.onboardingDone === true || data?.onboarding_done === true || S.gender || S.mode || S.xp > 0;
+  const hasCompletedOnboarding = isDemoAccount || hasSupabaseData || S.onboardingDone === true || S.gender || S.mode || S.xp > 0;
   
   if(!hasCompletedOnboarding){
     // Brand new user — show onboarding
@@ -8184,7 +8028,6 @@ async function saveUserProgress() {
       best_streak: S.bestStreak, total_questions: S.totalQ,
       total_correct: S.totalCorrect, hearts: S.hearts,
       plan: S.plan || 'free',
-      onboarding_done: true,
       updated_at: new Date().toISOString()
     }, { onConflict: 'user_id' });
   } catch(e){ saveState(); }
@@ -8214,26 +8057,6 @@ async function doLogout(){
   _isGuest = false;
   _guestQCount = 0;
   _guestBonusUsed = false;
-
-  // Clear ALL user-specific localStorage so next visitor starts fresh
-  const keysToRemove = [
-    'fm_tier', 'fm_state', 'fm_ai_today', 'fm_ai_month',
-    'fm_last_reward_date', 'fm_login_streak', 'fm_guest_threshold',
-    'fm_ch_stats', 'fm_dark'
-  ];
-  keysToRemove.forEach(k => { try{ localStorage.removeItem(k); }catch(e){} });
-  // Also clear any daily question keys (fm_dq_*)
-  try{
-    Object.keys(localStorage).forEach(k => {
-      if(k.startsWith('fm_dq_') || k.startsWith('fm_bonus_used_')) localStorage.removeItem(k);
-    });
-  }catch(e){}
-
-  // Reset in-memory state to defaults
-  S.plan = 'free'; S.tier = 'free'; S.aiPlan = 'free';
-  S.xp = 0; S.coins = 240; S.streak = 0; S.username = '';
-  S.onboardingDone = false; S.mode = null; S.gender = null;
-
   document.getElementById('auth-screen').classList.add('show');
 }
 
@@ -8282,7 +8105,6 @@ async function doLogout(){
     document.getElementById('auth-screen').classList.remove('show');
     await loadUserProgress();
     updatePlanUI();
-    checkStripeReturn();
     // Show daily reward if not claimed today
     setTimeout(checkAndShowDailyReward, 1000);
   }
@@ -8300,7 +8122,6 @@ async function doLogout(){
       closeRegPopup();
       await loadUserProgress();
       updatePlanUI();
-      checkStripeReturn();
       // Update display name immediately
       const dn = getDisplayName(_currentUser);
       const ne = document.getElementById('home-mentor-name');
@@ -9614,11 +9435,6 @@ document.addEventListener('visibilitychange', ()=>{
     clearInterval(MM.searchInterval);
     clearInterval(MM.searchTimer);
   }
-  // When app comes back to foreground — re-check plan from Supabase
-  // (user may have just paid on the website)
-  if(!document.hidden && typeof _currentUser !== 'undefined' && _currentUser){
-    if(typeof loadUserProgress === 'function') loadUserProgress();
-  }
 });
 
 // ── ELO RATING UPDATE ──
@@ -9791,44 +9607,6 @@ showScreen = function(id){
 
 // ── AUTO SAVE EVERY 30s ──
 setInterval(saveUserProgress, 30000);
-</script>
-<script>
-// ── CONTENT PROTECTION ──
-// Disable right click
-document.addEventListener('contextmenu', function(e){
-  e.preventDefault();
-});
-
-// Disable F12, Ctrl+Shift+I, Ctrl+U, Ctrl+Shift+C, Ctrl+S
-document.addEventListener('keydown', function(e){
-  if(
-    e.key === 'F12' ||
-    (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
-    (e.ctrlKey && e.key === 'U') ||
-    (e.ctrlKey && e.key === 'S')
-  ){
-    e.preventDefault();
-    return false;
-  }
-});
-
-// Detect DevTools open (basic detection)
-(function(){
-  const threshold = 160;
-  function check(){
-    if(window.outerWidth - window.innerWidth > threshold ||
-       window.outerHeight - window.innerHeight > threshold){
-      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;flex-direction:column;gap:16px;background:#0A1F6E;color:#fff;"><div style="font-size:48px;">🔒</div><div style="font-size:20px;font-weight:700;">FinMentra</div><div style="font-size:14px;opacity:.7;">Please close DevTools to continue</div></div>';
-    }
-  }
-  setInterval(check, 1000);
-})();
-
-// Disable text selection on non-input elements
-document.addEventListener('selectstart', function(e){
-  if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-  e.preventDefault();
-});
 </script>
 </body>
 </html>
