@@ -6709,24 +6709,41 @@ function matchStudyBuddy(){
 
 // ── PRO TRIAL ──
 S.tier = S.tier || 'free';
-function startProTrial(){
-  // Must be logged in to activate Pro
+async function startProTrial(){
+  // Must be logged in to upgrade to Pro
   if(!_currentUser){
     toast('Please sign up or login first to upgrade to Pro.');
     if(typeof showAuthPopup === 'function') showAuthPopup();
     return;
   }
-  S.plan='pro'; S.tier='pro'; S.aiPlan='pro'; S.aiUsedMonth=0;
-  try{localStorage.setItem('fm_tier','pro');}catch(e){}
-  saveState();
-  if(typeof saveUserProgress === 'function') saveUserProgress();
-  spawnConfetti();
-  toast('Pro trial activated! 7 days free. Enjoy all features.');
-  showBadgeToast('Welcome to Pro! 🎉 All features unlocked.');
-  updateHUD();
-  if(typeof renderTopics === 'function') renderTopics();
-  if(typeof updateAIBanner === 'function') updateAIBanner();
-  if(typeof updatePlanUI === 'function') updatePlanUI();
+  // Already Pro
+  if(isPro()){
+    toast('You are already on Pro! ✓');
+    return;
+  }
+  // Show loading state
+  toast('Redirecting to secure payment... 🔒');
+  try{
+    const resp = await fetch('/api/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: _currentUser.id,
+        userEmail: _currentUser.email
+      })
+    });
+    const data = await resp.json();
+    if(data.url){
+      // Redirect to Stripe Checkout
+      window.location.href = data.url;
+    } else {
+      toast('Payment setup failed. Please try again.');
+      console.error('Stripe error:', data.error);
+    }
+  } catch(err){
+    toast('Connection error. Please try again.');
+    console.error('Checkout error:', err);
+  }
 }
 
 // ── DOMAIN ACCENT COLORS on practice screen ──
@@ -9473,6 +9490,11 @@ document.addEventListener('visibilitychange', ()=>{
     clearInterval(MM.searchInterval);
     clearInterval(MM.searchTimer);
   }
+  // When app comes back to foreground — re-check plan from Supabase
+  // (user may have just paid on the website)
+  if(!document.hidden && typeof _currentUser !== 'undefined' && _currentUser){
+    if(typeof loadUserProgress === 'function') loadUserProgress();
+  }
 });
 
 // ── ELO RATING UPDATE ──
@@ -9645,6 +9667,44 @@ showScreen = function(id){
 
 // ── AUTO SAVE EVERY 30s ──
 setInterval(saveUserProgress, 30000);
+</script>
+<script>
+// ── CONTENT PROTECTION ──
+// Disable right click
+document.addEventListener('contextmenu', function(e){
+  e.preventDefault();
+});
+
+// Disable F12, Ctrl+Shift+I, Ctrl+U, Ctrl+Shift+C, Ctrl+S
+document.addEventListener('keydown', function(e){
+  if(
+    e.key === 'F12' ||
+    (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+    (e.ctrlKey && e.key === 'U') ||
+    (e.ctrlKey && e.key === 'S')
+  ){
+    e.preventDefault();
+    return false;
+  }
+});
+
+// Detect DevTools open (basic detection)
+(function(){
+  const threshold = 160;
+  function check(){
+    if(window.outerWidth - window.innerWidth > threshold ||
+       window.outerHeight - window.innerHeight > threshold){
+      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;flex-direction:column;gap:16px;background:#0A1F6E;color:#fff;"><div style="font-size:48px;">🔒</div><div style="font-size:20px;font-weight:700;">FinMentra</div><div style="font-size:14px;opacity:.7;">Please close DevTools to continue</div></div>';
+    }
+  }
+  setInterval(check, 1000);
+})();
+
+// Disable text selection on non-input elements
+document.addEventListener('selectstart', function(e){
+  if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  e.preventDefault();
+});
 </script>
 </body>
 </html>
