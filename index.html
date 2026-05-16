@@ -3939,12 +3939,15 @@ function closeOnboarding(){
 
 function checkAndShowDailyReward(){
   try{
-    // Pro users who are already logged in: don't show reward popup on every refresh
-    if(isPro() && typeof _currentUser !== 'undefined' && _currentUser) return;
+    // Only show for logged-in users
+    if(!_currentUser) return;
+    // Never show for Pro users
+    if(isPro()) return;
+    // Never show if already claimed today
     const today = new Date().toDateString();
     const lastClaim = localStorage.getItem('fm_last_reward_date');
-    if(lastClaim === today) return; // Already claimed today — don't show
-    // Build the reward popup with real data
+    if(lastClaim === today) return;
+    // Build and show reward popup
     buildLoginRewardUI();
     setTimeout(()=>document.getElementById('login-reward').classList.add('show'),600);
   }catch(e){}
@@ -4302,6 +4305,11 @@ function updatePlanUI(){
     proBtn.style.cssText = 'width:100%;background:var(--green-l);color:var(--green);border:1.5px solid var(--green);font-weight:800;';
     proBtn.textContent = '✓ Pro Plan Active';
     proBtn.onclick = function(){ toast('You are subscribed to Pro ✓'); };
+  // Add cancel subscription link below
+  const cancelLink = document.createElement('div');
+  cancelLink.style.cssText = 'text-align:center;margin-top:10px;font-size:11px;color:#94A3B8;';
+  cancelLink.innerHTML = '<span style="cursor:pointer;text-decoration:underline;" onclick="showCancelConfirm()">Cancel subscription</span>';
+  proCard.appendChild(cancelLink);
   } else {
     proBtn.className = 'btn btn-primary';
     proBtn.style.cssText = 'width:100%;background:linear-gradient(135deg,var(--gold),#FCD34D);color:var(--navy);';
@@ -4311,6 +4319,54 @@ function updatePlanUI(){
   proCard.appendChild(proBtn);
   container.appendChild(proCard);
 }
+function showCancelConfirm(){
+  const popup = document.createElement('div');
+  popup.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.8);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;';
+  box.innerHTML =
+    '<div style="font-size:40px;margin-bottom:12px;">😢</div>'+
+    '<div style="font-size:17px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Cancel Pro?</div>'+
+    '<div style="font-size:13px;color:#64748B;margin-bottom:20px;line-height:1.5;">You will lose access to unlimited questions, AI tutor, and challenge mode at the end of your billing period.</div>';
+  const confirmBtn = document.createElement('button');
+  confirmBtn.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:#EF4444;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:8px;font-family:inherit;';
+  confirmBtn.textContent = 'Yes, Cancel Subscription';
+  confirmBtn.onclick = async function(){
+    confirmBtn.textContent = 'Cancelling...';
+    confirmBtn.disabled = true;
+    try{
+      const resp = await fetch('/api/cancel-subscription', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ userId: _currentUser.id })
+      });
+      const data = await resp.json();
+      if(data.success){
+        popup.remove();
+        S.plan='free'; S.tier='free'; S.aiPlan='free';
+        try{ localStorage.setItem('fm_tier','free'); }catch(e){}
+        saveState();
+        updateHUD(); updatePlanUI(); updateAIBanner();
+        toast('Subscription cancelled. You keep Pro until end of billing period.');
+      } else {
+        toast('Could not cancel. Please contact support@finmentra.com');
+        popup.remove();
+      }
+    }catch(err){
+      toast('Error cancelling. Please contact support@finmentra.com');
+      popup.remove();
+    }
+  };
+  const keepBtn = document.createElement('button');
+  keepBtn.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
+  keepBtn.textContent = 'Keep My Pro ✓';
+  keepBtn.onclick = ()=> popup.remove();
+  box.appendChild(confirmBtn);
+  box.appendChild(keepBtn);
+  popup.appendChild(box);
+  document.body.appendChild(popup);
+}
+
 function showEditNamePopup(){
   const existing = document.getElementById('edit-name-popup');
   if(existing) existing.remove();
@@ -4436,8 +4492,9 @@ function incrementDailyQ(){
 }
 
 function showDailyLimitPopup(){
-  // Pro users should never see this
+  // Pro users and logged-in users with pro in localStorage never see this
   if(isPro()) return;
+  try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return; }catch(e){}
   // Remove any existing
   document.querySelectorAll('.daily-limit-overlay').forEach(e=>e.remove());
 
@@ -7972,6 +8029,8 @@ async function loadUserProgress() {
       S.totalQ = data.total_questions || 0;
       S.totalCorrect = data.total_correct || 0;
       S.hearts = data.hearts || 3;
+      // FIX: Load onboarding status from Supabase
+      if(data.onboarding_done) S.onboardingDone = true;
       // FIX: Load plan/tier from Supabase so Pro persists on refresh
       if(data.plan && data.plan !== 'free'){
         S.plan = data.plan;
@@ -8013,7 +8072,7 @@ async function loadUserProgress() {
   // Demo account and any user with Supabase data: always skip onboarding
   const isDemoAccount = _currentUser && _currentUser.email === 'demo@finmentra.com';
   const hasSupabaseData = !!(data && (data.xp > 0 || data.total_questions > 0));
-  const hasCompletedOnboarding = isDemoAccount || hasSupabaseData || S.onboardingDone === true || S.gender || S.mode || S.xp > 0;
+  const hasCompletedOnboarding = isDemoAccount || hasSupabaseData || S.onboardingDone === true || data?.onboarding_done === true || S.gender || S.mode || S.xp > 0;
   
   if(!hasCompletedOnboarding){
     // Brand new user — show onboarding
@@ -8063,6 +8122,7 @@ async function saveUserProgress() {
       best_streak: S.bestStreak, total_questions: S.totalQ,
       total_correct: S.totalCorrect, hearts: S.hearts,
       plan: S.plan || 'free',
+      onboarding_done: true,
       updated_at: new Date().toISOString()
     }, { onConflict: 'user_id' });
   } catch(e){ saveState(); }
