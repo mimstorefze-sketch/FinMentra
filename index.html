@@ -205,16 +205,26 @@ a{color:inherit;text-decoration:none;}
 .screen.active{display:flex;}
 /* Challenge screen: true fullscreen — override everything */
 #screen-multiplayer.active{
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  z-index: 100 !important;
-  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column;
   background: #f0f4ff;
+  min-height: calc(100vh - 80px);
+  overflow-y: auto;
+}
+/* Mobile only — go fullscreen */
+@media (max-width: 768px){
+  #screen-multiplayer.active{
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 100 !important;
+    overflow: hidden !important;
+    min-height: unset;
+  }
 }
 /* Legacy selector kept for compatibility */
 #screen-multiplayer.active-old{
@@ -3160,13 +3170,16 @@ function showScreen(id){
   const shell = document.querySelector('.shell');
   if(id==='multiplayer'){
     if(shell) shell.classList.add('no-top-pad');
-    // Hide top nav and mode switch in challenge — fullscreen mode
+    // Hide top nav and mode switch — mobile only
+    const isMobile = window.innerWidth <= 768;
     const navEl = document.querySelector('nav.nav');
     const modeEl = document.querySelector('.mode-switch');
-    if(navEl) navEl.style.display = 'none';
-    if(modeEl) modeEl.style.display = 'none';
+    if(isMobile){
+      if(navEl) navEl.style.display = 'none';
+      if(modeEl) modeEl.style.display = 'none';
+      document.body.style.overflow = 'hidden';
+    }
     window.scrollTo(0,0);
-    document.body.style.overflow = 'hidden';
   } else {
     if(shell) shell.classList.remove('no-top-pad');
     // Restore top nav and mode switch
@@ -4478,8 +4491,9 @@ function showAuthPopup(){
 function checkStripeReturn(){
   // If coming back from Stripe payment, show congrats popup
   const params = new URLSearchParams(window.location.search);
-  if(!params.get('session_id')) return;
-  // Remove session_id from URL without reload
+  const hasUpgraded = params.get('upgraded') === 'true' || params.get('session_id');
+  if(!hasUpgraded) return;
+  // Remove params from URL without reload
   window.history.replaceState({}, '', window.location.pathname);
   // Wait for plan to load then show congrats
   const check = setInterval(()=>{
@@ -6904,6 +6918,7 @@ async function startProTrial(){
     const data = await resp.json();
     if(data.url){
       // Redirect to Stripe Checkout
+      // Open Stripe in same window — comes back to app after payment
       window.location.href = data.url;
     } else {
       toast('Payment setup failed. Please try again.');
@@ -8451,11 +8466,13 @@ function showChallengeSection(section){
     shell.style.paddingBottom = '0';
     shell.style.overflow = 'hidden';
   }
-  // Hide top nav and mode switch in challenge
-  const navEl = document.querySelector('nav.nav');
-  const modeEl = document.querySelector('.mode-switch');
-  if(navEl) navEl.style.display = 'none';
-  if(modeEl) modeEl.style.display = 'none';
+  // Hide top nav and mode switch — mobile only
+  if(window.innerWidth <= 768){
+    const navEl = document.querySelector('nav.nav');
+    const modeEl = document.querySelector('.mode-switch');
+    if(navEl) navEl.style.display = 'none';
+    if(modeEl) modeEl.style.display = 'none';
+  }
   // Scroll to top
   if(mpScreen) mpScreen.scrollTop = 0;
   window.scrollTo(0,0);
