@@ -43,6 +43,14 @@ console.log('✅ Supabase initialized');
 #auth-screen.show {
   display:flex;
 }
+/* Loading overlay — shows while checking session */
+#session-loader {
+  position:fixed;inset:0;z-index:3000;
+  background:#0A1F6E;
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:16px;
+}
+#session-loader.hidden { display:none; }
 .auth-box {
   background:#fff;border-radius:24px;padding:32px 24px 24px;
   max-width:360px;width:92%;text-align:center;
@@ -1429,6 +1437,14 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 </style>
 </head>
 <body>
+<!-- Session loader — shows while checking if user is logged in -->
+<div id="session-loader">
+  <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;color:#fff;">Fin<em>Mentra</em></div>
+  <div style="width:40px;height:40px;border:3px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+</div>
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
 
 <!-- LOGIN REWARD -->
 <div id="login-reward">
@@ -3105,14 +3121,22 @@ function showScreen(id){
   if(id==='topics'){ if(typeof renderTopics==='function') renderTopics(); }
   if(id==='vault'){ renderVault(); }
   if(id==='profile'){
-    if(typeof updatePlanUI==='function') updatePlanUI();
-    // Show user email on profile
-    const emailLabel = document.getElementById('profile-email-label');
-    if(emailLabel && typeof _currentUser !== 'undefined' && _currentUser){
-      emailLabel.textContent = _currentUser.email || '';
+    // Wait for plan to load before rendering plan cards
+    const renderProfile = () => {
+      if(typeof updatePlanUI==='function') updatePlanUI();
+      const emailLabel = document.getElementById('profile-email-label');
+      if(emailLabel && typeof _currentUser !== 'undefined' && _currentUser){
+        emailLabel.textContent = _currentUser.email || '';
+      }
+      if(typeof updateMentorName === 'function') updateMentorName();
+    };
+    if(_planLoaded || !_currentUser){
+      renderProfile();
+    } else {
+      // Retry after Supabase loads plan
+      renderProfile(); // render immediately with what we have
+      setTimeout(renderProfile, 1500); // re-render after plan confirmed
     }
-    // Update name
-    if(typeof updateMentorName === 'function') updateMentorName();
   }
   // Fix: shell padding for multiplayer/challenge screen
   const shell = document.querySelector('.shell');
@@ -3924,12 +3948,16 @@ function closeOnboarding(){
   buildMentor();updateMentorName();
   document.getElementById('hw-greeting').textContent=getMoodGreeting();
   applyModeUI(S.mode);
-  // Navigate to correct home screen
-  const homeId = S.mode === 'professional' ? 'screen-pro-home' : 'screen-home';
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const homeEl = document.getElementById(homeId);
-  if(homeEl) homeEl.classList.add('active');
-  S.screen = S.mode === 'professional' ? 'pro-home' : 'home';
+  // Navigate to correct home screen using showScreen
+  const targetScreen = S.mode === 'professional' ? 'pro-home' : 'home';
+  if(typeof showScreen === 'function'){
+    showScreen(targetScreen);
+  } else {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const homeEl = document.getElementById('screen-' + targetScreen);
+    if(homeEl) homeEl.classList.add('active');
+    S.screen = targetScreen;
+  }
   renderBottomNav();
   updateHUD();
   updateMissions();
@@ -3939,12 +3967,15 @@ function closeOnboarding(){
 
 function checkAndShowDailyReward(){
   try{
-    // Pro users who are already logged in: don't show reward popup on every refresh
-    if(isPro() && typeof _currentUser !== 'undefined' && _currentUser) return;
+    // Only show for logged-in users
+    if(!_currentUser) return;
+    // Never show for Pro users
+    if(isPro()) return;
+    // Never show if already claimed today
     const today = new Date().toDateString();
     const lastClaim = localStorage.getItem('fm_last_reward_date');
-    if(lastClaim === today) return; // Already claimed today — don't show
-    // Build the reward popup with real data
+    if(lastClaim === today) return;
+    // Build and show reward popup
     buildLoginRewardUI();
     setTimeout(()=>document.getElementById('login-reward').classList.add('show'),600);
   }catch(e){}
@@ -4309,8 +4340,63 @@ function updatePlanUI(){
     proBtn.onclick = startProTrial;
   }
   proCard.appendChild(proBtn);
+  // Cancel subscription link (only for Pro users)
+  if(pro){
+    const cancelLink = document.createElement('div');
+    cancelLink.style.cssText = 'text-align:center;margin-top:12px;font-size:11px;color:#94A3B8;';
+    cancelLink.innerHTML = '<span style="cursor:pointer;text-decoration:underline;color:#EF4444;" onclick="showCancelConfirm()">Cancel subscription</span>';
+    proCard.appendChild(cancelLink);
+  }
   container.appendChild(proCard);
 }
+function showCancelConfirm(){
+  const popup = document.createElement('div');
+  popup.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.8);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;';
+  box.innerHTML =
+    '<div style="font-size:40px;margin-bottom:12px;">😢</div>'+
+    '<div style="font-size:17px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Cancel Pro?</div>'+
+    '<div style="font-size:13px;color:#64748B;margin-bottom:20px;line-height:1.5;">You will lose access to unlimited questions, AI tutor, and challenge mode at the end of your billing period.</div>';
+  const confirmBtn = document.createElement('button');
+  confirmBtn.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:#EF4444;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:8px;font-family:inherit;';
+  confirmBtn.textContent = 'Yes, Cancel Subscription';
+  confirmBtn.onclick = async function(){
+    confirmBtn.textContent = 'Cancelling...';
+    confirmBtn.disabled = true;
+    try{
+      const resp = await fetch('/api/cancel-subscription', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ userId: _currentUser.id })
+      });
+      const data = await resp.json();
+      if(data.success){
+        popup.remove();
+        S.plan='free'; S.tier='free'; S.aiPlan='free';
+        try{ localStorage.setItem('fm_tier','free'); }catch(e){}
+        saveState();
+        updateHUD(); updatePlanUI(); updateAIBanner();
+        toast('Subscription cancelled. You keep Pro until end of billing period.');
+      } else {
+        toast('Could not cancel. Please contact support@finmentra.com');
+        popup.remove();
+      }
+    }catch(err){
+      toast('Error cancelling. Please contact support@finmentra.com');
+      popup.remove();
+    }
+  };
+  const keepBtn = document.createElement('button');
+  keepBtn.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
+  keepBtn.textContent = 'Keep My Pro ✓';
+  keepBtn.onclick = ()=> popup.remove();
+  box.appendChild(confirmBtn);
+  box.appendChild(keepBtn);
+  popup.appendChild(box);
+  document.body.appendChild(popup);
+}
+
 function showEditNamePopup(){
   const existing = document.getElementById('edit-name-popup');
   if(existing) existing.remove();
@@ -4354,11 +4440,54 @@ function showEditNamePopup(){
 }
 
 function showAuthPopup(){
-  // Show the login/register overlay
-  const lr = document.getElementById('login-reward');
-  if(lr){ lr.classList.add('show'); return; }
-  // Fallback: show email auth
-  if(typeof showEmailAuth === 'function') showEmailAuth();
+  const authScreen = document.getElementById('auth-screen');
+  if(authScreen){ authScreen.classList.add('show'); return; }
+}
+
+function checkStripeReturn(){
+  // If coming back from Stripe payment, show congrats popup
+  const params = new URLSearchParams(window.location.search);
+  if(!params.get('session_id')) return;
+  // Remove session_id from URL without reload
+  window.history.replaceState({}, '', window.location.pathname);
+  // Wait for plan to load then show congrats
+  const check = setInterval(()=>{
+    if(!_planLoaded) return;
+    clearInterval(check);
+    if(isPro()){
+      // Clear any limit popups
+      document.querySelectorAll('.daily-limit-overlay').forEach(e=>e.remove());
+      const lr=document.getElementById('login-reward'); if(lr) lr.classList.remove('show');
+      // Show congrats
+      const popup = document.createElement('div');
+      popup.style.cssText = 'position:fixed;inset:0;z-index:4000;background:rgba(10,31,110,0.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+      const box = document.createElement('div');
+      box.style.cssText = 'background:#fff;border-radius:24px;padding:32px 24px;max-width:340px;width:92%;text-align:center;';
+      box.innerHTML =
+        '<div style="font-size:56px;margin-bottom:12px;">🎉</div>'+
+        '<div style="font-family:var(--font-display);font-size:24px;font-weight:700;color:#0A1F6E;margin-bottom:8px;">Welcome to Pro!</div>'+
+        '<div style="font-size:13px;color:#64748B;line-height:1.6;margin-bottom:20px;">You now have unlimited questions, AI tutor, challenge mode and all Pro features unlocked!</div>'+
+        '<div style="background:#EEF2FF;border-radius:12px;padding:12px;margin-bottom:20px;text-align:left;">'+
+          '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">✅ Unlimited questions</div>'+
+          '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">✅ 50 AI questions/month</div>'+
+          '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">✅ Challenge & multiplayer</div>'+
+          '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">✅ All Pro tools unlocked</div>'+
+        '</div>';
+      const btn = document.createElement('button');
+      btn.style.cssText = 'width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#0A1F6E,#4A6CF7);color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
+      btn.textContent = 'Start Learning! 🚀';
+      btn.onclick = ()=>{ popup.remove(); spawnConfetti(); };
+      box.appendChild(btn);
+      popup.appendChild(box);
+      document.body.appendChild(popup);
+      spawnConfetti();
+    }
+  }, 300);
+}
+
+function showAuthPopup(){
+  const authScreen = document.getElementById('auth-screen');
+  if(authScreen){ authScreen.classList.add('show'); return; }
 }
 
 function updateAIBanner(){
@@ -4407,9 +4536,13 @@ function getDailyQKey(){
 }
 
 function getDailyQRemaining(){
+  // Always return 999 for pro users — check localStorage too for race condition
   if(!isFree()) return 999;
+  try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return 999; }catch(e){}
+  // Logged-in users: wait until plan confirmed loaded
+  if(_currentUser && !_planLoaded) return 999;
   const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
-  return Math.max(0, 15 - used); // 15 total: 10 + 5 bonus
+  return Math.max(0, 15 - used);
 }
 
 function getDailyQUsed(){
@@ -4418,6 +4551,8 @@ function getDailyQUsed(){
 
 function checkDailyQLimit(){
   if(!isFree()) return true;
+  try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return true; }catch(e){}
+  if(_currentUser && !_planLoaded) return true; // wait for plan to load
   const used = getDailyQUsed();
   if(used >= 15) return false; // hard stop at 15
   if(used >= 10){
@@ -4438,8 +4573,9 @@ function incrementDailyQ(){
 }
 
 function showDailyLimitPopup(){
-  // Pro users should never see this
+  // Pro users and logged-in users with pro in localStorage never see this
   if(isPro()) return;
+  try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return; }catch(e){}
   // Remove any existing
   document.querySelectorAll('.daily-limit-overlay').forEach(e=>e.remove());
 
@@ -4510,9 +4646,29 @@ function checkPlanFeature(feature){
     '<div style="font-size:18px;font-weight:700;color:#0A1F6E;margin-bottom:8px;">Pro Feature</div>'+
     '<div style="font-size:13px;color:#64748B;margin-bottom:24px;line-height:1.5;">'+msgs[feature]+'</div>';
   const upgradeBtn = document.createElement('button');
-  upgradeBtn.textContent='Upgrade Now 🚀';
+  const loggedIn = !!(typeof _currentUser !== 'undefined' && _currentUser);
+
+  upgradeBtn.textContent = loggedIn ? 'Upgrade to Pro 🚀' : 'Sign Up Free 🚀';
   upgradeBtn.style.cssText='width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:var(--font-body);';
-  upgradeBtn.onclick=()=>{ popup.remove(); if(typeof showScreen==='function') showScreen('shop'); };
+  upgradeBtn.onclick=()=>{
+    popup.remove();
+    if(loggedIn){
+      // Already signed in — go to profile to upgrade plan
+      if(typeof showScreen==='function') showScreen('profile');
+    } else {
+      // Not signed in — show signup/login screen first
+      if(typeof showAuthPopup==='function') showAuthPopup();
+    }
+  };
+
+  // If logged in, also show a "Sign Up first" hint below
+  if(!loggedIn){
+    const hint = document.createElement('div');
+    hint.style.cssText = 'font-size:11px;color:#94A3B8;margin-bottom:10px;';
+    hint.textContent = 'Create a free account, then upgrade to Pro';
+    box.appendChild(hint);
+  }
+
   const cancelBtn = document.createElement('button');
   cancelBtn.textContent='Maybe Later';
   cancelBtn.style.cssText='width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);';
@@ -6691,24 +6847,41 @@ function matchStudyBuddy(){
 
 // ── PRO TRIAL ──
 S.tier = S.tier || 'free';
-function startProTrial(){
-  // Must be logged in to activate Pro
+async function startProTrial(){
+  // Must be logged in to upgrade to Pro
   if(!_currentUser){
-    toast('Please sign up or login first to upgrade to Pro.');
+    // Show auth screen directly — no toast, just open signup
     if(typeof showAuthPopup === 'function') showAuthPopup();
     return;
   }
-  S.plan='pro'; S.tier='pro'; S.aiPlan='pro'; S.aiUsedMonth=0;
-  try{localStorage.setItem('fm_tier','pro');}catch(e){}
-  saveState();
-  if(typeof saveUserProgress === 'function') saveUserProgress();
-  spawnConfetti();
-  toast('Pro trial activated! 7 days free. Enjoy all features.');
-  showBadgeToast('Welcome to Pro! 🎉 All features unlocked.');
-  updateHUD();
-  if(typeof renderTopics === 'function') renderTopics();
-  if(typeof updateAIBanner === 'function') updateAIBanner();
-  if(typeof updatePlanUI === 'function') updatePlanUI();
+  // Already Pro
+  if(isPro()){
+    toast('You are already on Pro! ✓');
+    return;
+  }
+  // Show loading state
+  toast('Redirecting to secure payment... 🔒');
+  try{
+    const resp = await fetch('/api/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: _currentUser.id,
+        userEmail: _currentUser.email
+      })
+    });
+    const data = await resp.json();
+    if(data.url){
+      // Redirect to Stripe Checkout
+      window.location.href = data.url;
+    } else {
+      toast('Payment setup failed. Please try again.');
+      console.error('Stripe error:', data.error);
+    }
+  } catch(err){
+    toast('Connection error. Please try again.');
+    console.error('Checkout error:', err);
+  }
 }
 
 // ── DOMAIN ACCENT COLORS on practice screen ──
@@ -7781,23 +7954,18 @@ let _currentUser = null;
 let _isGuest = false;
 let _guestQCount = 0;
 let _guestBonusUsed = false;
+let _planLoaded = false; // becomes true after Supabase plan is confirmed
 
 // ── GUEST MODE ──
 function startAsGuest(){
   _isGuest = true;
   _guestQCount = 0;
+  _guestBonusUsed = false;
   document.getElementById('auth-screen').classList.remove('show');
-  // Check if day 2 (came back without registering)
+  // Always start with 10 question threshold — day-2 logic removed as it caused early interruptions
   try {
-    const lastVisit = localStorage.getItem('fm_last_visit');
-    const today = new Date().toDateString();
-    if(lastVisit && lastVisit !== today){
-      // Day 2+ user — they came back! Lower threshold to 3
-      localStorage.setItem('fm_guest_threshold', '3');
-    } else {
-      localStorage.setItem('fm_guest_threshold', '10');
-    }
-    localStorage.setItem('fm_last_visit', today);
+    localStorage.setItem('fm_guest_threshold', '10');
+    localStorage.setItem('fm_last_visit', new Date().toDateString());
   } catch(e){}
 }
 
@@ -7809,7 +7977,8 @@ function getGuestThreshold(){
 function checkGuestPrompt(){
   if(_currentUser || !_isGuest) return;
   _guestQCount++;
-  const threshold = _guestBonusUsed ? 9999 : getGuestThreshold();
+  // Minimum 10 questions before showing register popup (never interrupt early)
+  const threshold = _guestBonusUsed ? 9999 : Math.max(10, getGuestThreshold());
   if(_guestQCount >= threshold){
     showRegisterPopup();
   }
@@ -7842,7 +8011,6 @@ function showEmailAuth(){
 
 // ── SOCIAL LOGIN ──
 async function signInWithGoogle(){
-  // On mobile apps use deep link so OS returns to app after OAuth
   const isMobileApp = window.navigator.userAgent.includes('FinMentra') ||
                       window.location.protocol === 'capacitor:' ||
                       window.location.protocol === 'ionic:' ||
@@ -7850,7 +8018,13 @@ async function signInWithGoogle(){
   const redirectTo = isMobileApp ? 'finmentra://auth/callback' : 'https://www.finmentra.com';
   const { error } = await _supa.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo }
+    options: {
+      redirectTo,
+      queryParams: {
+        prompt: 'select_account',   // always show account picker
+        access_type: 'offline'
+      }
+    }
   });
   if(error) toast('Google login failed: ' + error.message);
 }
@@ -7937,6 +8111,10 @@ async function loadUserProgress() {
       S.totalQ = data.total_questions || 0;
       S.totalCorrect = data.total_correct || 0;
       S.hearts = data.hearts || 3;
+      // FIX: Load onboarding status from Supabase
+      if(data.onboarding_done) S.onboardingDone = true;
+      // Any user with a row is a returning user — mark onboarding done
+      S.onboardingDone = true;
       // FIX: Load plan/tier from Supabase so Pro persists on refresh
       if(data.plan && data.plan !== 'free'){
         S.plan = data.plan;
@@ -7954,6 +8132,16 @@ async function loadUserProgress() {
       if(_currentUser && _currentUser.email === 'demo@finmentra.com'){
         S.plan='pro'; S.tier='pro'; S.aiPlan='pro';
         try{ localStorage.setItem('fm_tier','pro'); }catch(e){}
+      }
+      _planLoaded = true; // plan confirmed from Supabase
+      // If pro — clear daily question count so no limit popup shows
+      if(isPro()){
+        try{
+          Object.keys(localStorage).forEach(k => {
+            if(k.startsWith('fm_dq_') || k.startsWith('fm_bonus_used_')) localStorage.removeItem(k);
+          });
+          document.querySelectorAll('.daily-limit-overlay').forEach(e=>e.remove());
+        }catch(e){}
       }
       updateHUD();
       if(typeof renderTopics === 'function') renderTopics();
@@ -7978,7 +8166,11 @@ async function loadUserProgress() {
   // Demo account and any user with Supabase data: always skip onboarding
   const isDemoAccount = _currentUser && _currentUser.email === 'demo@finmentra.com';
   const hasSupabaseData = !!(data && (data.xp > 0 || data.total_questions > 0));
-  const hasCompletedOnboarding = isDemoAccount || hasSupabaseData || S.onboardingDone === true || S.gender || S.mode || S.xp > 0;
+  const hasSupabaseOnboarding = !!(data && data.onboarding_done === true);
+  const hasLocalOnboarding = S.onboardingDone === true || S.gender || S.mode;
+  // Any logged-in user with a Supabase row has seen onboarding
+  const hasAnySupabaseRow = !!(data && data.user_id);
+  const hasCompletedOnboarding = isDemoAccount || hasSupabaseData || hasSupabaseOnboarding || hasLocalOnboarding || hasAnySupabaseRow;
   
   if(!hasCompletedOnboarding){
     // Brand new user — show onboarding
@@ -8000,15 +8192,20 @@ async function loadUserProgress() {
 
   // Navigate to correct home screen
   const safeStartScreen = S.mode === 'professional' ? 'pro-home' : 'home';
+  // Use showScreen to properly handle all navigation
+  if(typeof showScreen === 'function'){
+    showScreen(safeStartScreen);
+  } else {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const homeTarget = document.getElementById('screen-' + safeStartScreen);
+    if(homeTarget) homeTarget.classList.add('active');
+    S.screen = safeStartScreen;
+  }
   const sBtn = document.getElementById('ms-student');
   const pBtn = document.getElementById('ms-pro');
-  const isPro = S.mode === 'professional';
-  if(sBtn) sBtn.classList.toggle('active', !isPro);
-  if(pBtn) pBtn.classList.toggle('active', isPro);
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const homeTarget = document.getElementById('screen-' + safeStartScreen);
-  if(homeTarget) homeTarget.classList.add('active');
-  S.screen = safeStartScreen;
+  const isProMode = S.mode === 'professional';
+  if(sBtn) sBtn.classList.toggle('active', !isProMode);
+  if(pBtn) pBtn.classList.toggle('active', isProMode);
   renderBottomNav();
   updateMissions();
   updateHUD();
@@ -8028,6 +8225,7 @@ async function saveUserProgress() {
       best_streak: S.bestStreak, total_questions: S.totalQ,
       total_correct: S.totalCorrect, hearts: S.hearts,
       plan: S.plan || 'free',
+      onboarding_done: true,
       updated_at: new Date().toISOString()
     }, { onConflict: 'user_id' });
   } catch(e){ saveState(); }
@@ -8057,6 +8255,26 @@ async function doLogout(){
   _isGuest = false;
   _guestQCount = 0;
   _guestBonusUsed = false;
+
+  // Clear ALL user-specific localStorage so next visitor starts fresh
+  const keysToRemove = [
+    'fm_tier', 'fm_state', 'fm_ai_today', 'fm_ai_month',
+    'fm_last_reward_date', 'fm_login_streak', 'fm_guest_threshold',
+    'fm_ch_stats', 'fm_dark'
+  ];
+  keysToRemove.forEach(k => { try{ localStorage.removeItem(k); }catch(e){} });
+  // Also clear any daily question keys (fm_dq_*)
+  try{
+    Object.keys(localStorage).forEach(k => {
+      if(k.startsWith('fm_dq_') || k.startsWith('fm_bonus_used_')) localStorage.removeItem(k);
+    });
+  }catch(e){}
+
+  // Reset in-memory state to defaults
+  S.plan = 'free'; S.tier = 'free'; S.aiPlan = 'free';
+  S.xp = 0; S.coins = 240; S.streak = 0; S.username = '';
+  S.onboardingDone = false; S.mode = null; S.gender = null;
+
   document.getElementById('auth-screen').classList.add('show');
 }
 
@@ -8084,6 +8302,9 @@ async function doLogout(){
   }
 
   const { data } = await _supa.auth.getSession();
+  // Hide the session loader now that we know the state
+  const loader = document.getElementById('session-loader');
+  if(loader) loader.classList.add('hidden');
   if(!data.session){
     // No logged-in session — show auth screen
     document.getElementById('auth-screen').classList.add('show');
@@ -8105,6 +8326,7 @@ async function doLogout(){
     document.getElementById('auth-screen').classList.remove('show');
     await loadUserProgress();
     updatePlanUI();
+    checkStripeReturn();
     // Show daily reward if not claimed today
     setTimeout(checkAndShowDailyReward, 1000);
   }
@@ -8122,6 +8344,7 @@ async function doLogout(){
       closeRegPopup();
       await loadUserProgress();
       updatePlanUI();
+      checkStripeReturn();
       // Update display name immediately
       const dn = getDisplayName(_currentUser);
       const ne = document.getElementById('home-mentor-name');
@@ -9435,6 +9658,11 @@ document.addEventListener('visibilitychange', ()=>{
     clearInterval(MM.searchInterval);
     clearInterval(MM.searchTimer);
   }
+  // When app comes back to foreground — re-check plan from Supabase
+  // (user may have just paid on the website)
+  if(!document.hidden && typeof _currentUser !== 'undefined' && _currentUser){
+    if(typeof loadUserProgress === 'function') loadUserProgress();
+  }
 });
 
 // ── ELO RATING UPDATE ──
@@ -9607,6 +9835,34 @@ showScreen = function(id){
 
 // ── AUTO SAVE EVERY 30s ──
 setInterval(saveUserProgress, 30000);
+</script>
+<script>
+// ── CONTENT PROTECTION ──
+// Disable right click
+document.addEventListener('contextmenu', function(e){
+  e.preventDefault();
+});
+
+// Disable F12, Ctrl+Shift+I, Ctrl+U, Ctrl+Shift+C, Ctrl+S
+document.addEventListener('keydown', function(e){
+  if(
+    e.key === 'F12' ||
+    (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+    (e.ctrlKey && e.key === 'U') ||
+    (e.ctrlKey && e.key === 'S')
+  ){
+    e.preventDefault();
+    return false;
+  }
+});
+
+// DevTools detection disabled — causes false positives on mobile/split screen
+
+// Disable text selection on non-input elements
+document.addEventListener('selectstart', function(e){
+  if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  e.preventDefault();
+});
 </script>
 </body>
 </html>
