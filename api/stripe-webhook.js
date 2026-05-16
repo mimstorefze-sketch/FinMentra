@@ -15,6 +15,18 @@ function getRawBody(req) {
   });
 }
 
+async function getUserIdByEmail(email) {
+  try {
+    const { data, error } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+    if (error) { console.error('listUsers error:', error); return null; }
+    const user = data?.users?.find(u => u.email === email);
+    return user?.id || null;
+  } catch(e) {
+    console.error('getUserIdByEmail error:', e);
+    return null;
+  }
+}
+
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).end();
 
@@ -29,41 +41,76 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: `Webhook Error: ${err.message}` });
   }
 
+  console.log('Event:', event.type);
+
   try {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
-      const userId = session.metadata?.userId;
-      const userEmail = session.metadata?.userEmail;
-      if (userId) {
-        const { error } = await supabase
-          .from('user_progress')
-          .update({
-            plan: 'pro',
-            stripe_customer_id: session.customer,
-            stripe_subscription_id: session.subscription,
-            plan_started_at: new Date().toISOString(),
-          })
-          .eq('user_id', userId);
-        if (error) console.error('Supabase update error:', error);
-        else console.log('Pro activated for user ' + userEmail);
+      const userEmail = session.customer_email || session.metadata?.userEmail;
+      let userId = session.metadata?.userId;
+
+      console.log('userId from metadata:', userId);
+      console.log('userEmail:', userEmail);
+
+      // Always lookup by email as most reliable method
+      if (userEmail) {
+        const foundId = await getUserIdByEmail(userEmail);
+        if (foundId) {
+          userId = foundId;
+          console.log('userId confirmed by email lookup:', userId);
+        }
+      }
+
+      if (!userId) {
+        console.error('No userId found — cannot activate Pro');
+        return res.status(200).json({ received: true, warning: 'no userId' });
+      }
+
+      // Upsert — works even if row doesn't exist yet
+      const { error } = await supabase
+        .from('user_progress')
+        .upsert({
+          user_id: userId,
+          plan: 'pro',
+          stripe_customer_id: session.customer,
+          stripe_subscription_id: session.subscription,
+          plan_started_at: new Date().toISOString(),
+          onboarding_done: true,
+        }, { onConflict: 'user_id' });
+
+      if (error) {
+        console.error('Supabase upsert error:', JSON.stringify(error));
+      } else {
+        console.log('✅ Pro activated for:', userEmail, userId);
       }
     }
 
     if (event.type === 'customer.subscription.deleted') {
       const subscription = event.data.object;
-      const userId = subscription.metadata?.userId;
+      let userId = subscription.metadata?.userId;
+      if (!userId && subscription.customer) {
+        // Find user by stripe_customer_id
+        const { data } = await supabase
+          .from('user_progress')
+          .select('user_id')
+          .eq('stripe_customer_id', subscription.customer)
+          .single();
+        userId = data?.user_id;
+      }
       if (userId) {
-        await supabase.from('user_progress').update({ plan: 'free' }).eq('user_id', userId);
-        console.log('Plan reverted to free for user ' + userId);
+        await supabase.from('user_progress')
+          .update({ plan: 'free' })
+          .eq('user_id', userId);
+        console.log('Plan reverted to free for:', userId);
       }
     }
 
     if (event.type === 'invoice.payment_failed') {
-      console.warn('Payment failed for customer ' + event.data.object.customer);
+      console.warn('Payment failed for customer:', event.data.object.customer);
     }
 
   } catch (err) {
-    console.error('Webhook handler error:', err);
+    console.error('Webhook error:', err.message);
     return res.status(500).json({ error: err.message });
   }
 
