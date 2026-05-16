@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Pro — FinMentra</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0A1F6E, #4A6CF7);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 24px;
+      padding: 40px 32px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .emoji { font-size: 64px; margin-bottom: 16px; }
+    h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0A1F6E;
+      margin-bottom: 8px;
+    }
+    p {
+      font-size: 14px;
+      color: #64748B;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .features {
+      background: #EEF2FF;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+    .feature {
+      font-size: 13px;
+      color: #0A1F6E;
+      font-weight: 600;
+      padding: 4px 0;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #0A1F6E, #4A6CF7);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+    }
+    .countdown {
+      font-size: 12px;
+      color: #94A3B8;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="emoji">🎉</div>
+    <h1>Welcome to Pro!</h1>
+    <p>Your payment was successful. You now have full Pro access to FinMentra.</p>
+    <div class="features">
+      <div class="feature">✅ Unlimited questions</div>
+      <div class="feature">✅ 50 AI questions/month</div>
+      <div class="feature">✅ Challenge & multiplayer mode</div>
+      <div class="feature">✅ All Pro tools unlocked</div>
+      <div class="feature">✅ CPD certificates</div>
+    </div>
+    <button class="btn" onclick="goToApp()">Go to FinMentra →</button>
+    <div class="countdown" id="countdown">Redirecting in 5 seconds...</div>
+  </div>
+
+  <script>
+    // Auto redirect to app after 5 seconds
+    let seconds = 5;
+    const countdownEl = document.getElementById('countdown');
+    const timer = setInterval(() => {
+      seconds--;
+      countdownEl.textContent = 'Redirecting in ' + seconds + ' seconds...';
+      if (seconds <= 0) {
+        clearInterval(timer);
+        goToApp();
+      }
+    }, 1000);
+
+    function goToApp() {
+      window.location.href = 'https://www.finmentra.com';
+    }
+  </script>
+</body>
+</html>
