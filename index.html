@@ -4410,7 +4410,52 @@ function showEditNamePopup(){
 }
 
 function showAuthPopup(){
-  // Show the main auth screen (login/signup)
+  const authScreen = document.getElementById('auth-screen');
+  if(authScreen){ authScreen.classList.add('show'); return; }
+}
+
+function checkStripeReturn(){
+  // If coming back from Stripe payment, show congrats popup
+  const params = new URLSearchParams(window.location.search);
+  if(!params.get('session_id')) return;
+  // Remove session_id from URL without reload
+  window.history.replaceState({}, '', window.location.pathname);
+  // Wait for plan to load then show congrats
+  const check = setInterval(()=>{
+    if(!_planLoaded) return;
+    clearInterval(check);
+    if(isPro()){
+      // Clear any limit popups
+      document.querySelectorAll('.daily-limit-overlay').forEach(e=>e.remove());
+      const lr=document.getElementById('login-reward'); if(lr) lr.classList.remove('show');
+      // Show congrats
+      const popup = document.createElement('div');
+      popup.style.cssText = 'position:fixed;inset:0;z-index:4000;background:rgba(10,31,110,0.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+      const box = document.createElement('div');
+      box.style.cssText = 'background:#fff;border-radius:24px;padding:32px 24px;max-width:340px;width:92%;text-align:center;';
+      box.innerHTML =
+        '<div style="font-size:56px;margin-bottom:12px;">🎉</div>'+
+        '<div style="font-family:var(--font-display);font-size:24px;font-weight:700;color:#0A1F6E;margin-bottom:8px;">Welcome to Pro!</div>'+
+        '<div style="font-size:13px;color:#64748B;line-height:1.6;margin-bottom:20px;">You now have unlimited questions, AI tutor, challenge mode and all Pro features unlocked!</div>'+
+        '<div style="background:#EEF2FF;border-radius:12px;padding:12px;margin-bottom:20px;text-align:left;">'+
+          '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">✅ Unlimited questions</div>'+
+          '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">✅ 50 AI questions/month</div>'+
+          '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">✅ Challenge & multiplayer</div>'+
+          '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">✅ All Pro tools unlocked</div>'+
+        '</div>';
+      const btn = document.createElement('button');
+      btn.style.cssText = 'width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#0A1F6E,#4A6CF7);color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
+      btn.textContent = 'Start Learning! 🚀';
+      btn.onclick = ()=>{ popup.remove(); spawnConfetti(); };
+      box.appendChild(btn);
+      popup.appendChild(box);
+      document.body.appendChild(popup);
+      spawnConfetti();
+    }
+  }, 300);
+}
+
+function showAuthPopup(){
   const authScreen = document.getElementById('auth-screen');
   if(authScreen){ authScreen.classList.add('show'); return; }
 }
@@ -4461,9 +4506,13 @@ function getDailyQKey(){
 }
 
 function getDailyQRemaining(){
+  // Always return 999 for pro users — check localStorage too for race condition
   if(!isFree()) return 999;
+  try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return 999; }catch(e){}
+  // Logged-in users: wait until plan confirmed loaded
+  if(_currentUser && !_planLoaded) return 999;
   const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
-  return Math.max(0, 15 - used); // 15 total: 10 + 5 bonus
+  return Math.max(0, 15 - used);
 }
 
 function getDailyQUsed(){
@@ -4472,6 +4521,8 @@ function getDailyQUsed(){
 
 function checkDailyQLimit(){
   if(!isFree()) return true;
+  try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return true; }catch(e){}
+  if(_currentUser && !_planLoaded) return true; // wait for plan to load
   const used = getDailyQUsed();
   if(used >= 15) return false; // hard stop at 15
   if(used >= 10){
@@ -7873,6 +7924,7 @@ let _currentUser = null;
 let _isGuest = false;
 let _guestQCount = 0;
 let _guestBonusUsed = false;
+let _planLoaded = false; // becomes true after Supabase plan is confirmed
 
 // ── GUEST MODE ──
 function startAsGuest(){
@@ -8049,6 +8101,16 @@ async function loadUserProgress() {
         S.plan='pro'; S.tier='pro'; S.aiPlan='pro';
         try{ localStorage.setItem('fm_tier','pro'); }catch(e){}
       }
+      _planLoaded = true; // plan confirmed from Supabase
+      // If pro — clear daily question count so no limit popup shows
+      if(isPro()){
+        try{
+          Object.keys(localStorage).forEach(k => {
+            if(k.startsWith('fm_dq_') || k.startsWith('fm_bonus_used_')) localStorage.removeItem(k);
+          });
+          document.querySelectorAll('.daily-limit-overlay').forEach(e=>e.remove());
+        }catch(e){}
+      }
       updateHUD();
       if(typeof renderTopics === 'function') renderTopics();
       if(typeof updatePlanUI === 'function') updatePlanUI();
@@ -8220,6 +8282,7 @@ async function doLogout(){
     document.getElementById('auth-screen').classList.remove('show');
     await loadUserProgress();
     updatePlanUI();
+    checkStripeReturn();
     // Show daily reward if not claimed today
     setTimeout(checkAndShowDailyReward, 1000);
   }
@@ -8237,6 +8300,7 @@ async function doLogout(){
       closeRegPopup();
       await loadUserProgress();
       updatePlanUI();
+      checkStripeReturn();
       // Update display name immediately
       const dn = getDisplayName(_currentUser);
       const ne = document.getElementById('home-mentor-name');
