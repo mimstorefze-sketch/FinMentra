@@ -1,7 +1,6 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 module.exports = async (req, res) => {
-  // Allow CORS
   res.setHeader('Access-Control-Allow-Origin', 'https://www.finmentra.com');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -26,14 +25,17 @@ module.exports = async (req, res) => {
         },
       ],
       metadata: {
-        userId,        // Supabase user ID — used in webhook to update plan
+        userId,
         userEmail,
       },
-      success_url: 'https://www.finmentra.com/success.html?session_id={CHECKOUT_SESSION_ID}',
+      // Return directly to app — ?upgraded=true triggers congrats popup
+      success_url: 'https://www.finmentra.com?upgraded=true&session_id={CHECKOUT_SESSION_ID}',
       cancel_url: 'https://www.finmentra.com',
       subscription_data: {
         metadata: { userId, userEmail },
       },
+      // Allow Google Pay, Apple Pay automatically
+      payment_method_types: ['card'],
     });
 
     return res.status(200).json({ url: session.url });
