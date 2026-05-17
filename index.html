@@ -208,10 +208,23 @@ a{color:inherit;text-decoration:none;}
 #screen-challenge:not(.active){
   display: none !important;
 }
+
+/* Remove shell top padding on desktop when challenge active */
+@media (min-width: 769px){
+  .shell:has(#screen-multiplayer.active){
+    padding-top: 0 !important;
+  }
+}
+
+/* Desktop: challenge screen full width centered */
 #screen-multiplayer.active{
   background: #f0f4ff;
+  max-width: 720px !important;
+  margin: 0 auto !important;
+  width: 100% !important;
 }
-/* Mobile only — go fullscreen */
+
+/* Mobile: true fullscreen */
 @media (max-width: 768px){
   #screen-multiplayer.active{
     position: fixed !important;
@@ -219,11 +232,12 @@ a{color:inherit;text-decoration:none;}
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
-    width: 100% !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
     height: 100dvh !important;
     z-index: 100 !important;
     overflow-y: auto !important;
-    min-height: unset !important;
+    margin: 0 !important;
   }
 }
 /* Legacy selector kept for compatibility */
@@ -3183,12 +3197,13 @@ function showScreen(id){
     window.scrollTo(0,0);
   } else {
     if(shell) shell.classList.remove('no-top-pad');
-    // Restore top nav and mode switch
+    // Always restore nav and body scroll when leaving multiplayer
     const navEl = document.querySelector('nav.nav');
     const modeEl = document.querySelector('.mode-switch');
     if(navEl) navEl.style.display = '';
     if(modeEl) modeEl.style.display = '';
     document.body.style.overflow = '';
+    document.body.style.position = '';
   }
   // Fix: update AI banner on entering askai screen
   if(id==='askai'){ if(typeof updateAIBanner==='function') updateAIBanner(); }
