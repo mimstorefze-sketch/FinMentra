@@ -1569,6 +1569,12 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
         </div>
         <span style="font-size:16px;">👑</span>
       </div>
+      <div style="width:100%;margin-top:8px;margin-bottom:4px;">
+        <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:6px;">What should we call you?</div>
+        <input id="ob-name-input" type="text" placeholder="Enter your name" maxlength="30"
+          style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--font-body);outline:none;color:var(--navy);box-sizing:border-box;"
+          onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"/>
+      </div>
       <button class="ob-btn" style="width:100%;margin-top:4px;" onclick="closeOnboarding()">Start learning! 🏛️</button>
     </div>
   </div>
@@ -4009,6 +4015,15 @@ function closeOnboarding(){
   S.onboardingDone = true;
   if(!S.mode) S.mode = 'student';
   if(!S.gender) S.gender = 'male';
+  // Set username from input if provided
+  const nameInput = document.getElementById('ob-name-input');
+  if(nameInput && nameInput.value.trim()){
+    S.username = nameInput.value.trim();
+  } else if(!S.username || S.username === 'Scholar'){
+    if(typeof _currentUser !== 'undefined' && _currentUser){
+      S.username = (_currentUser.user_metadata && (_currentUser.user_metadata.full_name || _currentUser.user_metadata.name)) || _currentUser.email.split('@')[0];
+    }
+  }
   document.getElementById('onboarding').style.display='none';
   saveState();
   if(typeof saveUserProgress === 'function') saveUserProgress();
@@ -4545,6 +4560,11 @@ function showProCongrats(){
 }
 
 function checkStripeReturn(){
+  // Also check if fm_show_congrats flag is set (from in-app Stripe flow)
+  if(localStorage.getItem('fm_show_congrats')){
+    localStorage.removeItem('fm_show_congrats');
+    setTimeout(function(){ if(typeof showProCongrats==='function') showProCongrats(); }, 1000);
+  }
   const params = new URLSearchParams(window.location.search);
   const hasUpgraded = params.get('upgraded') === 'true' || params.get('session_id');
   if(!hasUpgraded) return;
@@ -8430,6 +8450,12 @@ async function doLogout(){
     _isGuest = false;
     // Any returning user — mark onboarding done immediately
     S.onboardingDone = true;
+    // Set username immediately from auth metadata
+    if(!S.username || S.username === 'Scholar'){
+      S.username = (_currentUser.user_metadata && (_currentUser.user_metadata.full_name || _currentUser.user_metadata.name)) || _currentUser.email.split('@')[0];
+    }
+    // Update name on dashboard immediately before Supabase loads
+    if(typeof updateMentorName === 'function') updateMentorName();
     // Hide onboarding screen right away
     const obEl = document.getElementById('onboarding');
     if(obEl) obEl.style.display = 'none';
@@ -10000,24 +10026,27 @@ setInterval(saveUserProgress, 30000);
     const upgraded = urlParams.get('upgraded') === 'true' || urlParams.get('session_id');
     if(stripeInProgress || upgraded){
       localStorage.removeItem('fm_stripe_in_progress');
+      localStorage.setItem('fm_show_congrats', '1'); // flag to show congrats after load
       // Clean URL
       if(upgraded) window.history.replaceState({}, '', window.location.pathname);
-      // Wait for auth to load then refresh plan and show congrats
+      // Wait for auth + plan to load then show congrats
       const checkAuth = setInterval(function(){
-        if(typeof _currentUser !== 'undefined' && typeof loadUserProgress === 'function'){
+        if(typeof _currentUser !== 'undefined' && _currentUser &&
+           typeof _planLoaded !== 'undefined' && _planLoaded){
           clearInterval(checkAuth);
-          loadUserProgress().then(function(){
-            if(typeof isPro === 'function' && isPro()){
-              // Remove any limit popups
-              document.querySelectorAll('.daily-limit-overlay').forEach(function(e){ e.remove(); });
-              // Show congrats popup
-              if(typeof showProCongrats === 'function') showProCongrats();
-            }
-          });
+          document.querySelectorAll('.daily-limit-overlay').forEach(function(e){ e.remove(); });
+          localStorage.removeItem('fm_show_congrats');
+          if(typeof showProCongrats === 'function') showProCongrats();
         }
       }, 500);
-      // Stop checking after 15 seconds
-      setTimeout(function(){ clearInterval(checkAuth); }, 15000);
+      setTimeout(function(){
+        clearInterval(checkAuth);
+        // Show congrats anyway if still pending
+        if(localStorage.getItem('fm_show_congrats')){
+          localStorage.removeItem('fm_show_congrats');
+          if(typeof showProCongrats === 'function') showProCongrats();
+        }
+      }, 10000);
     }
   }catch(e){}
 })();
