@@ -203,12 +203,9 @@ a{color:inherit;text-decoration:none;}
 .shell.no-top-pad{padding-top:0 !important;padding-bottom:0 !important;}
 .screen{display:none;max-width:720px;margin:0 auto;padding:16px 14px;flex-direction:column;gap:14px;}
 .screen.active{display:flex;}
-/* Challenge screen: true fullscreen — override everything */
+/* Challenge screen */
 #screen-multiplayer.active{
-  flex-direction: column;
   background: #f0f4ff;
-  min-height: calc(100vh - 80px);
-  overflow-y: auto;
 }
 /* Mobile only — go fullscreen */
 @media (max-width: 768px){
@@ -219,10 +216,10 @@ a{color:inherit;text-decoration:none;}
     right: 0 !important;
     bottom: 0 !important;
     width: 100% !important;
-    height: 100% !important;
+    height: 100dvh !important;
     z-index: 100 !important;
-    overflow: hidden !important;
-    min-height: unset;
+    overflow-y: auto !important;
+    min-height: unset !important;
   }
 }
 /* Legacy selector kept for compatibility */
@@ -8359,6 +8356,11 @@ async function doLogout(){
   if(data.session){
     _currentUser = data.session.user;
     _isGuest = false;
+    // Any returning user — mark onboarding done immediately
+    S.onboardingDone = true;
+    // Hide onboarding screen right away
+    const obEl = document.getElementById('onboarding');
+    if(obEl) obEl.style.display = 'none';
     // Demo account: set pro immediately before async Supabase load
     if(_currentUser && _currentUser.email === 'demo@finmentra.com'){
       S.plan='pro'; S.tier='pro'; S.aiPlan='pro';
@@ -8382,12 +8384,22 @@ async function doLogout(){
     if(event === 'SIGNED_IN' && session){
       _currentUser = session.user;
       _isGuest = false;
+      // Mark onboarding as done for any signing-in user
+      S.onboardingDone = true;
+      try{
+        const st = JSON.parse(localStorage.getItem('fm_state')||'{}');
+        st.onboardingDone = true;
+        localStorage.setItem('fm_state', JSON.stringify(st));
+      }catch(e){}
       // Demo account: set pro immediately before async load
       if(_currentUser && _currentUser.email === 'demo@finmentra.com'){
         S.plan='pro'; S.tier='pro'; S.aiPlan='pro';
         try{ localStorage.setItem('fm_tier','pro'); }catch(e){}
       }
       document.getElementById('auth-screen').classList.remove('show');
+      // Hide onboarding immediately
+      const ob = document.getElementById('onboarding');
+      if(ob) ob.style.display = 'none';
       closeRegPopup();
       await loadUserProgress();
       updatePlanUI();
