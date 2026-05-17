@@ -3132,6 +3132,7 @@ function showScreen(id){
   if(current) current.classList.remove('active');
   const target=document.getElementById('screen-'+id);
   if(target){
+    target.style.display=''; // remove any inline display:none
     target.classList.add('active');
     target.classList.remove('slide-in');
     void target.offsetWidth;
@@ -7718,7 +7719,7 @@ const _origAnswerQ=answerQ;
 </style>
 
 <!-- ══ MULTIPLAYER CHALLENGE SCREEN ══ -->
-<div class="screen" id="screen-multiplayer" style="gap:0;padding:0;margin-top:0;">
+<div class="screen" id="screen-multiplayer" style="gap:0;padding:0;margin-top:0;display:none;">
 
   <!-- LOBBY (choose create or join) -->
   <div id="ch-lobby" style="display:none;">
