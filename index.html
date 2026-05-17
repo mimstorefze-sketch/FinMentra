@@ -7576,6 +7576,13 @@ function loadState(){
 // Auto-save every 30s and on answer
 loadState();
 S.plan = S.plan || 'free'; // free, pro, elite
+// Always start on home screen — never restore challenge/multiplayer
+if(S.screen === 'multiplayer' || S.screen === 'challenge'){
+  S.screen = S.mode === 'professional' ? 'pro-home' : 'home';
+}
+// Force hide multiplayer screen on init
+const _mpInit = document.getElementById('screen-multiplayer');
+if(_mpInit) _mpInit.classList.remove('active');
 setInterval(saveState,30000);
 const _origAnswerQ=answerQ;
 // Already handled in answerQ — also save after each answer
