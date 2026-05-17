@@ -7560,6 +7560,11 @@ function loadState(){
     if(saved){
       const d=JSON.parse(saved);
       Object.assign(S,d);
+      // Never restore multiplayer/challenge as starting screen
+      // Always start on home screen
+      if(S.screen === 'multiplayer' || S.screen === 'challenge'){
+        S.screen = S.mode === 'professional' ? 'pro-home' : 'home';
+      }
       // Sync button UI silently — no popup
       const sBtn=document.getElementById('ms-student');
       const pBtn=document.getElementById('ms-pro');
