@@ -6917,7 +6917,9 @@ async function startProTrial(){
     const data = await resp.json();
     if(data.url){
       // Redirect to Stripe Checkout
-      // Open Stripe in same window — comes back to app after payment
+      // Set flag so app knows to refresh plan when it reloads
+      try{ localStorage.setItem('fm_stripe_in_progress', '1'); }catch(e){}
+      // Redirect to Stripe — after payment Stripe sends back to finmentra.com?upgraded=true
       window.location.href = data.url;
     } else {
       toast('Payment setup failed. Please try again.');
@@ -9905,6 +9907,37 @@ showScreen = function(id){
 setInterval(saveUserProgress, 30000);
 </script>
 <script>
+// ── STRIPE RETURN DETECTION ──
+// Check if returning from Stripe payment (works for WebView reload too)
+(function(){
+  try{
+    const stripeInProgress = localStorage.getItem('fm_stripe_in_progress');
+    const urlParams = new URLSearchParams(window.location.search);
+    const upgraded = urlParams.get('upgraded') === 'true' || urlParams.get('session_id');
+    if(stripeInProgress || upgraded){
+      localStorage.removeItem('fm_stripe_in_progress');
+      // Clean URL
+      if(upgraded) window.history.replaceState({}, '', window.location.pathname);
+      // Wait for auth to load then refresh plan and show congrats
+      const checkAuth = setInterval(function(){
+        if(typeof _currentUser !== 'undefined' && typeof loadUserProgress === 'function'){
+          clearInterval(checkAuth);
+          loadUserProgress().then(function(){
+            if(typeof isPro === 'function' && isPro()){
+              // Remove any limit popups
+              document.querySelectorAll('.daily-limit-overlay').forEach(function(e){ e.remove(); });
+              // Show congrats popup
+              if(typeof checkStripeReturn === 'function') checkStripeReturn();
+            }
+          });
+        }
+      }, 500);
+      // Stop checking after 15 seconds
+      setTimeout(function(){ clearInterval(checkAuth); }, 15000);
+    }
+  }catch(e){}
+})();
+
 // ── CONTENT PROTECTION ──
 // Disable right click
 document.addEventListener('contextmenu', function(e){
