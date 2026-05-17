@@ -3184,7 +3184,7 @@ function showScreen(id){
   // Fix: challenge screen goes full screen, other screens restore shell
   const shell = document.querySelector('.shell');
   if(id==='multiplayer'){
-    if(shell) shell.classList.add('no-top-pad');
+    if(shell){ shell.classList.add('no-top-pad'); shell.style.paddingTop='0'; }
     // Hide top nav and mode switch — mobile only
     const isMobile = window.innerWidth <= 768;
     const navEl = document.querySelector('nav.nav');
@@ -3196,7 +3196,7 @@ function showScreen(id){
     }
     window.scrollTo(0,0);
   } else {
-    if(shell) shell.classList.remove('no-top-pad');
+    if(shell){ shell.classList.remove('no-top-pad'); shell.style.paddingTop=''; shell.style.paddingBottom=''; shell.style.overflow=''; }
     // Always restore nav and body scroll when leaving multiplayer
     const navEl = document.querySelector('nav.nav');
     const modeEl = document.querySelector('.mode-switch');
@@ -3438,7 +3438,14 @@ async function startTopicPractice(num){
   const qt = document.getElementById('q-text');
   const opts = document.getElementById('options');
   if(qt) qt.textContent = 'Loading '+num+' questions...';
-  if(opts) opts.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">⏳ Fetching...</div>';
+  if(opts) opts.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">⏳ Fetching questions...</div>';
+  // Auto-retry timeout — if still loading after 8 seconds, show retry button
+  const loadingTimeout = setTimeout(()=>{
+    const o = document.getElementById('options');
+    if(o && o.innerHTML.includes('Fetching')){
+      o.innerHTML = '<div style="text-align:center;padding:20px;"><div style="color:var(--muted);margin-bottom:12px;">Taking longer than expected...</div><button onclick="selectTopic(document.querySelector(\'.topic-row.active\')||document.querySelector(\'.topic-row\'))" style="padding:10px 24px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;">🔄 Tap to Load Questions</button></div>';
+    }
+  }, 8000);
 
   // Fetch from Supabase for THIS specific standard
   let pool = [];
@@ -4504,12 +4511,43 @@ function showAuthPopup(){
   if(authScreen){ authScreen.classList.add('show'); return; }
 }
 
+function showProCongrats(){
+  // Remove any limit popups
+  document.querySelectorAll('.daily-limit-overlay').forEach(e=>e.remove());
+  const lr = document.getElementById('login-reward');
+  if(lr) lr.classList.remove('show');
+  // Show congrats popup
+  const existing = document.getElementById('pro-congrats-popup');
+  if(existing) return; // already showing
+  const popup = document.createElement('div');
+  popup.id = 'pro-congrats-popup';
+  popup.style.cssText = 'position:fixed;inset:0;z-index:4000;background:rgba(10,31,110,0.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:24px;padding:32px 24px;max-width:340px;width:92%;text-align:center;';
+  box.innerHTML =
+    '<div style="font-size:56px;margin-bottom:12px;">🎉</div>'+
+    '<div style="font-family:var(--font-display);font-size:24px;font-weight:700;color:#0A1F6E;margin-bottom:8px;">Welcome to Pro!</div>'+
+    '<div style="font-size:13px;color:#64748B;line-height:1.6;margin-bottom:20px;">You now have unlimited questions, AI tutor, challenge mode and all Pro features!</div>'+
+    '<div style="background:#EEF2FF;border-radius:12px;padding:12px;margin-bottom:20px;text-align:left;">'+
+      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Unlimited questions</div>'+
+      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ 50 AI questions/month</div>'+
+      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Challenge & multiplayer</div>'+
+      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ All Pro tools unlocked</div>'+
+    '</div>';
+  const btn = document.createElement('button');
+  btn.style.cssText = 'width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#0A1F6E,#4A6CF7);color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
+  btn.textContent = 'Start Learning! 🚀';
+  btn.onclick = ()=>{ popup.remove(); spawnConfetti(); updateHUD(); updatePlanUI(); updateAIBanner(); renderTopics(); };
+  box.appendChild(btn);
+  popup.appendChild(box);
+  document.body.appendChild(popup);
+  spawnConfetti();
+}
+
 function checkStripeReturn(){
-  // If coming back from Stripe payment, show congrats popup
   const params = new URLSearchParams(window.location.search);
   const hasUpgraded = params.get('upgraded') === 'true' || params.get('session_id');
   if(!hasUpgraded) return;
-  // Remove params from URL without reload
   window.history.replaceState({}, '', window.location.pathname);
   // Wait for plan to load then show congrats
   const check = setInterval(()=>{
@@ -8511,7 +8549,7 @@ function showChallengeSection(section){
   if(shell){
     shell.style.paddingTop = '0';
     shell.style.paddingBottom = '0';
-    shell.style.overflow = 'hidden';
+    shell.style.overflow = window.innerWidth <= 768 ? 'hidden' : '';
   }
   // Hide top nav and mode switch — mobile only
   if(window.innerWidth <= 768){
@@ -9973,7 +10011,7 @@ setInterval(saveUserProgress, 30000);
               // Remove any limit popups
               document.querySelectorAll('.daily-limit-overlay').forEach(function(e){ e.remove(); });
               // Show congrats popup
-              if(typeof checkStripeReturn === 'function') checkStripeReturn();
+              if(typeof showProCongrats === 'function') showProCongrats();
             }
           });
         }
