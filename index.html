@@ -204,7 +204,8 @@ a{color:inherit;text-decoration:none;}
 .screen{display:none;max-width:720px;margin:0 auto;padding:16px 14px;flex-direction:column;gap:14px;}
 .screen.active{display:flex;}
 /* Challenge screen — hidden by default, shown only when active */
-#screen-multiplayer:not(.active){
+#screen-multiplayer:not(.active),
+#screen-challenge:not(.active){
   display: none !important;
 }
 #screen-multiplayer.active{
@@ -7580,9 +7581,11 @@ S.plan = S.plan || 'free'; // free, pro, elite
 if(S.screen === 'multiplayer' || S.screen === 'challenge'){
   S.screen = S.mode === 'professional' ? 'pro-home' : 'home';
 }
-// Force hide multiplayer screen on init
+// Force hide multiplayer and challenge screens on init
 const _mpInit = document.getElementById('screen-multiplayer');
 if(_mpInit) _mpInit.classList.remove('active');
+const _chInit = document.getElementById('screen-challenge');
+if(_chInit) _chInit.classList.remove('active');
 setInterval(saveState,30000);
 const _origAnswerQ=answerQ;
 // Already handled in answerQ — also save after each answer
