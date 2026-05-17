@@ -1521,8 +1521,14 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
         <button class="ob-g-btn active" id="ob-male" onclick="selectMentor('male')">👨 Mr. Ledger</button>
         <button class="ob-g-btn" id="ob-female" onclick="selectMentor('female')">👩 Ms. Ledger</button>
       </div>
+      <div style="width:100%;margin-top:8px;">
+        <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:6px;text-align:left;">What should we call you?</div>
+        <input id="ob2-name-input" type="text" placeholder="Your first name" maxlength="30"
+          style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--font-body);outline:none;color:var(--navy);box-sizing:border-box;"
+          onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"/>
+      </div>
       <div class="ob-dots"><div class="ob-dot"></div><div class="ob-dot active"></div><div class="ob-dot"></div><div class="ob-dot"></div></div>
-      <button class="ob-btn" onclick="obNext(2)">This is my mentor →</button>
+      <button class="ob-btn" onclick="captureOb2Name();obNext(2)">This is my mentor →</button>
     </div>
     <div class="ob-step" id="ob3">
       <div class="ob-title">How will you use FinMentra?</div>
@@ -1987,7 +1993,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 </div>
 
 <!-- ══ CHALLENGE LEAGUE ══ -->
-<div class="screen" id="screen-challenge">
+<div class="screen" id="screen-challenge" style="display:none;">
   <!-- Daily Challenge -->
   <div class="card" style="background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;overflow:hidden;position:relative;">
     <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.05);"></div>
@@ -3467,7 +3473,7 @@ async function startTopicPractice(num){
 
   // Apply limits based on plan and position
   const topicIdx = t ? TOPICS.filter(x=>x.cat===t.cat).findIndex(x=>x.num===num) : 0;
-  let limit = 8; // default full
+  let limit = isPro() ? 20 : 8; // FIX1: Pro=20, free=8
   if(isFree()){
     if(topicIdx === 0) limit = 8; // First standard: full open
     else if(topicIdx < 3) limit = 3; // Standards 2-3: 3 questions only
@@ -3907,25 +3913,17 @@ function nextQuestion(){
         setTimeout(buildLearningPath, 400);
       }
     }
-    if(S.currentStandard && QB[S.currentStandard] && QB[S.currentStandard].length>0){
+    if(S.currentStandard){
       // Check daily limit before loading more questions
       const remaining = getDailyQRemaining();
       if(isFree() && remaining <= 0){
         showDailyLimitPopup();
         return;
       }
-      // Reload same topic with shuffled questions
-      const pool=[...QB[S.currentStandard]].sort(()=>Math.random()-.5);
-      const limit = isFree() ? Math.min(8, remaining) : 20;
-      S.sessionQs=pool.slice(0, limit);
-      S.qIndex=0; S.sessionQ=0; S.sessionCorrect=0; S.answered=false;
-      updateSessionBar();
-      loadQuestion();
-      // Show completion message
-      setTimeout(()=>toast('Starting next round of '+std+' questions →'),300);
+      // FIX3 & FIX4: Show Continue popup; it reloads fresh from Supabase
+      showContinuePopup(std, remaining);
     } else {
-      // Domain practice complete — go to progress
-      showScreen('progress');
+      showContinuePopup(std, getDailyQRemaining());
     }
     return;
   }
@@ -3999,6 +3997,14 @@ function toggleDarkMode(){
 
 // ── ONBOARDING ──
 let obStep=1;
+function captureOb2Name(){
+  const inp = document.getElementById('ob2-name-input');
+  if(inp && inp.value.trim()){
+    S.username = inp.value.trim();
+    const inp4 = document.getElementById('ob-name-input');
+    if(inp4) inp4.value = inp.value.trim();
+  }
+}
 function obNext(step){
   document.getElementById('ob'+step).classList.remove('active');
   obStep=step+1;
@@ -4642,6 +4648,8 @@ function isElite(){ return S.plan==='elite'; }
 function isFree(){ 
   // Demo account always pro
   try{ if(typeof _currentUser !== 'undefined' && _currentUser && _currentUser.email === 'demo@finmentra.com') return false; }catch(e){}
+  // FIX2: Explicit free check — if localStorage says 'free', honour it
+  try{ if(localStorage.getItem('fm_tier') === 'free') return true; }catch(e){}
   // Logged-in user with pro in localStorage: treat as pro while Supabase loads
   if(typeof _currentUser !== 'undefined' && _currentUser){
     try{ const lt = localStorage.getItem('fm_tier'); if(lt === 'pro' || lt === 'elite') return false; }catch(e){}
@@ -7604,6 +7612,67 @@ showScreen=function(id){
   if(target){target.classList.add('fade-in');setTimeout(()=>target.classList.remove('fade-in'),400);}
 };
 
+
+// ── FIX 3 & 4: Continue popup — reloads from Supabase ──
+function showContinuePopup(std, remaining){
+  const existing = document.getElementById('continue-popup-overlay');
+  if(existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'continue-popup-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.82);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:24px 24px 0 0;padding:28px 24px 32px;width:100%;max-width:480px;text-align:center;box-shadow:0 -8px 40px rgba(10,31,110,.2);';
+  const acc = S.sessionQ > 0 ? Math.round(S.sessionCorrect/S.sessionQ*100) : 0;
+  const accColor = acc >= 70 ? '#0A6E3A' : acc >= 50 ? '#D97706' : '#DC2626';
+  const accEmoji = acc >= 70 ? '🌟' : acc >= 50 ? '👍' : '📖';
+  box.innerHTML =
+    '<div style="font-size:40px;margin-bottom:8px;">' + accEmoji + '</div>' +
+    '<div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:#0A1F6E;margin-bottom:6px;">' + std + ' Complete!</div>' +
+    '<div style="font-size:13px;color:#64748B;margin-bottom:16px;">Session accuracy: <strong style="color:' + accColor + ';">' + acc + '%</strong> (' + S.sessionCorrect + '/' + S.sessionQ + ' correct)</div>' +
+    '<div style="background:#EEF2FF;border-radius:12px;padding:12px;margin-bottom:20px;">' +
+      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">Want to continue with ' + std + '?</div>' +
+      '<div style="font-size:11px;color:#64748B;margin-top:4px;">Fresh questions from server</div>' +
+    '</div>';
+  const contBtn = document.createElement('button');
+  contBtn.style.cssText = 'width:100%;padding:14px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);margin-bottom:10px;';
+  contBtn.textContent = 'Continue Practicing →';
+  contBtn.onclick = async function(){
+    overlay.remove();
+    // FIX4: reload from Supabase, not local QB[]
+    let pool = [];
+    if(S.currentStandard){
+      const supaQs = await fetchQuestionsForStandard(S.currentStandard);
+      if(supaQs && supaQs.length >= 1){
+        pool = supaQs.sort(()=>Math.random()-.5);
+      } else {
+        pool = (QB[S.currentStandard]||[]).slice().sort(()=>Math.random()-.5);
+      }
+    }
+    const lim = isPro() ? 20 : isFree() ? Math.min(8, getDailyQRemaining()) : 8;
+    if(isFree() && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
+    S.sessionQs = pool.slice(0, Math.max(1, lim));
+    S.qIndex = 0; S.sessionQ = 0; S.sessionCorrect = 0; S.answered = false;
+    updateSessionBar();
+    loadQuestion();
+    toast('New questions loaded for ' + (S.currentStandard||S.domain) + ' →');
+  };
+  const progBtn = document.createElement('button');
+  progBtn.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);margin-bottom:10px;';
+  progBtn.textContent = 'View My Progress 📊';
+  progBtn.onclick = function(){ overlay.remove(); showScreen('progress'); };
+  const homeBtn = document.createElement('button');
+  homeBtn.style.cssText = 'width:100%;padding:10px;border-radius:12px;background:none;color:#94A3B8;font-size:13px;font-weight:600;border:none;cursor:pointer;font-family:var(--font-body);';
+  homeBtn.textContent = 'Back to Home';
+  homeBtn.onclick = function(){ overlay.remove(); showScreen('home'); };
+  box.appendChild(contBtn);
+  box.appendChild(progBtn);
+  box.appendChild(homeBtn);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  box.style.transform = 'translateY(100%)';
+  requestAnimationFrame(()=>{ box.style.transition = 'transform .35s cubic-bezier(.25,.46,.45,.94)'; box.style.transform = 'translateY(0)'; });
+}
+
 // ── PERSIST ALL STATE TO LOCALSTORAGE ──
 function saveState(){
   try{
@@ -8448,8 +8517,15 @@ async function doLogout(){
   if(data.session){
     _currentUser = data.session.user;
     _isGuest = false;
-    // Any returning user — mark onboarding done immediately
+    // FIX6: Immediately hide onboarding + persist flag before any await
     S.onboardingDone = true;
+    const _obFix = document.getElementById('onboarding');
+    if(_obFix) _obFix.style.display = 'none';
+    try{
+      const _st = JSON.parse(localStorage.getItem('fm_state')||'{}');
+      _st.onboardingDone = true;
+      localStorage.setItem('fm_state', JSON.stringify(_st));
+    }catch(e){}
     // Set username immediately from auth metadata
     if(!S.username || S.username === 'Scholar'){
       S.username = (_currentUser.user_metadata && (_currentUser.user_metadata.full_name || _currentUser.user_metadata.name)) || _currentUser.email.split('@')[0];
