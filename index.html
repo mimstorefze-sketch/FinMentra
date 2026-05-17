@@ -1786,7 +1786,11 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div style="height:4px;background:var(--border2);border-radius:2px;overflow:hidden;margin-bottom:6px;">
     <div id="prog-linear" style="height:100%;background:linear-gradient(90deg,var(--green),var(--blue));border-radius:2px;transition:width .4s ease;width:0%;"></div>
   </div>
-  <div class="prog-wrap"><div class="prog-dots" id="prog-dots"></div><div class="prog-meta" id="prog-meta">1 / 8</div></div>
+  <div class="prog-wrap">
+    <div class="prog-dots" id="prog-dots"></div>
+    <div class="prog-meta" id="prog-meta">1 / 8</div>
+    <button id="arena-refresh-btn" onclick="arenaRefresh()" title="Refresh questions" style="width:30px;height:30px;border-radius:50%;background:var(--blue-ll);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;flex-shrink:0;margin-left:4px;" title="Reload questions">🔄</button>
+  </div>
   <!-- Near miss -->
   <div class="near-miss" id="near-miss"><span id="near-miss-text">🏅 Almost there!</span></div>
   <!-- Question card -->
@@ -3454,10 +3458,16 @@ async function startTopicPractice(num){
   // Auto-retry timeout — if still loading after 8 seconds, show retry button
   const loadingTimeout = setTimeout(()=>{
     const o = document.getElementById('options');
-    if(o && o.innerHTML.includes('Fetching')){
-      o.innerHTML = '<div style="text-align:center;padding:20px;"><div style="color:var(--muted);margin-bottom:12px;">Taking longer than expected...</div><button onclick="selectTopic(document.querySelector(\'.topic-row.active\')||document.querySelector(\'.topic-row\'))" style="padding:10px 24px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;">🔄 Tap to Load Questions</button></div>';
+    if(o && (o.innerHTML.includes('Fetching') || o.innerHTML.includes('Loading'))){
+      const _std = S.currentStandard||'IFRS 15';
+      o.innerHTML = '<div style="text-align:center;padding:24px 16px;">' +
+        '<div style="font-size:32px;margin-bottom:10px;">📶</div>' +
+        '<div style="color:var(--muted);margin-bottom:16px;font-size:13px;">Questions taking a while…</div>' +
+        '<button onclick="startTopicPractice(\'' + _std + '\')" style="display:block;width:100%;padding:12px;background:var(--navy);color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);margin-bottom:8px;">🔄 Refresh Questions</button>' +
+        '<button onclick="startSession()" style="display:block;width:100%;padding:10px;background:var(--surface);color:var(--navy);border:1.5px solid var(--border);border-radius:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);">↩ Load default topic</button>' +
+        '</div>';
     }
-  }, 8000);
+  }, 5000);
 
   // Fetch from Supabase for THIS specific standard
   let pool = [];
@@ -3639,9 +3649,9 @@ async function startSession(){
     let fresh = supaQs.filter(q => !recentIds.includes(q.q.substring(0,30)));
     if(fresh.length < 5) fresh = supaQs; // reset if too few fresh
     // Cap to remaining daily questions for free users
-    const remaining = isFree() ? Math.min(8, getDailyQRemaining()) : 8;
-    if(isFree() && remaining <= 0){ showDailyLimitPopup(); return; }
-    pool = fresh.sort(()=>Math.random()-.5).slice(0, Math.max(1, remaining));
+    const limit = isPro() ? 20 : isFree() ? Math.min(8, getDailyQRemaining()) : 8; // FIX E: Pro=20
+    if(isFree() && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
+    pool = fresh.sort(()=>Math.random()-.5).slice(0, Math.max(1, limit));
     // Track recently seen
     S.recentQs = pool.map(q=>q.q.substring(0,30));
     console.log('✅ Arena: using',pool.length,'questions from Supabase for',category);
@@ -4566,48 +4576,53 @@ function showProCongrats(){
 }
 
 function checkStripeReturn(){
-  // Also check if fm_show_congrats flag is set (from in-app Stripe flow)
-  if(localStorage.getItem('fm_show_congrats')){
-    localStorage.removeItem('fm_show_congrats');
-    setTimeout(function(){ if(typeof showProCongrats==='function') showProCongrats(); }, 1000);
-  }
+  // FIX D: Only show congrats if Supabase CONFIRMS plan=pro after payment.
+  // Never trust fm_stripe_in_progress alone — user may have cancelled.
   const params = new URLSearchParams(window.location.search);
-  const hasUpgraded = params.get('upgraded') === 'true' || params.get('session_id');
-  if(!hasUpgraded) return;
+  const hasSessionId = !!(params.get('session_id')); // only Stripe success has session_id
+  const hasUpgraded = params.get('upgraded') === 'true' && hasSessionId;
+
+  // Clean up flags regardless
+  localStorage.removeItem('fm_stripe_in_progress');
+
+  if(!hasUpgraded){
+    // User came back without completing payment — clear any stale congrats flag
+    localStorage.removeItem('fm_show_congrats');
+    return;
+  }
+
   window.history.replaceState({}, '', window.location.pathname);
-  // Wait for plan to load then show congrats
-  const check = setInterval(()=>{
-    if(!_planLoaded) return;
+  localStorage.setItem('fm_show_congrats', '1');
+
+  // Wait for Supabase plan to load and CONFIRM pro before showing congrats
+  let attempts = 0;
+  const check = setInterval(async ()=>{
+    attempts++;
+    if(!_planLoaded && attempts < 20) return;
     clearInterval(check);
-    if(isPro()){
-      // Clear any limit popups
+    // Re-fetch plan fresh from DB to be sure
+    if(_currentUser){
+      try{
+        const {data} = await _supa.from('user_progress').select('plan').eq('user_id',_currentUser.id).single();
+        if(!data || (data.plan !== 'pro' && data.plan !== 'elite')){
+          localStorage.removeItem('fm_show_congrats');
+          toast('Payment not confirmed yet. Please contact support if you paid.');
+          return;
+        }
+        // Confirmed pro in DB — update local state
+        S.plan = data.plan; S.tier = data.plan; S.aiPlan = data.plan;
+        localStorage.setItem('fm_tier', data.plan);
+      }catch(e){}
+    }
+    if(isPro() || localStorage.getItem('fm_tier')==='pro'){
+      localStorage.removeItem('fm_show_congrats');
       document.querySelectorAll('.daily-limit-overlay').forEach(e=>e.remove());
       const lr=document.getElementById('login-reward'); if(lr) lr.classList.remove('show');
-      // Show congrats
-      const popup = document.createElement('div');
-      popup.style.cssText = 'position:fixed;inset:0;z-index:4000;background:rgba(10,31,110,0.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
-      const box = document.createElement('div');
-      box.style.cssText = 'background:#fff;border-radius:24px;padding:32px 24px;max-width:340px;width:92%;text-align:center;';
-      box.innerHTML =
-        '<div style="font-size:56px;margin-bottom:12px;">🎉</div>'+
-        '<div style="font-family:var(--font-display);font-size:24px;font-weight:700;color:#0A1F6E;margin-bottom:8px;">Welcome to Pro!</div>'+
-        '<div style="font-size:13px;color:#64748B;line-height:1.6;margin-bottom:20px;">You now have unlimited questions, AI tutor, challenge mode and all Pro features unlocked!</div>'+
-        '<div style="background:#EEF2FF;border-radius:12px;padding:12px;margin-bottom:20px;text-align:left;">'+
-          '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">✅ Unlimited questions</div>'+
-          '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">✅ 50 AI questions/month</div>'+
-          '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">✅ Challenge & multiplayer</div>'+
-          '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">✅ All Pro tools unlocked</div>'+
-        '</div>';
-      const btn = document.createElement('button');
-      btn.style.cssText = 'width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#0A1F6E,#4A6CF7);color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
-      btn.textContent = 'Start Learning! 🚀';
-      btn.onclick = ()=>{ popup.remove(); spawnConfetti(); };
-      box.appendChild(btn);
-      popup.appendChild(box);
-      document.body.appendChild(popup);
-      spawnConfetti();
+      showProCongrats();
+    } else {
+      localStorage.removeItem('fm_show_congrats');
     }
-  }, 300);
+  }, 500);
 }
 
 function showAuthPopup(){
@@ -4806,9 +4821,15 @@ function checkPlanFeature(feature){
   document.body.appendChild(popup);
   return false;
 }
-S.aiUsedToday = S.aiUsedToday || 0;
-S.aiUsedMonth = S.aiUsedMonth || 0;
-S.aiLastDate = S.aiLastDate || '';
+// FIX B: Load AI usage from localStorage so limit persists across page loads
+try{
+  const _aiToday = JSON.parse(localStorage.getItem('fm_ai_today')||'{}');
+  const _todayStr = new Date().toDateString();
+  if(_aiToday.date === _todayStr){ S.aiUsedToday = _aiToday.count||0; }
+  else { S.aiUsedToday = 0; }  // new day — reset
+  S.aiUsedMonth = parseInt(localStorage.getItem('fm_ai_month')||'0');
+  S.aiLastDate = _todayStr;
+}catch(e){ S.aiUsedToday=0; S.aiUsedMonth=0; S.aiLastDate=''; }
 function getAIPlan(){ return AI_PLANS[S.aiPlan] || AI_PLANS.free; }
 // API key stored securely in Vercel environment variables — accessed via /api/ai proxy
 // Fix keyboard on Android WebView
@@ -5132,6 +5153,17 @@ function setCommTab(el){document.querySelectorAll('.comm-tab,.chip').forEach(c=>
 // ── BOSS BATTLE ──
 let bossTimer,bossTime=480,bossQ=0,bossScore=0;
 function showBossBattle(){
+  // FIX C: Free users get 1 Boss Battle. Track with localStorage.
+  if(isFree()){
+    const used = localStorage.getItem('fm_boss_used');
+    if(used){
+      toast('👹 Boss Battle: 1 free battle used. Upgrade to Pro for unlimited!');
+      setTimeout(()=>showScreen('profile'),900);
+      return;
+    }
+    localStorage.setItem('fm_boss_used','1');
+    toast('👹 Free trial battle! Upgrade Pro for unlimited Boss Battles.');
+  }
   showScreen('challenge');
   setTimeout(()=>{
     const content=document.getElementById('screen-challenge');if(!content) return;
@@ -5181,6 +5213,12 @@ function endBossMode(){
 // ── TIME ATTACK ──
 let taTimer,taTime=180,taScore=0,taTotal=0;
 function showTimeAttack(){
+  // FIX C: Time Attack is Pro only
+  if(isFree()){
+    toast('⚡ Time Attack is a Pro feature!');
+    setTimeout(()=>showScreen('profile'),800);
+    return;
+  }
   showScreen('challenge');
   setTimeout(()=>{
     const content=document.getElementById('screen-challenge');if(!content) return;
@@ -5605,8 +5643,8 @@ function toggleCheckItem(item){
     }catch(e){ console.log('Preload failed:',e.message); }
   })();
 
-  // Init session
-  startSession();
+  // Init session deferred — called after auth check completes (Fix A)
+  // startSession() is now called inside loadUserProgress() / startAsGuest()
 
   // Update HUD
   updateHUD();
@@ -7673,6 +7711,22 @@ function showContinuePopup(std, remaining){
   requestAnimationFrame(()=>{ box.style.transition = 'transform .35s cubic-bezier(.25,.46,.45,.94)'; box.style.transform = 'translateY(0)'; });
 }
 
+
+// ── FIX A: Arena refresh function ──
+function arenaRefresh(){
+  const btn = document.getElementById('arena-refresh-btn');
+  if(btn){ btn.textContent='⏳'; btn.disabled=true; }
+  if(S.currentStandard){
+    startTopicPractice(S.currentStandard).then(()=>{
+      if(btn){ btn.textContent='🔄'; btn.disabled=false; }
+    }).catch(()=>{ if(btn){ btn.textContent='🔄'; btn.disabled=false; } });
+  } else {
+    startSession().then(()=>{
+      if(btn){ btn.textContent='🔄'; btn.disabled=false; }
+    }).catch(()=>{ if(btn){ btn.textContent='🔄'; btn.disabled=false; } });
+  }
+}
+
 // ── PERSIST ALL STATE TO LOCALSTORAGE ──
 function saveState(){
   try{
@@ -8167,6 +8221,8 @@ function startAsGuest(){
   _guestQCount = 0;
   _guestBonusUsed = false;
   document.getElementById('auth-screen').classList.remove('show');
+  // FIX A: Load questions for guest immediately
+  setTimeout(()=>{ if(S.screen==='practice'||S.screen==='home') startSession(); }, 200);
   // Always start with 10 question threshold — day-2 logic removed as it caused early interruptions
   try {
     localStorage.setItem('fm_guest_threshold', '10');
@@ -8365,6 +8421,11 @@ async function loadUserProgress() {
   // Reset any in-progress challenge/battle state
   CH.challengeId = null; CH.role = null; CH.isOnlineMatch = false;
   CH.battleStarted = false; CH.myFinished = false;
+
+  // FIX A: Now that auth + plan is confirmed, start arena session
+  if(S.screen === 'practice' || S.screen === 'home'){
+    startSession();
+  }
 
   // Check if this is a new user who needs onboarding
   const onboardingEl = document.getElementById('onboarding');
@@ -8973,6 +9034,7 @@ function loadBattleQuestion(){
 function startBattleTimer(){
   clearInterval(CH.timerInterval);
   CH.timerSeconds = 20;
+  S.soundOn = true; // FIX C3: ensure sound enabled in battle mode
   updateTimerUI();
   CH.timerInterval = setInterval(()=>{
     CH.timerSeconds--;
@@ -9025,6 +9087,7 @@ async function submitBattleAnswer(answerIdx){
   // Update score
   if(isCorrect){
     CH.myScore += speedBonus;
+    playSound('correct'); // FIX C3: battle sound
     // Show speed bonus flash
     const bonusFlash = document.createElement('div');
     bonusFlash.textContent = '+'+speedBonus+(speedBonus===3?' ⚡⚡⚡':speedBonus===2?' ⚡⚡':' ⚡');
@@ -9040,6 +9103,7 @@ async function submitBattleAnswer(answerIdx){
     else document.getElementById('battle-guest-score').textContent=CH.myScore;
   }
 
+  if(!isCorrect) playSound('wrong'); // FIX C3: battle wrong sound
   // Record answer
   CH.myAnswers.push({q_idx:CH.currentQ, answer:answerIdx, correct:isCorrect, time_ms:timeTaken});
 
@@ -10096,33 +10160,15 @@ setInterval(saveUserProgress, 30000);
 // ── STRIPE RETURN DETECTION ──
 // Check if returning from Stripe payment (works for WebView reload too)
 (function(){
+  // FIX D: Clear stale stripe flag on every page load if no session_id in URL
   try{
-    const stripeInProgress = localStorage.getItem('fm_stripe_in_progress');
     const urlParams = new URLSearchParams(window.location.search);
-    const upgraded = urlParams.get('upgraded') === 'true' || urlParams.get('session_id');
-    if(stripeInProgress || upgraded){
+    const hasSessionId = !!(urlParams.get('session_id'));
+    const upgraded = urlParams.get('upgraded') === 'true' && hasSessionId;
+    if(!upgraded){
+      // No successful Stripe return — remove any stale flags
       localStorage.removeItem('fm_stripe_in_progress');
-      localStorage.setItem('fm_show_congrats', '1'); // flag to show congrats after load
-      // Clean URL
-      if(upgraded) window.history.replaceState({}, '', window.location.pathname);
-      // Wait for auth + plan to load then show congrats
-      const checkAuth = setInterval(function(){
-        if(typeof _currentUser !== 'undefined' && _currentUser &&
-           typeof _planLoaded !== 'undefined' && _planLoaded){
-          clearInterval(checkAuth);
-          document.querySelectorAll('.daily-limit-overlay').forEach(function(e){ e.remove(); });
-          localStorage.removeItem('fm_show_congrats');
-          if(typeof showProCongrats === 'function') showProCongrats();
-        }
-      }, 500);
-      setTimeout(function(){
-        clearInterval(checkAuth);
-        // Show congrats anyway if still pending
-        if(localStorage.getItem('fm_show_congrats')){
-          localStorage.removeItem('fm_show_congrats');
-          if(typeof showProCongrats === 'function') showProCongrats();
-        }
-      }, 10000);
+      localStorage.removeItem('fm_show_congrats');
     }
   }catch(e){}
 })();
