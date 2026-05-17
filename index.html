@@ -203,7 +203,10 @@ a{color:inherit;text-decoration:none;}
 .shell.no-top-pad{padding-top:0 !important;padding-bottom:0 !important;}
 .screen{display:none;max-width:720px;margin:0 auto;padding:16px 14px;flex-direction:column;gap:14px;}
 .screen.active{display:flex;}
-/* Challenge screen */
+/* Challenge screen — hidden by default, shown only when active */
+#screen-multiplayer:not(.active){
+  display: none !important;
+}
 #screen-multiplayer.active{
   background: #f0f4ff;
 }
