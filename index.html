@@ -839,9 +839,12 @@ mark { background: var(--gold-l); color: var(--navy); border-radius: 3px; paddin
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
 
 /* ── OB-BOX CLEAN ── */
-.ob-box{position:relative;display:flex;flex-direction:column;gap:0;min-height:340px;height:auto;overflow:visible;}
-.ob-step{display:none !important;}
-.ob-step.active{display:flex !important;flex-direction:column;align-items:center;gap:12px;flex:1;padding-top:8px;}
+.ob-box{position:relative;}
+.ob-box{display:flex;flex-direction:column;gap:0;min-height:340px;}
+.ob-step{display:none;}
+.ob-step.active{display:flex;flex-direction:column;align-items:center;gap:12px;flex:1;}
+.ob-step{display:none;flex-direction:column;align-items:center;gap:12px;flex:1;padding-top:8px;}
+.ob-step.active{display:flex;}
 
 /* ── LEDGER GRID TEXTURE (subtle) ── */
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.025;background-image:linear-gradient(var(--navy) 1px,transparent 1px),linear-gradient(90deg,var(--navy) 1px,transparent 1px);background-size:24px 24px;}
@@ -4003,23 +4006,13 @@ function captureOb2Name(){
   }
 }
 function obNext(step){
-  // Hide current step
-  const cur = document.getElementById('ob'+step);
-  if(cur){ cur.classList.remove('active'); cur.style.display='none'; }
-  obStep = step+1;
-  // Show next step — force display in case CSS is overridden
-  const next = document.getElementById('ob'+obStep);
-  if(next){
-    next.classList.add('active');
-    next.style.display='flex';
-    next.style.flexDirection='column';
-    next.style.alignItems='center';
-    next.style.gap='12px';
-  }
-  // Update dots
+  document.getElementById('ob'+step).classList.remove('active');
+  obStep=step+1;
+  document.getElementById('ob'+obStep).classList.add('active');
+  // Update shared progress dots
   for(let i=1;i<=4;i++){
     const d=document.getElementById('obd'+i);
-    if(d) d.classList.toggle('active',i===obStep);
+    if(d){d.classList.toggle('active',i===obStep);}
   }
 }
 function selectMentor(g){S.gender=g;document.getElementById('ob-male').classList.toggle('active',g==='male');document.getElementById('ob-female').classList.toggle('active',g==='female');buildMentor();}
