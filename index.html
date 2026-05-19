@@ -4570,10 +4570,23 @@ function showProCongrats(){
 }
 
 function checkStripeReturn(){
-  // Also check if fm_show_congrats flag is set (from in-app Stripe flow)
+  // Only show congrats if Supabase DB confirms plan=pro
   if(localStorage.getItem('fm_show_congrats')){
     localStorage.removeItem('fm_show_congrats');
-    setTimeout(function(){ if(typeof showProCongrats==='function') showProCongrats(); }, 1000);
+    setTimeout(async function(){
+      if(_currentUser){
+        try{
+          const {data} = await _supa.from('user_progress').select('plan').eq('user_id',_currentUser.id).single();
+          if(data && (data.plan==='pro'||data.plan==='elite')){
+            S.plan=data.plan; S.tier=data.plan;
+            localStorage.setItem('fm_tier',data.plan);
+            if(typeof showProCongrats==='function') showProCongrats();
+          } else {
+            toast('Payment not confirmed yet. Contact support if you paid.');
+          }
+        }catch(e){}
+      }
+    }, 1500);
   }
   const params = new URLSearchParams(window.location.search);
   const hasUpgraded = params.get('upgraded') === 'true' || params.get('session_id');
@@ -9074,6 +9087,7 @@ async function submitBattleAnswer(answerIdx){
   // Update score
   if(isCorrect){
     CH.myScore += speedBonus;
+    playSound('correct'); // battle correct sound
     // Show speed bonus flash
     const bonusFlash = document.createElement('div');
     bonusFlash.textContent = '+'+speedBonus+(speedBonus===3?' ⚡⚡⚡':speedBonus===2?' ⚡⚡':' ⚡');
@@ -9089,6 +9103,7 @@ async function submitBattleAnswer(answerIdx){
     else document.getElementById('battle-guest-score').textContent=CH.myScore;
   }
 
+  if(!isCorrect) playSound('wrong'); // battle wrong sound
   // Record answer
   CH.myAnswers.push({q_idx:CH.currentQ, answer:answerIdx, correct:isCorrect, time_ms:timeTaken});
 
