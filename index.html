@@ -708,7 +708,7 @@ a{color:inherit;text-decoration:none;}
 /* ── ONBOARDING ── */
 #onboarding{position:fixed;inset:0;z-index:1000;background:rgba(10,31,110,.96);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
 .ob-box,.overlay-card{background:var(--surface);border-radius:20px;padding:24px;max-width:360px;width:92%;text-align:center;animation:obIn .5s cubic-bezier(.34,1.56,.64,1);display:flex;flex-direction:column;gap:12px;}
-.ob-box{position:relative;}
+/* ob-box merged below */
 .ob-box::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--navy),var(--blue),var(--navy));}
 @keyframes obIn{from{opacity:0;transform:translateY(30px) scale(.95)}to{opacity:1;transform:none}}
 /* ob-step see below */
@@ -839,7 +839,7 @@ mark { background: var(--gold-l); color: var(--navy); border-radius: 3px; paddin
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
 
 /* ── OB-BOX CLEAN ── */
-.ob-box{display:flex;flex-direction:column;gap:0;min-height:340px;height:auto;overflow:visible;}
+.ob-box{position:relative;display:flex;flex-direction:column;gap:0;min-height:340px;height:auto;overflow:visible;}
 .ob-step{display:none !important;}
 .ob-step.active{display:flex !important;flex-direction:column;align-items:center;gap:12px;flex:1;padding-top:8px;}
 
@@ -4534,10 +4534,7 @@ function showEditNamePopup(){
   setTimeout(()=>input.focus(), 100);
 }
 
-function showAuthPopup(){
-  const authScreen = document.getElementById('auth-screen');
-  if(authScreen){ authScreen.classList.add('show'); return; }
-}
+// showAuthPopup defined earlier
 
 function showProCongrats(){
   // Remove any limit popups
@@ -4815,9 +4812,14 @@ function checkPlanFeature(feature){
   document.body.appendChild(popup);
   return false;
 }
-S.aiUsedToday = S.aiUsedToday || 0;
-S.aiUsedMonth = S.aiUsedMonth || 0;
-S.aiLastDate = S.aiLastDate || '';
+// Load AI usage from localStorage so limit persists across page loads/refresh
+try{
+  const _aiToday = JSON.parse(localStorage.getItem('fm_ai_today')||'{}');
+  const _todayStr = new Date().toDateString();
+  S.aiUsedToday = (_aiToday.date === _todayStr) ? (_aiToday.count||0) : 0;
+  S.aiUsedMonth = parseInt(localStorage.getItem('fm_ai_month')||'0');
+  S.aiLastDate = _todayStr;
+}catch(e){ S.aiUsedToday=0; S.aiUsedMonth=0; S.aiLastDate=''; }
 function getAIPlan(){ return AI_PLANS[S.aiPlan] || AI_PLANS.free; }
 // API key stored securely in Vercel environment variables — accessed via /api/ai proxy
 // Fix keyboard on Android WebView
@@ -5106,13 +5108,7 @@ async function loadRival(leaderboardData){
   if(barEl) barEl.style.width = Math.min((myXp/rival.xp)*100,100) + '%';
 }
 
-function getRank(xp){
-  if(xp>=5000) return 'Distinguished';
-  if(xp>=2000) return 'Qualified';
-  if(xp>=500) return 'Analyst';
-  if(xp>=100) return 'Associate';
-  return 'Initiate';
-}
+// getRank is defined earlier using the RANKS array — do not redefine here
 function sendSuggested(btn){document.getElementById('chat-input').value=btn.textContent;sendChat();}
 function addChatMsg(role,text,withActions){
   const msgs=document.getElementById('chat-messages');
@@ -10155,12 +10151,17 @@ setInterval(saveUserProgress, 30000);
 // Check if returning from Stripe payment (works for WebView reload too)
 (function(){
   try{
-    const stripeInProgress = localStorage.getItem('fm_stripe_in_progress');
     const urlParams = new URLSearchParams(window.location.search);
-    const upgraded = urlParams.get('upgraded') === 'true' || urlParams.get('session_id');
-    if(stripeInProgress || upgraded){
+    const hasSessionId = !!(urlParams.get('session_id'));
+    const upgraded = urlParams.get('upgraded') === 'true' && hasSessionId;
+    if(!upgraded){
+      // No valid Stripe return — clear any stale flags
       localStorage.removeItem('fm_stripe_in_progress');
-      localStorage.setItem('fm_show_congrats', '1'); // flag to show congrats after load
+      localStorage.removeItem('fm_show_congrats');
+    }
+    if(upgraded){
+      localStorage.removeItem('fm_stripe_in_progress');
+      localStorage.setItem('fm_show_congrats', '1');
       // Clean URL
       if(upgraded) window.history.replaceState({}, '', window.location.pathname);
       // Wait for auth + plan to load then show congrats
