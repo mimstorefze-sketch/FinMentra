@@ -711,8 +711,7 @@ a{color:inherit;text-decoration:none;}
 .ob-box{position:relative;overflow:hidden;}
 .ob-box::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--navy),var(--blue),var(--navy));}
 @keyframes obIn{from{opacity:0;transform:translateY(30px) scale(.95)}to{opacity:1;transform:none}}
-.ob-step{display:none;}
-.ob-step.active{display:flex;flex-direction:column;align-items:center;gap:12px;flex:1;}
+/* ob-step defined below */
 .ob-title{font-family:var(--font-display);font-size:24px;font-weight:600;color:var(--navy);margin-bottom:6px;line-height:1.2;}
 .ob-text{font-size:13px;color:var(--steel);line-height:1.7;}
 .ob-text strong{color:var(--navy);font-weight:600;}
@@ -841,8 +840,8 @@ mark { background: var(--gold-l); color: var(--navy); border-radius: 3px; paddin
 
 /* ── OB-BOX CLEAN ── */
 .ob-box{display:flex;flex-direction:column;gap:0;min-height:340px;}
-.ob-step{display:none;flex-direction:column;align-items:center;gap:12px;flex:1;padding-top:8px;}
-.ob-step.active{display:flex;}
+.ob-step{display:none;}
+.ob-step.active{display:flex;flex-direction:column;align-items:center;gap:12px;flex:1;padding-top:8px;}
 
 /* ── LEDGER GRID TEXTURE (subtle) ── */
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.025;background-image:linear-gradient(var(--navy) 1px,transparent 1px),linear-gradient(90deg,var(--navy) 1px,transparent 1px);background-size:24px 24px;}
@@ -1780,7 +1779,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div style="height:4px;background:var(--border2);border-radius:2px;overflow:hidden;margin-bottom:6px;">
     <div id="prog-linear" style="height:100%;background:linear-gradient(90deg,var(--green),var(--blue));border-radius:2px;transition:width .4s ease;width:0%;"></div>
   </div>
-  <div class="prog-wrap"><div class="prog-dots" id="prog-dots"></div><div class="prog-meta" id="prog-meta">1 / 8</div><button id="arena-refresh-btn" onclick="arenaRefresh()" title="Reload questions" style="width:30px;height:30px;border-radius:50%;background:var(--blue-ll);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;flex-shrink:0;margin-left:4px;">🔄</button></div>
+  <div class="prog-wrap"><div class="prog-dots" id="prog-dots"></div><div class="prog-meta" id="prog-meta">1 / 8</div></div>
   <!-- Near miss -->
   <div class="near-miss" id="near-miss"><span id="near-miss-text">🏅 Almost there!</span></div>
   <!-- Question card -->
@@ -3611,9 +3610,9 @@ async function fetchQuestionsFromSupabase(category, count){
 
 
 async function startSession(){
-  // Check daily limit — free users AND guests
+  // Check daily limit for free users
   const dailyRemaining = getDailyQRemaining();
-  if((isFree()||_isGuest) && dailyRemaining <= 0){
+  if(isFree() && dailyRemaining <= 0){
     showDailyLimitPopup();
     return;
   }
@@ -3705,8 +3704,8 @@ function buildProgressDots(){
   }
 }
 function loadQuestion(){
-  // Hard stop for free users AND guests who hit daily limit
-  if((isFree()||_isGuest) && getDailyQRemaining() <= 0){
+  // Hard stop for free users who hit daily limit
+  if(isFree() && getDailyQRemaining() <= 0){
     showDailyLimitPopup();
     return;
   }
@@ -3779,9 +3778,8 @@ function loadQuestion(){
 }
 function answerQ(idx,btn,q){
   try{localStorage.setItem('fm_last_study_date',new Date().toDateString());}catch(e){}
+  // BUG FIX: Guard with S.answered — scoped to current question's container
   if(S.answered) return;
-  // Hard cap — free users and guests cannot answer past 15/day
-  if((isFree()||_isGuest) && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
   S.answered=true;
   const optsContainer=document.getElementById('options');
   if(optsContainer) optsContainer.querySelectorAll('.opt').forEach(o=>o.classList.add('disabled'));
@@ -3886,46 +3884,51 @@ function goBack(){
   }
 }
 function nextQuestion(){
-  // Check daily limit
-  if((isFree()||_isGuest) && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
-
+  // Check daily limit before moving to next question
+  if(isFree() && getDailyQRemaining() <= 0){
+    showDailyLimitPopup();
+    return;
+  }
+  if(isFree() && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
   S.qIndex++;
-
-  // More questions remain — just load next one immediately
-  if(S.qIndex < S.sessionQs.length){
-    loadQuestion();
-    return;
-  }
-
-  // Session too short — questions didn't load properly, reload silently
-  if(S.sessionQs.length < 3){
-    console.warn('Session too short ('+S.sessionQs.length+'Q) — reloading');
-    if(S.currentStandard) startTopicPractice(S.currentStandard);
-    else startSession();
-    return;
-  }
-
-  // Full session complete
-  const acc = S.sessionQ>0 ? Math.round(S.sessionCorrect/S.sessionQ*100) : 0;
-  const std = S.currentStandard||S.domain;
-
-  // Mark standard completed if accuracy ≥ 50%
-  if(S.currentStandard && acc >= 50){
-    if(!S.completedTopics) S.completedTopics = {};
-    if(!S.completedTopics[S.currentStandard]){
-      S.completedTopics[S.currentStandard] = true;
-      saveState();
-      toast('✅ '+S.currentStandard+' completed! Next topic unlocked →');
-      setTimeout(buildLearningPath, 400);
+  if(S.qIndex>=S.sessionQs.length){
+    // Session complete — show results then loop back for more practice
+    const acc=S.sessionQ>0?Math.round(S.sessionCorrect/S.sessionQ*100):0;
+    const std=S.currentStandard||S.domain;
+    toast(std+' session done: '+S.sessionCorrect+'/'+S.sessionQ+' correct ('+acc+'%)');
+    // Mark this standard as completed if accuracy ≥ 50%
+    if(S.currentStandard && acc >= 50){
+      if(!S.completedTopics) S.completedTopics = {};
+      if(!S.completedTopics[S.currentStandard]){
+        S.completedTopics[S.currentStandard] = true;
+        saveState();
+        toast('✅ ' + S.currentStandard + ' completed! Next topic unlocked →');
+        setTimeout(buildLearningPath, 400);
+      }
     }
+    if(S.currentStandard && QB[S.currentStandard] && QB[S.currentStandard].length>0){
+      // Check daily limit before loading more questions
+      const remaining = getDailyQRemaining();
+      if(isFree() && remaining <= 0){
+        showDailyLimitPopup();
+        return;
+      }
+      // Reload same topic with shuffled questions
+      const pool=[...QB[S.currentStandard]].sort(()=>Math.random()-.5);
+      const limit = isFree() ? Math.min(8, remaining) : 20;
+      S.sessionQs=pool.slice(0, limit);
+      S.qIndex=0; S.sessionQ=0; S.sessionCorrect=0; S.answered=false;
+      updateSessionBar();
+      loadQuestion();
+      // Show completion message
+      setTimeout(()=>toast('Starting next round of '+std+' questions →'),300);
+    } else {
+      // Domain practice complete — go to progress
+      showScreen('progress');
+    }
+    return;
   }
-
-  // Check daily limit before offering more
-  const remaining = getDailyQRemaining();
-  if((isFree()||_isGuest) && remaining <= 0){ showDailyLimitPopup(); return; }
-
-  // Show continue popup
-  showContinuePopup(std, remaining);
+  loadQuestion();
 }
 function toggleBookmark(){S.currentBookmarked=!S.currentBookmarked;const btn=document.getElementById('bookmark-btn');if(btn){btn.classList.toggle('saved',S.currentBookmarked);btn.textContent=S.currentBookmarked?'⭐':'🔖';}}
 function toggleNotes(){const p=document.getElementById('notes-panel');if(p) p.classList.toggle('show');}
@@ -4651,12 +4654,11 @@ function getDailyQKey(){
 }
 
 function getDailyQRemaining(){
-  // Pro users: unlimited
+  // Always return 999 for pro users — check localStorage too for race condition
   if(!isFree()) return 999;
   try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return 999; }catch(e){}
-  // Logged-in users: wait for plan confirmation
+  // Logged-in users: wait until plan confirmed loaded
   if(_currentUser && !_planLoaded) return 999;
-  // Free logged-in AND guests: 15/day cap via localStorage
   const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
   return Math.max(0, 15 - used);
 }
@@ -4681,8 +4683,7 @@ function checkDailyQLimit(){
 }
 
 function incrementDailyQ(){
-  // Count for both free users AND guests
-  if(!isFree() && !_isGuest) return;
+  if(!isFree()) return;
   const key = getDailyQKey();
   const used = parseInt(localStorage.getItem(key) || '0');
   localStorage.setItem(key, String(used + 1));
@@ -5122,16 +5123,6 @@ function setCommTab(el){document.querySelectorAll('.comm-tab,.chip').forEach(c=>
 // ── BOSS BATTLE ──
 let bossTimer,bossTime=480,bossQ=0,bossScore=0;
 function showBossBattle(){
-  // Pro: unlimited. Free/guest: 1 trial lifetime, then locked.
-  if(!isPro()){
-    const used = localStorage.getItem('fm_boss_used');
-    if(used){
-      showProLockedPopup('Boss Battle','fm_boss_used');
-      return;
-    }
-    localStorage.setItem('fm_boss_used','1');
-    toast('👹 Free trial! Upgrade Pro for unlimited Boss Battles.');
-  }
   showScreen('challenge');
   setTimeout(()=>{
     const content=document.getElementById('screen-challenge');if(!content) return;
@@ -5181,16 +5172,6 @@ function endBossMode(){
 // ── TIME ATTACK ──
 let taTimer,taTime=180,taScore=0,taTotal=0;
 function showTimeAttack(){
-  // Pro: unlimited. Free/guest: 1 trial lifetime, then locked.
-  if(!isPro()){
-    const used = localStorage.getItem('fm_ta_used');
-    if(used){
-      showProLockedPopup('Time Attack','fm_ta_used');
-      return;
-    }
-    localStorage.setItem('fm_ta_used','1');
-    toast('⚡ Free trial! Upgrade Pro for unlimited Time Attack.');
-  }
   showScreen('challenge');
   setTimeout(()=>{
     const content=document.getElementById('screen-challenge');if(!content) return;
@@ -7622,95 +7603,6 @@ showScreen=function(id){
   if(target){target.classList.add('fade-in');setTimeout(()=>target.classList.remove('fade-in'),400);}
 };
 
-
-// ── CONTINUE SESSION POPUP ──
-function showContinuePopup(std, remaining){
-  const existing = document.getElementById('continue-popup-overlay');
-  if(existing) existing.remove();
-  const overlay = document.createElement('div');
-  overlay.id = 'continue-popup-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.82);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);';
-  const box = document.createElement('div');
-  box.style.cssText = 'background:#fff;border-radius:24px 24px 0 0;padding:28px 24px 32px;width:100%;max-width:480px;text-align:center;box-shadow:0 -8px 40px rgba(10,31,110,.2);';
-  const acc = S.sessionQ>0 ? Math.round(S.sessionCorrect/S.sessionQ*100) : 0;
-  const accColor = acc>=70?'#0A6E3A':acc>=50?'#D97706':'#DC2626';
-  const accEmoji = acc>=70?'🌟':acc>=50?'👍':'📖';
-  box.innerHTML =
-    '<div style="font-size:40px;margin-bottom:8px;">'+accEmoji+'</div>'+
-    '<div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:#0A1F6E;margin-bottom:6px;">'+std+' Complete!</div>'+
-    '<div style="font-size:13px;color:#64748B;margin-bottom:16px;">Accuracy: <strong style="color:'+accColor+';">'+acc+'%</strong> ('+S.sessionCorrect+'/'+S.sessionQ+' correct)</div>';
-  const contBtn = document.createElement('button');
-  contBtn.style.cssText = 'width:100%;padding:14px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);margin-bottom:10px;';
-  contBtn.textContent = 'Continue Practicing →';
-  contBtn.onclick = async function(){
-    overlay.remove();
-    if((isFree()||_isGuest) && getDailyQRemaining()<=0){ showDailyLimitPopup(); return; }
-    let pool = [];
-    if(S.currentStandard){
-      const supaQs = await fetchQuestionsForStandard(S.currentStandard);
-      if(supaQs && supaQs.length>=1) pool = supaQs.sort(()=>Math.random()-.5);
-      else pool = (QB[S.currentStandard]||[]).slice().sort(()=>Math.random()-.5);
-    }
-    const lim = isPro()?20:(isFree()||_isGuest)?Math.min(8,getDailyQRemaining()):8;
-    S.sessionQs = pool.slice(0, Math.max(1, lim));
-    S.qIndex=0; S.sessionQ=0; S.sessionCorrect=0; S.answered=false;
-    updateSessionBar(); loadQuestion();
-  };
-  const progBtn = document.createElement('button');
-  progBtn.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);margin-bottom:10px;';
-  progBtn.textContent = 'View My Progress 📊';
-  progBtn.onclick = function(){ overlay.remove(); showScreen('progress'); };
-  const homeBtn = document.createElement('button');
-  homeBtn.style.cssText = 'width:100%;padding:10px;border-radius:12px;background:none;color:#94A3B8;font-size:13px;font-weight:600;border:none;cursor:pointer;font-family:var(--font-body);';
-  homeBtn.textContent = 'Back to Home';
-  homeBtn.onclick = function(){ overlay.remove(); showScreen('home'); };
-  box.appendChild(contBtn); box.appendChild(progBtn); box.appendChild(homeBtn);
-  overlay.appendChild(box); document.body.appendChild(overlay);
-  box.style.transform='translateY(100%)';
-  requestAnimationFrame(()=>{ box.style.transition='transform .35s cubic-bezier(.25,.46,.45,.94)'; box.style.transform='translateY(0)'; });
-}
-
-// ── ARENA REFRESH FUNCTION ──
-function arenaRefresh(){
-  const btn = document.getElementById('arena-refresh-btn');
-  if(btn){ btn.textContent='⏳'; btn.disabled=true; }
-  const done = ()=>{ if(btn){ btn.textContent='🔄'; btn.disabled=false; } };
-  if(S.currentStandard) startTopicPractice(S.currentStandard).then(done).catch(done);
-  else startSession().then(done).catch(done);
-}
-
-
-// ── PRO FEATURE LOCKED POPUP ──
-function showProLockedPopup(featureName, storageKey){
-  // Remove existing
-  document.querySelectorAll('.pro-locked-overlay').forEach(e=>e.remove());
-  const overlay = document.createElement('div');
-  overlay.className = 'pro-locked-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
-  const box = document.createElement('div');
-  box.style.cssText = 'background:#fff;border-radius:24px;padding:32px 24px;max-width:340px;width:92%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);';
-  box.innerHTML =
-    '<div style="font-size:52px;margin-bottom:12px;">🔒</div>'+
-    '<div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:#0A1F6E;margin-bottom:8px;">'+featureName+' is Pro</div>'+
-    '<div style="font-size:13px;color:#64748B;line-height:1.6;margin-bottom:20px;">You've used your 1 free trial.<br>Upgrade to Pro for unlimited access.</div>'+
-    '<div style="background:#EEF2FF;border-radius:12px;padding:12px;margin-bottom:20px;text-align:left;">'+
-      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Unlimited questions</div>'+
-      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Time Attack — unlimited</div>'+
-      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Boss Battle — unlimited</div>'+
-      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Challenge mode — unlimited</div>'+
-    '</div>';
-  const upBtn = document.createElement('button');
-  upBtn.style.cssText = 'width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#F59E0B,#FCD34D);color:#0A1F6E;font-size:15px;font-weight:800;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px;';
-  upBtn.textContent = 'Upgrade to Pro 🚀';
-  upBtn.onclick = function(){ overlay.remove(); showScreen('profile'); };
-  const closeBtn = document.createElement('button');
-  closeBtn.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
-  closeBtn.textContent = 'Maybe Later';
-  closeBtn.onclick = function(){ overlay.remove(); };
-  box.appendChild(upBtn); box.appendChild(closeBtn);
-  overlay.appendChild(box); document.body.appendChild(overlay);
-}
-
 // ── PERSIST ALL STATE TO LOCALSTORAGE ──
 function saveState(){
   try{
@@ -8216,15 +8108,15 @@ function getGuestThreshold(){
   try { return parseInt(localStorage.getItem('fm_guest_threshold') || '10'); } catch(e){ return 10; }
 }
 
-// Called after every answer — nudge guests to register, enforce hard cap
+// Called after every answer — check if we should show register popup
 function checkGuestPrompt(){
   if(_currentUser || !_isGuest) return;
   _guestQCount++;
-  const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
-  // At Q10 — show register nudge
-  if(used === 10 && !_guestBonusUsed) showRegisterPopup();
-  // At Q15 — hard stop
-  if(used >= 15) showDailyLimitPopup();
+  // Minimum 10 questions before showing register popup (never interrupt early)
+  const threshold = _guestBonusUsed ? 9999 : Math.max(10, getGuestThreshold());
+  if(_guestQCount >= threshold){
+    showRegisterPopup();
+  }
 }
 
 // ── REGISTER POPUP ──
@@ -8246,8 +8138,6 @@ function closeRegPopup(){
 function continueAsGuest(){
   _guestBonusUsed = true;
   closeRegPopup();
-  const remaining = getDailyQRemaining();
-  if(remaining > 0) toast('You have '+remaining+' questions left today. Sign up to save your progress!');
 }
 
 function showEmailAuth(){
@@ -8790,16 +8680,7 @@ function resetCH(){
 
 // ── CREATE CHALLENGE ──
 async function createChallenge(){
-  // Pro: unlimited. Free/guest: 1 trial lifetime, then locked.
-  if(!isPro()){
-    const used = localStorage.getItem('fm_ch_used');
-    if(used){
-      showProLockedPopup('Challenge Mode','fm_ch_used');
-      return;
-    }
-    localStorage.setItem('fm_ch_used','1');
-    toast('⚔️ Free trial challenge! Upgrade Pro for unlimited.');
-  }
+  if(!checkPlanFeature('multiplayer')) return;
   resetCH();
   const category = document.getElementById('ch-create-category').value;
   const count = document.getElementById('ch-create-count').value;
@@ -9547,16 +9428,7 @@ async function updateOnlineCount(){
 
 // ── FIND ONLINE MATCH ──
 async function findOnlineMatch(){
-  // Pro: unlimited. Free/guest: 1 trial lifetime, then locked.
-  if(!isPro()){
-    const used = localStorage.getItem('fm_ch_used');
-    if(used){
-      showProLockedPopup('Challenge Mode','fm_ch_used');
-      return;
-    }
-    localStorage.setItem('fm_ch_used','1');
-    toast('⚔️ Free trial match! Upgrade Pro for unlimited.');
-  }
+  if(!checkPlanFeature('onlineMatch')) return;
 
   // Full cleanup of any previous search
   clearInterval(MM.searchInterval);
