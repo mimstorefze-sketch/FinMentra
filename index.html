@@ -708,10 +708,11 @@ a{color:inherit;text-decoration:none;}
 /* ── ONBOARDING ── */
 #onboarding{position:fixed;inset:0;z-index:1000;background:rgba(10,31,110,.96);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
 .ob-box,.overlay-card{background:var(--surface);border-radius:20px;padding:24px;max-width:360px;width:92%;text-align:center;animation:obIn .5s cubic-bezier(.34,1.56,.64,1);display:flex;flex-direction:column;gap:12px;}
-/* ob-box merged below */
+.ob-box{position:relative;overflow:hidden;}
 .ob-box::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--navy),var(--blue),var(--navy));}
 @keyframes obIn{from{opacity:0;transform:translateY(30px) scale(.95)}to{opacity:1;transform:none}}
-/* ob-step see below */
+.ob-step{display:none;}
+.ob-step.active{display:flex;flex-direction:column;align-items:center;gap:12px;flex:1;}
 .ob-title{font-family:var(--font-display);font-size:24px;font-weight:600;color:var(--navy);margin-bottom:6px;line-height:1.2;}
 .ob-text{font-size:13px;color:var(--steel);line-height:1.7;}
 .ob-text strong{color:var(--navy);font-weight:600;}
@@ -839,10 +840,7 @@ mark { background: var(--gold-l); color: var(--navy); border-radius: 3px; paddin
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
 
 /* ── OB-BOX CLEAN ── */
-.ob-box{position:relative;overflow:hidden;}
 .ob-box{display:flex;flex-direction:column;gap:0;min-height:340px;}
-.ob-step{display:none;}
-.ob-step.active{display:flex;flex-direction:column;align-items:center;gap:12px;flex:1;}
 .ob-step{display:none;flex-direction:column;align-items:center;gap:12px;flex:1;padding-top:8px;}
 .ob-step.active{display:flex;}
 
@@ -1506,7 +1504,6 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 </div>
 
 <!-- ONBOARDING -->
-<!-- ONBOARDING -->
 <div id="onboarding">
   <div class="ob-box">
     <div class="ob-step active" id="ob1">
@@ -1588,8 +1585,6 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     </div>
   </div>
 </div>
-
-
 
 <!-- TOASTS -->
 <div class="streak-toast" id="streakToast">🔥 <span id="streakMsg"></span></div>
@@ -1791,7 +1786,11 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div style="height:4px;background:var(--border2);border-radius:2px;overflow:hidden;margin-bottom:6px;">
     <div id="prog-linear" style="height:100%;background:linear-gradient(90deg,var(--green),var(--blue));border-radius:2px;transition:width .4s ease;width:0%;"></div>
   </div>
-  <div class="prog-wrap"><div class="prog-dots" id="prog-dots"></div><div class="prog-meta" id="prog-meta">1 / 8</div><button id="arena-refresh-btn" onclick="arenaRefresh()" title="Reload questions" style="width:30px;height:30px;border-radius:50%;background:var(--blue-ll);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;flex-shrink:0;margin-left:4px;">🔄</button></div>
+  <div class="prog-wrap">
+    <div class="prog-dots" id="prog-dots"></div>
+    <div class="prog-meta" id="prog-meta">1 / 8</div>
+    <button id="arena-refresh-btn" onclick="arenaRefresh()" title="Refresh questions" style="width:30px;height:30px;border-radius:50%;background:var(--blue-ll);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;flex-shrink:0;margin-left:4px;" title="Reload questions">🔄</button>
+  </div>
   <!-- Near miss -->
   <div class="near-miss" id="near-miss"><span id="near-miss-text">🏅 Almost there!</span></div>
   <!-- Question card -->
@@ -1998,7 +1997,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 </div>
 
 <!-- ══ CHALLENGE LEAGUE ══ -->
-<div class="screen" id="screen-challenge">
+<div class="screen" id="screen-challenge" style="display:none;">
   <!-- Daily Challenge -->
   <div class="card" style="background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;overflow:hidden;position:relative;">
     <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.05);"></div>
@@ -3459,10 +3458,16 @@ async function startTopicPractice(num){
   // Auto-retry timeout — if still loading after 8 seconds, show retry button
   const loadingTimeout = setTimeout(()=>{
     const o = document.getElementById('options');
-    if(o && o.innerHTML.includes('Fetching')){
-      o.innerHTML = '<div style="text-align:center;padding:20px;"><div style="color:var(--muted);margin-bottom:12px;">Taking longer than expected...</div><button onclick="selectTopic(document.querySelector(\'.topic-row.active\')||document.querySelector(\'.topic-row\'))" style="padding:10px 24px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;">🔄 Tap to Load Questions</button></div>';
+    if(o && (o.innerHTML.includes('Fetching') || o.innerHTML.includes('Loading'))){
+      const _std = S.currentStandard||'IFRS 15';
+      o.innerHTML = '<div style="text-align:center;padding:24px 16px;">' +
+        '<div style="font-size:32px;margin-bottom:10px;">📶</div>' +
+        '<div style="color:var(--muted);margin-bottom:16px;font-size:13px;">Questions taking a while…</div>' +
+        '<button onclick="startTopicPractice(\'' + _std + '\')" style="display:block;width:100%;padding:12px;background:var(--navy);color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);margin-bottom:8px;">🔄 Refresh Questions</button>' +
+        '<button onclick="startSession()" style="display:block;width:100%;padding:10px;background:var(--surface);color:var(--navy);border:1.5px solid var(--border);border-radius:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);">↩ Load default topic</button>' +
+        '</div>';
     }
-  }, 8000);
+  }, 5000);
 
   // Fetch from Supabase for THIS specific standard
   let pool = [];
@@ -3478,7 +3483,7 @@ async function startTopicPractice(num){
 
   // Apply limits based on plan and position
   const topicIdx = t ? TOPICS.filter(x=>x.cat===t.cat).findIndex(x=>x.num===num) : 0;
-  let limit = isPro() ? 20 : 8; // Pro=20, free=8
+  let limit = isPro() ? 20 : 8; // FIX1: Pro=20, free=8
   if(isFree()){
     if(topicIdx === 0) limit = 8; // First standard: full open
     else if(topicIdx < 3) limit = 3; // Standards 2-3: 3 questions only
@@ -3622,9 +3627,9 @@ async function fetchQuestionsFromSupabase(category, count){
 
 
 async function startSession(){
-  // Check daily limit — free users AND guests
+  // Check daily limit for free users
   const dailyRemaining = getDailyQRemaining();
-  if((isFree()||_isGuest) && dailyRemaining <= 0){
+  if(isFree() && dailyRemaining <= 0){
     showDailyLimitPopup();
     return;
   }
@@ -3644,9 +3649,9 @@ async function startSession(){
     let fresh = supaQs.filter(q => !recentIds.includes(q.q.substring(0,30)));
     if(fresh.length < 5) fresh = supaQs; // reset if too few fresh
     // Cap to remaining daily questions for free users
-    const remaining = isFree() ? Math.min(8, getDailyQRemaining()) : 8;
-    if(isFree() && remaining <= 0){ showDailyLimitPopup(); return; }
-    pool = fresh.sort(()=>Math.random()-.5).slice(0, Math.max(1, remaining));
+    const limit = isPro() ? 20 : isFree() ? Math.min(8, getDailyQRemaining()) : 8; // FIX E: Pro=20
+    if(isFree() && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
+    pool = fresh.sort(()=>Math.random()-.5).slice(0, Math.max(1, limit));
     // Track recently seen
     S.recentQs = pool.map(q=>q.q.substring(0,30));
     console.log('✅ Arena: using',pool.length,'questions from Supabase for',category);
@@ -3716,8 +3721,8 @@ function buildProgressDots(){
   }
 }
 function loadQuestion(){
-  // Hard stop for free users AND guests
-  if((isFree()||_isGuest) && getDailyQRemaining() <= 0){
+  // Hard stop for free users who hit daily limit
+  if(isFree() && getDailyQRemaining() <= 0){
     showDailyLimitPopup();
     return;
   }
@@ -3790,9 +3795,8 @@ function loadQuestion(){
 }
 function answerQ(idx,btn,q){
   try{localStorage.setItem('fm_last_study_date',new Date().toDateString());}catch(e){}
+  // BUG FIX: Guard with S.answered — scoped to current question's container
   if(S.answered) return;
-  // Hard stop — free users and guests cannot answer past 15/day even after refresh
-  if((isFree()||_isGuest) && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
   S.answered=true;
   const optsContainer=document.getElementById('options');
   if(optsContainer) optsContainer.querySelectorAll('.opt').forEach(o=>o.classList.add('disabled'));
@@ -3897,40 +3901,43 @@ function goBack(){
   }
 }
 function nextQuestion(){
-  // Check daily limit for free users and guests
-  if((isFree()||_isGuest) && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
-
+  // Check daily limit before moving to next question
+  if(isFree() && getDailyQRemaining() <= 0){
+    showDailyLimitPopup();
+    return;
+  }
+  if(isFree() && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
   S.qIndex++;
-
-  // Still have questions left — just load next one (fixes arena going to Path after 1Q)
-  if(S.qIndex < S.sessionQs.length){
-    loadQuestion();
-    return;
-  }
-
-  // Session loaded with too few questions (bad network) — reload silently
-  if(S.sessionQs.length < 3){
-    console.warn('Short session ('+S.sessionQs.length+') — reloading');
-    if(S.currentStandard) startTopicPractice(S.currentStandard);
-    else startSession();
-    return;
-  }
-
-  // Full session done — show continue popup
-  const acc = S.sessionQ>0 ? Math.round(S.sessionCorrect/S.sessionQ*100) : 0;
-  const std = S.currentStandard||S.domain;
-  if(S.currentStandard && acc >= 50){
-    if(!S.completedTopics) S.completedTopics = {};
-    if(!S.completedTopics[S.currentStandard]){
-      S.completedTopics[S.currentStandard] = true;
-      saveState();
-      toast('✅ '+S.currentStandard+' completed! Next topic unlocked →');
-      setTimeout(buildLearningPath, 400);
+  if(S.qIndex>=S.sessionQs.length){
+    // Session complete — show results then loop back for more practice
+    const acc=S.sessionQ>0?Math.round(S.sessionCorrect/S.sessionQ*100):0;
+    const std=S.currentStandard||S.domain;
+    toast(std+' session done: '+S.sessionCorrect+'/'+S.sessionQ+' correct ('+acc+'%)');
+    // Mark this standard as completed if accuracy ≥ 50%
+    if(S.currentStandard && acc >= 50){
+      if(!S.completedTopics) S.completedTopics = {};
+      if(!S.completedTopics[S.currentStandard]){
+        S.completedTopics[S.currentStandard] = true;
+        saveState();
+        toast('✅ ' + S.currentStandard + ' completed! Next topic unlocked →');
+        setTimeout(buildLearningPath, 400);
+      }
     }
+    if(S.currentStandard){
+      // Check daily limit before loading more questions
+      const remaining = getDailyQRemaining();
+      if(isFree() && remaining <= 0){
+        showDailyLimitPopup();
+        return;
+      }
+      // FIX3 & FIX4: Show Continue popup; it reloads fresh from Supabase
+      showContinuePopup(std, remaining);
+    } else {
+      showContinuePopup(std, getDailyQRemaining());
+    }
+    return;
   }
-  const remaining = getDailyQRemaining();
-  if((isFree()||_isGuest) && remaining <= 0){ showDailyLimitPopup(); return; }
-  showContinuePopup(std, remaining);
+  loadQuestion();
 }
 function toggleBookmark(){S.currentBookmarked=!S.currentBookmarked;const btn=document.getElementById('bookmark-btn');if(btn){btn.classList.toggle('saved',S.currentBookmarked);btn.textContent=S.currentBookmarked?'⭐':'🔖';}}
 function toggleNotes(){const p=document.getElementById('notes-panel');if(p) p.classList.toggle('show');}
@@ -4530,7 +4537,10 @@ function showEditNamePopup(){
   setTimeout(()=>input.focus(), 100);
 }
 
-// showAuthPopup defined earlier
+function showAuthPopup(){
+  const authScreen = document.getElementById('auth-screen');
+  if(authScreen){ authScreen.classList.add('show'); return; }
+}
 
 function showProCongrats(){
   // Remove any limit popups
@@ -4566,61 +4576,53 @@ function showProCongrats(){
 }
 
 function checkStripeReturn(){
-  // Only show congrats if Supabase DB confirms plan=pro
-  if(localStorage.getItem('fm_show_congrats')){
-    localStorage.removeItem('fm_show_congrats');
-    setTimeout(async function(){
-      if(_currentUser){
-        try{
-          const {data} = await _supa.from('user_progress').select('plan').eq('user_id',_currentUser.id).single();
-          if(data && (data.plan==='pro'||data.plan==='elite')){
-            S.plan=data.plan; S.tier=data.plan;
-            localStorage.setItem('fm_tier',data.plan);
-            if(typeof showProCongrats==='function') showProCongrats();
-          } else {
-            toast('Payment not confirmed yet. Contact support if you paid.');
-          }
-        }catch(e){}
-      }
-    }, 1500);
-  }
+  // FIX D: Only show congrats if Supabase CONFIRMS plan=pro after payment.
+  // Never trust fm_stripe_in_progress alone — user may have cancelled.
   const params = new URLSearchParams(window.location.search);
-  const hasUpgraded = params.get('upgraded') === 'true' || params.get('session_id');
-  if(!hasUpgraded) return;
+  const hasSessionId = !!(params.get('session_id')); // only Stripe success has session_id
+  const hasUpgraded = params.get('upgraded') === 'true' && hasSessionId;
+
+  // Clean up flags regardless
+  localStorage.removeItem('fm_stripe_in_progress');
+
+  if(!hasUpgraded){
+    // User came back without completing payment — clear any stale congrats flag
+    localStorage.removeItem('fm_show_congrats');
+    return;
+  }
+
   window.history.replaceState({}, '', window.location.pathname);
-  // Wait for plan to load then show congrats
-  const check = setInterval(()=>{
-    if(!_planLoaded) return;
+  localStorage.setItem('fm_show_congrats', '1');
+
+  // Wait for Supabase plan to load and CONFIRM pro before showing congrats
+  let attempts = 0;
+  const check = setInterval(async ()=>{
+    attempts++;
+    if(!_planLoaded && attempts < 20) return;
     clearInterval(check);
-    if(isPro()){
-      // Clear any limit popups
+    // Re-fetch plan fresh from DB to be sure
+    if(_currentUser){
+      try{
+        const {data} = await _supa.from('user_progress').select('plan').eq('user_id',_currentUser.id).single();
+        if(!data || (data.plan !== 'pro' && data.plan !== 'elite')){
+          localStorage.removeItem('fm_show_congrats');
+          toast('Payment not confirmed yet. Please contact support if you paid.');
+          return;
+        }
+        // Confirmed pro in DB — update local state
+        S.plan = data.plan; S.tier = data.plan; S.aiPlan = data.plan;
+        localStorage.setItem('fm_tier', data.plan);
+      }catch(e){}
+    }
+    if(isPro() || localStorage.getItem('fm_tier')==='pro'){
+      localStorage.removeItem('fm_show_congrats');
       document.querySelectorAll('.daily-limit-overlay').forEach(e=>e.remove());
       const lr=document.getElementById('login-reward'); if(lr) lr.classList.remove('show');
-      // Show congrats
-      const popup = document.createElement('div');
-      popup.style.cssText = 'position:fixed;inset:0;z-index:4000;background:rgba(10,31,110,0.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
-      const box = document.createElement('div');
-      box.style.cssText = 'background:#fff;border-radius:24px;padding:32px 24px;max-width:340px;width:92%;text-align:center;';
-      box.innerHTML =
-        '<div style="font-size:56px;margin-bottom:12px;">🎉</div>'+
-        '<div style="font-family:var(--font-display);font-size:24px;font-weight:700;color:#0A1F6E;margin-bottom:8px;">Welcome to Pro!</div>'+
-        '<div style="font-size:13px;color:#64748B;line-height:1.6;margin-bottom:20px;">You now have unlimited questions, AI tutor, challenge mode and all Pro features unlocked!</div>'+
-        '<div style="background:#EEF2FF;border-radius:12px;padding:12px;margin-bottom:20px;text-align:left;">'+
-          '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">✅ Unlimited questions</div>'+
-          '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">✅ 50 AI questions/month</div>'+
-          '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">✅ Challenge & multiplayer</div>'+
-          '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">✅ All Pro tools unlocked</div>'+
-        '</div>';
-      const btn = document.createElement('button');
-      btn.style.cssText = 'width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#0A1F6E,#4A6CF7);color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
-      btn.textContent = 'Start Learning! 🚀';
-      btn.onclick = ()=>{ popup.remove(); spawnConfetti(); };
-      box.appendChild(btn);
-      popup.appendChild(box);
-      document.body.appendChild(popup);
-      spawnConfetti();
+      showProCongrats();
+    } else {
+      localStorage.removeItem('fm_show_congrats');
     }
-  }, 300);
+  }, 500);
 }
 
 function showAuthPopup(){
@@ -4661,9 +4663,9 @@ function isElite(){ return S.plan==='elite'; }
 function isFree(){ 
   // Demo account always pro
   try{ if(typeof _currentUser !== 'undefined' && _currentUser && _currentUser.email === 'demo@finmentra.com') return false; }catch(e){}
-  // Explicit free check — localStorage says 'free' = enforce limits
+  // FIX2: Explicit free check — if localStorage says 'free', honour it
   try{ if(localStorage.getItem('fm_tier') === 'free') return true; }catch(e){}
-  // Pro in localStorage
+  // Logged-in user with pro in localStorage: treat as pro while Supabase loads
   if(typeof _currentUser !== 'undefined' && _currentUser){
     try{ const lt = localStorage.getItem('fm_tier'); if(lt === 'pro' || lt === 'elite') return false; }catch(e){}
   }
@@ -4676,12 +4678,11 @@ function getDailyQKey(){
 }
 
 function getDailyQRemaining(){
-  // Pro: unlimited
+  // Always return 999 for pro users — check localStorage too for race condition
   if(!isFree()) return 999;
   try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return 999; }catch(e){}
-  // Logged-in users: wait for plan from Supabase
+  // Logged-in users: wait until plan confirmed loaded
   if(_currentUser && !_planLoaded) return 999;
-  // Free users AND guests: 15/day cap stored in localStorage (survives refresh/close)
   const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
   return Math.max(0, 15 - used);
 }
@@ -4706,8 +4707,7 @@ function checkDailyQLimit(){
 }
 
 function incrementDailyQ(){
-  // Count for both free logged-in users AND guests
-  if(!isFree() && !_isGuest) return;
+  if(!isFree()) return;
   const key = getDailyQKey();
   const used = parseInt(localStorage.getItem(key) || '0');
   localStorage.setItem(key, String(used + 1));
@@ -4821,11 +4821,12 @@ function checkPlanFeature(feature){
   document.body.appendChild(popup);
   return false;
 }
-// Load AI usage from localStorage so limit persists across page loads/refresh
+// FIX B: Load AI usage from localStorage so limit persists across page loads
 try{
   const _aiToday = JSON.parse(localStorage.getItem('fm_ai_today')||'{}');
   const _todayStr = new Date().toDateString();
-  S.aiUsedToday = (_aiToday.date === _todayStr) ? (_aiToday.count||0) : 0;
+  if(_aiToday.date === _todayStr){ S.aiUsedToday = _aiToday.count||0; }
+  else { S.aiUsedToday = 0; }  // new day — reset
   S.aiUsedMonth = parseInt(localStorage.getItem('fm_ai_month')||'0');
   S.aiLastDate = _todayStr;
 }catch(e){ S.aiUsedToday=0; S.aiUsedMonth=0; S.aiLastDate=''; }
@@ -5117,7 +5118,13 @@ async function loadRival(leaderboardData){
   if(barEl) barEl.style.width = Math.min((myXp/rival.xp)*100,100) + '%';
 }
 
-// getRank is defined earlier using the RANKS array — do not redefine here
+function getRank(xp){
+  if(xp>=5000) return 'Distinguished';
+  if(xp>=2000) return 'Qualified';
+  if(xp>=500) return 'Analyst';
+  if(xp>=100) return 'Associate';
+  return 'Initiate';
+}
 function sendSuggested(btn){document.getElementById('chat-input').value=btn.textContent;sendChat();}
 function addChatMsg(role,text,withActions){
   const msgs=document.getElementById('chat-messages');
@@ -5146,11 +5153,16 @@ function setCommTab(el){document.querySelectorAll('.comm-tab,.chip').forEach(c=>
 // ── BOSS BATTLE ──
 let bossTimer,bossTime=480,bossQ=0,bossScore=0;
 function showBossBattle(){
-  if(!isPro()){
+  // FIX C: Free users get 1 Boss Battle. Track with localStorage.
+  if(isFree()){
     const used = localStorage.getItem('fm_boss_used');
-    if(used){ showProLockedPopup('Boss Battle'); return; }
+    if(used){
+      toast('👹 Boss Battle: 1 free battle used. Upgrade to Pro for unlimited!');
+      setTimeout(()=>showScreen('profile'),900);
+      return;
+    }
     localStorage.setItem('fm_boss_used','1');
-    toast('👹 Free trial! Upgrade Pro for unlimited Boss Battles.');
+    toast('👹 Free trial battle! Upgrade Pro for unlimited Boss Battles.');
   }
   showScreen('challenge');
   setTimeout(()=>{
@@ -5201,11 +5213,11 @@ function endBossMode(){
 // ── TIME ATTACK ──
 let taTimer,taTime=180,taScore=0,taTotal=0;
 function showTimeAttack(){
-  if(!isPro()){
-    const used = localStorage.getItem('fm_ta_used');
-    if(used){ showProLockedPopup('Time Attack'); return; }
-    localStorage.setItem('fm_ta_used','1');
-    toast('⚡ Free trial! Upgrade Pro for unlimited Time Attack.');
+  // FIX C: Time Attack is Pro only
+  if(isFree()){
+    toast('⚡ Time Attack is a Pro feature!');
+    setTimeout(()=>showScreen('profile'),800);
+    return;
   }
   showScreen('challenge');
   setTimeout(()=>{
@@ -5631,8 +5643,8 @@ function toggleCheckItem(item){
     }catch(e){ console.log('Preload failed:',e.message); }
   })();
 
-  // Init session
-  startSession();
+  // Init session deferred — called after auth check completes (Fix A)
+  // startSession() is now called inside loadUserProgress() / startAsGuest()
 
   // Update HUD
   updateHUD();
@@ -7639,7 +7651,7 @@ showScreen=function(id){
 };
 
 
-// ── CONTINUE SESSION POPUP ──
+// ── FIX 3 & 4: Continue popup — reloads from Supabase ──
 function showContinuePopup(std, remaining){
   const existing = document.getElementById('continue-popup-overlay');
   if(existing) existing.remove();
@@ -7648,29 +7660,39 @@ function showContinuePopup(std, remaining){
   overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.82);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);';
   const box = document.createElement('div');
   box.style.cssText = 'background:#fff;border-radius:24px 24px 0 0;padding:28px 24px 32px;width:100%;max-width:480px;text-align:center;box-shadow:0 -8px 40px rgba(10,31,110,.2);';
-  const acc = S.sessionQ>0 ? Math.round(S.sessionCorrect/S.sessionQ*100) : 0;
-  const accColor = acc>=70?'#0A6E3A':acc>=50?'#D97706':'#DC2626';
-  const accEmoji = acc>=70?'🌟':acc>=50?'👍':'📖';
+  const acc = S.sessionQ > 0 ? Math.round(S.sessionCorrect/S.sessionQ*100) : 0;
+  const accColor = acc >= 70 ? '#0A6E3A' : acc >= 50 ? '#D97706' : '#DC2626';
+  const accEmoji = acc >= 70 ? '🌟' : acc >= 50 ? '👍' : '📖';
   box.innerHTML =
-    '<div style="font-size:40px;margin-bottom:8px;">'+accEmoji+'</div>'+
-    '<div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:#0A1F6E;margin-bottom:6px;">'+std+' Complete!</div>'+
-    '<div style="font-size:13px;color:#64748B;margin-bottom:16px;">Accuracy: <strong style="color:'+accColor+';">'+acc+'%</strong> ('+S.sessionCorrect+'/'+S.sessionQ+' correct)</div>';
+    '<div style="font-size:40px;margin-bottom:8px;">' + accEmoji + '</div>' +
+    '<div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:#0A1F6E;margin-bottom:6px;">' + std + ' Complete!</div>' +
+    '<div style="font-size:13px;color:#64748B;margin-bottom:16px;">Session accuracy: <strong style="color:' + accColor + ';">' + acc + '%</strong> (' + S.sessionCorrect + '/' + S.sessionQ + ' correct)</div>' +
+    '<div style="background:#EEF2FF;border-radius:12px;padding:12px;margin-bottom:20px;">' +
+      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;">Want to continue with ' + std + '?</div>' +
+      '<div style="font-size:11px;color:#64748B;margin-top:4px;">Fresh questions from server</div>' +
+    '</div>';
   const contBtn = document.createElement('button');
   contBtn.style.cssText = 'width:100%;padding:14px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);margin-bottom:10px;';
   contBtn.textContent = 'Continue Practicing →';
   contBtn.onclick = async function(){
     overlay.remove();
-    if((isFree()||_isGuest) && getDailyQRemaining()<=0){ showDailyLimitPopup(); return; }
+    // FIX4: reload from Supabase, not local QB[]
     let pool = [];
     if(S.currentStandard){
       const supaQs = await fetchQuestionsForStandard(S.currentStandard);
-      if(supaQs && supaQs.length>=1) pool = supaQs.sort(()=>Math.random()-.5);
-      else pool = (QB[S.currentStandard]||[]).slice().sort(()=>Math.random()-.5);
+      if(supaQs && supaQs.length >= 1){
+        pool = supaQs.sort(()=>Math.random()-.5);
+      } else {
+        pool = (QB[S.currentStandard]||[]).slice().sort(()=>Math.random()-.5);
+      }
     }
-    const lim = isPro()?20:(isFree()||_isGuest)?Math.min(8,getDailyQRemaining()):8;
+    const lim = isPro() ? 20 : isFree() ? Math.min(8, getDailyQRemaining()) : 8;
+    if(isFree() && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
     S.sessionQs = pool.slice(0, Math.max(1, lim));
-    S.qIndex=0; S.sessionQ=0; S.sessionCorrect=0; S.answered=false;
-    updateSessionBar(); loadQuestion();
+    S.qIndex = 0; S.sessionQ = 0; S.sessionCorrect = 0; S.answered = false;
+    updateSessionBar();
+    loadQuestion();
+    toast('New questions loaded for ' + (S.currentStandard||S.domain) + ' →');
   };
   const progBtn = document.createElement('button');
   progBtn.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);margin-bottom:10px;';
@@ -7680,50 +7702,29 @@ function showContinuePopup(std, remaining){
   homeBtn.style.cssText = 'width:100%;padding:10px;border-radius:12px;background:none;color:#94A3B8;font-size:13px;font-weight:600;border:none;cursor:pointer;font-family:var(--font-body);';
   homeBtn.textContent = 'Back to Home';
   homeBtn.onclick = function(){ overlay.remove(); showScreen('home'); };
-  box.appendChild(contBtn); box.appendChild(progBtn); box.appendChild(homeBtn);
-  overlay.appendChild(box); document.body.appendChild(overlay);
-  box.style.transform='translateY(100%)';
-  requestAnimationFrame(()=>{ box.style.transition='transform .35s cubic-bezier(.25,.46,.45,.94)'; box.style.transform='translateY(0)'; });
+  box.appendChild(contBtn);
+  box.appendChild(progBtn);
+  box.appendChild(homeBtn);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  box.style.transform = 'translateY(100%)';
+  requestAnimationFrame(()=>{ box.style.transition = 'transform .35s cubic-bezier(.25,.46,.45,.94)'; box.style.transform = 'translateY(0)'; });
 }
 
-// ── ARENA REFRESH ──
+
+// ── FIX A: Arena refresh function ──
 function arenaRefresh(){
   const btn = document.getElementById('arena-refresh-btn');
   if(btn){ btn.textContent='⏳'; btn.disabled=true; }
-  const done = ()=>{ if(btn){ btn.textContent='🔄'; btn.disabled=false; } };
-  if(S.currentStandard) startTopicPractice(S.currentStandard).then(done).catch(done);
-  else startSession().then(done).catch(done);
-}
-
-// ── PRO LOCKED POPUP ──
-function showProLockedPopup(featureName){
-  document.querySelectorAll('.pro-locked-overlay').forEach(e=>e.remove());
-  const overlay = document.createElement('div');
-  overlay.className = 'pro-locked-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.88);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
-  const box = document.createElement('div');
-  box.style.cssText = 'background:#fff;border-radius:24px;padding:32px 24px;max-width:340px;width:92%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);';
-  box.innerHTML =
-    '<div style="font-size:52px;margin-bottom:12px;">🔒</div>'+
-    '<div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:#0A1F6E;margin-bottom:8px;">'+featureName+' is Pro</div>'+
-    '<div style="font-size:13px;color:#64748B;line-height:1.6;margin-bottom:20px;">You've used your 1 free trial.<br>Upgrade to Pro for unlimited access.</div>'+
-    '<div style="background:#EEF2FF;border-radius:12px;padding:12px;margin-bottom:20px;text-align:left;">'+
-      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Unlimited questions</div>'+
-      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Time Attack — unlimited</div>'+
-      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Boss Battle — unlimited</div>'+
-      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Challenge mode — unlimited</div>'+
-      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ 50 AI questions/month</div>'+
-    '</div>';
-  const upBtn = document.createElement('button');
-  upBtn.style.cssText = 'width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#F59E0B,#FCD34D);color:#0A1F6E;font-size:15px;font-weight:800;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px;';
-  upBtn.textContent = 'Upgrade to Pro 🚀';
-  upBtn.onclick = function(){ overlay.remove(); showScreen('profile'); };
-  const closeBtn = document.createElement('button');
-  closeBtn.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
-  closeBtn.textContent = 'Maybe Later';
-  closeBtn.onclick = function(){ overlay.remove(); };
-  box.appendChild(upBtn); box.appendChild(closeBtn);
-  overlay.appendChild(box); document.body.appendChild(overlay);
+  if(S.currentStandard){
+    startTopicPractice(S.currentStandard).then(()=>{
+      if(btn){ btn.textContent='🔄'; btn.disabled=false; }
+    }).catch(()=>{ if(btn){ btn.textContent='🔄'; btn.disabled=false; } });
+  } else {
+    startSession().then(()=>{
+      if(btn){ btn.textContent='🔄'; btn.disabled=false; }
+    }).catch(()=>{ if(btn){ btn.textContent='🔄'; btn.disabled=false; } });
+  }
 }
 
 // ── PERSIST ALL STATE TO LOCALSTORAGE ──
@@ -8220,6 +8221,8 @@ function startAsGuest(){
   _guestQCount = 0;
   _guestBonusUsed = false;
   document.getElementById('auth-screen').classList.remove('show');
+  // FIX A: Load questions for guest immediately
+  setTimeout(()=>{ if(S.screen==='practice'||S.screen==='home') startSession(); }, 200);
   // Always start with 10 question threshold — day-2 logic removed as it caused early interruptions
   try {
     localStorage.setItem('fm_guest_threshold', '10');
@@ -8231,13 +8234,15 @@ function getGuestThreshold(){
   try { return parseInt(localStorage.getItem('fm_guest_threshold') || '10'); } catch(e){ return 10; }
 }
 
-// Called after every answer — nudge to register at 10, hard stop at 15
+// Called after every answer — check if we should show register popup
 function checkGuestPrompt(){
   if(_currentUser || !_isGuest) return;
   _guestQCount++;
-  const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
-  if(used === 10 && !_guestBonusUsed) showRegisterPopup();
-  if(used >= 15) showDailyLimitPopup();
+  // Minimum 10 questions before showing register popup (never interrupt early)
+  const threshold = _guestBonusUsed ? 9999 : Math.max(10, getGuestThreshold());
+  if(_guestQCount >= threshold){
+    showRegisterPopup();
+  }
 }
 
 // ── REGISTER POPUP ──
@@ -8259,8 +8264,6 @@ function closeRegPopup(){
 function continueAsGuest(){
   _guestBonusUsed = true;
   closeRegPopup();
-  const remaining = getDailyQRemaining();
-  if(remaining > 0) toast('You have '+remaining+' questions left today. Sign up to save progress!');
 }
 
 function showEmailAuth(){
@@ -8419,6 +8422,11 @@ async function loadUserProgress() {
   CH.challengeId = null; CH.role = null; CH.isOnlineMatch = false;
   CH.battleStarted = false; CH.myFinished = false;
 
+  // FIX A: Now that auth + plan is confirmed, start arena session
+  if(S.screen === 'practice' || S.screen === 'home'){
+    startSession();
+  }
+
   // Check if this is a new user who needs onboarding
   const onboardingEl = document.getElementById('onboarding');
   // Demo account and any user with Supabase data: always skip onboarding
@@ -8570,10 +8578,10 @@ async function doLogout(){
   if(data.session){
     _currentUser = data.session.user;
     _isGuest = false;
+    // FIX6: Immediately hide onboarding + persist flag before any await
     S.onboardingDone = true;
-    // Hide onboarding immediately before any async calls
-    const _obEl = document.getElementById('onboarding');
-    if(_obEl) _obEl.style.display = 'none';
+    const _obFix = document.getElementById('onboarding');
+    if(_obFix) _obFix.style.display = 'none';
     try{
       const _st = JSON.parse(localStorage.getItem('fm_state')||'{}');
       _st.onboardingDone = true;
@@ -8810,12 +8818,7 @@ function resetCH(){
 
 // ── CREATE CHALLENGE ──
 async function createChallenge(){
-  if(!isPro()){
-    const used = localStorage.getItem('fm_ch_used');
-    if(used){ showProLockedPopup('Challenge Mode'); return; }
-    localStorage.setItem('fm_ch_used','1');
-    toast('⚔️ Free trial! Upgrade Pro for unlimited challenges.');
-  }
+  if(!checkPlanFeature('multiplayer')) return;
   resetCH();
   const category = document.getElementById('ch-create-category').value;
   const count = document.getElementById('ch-create-count').value;
@@ -9031,6 +9034,7 @@ function loadBattleQuestion(){
 function startBattleTimer(){
   clearInterval(CH.timerInterval);
   CH.timerSeconds = 20;
+  S.soundOn = true; // FIX C3: ensure sound enabled in battle mode
   updateTimerUI();
   CH.timerInterval = setInterval(()=>{
     CH.timerSeconds--;
@@ -9083,7 +9087,7 @@ async function submitBattleAnswer(answerIdx){
   // Update score
   if(isCorrect){
     CH.myScore += speedBonus;
-    playSound('correct'); // battle correct sound
+    playSound('correct'); // FIX C3: battle sound
     // Show speed bonus flash
     const bonusFlash = document.createElement('div');
     bonusFlash.textContent = '+'+speedBonus+(speedBonus===3?' ⚡⚡⚡':speedBonus===2?' ⚡⚡':' ⚡');
@@ -9099,7 +9103,7 @@ async function submitBattleAnswer(answerIdx){
     else document.getElementById('battle-guest-score').textContent=CH.myScore;
   }
 
-  if(!isCorrect) playSound('wrong'); // battle wrong sound
+  if(!isCorrect) playSound('wrong'); // FIX C3: battle wrong sound
   // Record answer
   CH.myAnswers.push({q_idx:CH.currentQ, answer:answerIdx, correct:isCorrect, time_ms:timeTaken});
 
@@ -9565,12 +9569,7 @@ async function updateOnlineCount(){
 
 // ── FIND ONLINE MATCH ──
 async function findOnlineMatch(){
-  if(!isPro()){
-    const used = localStorage.getItem('fm_ch_used');
-    if(used){ showProLockedPopup('Challenge Mode'); return; }
-    localStorage.setItem('fm_ch_used','1');
-    toast('⚔️ Free trial! Upgrade Pro for unlimited matches.');
-  }
+  if(!checkPlanFeature('onlineMatch')) return;
 
   // Full cleanup of any previous search
   clearInterval(MM.searchInterval);
@@ -10161,38 +10160,15 @@ setInterval(saveUserProgress, 30000);
 // ── STRIPE RETURN DETECTION ──
 // Check if returning from Stripe payment (works for WebView reload too)
 (function(){
+  // FIX D: Clear stale stripe flag on every page load if no session_id in URL
   try{
     const urlParams = new URLSearchParams(window.location.search);
     const hasSessionId = !!(urlParams.get('session_id'));
     const upgraded = urlParams.get('upgraded') === 'true' && hasSessionId;
     if(!upgraded){
-      // No valid Stripe return — clear any stale flags
+      // No successful Stripe return — remove any stale flags
       localStorage.removeItem('fm_stripe_in_progress');
       localStorage.removeItem('fm_show_congrats');
-    }
-    if(upgraded){
-      localStorage.removeItem('fm_stripe_in_progress');
-      localStorage.setItem('fm_show_congrats', '1');
-      // Clean URL
-      if(upgraded) window.history.replaceState({}, '', window.location.pathname);
-      // Wait for auth + plan to load then show congrats
-      const checkAuth = setInterval(function(){
-        if(typeof _currentUser !== 'undefined' && _currentUser &&
-           typeof _planLoaded !== 'undefined' && _planLoaded){
-          clearInterval(checkAuth);
-          document.querySelectorAll('.daily-limit-overlay').forEach(function(e){ e.remove(); });
-          localStorage.removeItem('fm_show_congrats');
-          if(typeof showProCongrats === 'function') showProCongrats();
-        }
-      }, 500);
-      setTimeout(function(){
-        clearInterval(checkAuth);
-        // Show congrats anyway if still pending
-        if(localStorage.getItem('fm_show_congrats')){
-          localStorage.removeItem('fm_show_congrats');
-          if(typeof showProCongrats === 'function') showProCongrats();
-        }
-      }, 10000);
     }
   }catch(e){}
 })();
