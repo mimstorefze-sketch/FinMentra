@@ -3627,12 +3627,8 @@ async function fetchQuestionsFromSupabase(category, count){
 
 
 async function startSession(){
-  // Check daily limit for free users
   const dailyRemaining = getDailyQRemaining();
-  if(isFree() && dailyRemaining <= 0){
-    showDailyLimitPopup();
-    return;
-  }
+  if((isFree()||_isGuest) && dailyRemaining <= 0){ showDailyLimitPopup(); return; }
   let pool = [];
   const qt=document.getElementById('q-text');
   const opts=document.getElementById('options');
@@ -3721,11 +3717,7 @@ function buildProgressDots(){
   }
 }
 function loadQuestion(){
-  // Hard stop for free users who hit daily limit
-  if(isFree() && getDailyQRemaining() <= 0){
-    showDailyLimitPopup();
-    return;
-  }
+  if((isFree()||_isGuest) && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
   S.answered=false;
   S.currentBookmarked=false;
   buildProgressDots();
@@ -3795,8 +3787,8 @@ function loadQuestion(){
 }
 function answerQ(idx,btn,q){
   try{localStorage.setItem('fm_last_study_date',new Date().toDateString());}catch(e){}
-  // BUG FIX: Guard with S.answered — scoped to current question's container
   if(S.answered) return;
+  if((isFree()||_isGuest) && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
   S.answered=true;
   const optsContainer=document.getElementById('options');
   if(optsContainer) optsContainer.querySelectorAll('.opt').forEach(o=>o.classList.add('disabled'));
@@ -3901,43 +3893,31 @@ function goBack(){
   }
 }
 function nextQuestion(){
-  // Check daily limit before moving to next question
-  if(isFree() && getDailyQRemaining() <= 0){
-    showDailyLimitPopup();
-    return;
-  }
-  if(isFree() && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
+  if((isFree()||_isGuest) && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
   S.qIndex++;
-  if(S.qIndex>=S.sessionQs.length){
-    // Session complete — show results then loop back for more practice
-    const acc=S.sessionQ>0?Math.round(S.sessionCorrect/S.sessionQ*100):0;
-    const std=S.currentStandard||S.domain;
-    toast(std+' session done: '+S.sessionCorrect+'/'+S.sessionQ+' correct ('+acc+'%)');
-    // Mark this standard as completed if accuracy ≥ 50%
-    if(S.currentStandard && acc >= 50){
-      if(!S.completedTopics) S.completedTopics = {};
-      if(!S.completedTopics[S.currentStandard]){
-        S.completedTopics[S.currentStandard] = true;
-        saveState();
-        toast('✅ ' + S.currentStandard + ' completed! Next topic unlocked →');
-        setTimeout(buildLearningPath, 400);
-      }
-    }
-    if(S.currentStandard){
-      // Check daily limit before loading more questions
-      const remaining = getDailyQRemaining();
-      if(isFree() && remaining <= 0){
-        showDailyLimitPopup();
-        return;
-      }
-      // FIX3 & FIX4: Show Continue popup; it reloads fresh from Supabase
-      showContinuePopup(std, remaining);
-    } else {
-      showContinuePopup(std, getDailyQRemaining());
-    }
+  // More questions left — load next immediately (fixes going to Path after 1Q)
+  if(S.qIndex < S.sessionQs.length){ loadQuestion(); return; }
+  // Too few questions loaded — reload silently
+  if(S.sessionQs.length < 3){
+    if(S.currentStandard) startTopicPractice(S.currentStandard);
+    else startSession();
     return;
   }
-  loadQuestion();
+  // Full session done — show continue popup
+  const acc = S.sessionQ>0 ? Math.round(S.sessionCorrect/S.sessionQ*100) : 0;
+  const std = S.currentStandard||S.domain;
+  if(S.currentStandard && acc >= 50){
+    if(!S.completedTopics) S.completedTopics = {};
+    if(!S.completedTopics[S.currentStandard]){
+      S.completedTopics[S.currentStandard] = true;
+      saveState();
+      toast('✅ '+S.currentStandard+' completed! Next topic unlocked →');
+      setTimeout(buildLearningPath, 400);
+    }
+  }
+  const remaining = getDailyQRemaining();
+  if((isFree()||_isGuest) && remaining <= 0){ showDailyLimitPopup(); return; }
+  showContinuePopup(std, remaining);
 }
 function toggleBookmark(){S.currentBookmarked=!S.currentBookmarked;const btn=document.getElementById('bookmark-btn');if(btn){btn.classList.toggle('saved',S.currentBookmarked);btn.textContent=S.currentBookmarked?'⭐':'🔖';}}
 function toggleNotes(){const p=document.getElementById('notes-panel');if(p) p.classList.toggle('show');}
@@ -4537,10 +4517,7 @@ function showEditNamePopup(){
   setTimeout(()=>input.focus(), 100);
 }
 
-function showAuthPopup(){
-  const authScreen = document.getElementById('auth-screen');
-  if(authScreen){ authScreen.classList.add('show'); return; }
-}
+// showAuthPopup defined earlier
 
 function showProCongrats(){
   // Remove any limit popups
@@ -5118,13 +5095,8 @@ async function loadRival(leaderboardData){
   if(barEl) barEl.style.width = Math.min((myXp/rival.xp)*100,100) + '%';
 }
 
-function getRank(xp){
-  if(xp>=5000) return 'Distinguished';
-  if(xp>=2000) return 'Qualified';
-  if(xp>=500) return 'Analyst';
-  if(xp>=100) return 'Associate';
-  return 'Initiate';
-}
+// getRank defined earlier
+
 function sendSuggested(btn){document.getElementById('chat-input').value=btn.textContent;sendChat();}
 function addChatMsg(role,text,withActions){
   const msgs=document.getElementById('chat-messages');
@@ -5213,11 +5185,11 @@ function endBossMode(){
 // ── TIME ATTACK ──
 let taTimer,taTime=180,taScore=0,taTotal=0;
 function showTimeAttack(){
-  // FIX C: Time Attack is Pro only
-  if(isFree()){
-    toast('⚡ Time Attack is a Pro feature!');
-    setTimeout(()=>showScreen('profile'),800);
-    return;
+  if(!isPro()){
+    const used = localStorage.getItem('fm_ta_used');
+    if(used){ showProLockedPopup('Time Attack'); return; }
+    localStorage.setItem('fm_ta_used','1');
+    toast('⚡ Free trial! Upgrade Pro for unlimited Time Attack.');
   }
   showScreen('challenge');
   setTimeout(()=>{
@@ -7727,6 +7699,42 @@ function arenaRefresh(){
   }
 }
 
+
+// ── CONTINUE SESSION POPUP ──
+// showContinuePopup defined earlier
+
+// arenaRefresh defined earlier
+
+function showProLockedPopup(featureName){
+  document.querySelectorAll('.pro-locked-overlay').forEach(e=>e.remove());
+  const overlay = document.createElement('div');
+  overlay.className = 'pro-locked-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.88);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:24px;padding:32px 24px;max-width:340px;width:92%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);';
+  box.innerHTML =
+    '<div style="font-size:52px;margin-bottom:12px;">🔒</div>'+
+    '<div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:#0A1F6E;margin-bottom:8px;">'+featureName+' is Pro</div>'+
+    '<div style="font-size:13px;color:#64748B;line-height:1.6;margin-bottom:20px;">You have used your 1 free trial.<br>Upgrade to Pro for unlimited access.</div>'+
+    '<div style="background:#EEF2FF;border-radius:12px;padding:12px;margin-bottom:20px;text-align:left;">'+
+      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Unlimited questions</div>'+
+      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Time Attack — unlimited</div>'+
+      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Boss Battle — unlimited</div>'+
+      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Challenge mode — unlimited</div>'+
+      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ 50 AI questions/month</div>'+
+    '</div>';
+  const upBtn = document.createElement('button');
+  upBtn.style.cssText = 'width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#F59E0B,#FCD34D);color:#0A1F6E;font-size:15px;font-weight:800;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px;';
+  upBtn.textContent = 'Upgrade to Pro 🚀';
+  upBtn.onclick = function(){ overlay.remove(); showScreen('profile'); };
+  const closeBtn = document.createElement('button');
+  closeBtn.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
+  closeBtn.textContent = 'Maybe Later';
+  closeBtn.onclick = function(){ overlay.remove(); };
+  box.appendChild(upBtn); box.appendChild(closeBtn);
+  overlay.appendChild(box); document.body.appendChild(overlay);
+}
+
 // ── PERSIST ALL STATE TO LOCALSTORAGE ──
 function saveState(){
   try{
@@ -8234,15 +8242,12 @@ function getGuestThreshold(){
   try { return parseInt(localStorage.getItem('fm_guest_threshold') || '10'); } catch(e){ return 10; }
 }
 
-// Called after every answer — check if we should show register popup
 function checkGuestPrompt(){
   if(_currentUser || !_isGuest) return;
   _guestQCount++;
-  // Minimum 10 questions before showing register popup (never interrupt early)
-  const threshold = _guestBonusUsed ? 9999 : Math.max(10, getGuestThreshold());
-  if(_guestQCount >= threshold){
-    showRegisterPopup();
-  }
+  const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
+  if(used === 10 && !_guestBonusUsed) showRegisterPopup();
+  if(used >= 15) showDailyLimitPopup();
 }
 
 // ── REGISTER POPUP ──
@@ -8264,6 +8269,8 @@ function closeRegPopup(){
 function continueAsGuest(){
   _guestBonusUsed = true;
   closeRegPopup();
+  const remaining = getDailyQRemaining();
+  if(remaining > 0) toast('You have '+remaining+' questions left today. Sign up to save progress!');
 }
 
 function showEmailAuth(){
@@ -8818,7 +8825,12 @@ function resetCH(){
 
 // ── CREATE CHALLENGE ──
 async function createChallenge(){
-  if(!checkPlanFeature('multiplayer')) return;
+  if(!isPro()){
+    const used = localStorage.getItem('fm_ch_used');
+    if(used){ showProLockedPopup('Challenge Mode'); return; }
+    localStorage.setItem('fm_ch_used','1');
+    toast('⚔️ Free trial! Upgrade Pro for unlimited challenges.');
+  }
   resetCH();
   const category = document.getElementById('ch-create-category').value;
   const count = document.getElementById('ch-create-count').value;
@@ -9569,7 +9581,12 @@ async function updateOnlineCount(){
 
 // ── FIND ONLINE MATCH ──
 async function findOnlineMatch(){
-  if(!checkPlanFeature('onlineMatch')) return;
+  if(!isPro()){
+    const used = localStorage.getItem('fm_ch_used');
+    if(used){ showProLockedPopup('Challenge Mode'); return; }
+    localStorage.setItem('fm_ch_used','1');
+    toast('⚔️ Free trial! Upgrade Pro for unlimited matches.');
+  }
 
   // Full cleanup of any previous search
   clearInterval(MM.searchInterval);
