@@ -6913,7 +6913,7 @@ rankPulseStyle.textContent='@keyframes rankPulse{0%,100%{box-shadow:0 0 0 0 rgba
 document.head.appendChild(rankPulseStyle);
 
 // Render profile charts when profile screen is shown
-// [profile hook consolidated below]
+// [profile hook → unified below]
 
 // ── IN-APP NOTIFICATIONS ──
 const _notifQueue=[];
@@ -7357,7 +7357,7 @@ function buildLearningPath(){
 }
 
 // Call buildLearningPath when progress screen is shown
-// [progress hook consolidated below]
+// [progress hook → unified below]
 
 // ══════════════════════════════════════════════════
 // INTERACTIVE FORMULA CALCULATORS
@@ -7636,7 +7636,7 @@ loadQuestion=function(){
 };
 
 // ── SCREEN TRANSITION ANIMATION ──
-// [fade-in hook consolidated below]
+// [fade-in hook → unified below]
 
 // ── FIX 3 & 4: Continue popup — reloads from Supabase ──
 function showContinuePopup(std, remaining){
@@ -10113,10 +10113,10 @@ showChallengeSection = function(section){
 };
 
 // Clear game timers when navigating away
-// [timer/game hook consolidated below]
+// [timer/game hook → unified below]
 // Load online matchmaking data when screen shown
 
-// ── UNIFIED showScreen POST-HOOKS (consolidated — was 5 separate overrides) ──
+// ── UNIFIED showScreen POST-HOOKS (consolidated from 5 overrides — fixes mobile refresh) ──
 (function(){
   const _baseShow = showScreen;
   showScreen = function(id){
