@@ -5257,7 +5257,44 @@ function filterQRef(val){document.querySelectorAll('.qref-card').forEach(c=>{con
 
 // ── JE BUILDER ──
 function setJECat(el,cat){document.querySelectorAll('#je-cat-row .chip').forEach(b=>b.classList.remove('active'));el.classList.add('active');currentJECat=cat;populateJEDropdown();document.getElementById('je-output').style.display='none';}
-function populateJEDropdown(){
+async function populateJEDropdown(){
+  const sel=document.getElementById('je-scenario');if(!sel) return;
+  sel.innerHTML='<option value="">Loading...</option>';
+  try{
+    let query=_supa.from('journal_entries').select('*').order('standard');
+    if(currentJECat!=='all') query=query.eq('category',currentJECat);
+    const {data,error}=await query;
+    if(error||!data||!data.length){loadLocalJEDropdown();return;}
+    sel.innerHTML='<option value="">Choose a scenario...</option>';
+    const byStd={};
+    data.forEach(je=>{if(!byStd[je.standard])byStd[je.standard]=[];byStd[je.standard].push(je);});
+    Object.keys(byStd).sort().forEach(std=>{
+      const grp=document.createElement('optgroup');grp.label=std;
+      byStd[std].forEach(je=>{
+        const opt=document.createElement('option');
+        opt.value=JSON.stringify(je);
+        opt.textContent=je.scenario;
+        grp.appendChild(opt);
+      });
+      sel.appendChild(grp);
+    });
+  }catch(e){loadLocalJEDropdown();}
+}
+
+function loadLocalJEDropdown(){
+  const sel=document.getElementById('je-scenario');if(!sel) return;
+  const keys=JE_SCENARIOS_BY_CAT[currentJECat]||JE_SCENARIOS_BY_CAT.all;
+  const byStd={};
+  keys.forEach(k=>{const d=JE_DATA[k];if(!byStd[d.std])byStd[d.std]=[];byStd[d.std].push({key:k,title:d.title});});
+  sel.innerHTML='<option value="">Choose a scenario...</option>';
+  Object.keys(byStd).sort().forEach(std=>{
+    const grp=document.createElement('optgroup');grp.label=std;
+    byStd[std].forEach(item=>{
+      const opt=document.createElement('option');opt.value=item.key;opt.textContent=item.title;grp.appendChild(opt);
+    });
+    sel.appendChild(grp);
+  });
+}
   const sel=document.getElementById('je-scenario');if(!sel) return;
   const keys=JE_SCENARIOS_BY_CAT[currentJECat]||JE_SCENARIOS_BY_CAT.all;
   const byStd={};keys.forEach(k=>{const d=JE_DATA[k];if(!byStd[d.std]) byStd[d.std]=[];byStd[d.std].push({key:k,title:d.title});});
@@ -5265,6 +5302,30 @@ function populateJEDropdown(){
   Object.keys(byStd).sort().forEach(std=>{const grp=document.createElement('optgroup');grp.label=std;byStd[std].forEach(item=>{const opt=document.createElement('option');opt.value=item.key;opt.textContent=item.title;grp.appendChild(opt);});sel.appendChild(grp);});
 }
 function loadJEScenario(){
+  const val=document.getElementById('je-scenario').value;
+  const out=document.getElementById('je-output');
+  if(!val){out.style.display='none';return;}
+  let je;
+  try{
+    const s=JSON.parse(val);
+    je={
+      std:s.standard,para:'',title:s.scenario,
+      entries:[{dr:s.debit_account,cr:null,amt:s.credit_amount||'X'},{dr:null,cr:s.credit_account,amt:s.credit_amount||'X'}],
+      note:s.narrative||'',trap:null
+    };
+  }catch(e){je=JE_DATA[val];}
+  if(!je) return;
+  document.getElementById('je-title').textContent=je.title;
+  document.getElementById('je-std-pill').textContent=je.std;
+  document.getElementById('je-para').textContent=je.std+(je.para?' — '+je.para:'');
+  document.getElementById('je-note').textContent=je.note;
+  const trapBox=document.getElementById('je-trap-box');
+  const trapText=document.getElementById('je-trap');
+  if(je.trap){trapText.textContent=je.trap;trapBox.style.display='block';}
+  else{trapBox.style.display='none';}
+  document.getElementById('je-entries').innerHTML=je.entries.map(e=>`<div class="je-row"><span class="je-dr" style="${e.dr?'':'padding-left:18px;'}">${e.dr?'Dr ':'Cr '}<strong>${e.dr||e.cr}</strong></span><span class="je-cr">${e.amt||''}</span></div>`).join('');
+  out.style.display='block';
+}
   const val=document.getElementById('je-scenario').value;const out=document.getElementById('je-output');
   if(!val){out.style.display='none';return;}
   const je=JE_DATA[val];if(!je) return;
@@ -5278,7 +5339,7 @@ function loadJEScenario(){
   entries.innerHTML=je.entries.map(e=>`<div class="je-row"><span class="je-dr" style="${e.dr?'':'padding-left:18px;'}">${e.dr?'Dr ':'Cr '}<strong>${e.dr||e.cr}</strong></span><span class="je-cr">${e.amt||''}</span></div>`).join('');
   out.style.display='block';
 }
-setTimeout(populateJEDropdown,100);
+setTimeout(()=>populateJEDropdown(),100);
 
 // ── FS BUILDER (bug-fixed — sumSection, no focus loss) ──
 function sumSection(section){let total=0;document.querySelectorAll('.fs-input[data-section="'+section+'"]').forEach(inp=>{total+=parseFloat((inp.value||'0').replace(/,/g,''))||0;});return total;}
