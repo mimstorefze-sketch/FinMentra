@@ -4655,10 +4655,10 @@ function getDailyQKey(){
 }
 
 function getDailyQRemaining(){
-  // Always return 999 for pro users — check localStorage too for race condition
-  if(!isFree()) return 999;
+  // Pro users always unlimited
+  if(isPro()) return 999;
   try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return 999; }catch(e){}
-  // Logged-in users: wait until plan confirmed loaded
+  // Logged-in users: wait until plan confirmed loaded before enforcing
   if(_currentUser && !_planLoaded) return 999;
   const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
   return Math.max(0, 15 - used);
@@ -4669,22 +4669,28 @@ function getDailyQUsed(){
 }
 
 function checkDailyQLimit(){
-  if(!isFree()) return true;
+  // Pro users always pass
+  if(isPro()) return true;
   try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return true; }catch(e){}
-  if(_currentUser && !_planLoaded) return true; // wait for plan to load
+  // Logged-in users: wait until plan confirmed loaded
+  if(_currentUser && !_planLoaded) return true;
   const used = getDailyQUsed();
-  if(used >= 15) return false; // hard stop at 15
+  // Hard stop at 15 for everyone (free + guest)
+  if(used >= 15) return false;
+  // At question 10: show signup popup for guests, upgrade popup for free logged-in
   if(used >= 10){
-    // Check if bonus was unlocked today
     const bonusKey = 'fm_bonus_used_' + new Date().toDateString().replace(/ /g,'_');
     const bonusUsed = localStorage.getItem(bonusKey);
-    if(!bonusUsed) return false; // show popup to unlock bonus
+    if(!bonusUsed) return false;
   }
   return true;
 }
 
 function incrementDailyQ(){
-  if(!isFree()) return;
+  // Pro users don't count
+  if(isPro()) return;
+  try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return; }catch(e){}
+  // Count for ALL non-pro users (free logged-in AND guests)
   const key = getDailyQKey();
   const used = parseInt(localStorage.getItem(key) || '0');
   localStorage.setItem(key, String(used + 1));
@@ -8258,11 +8264,19 @@ function getGuestThreshold(){
 }
 
 function checkGuestPrompt(){
-  if(_currentUser || !_isGuest) return;
-  _guestQCount++;
-  const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
-  if(used === 10 && !_guestBonusUsed) showRegisterPopup();
-  if(used >= 15) showDailyLimitPopup();
+  // For guests: show register popup at 10, hard stop at 15
+  if(_isGuest && !_currentUser){
+    _guestQCount++;
+    const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
+    if(used === 10 && !_guestBonusUsed) showRegisterPopup();
+    if(used >= 15) showDailyLimitPopup();
+    return;
+  }
+  // For logged-in free users: hard stop at 15
+  if(_currentUser && isFree()){
+    const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
+    if(used >= 15) showDailyLimitPopup();
+  }
 }
 
 // ── REGISTER POPUP ──
@@ -10116,7 +10130,7 @@ showChallengeSection = function(section){
 // [timer/game hook → unified below]
 // Load online matchmaking data when screen shown
 
-// ── UNIFIED showScreen POST-HOOKS (consolidated from 5 overrides — fixes mobile refresh) ──
+// ── UNIFIED showScreen POST-HOOKS (consolidated — fixes mobile refresh) ──
 (function(){
   const _baseShow = showScreen;
   showScreen = function(id){
