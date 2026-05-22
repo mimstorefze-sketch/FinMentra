@@ -4332,7 +4332,12 @@ function _toggleTestPro(){
 }
 // Also expose in console: type _toggleTestPro() anytime
 
+// Initialise from saved XP so level-up only fires for NEW rank achievements
 const PREV_RANK_IDX={idx:0};
+function initPrevRankIdx(){
+  const r=getRank(S.xp);
+  PREV_RANK_IDX.idx=RANKS.indexOf(r);
+}
 function checkLevelUp(){const r=getRank(S.xp);const idx=RANKS.indexOf(r);if(idx>PREV_RANK_IDX.idx){PREV_RANK_IDX.idx=idx;document.getElementById('lu-emblem').textContent=r.emblem;document.getElementById('lu-title').textContent=r.emblem+' '+r.title;document.getElementById('levelup-overlay').classList.add('show');spawnConfetti();setCharMood('levelup');}}
 function closeLevelUp(){document.getElementById('levelup-overlay').classList.remove('show');}
 function spawnConfetti(){const colors=['#F59E0B','#4A6CF7','#0A6E3A','#DC2626','#C7D7FF'];for(let i=0;i<55;i++) setTimeout(()=>{const c=document.createElement('div');c.className='confetti-piece';c.style.left=Math.random()*100+'vw';c.style.top='-10px';c.style.background=colors[Math.floor(Math.random()*colors.length)];c.style.animationDuration=(1.5+Math.random()*2)+'s';c.style.animationDelay=(Math.random()*.5)+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),3500);},i*28);}
@@ -4677,7 +4682,7 @@ function checkDailyQLimit(){
   const used = getDailyQUsed();
   // Hard stop at 15 for everyone (free + guest)
   if(used >= 15) return false;
-  // At question 10: show signup popup for guests, upgrade popup for free logged-in
+  // At question 10: show signup/upgrade popup
   if(used >= 10){
     const bonusKey = 'fm_bonus_used_' + new Date().toDateString().replace(/ /g,'_');
     const bonusUsed = localStorage.getItem(bonusKey);
@@ -7669,6 +7674,8 @@ function showContinuePopup(std, remaining){
   contBtn.textContent = 'Continue Practicing →';
   contBtn.onclick = async function(){
     overlay.remove();
+    // Hard block — check limit BEFORE loading more questions
+    if(!isPro() && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
     // FIX4: reload from Supabase, not local QB[]
     let pool = [];
     if(S.currentStandard){
@@ -7802,6 +7809,7 @@ function loadState(){
 }
 // Auto-save every 30s and on answer
 loadState();
+initPrevRankIdx(); // set rank baseline from saved XP — prevents false level-up on load
 S.plan = S.plan || 'free'; // free, pro, elite
 // Always start on home screen — never restore challenge/multiplayer
 if(S.screen === 'multiplayer' || S.screen === 'challenge'){
