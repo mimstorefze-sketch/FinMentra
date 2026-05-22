@@ -6913,18 +6913,7 @@ rankPulseStyle.textContent='@keyframes rankPulse{0%,100%{box-shadow:0 0 0 0 rgba
 document.head.appendChild(rankPulseStyle);
 
 // Render profile charts when profile screen is shown
-const _origShowScreenProfile=showScreen;
-showScreen=function(id){
-  _origShowScreenProfile(id);
-  if(id==='profile'){
-    setTimeout(()=>{
-      renderStudyDonut();
-      renderRadarChart();
-      updateProfileStats();
-    },100);
-  }
-};
-
+// [profile hook consolidated below]
 
 // ── IN-APP NOTIFICATIONS ──
 const _notifQueue=[];
@@ -7368,14 +7357,7 @@ function buildLearningPath(){
 }
 
 // Call buildLearningPath when progress screen is shown
-const _origShowForPath = showScreen;
-showScreen = function(id){
-  _origShowForPath(id);
-  if(id === 'progress'){
-    setTimeout(buildLearningPath, 50);
-  }
-};
-
+// [progress hook consolidated below]
 
 // ══════════════════════════════════════════════════
 // INTERACTIVE FORMULA CALCULATORS
@@ -7654,13 +7636,7 @@ loadQuestion=function(){
 };
 
 // ── SCREEN TRANSITION ANIMATION ──
-const _origShowScreen=showScreen;
-showScreen=function(id){
-  _origShowScreen(id);
-  const target=document.getElementById('screen-'+id);
-  if(target){target.classList.add('fade-in');setTimeout(()=>target.classList.remove('fade-in'),400);}
-};
-
+// [fade-in hook consolidated below]
 
 // ── FIX 3 & 4: Continue popup — reloads from Supabase ──
 function showContinuePopup(std, remaining){
@@ -10137,77 +10113,72 @@ showChallengeSection = function(section){
 };
 
 // Clear game timers when navigating away
-const _origShowScreenTimers = showScreen;
-showScreen = function(id){
-  // Confirm exit if in active game
-  if(window._gameActive && id !== 'challenge'){
-    // Show custom popup instead of browser confirm()
-    const overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(10,31,110,.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
-    overlay.innerHTML = '<div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:300px;width:90%;text-align:center;">' +
-      '<div style="font-size:36px;margin-bottom:12px;">⚠️</div>' +
-      '<div style="font-size:17px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Leave Game?</div>' +
-      '<div style="font-size:13px;color:#64748B;margin-bottom:24px;line-height:1.5;">Your progress in this game will be lost.</div>' +
-      '<button id="exit-yes-btn" style="width:100%;padding:12px;border-radius:12px;background:#DC2626;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:var(--font-body);">Yes, Leave</button>' +
-      '<button id="exit-no-btn" style="width:100%;padding:10px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);">Keep Playing</button>' +
-      '</div>';
-    document.body.appendChild(overlay);
-    document.getElementById('exit-no-btn').onclick = function(){ overlay.remove(); };
-    document.getElementById('exit-yes-btn').onclick = function(){
-      overlay.remove();
-      window._gameActive = null;
-      if(typeof taTimer !== 'undefined') clearInterval(taTimer);
-      if(typeof bossTimer !== 'undefined') clearInterval(bossTimer);
-      _origShowScreenTimers(id);
-    };
-    return; // don't navigate yet
-  }
-  // Stop Time Attack if running
-  if(id !== 'challenge' && typeof taTimer !== 'undefined' && taTimer){
-    clearInterval(taTimer);
-    taTimer = null;
-    taTime = 0;
-  }
-  // Stop Boss Battle if running  
-  if(id !== 'challenge' && typeof bossTimer !== 'undefined' && bossTimer){
-    clearInterval(bossTimer);
-    bossTimer = null;
-  }
-  _origShowScreenTimers(id);
-};
-
+// [timer/game hook consolidated below]
 // Load online matchmaking data when screen shown
-const _origShowScreenMM = showScreen;
-showScreen = function(id){
-  // If leaving multiplayer — cancel any active search (but not if in battle)
-  if(id !== 'multiplayer' && MM.searchInterval && !CH.challengeId){
-    clearInterval(MM.searchInterval);
-    clearInterval(MM.searchTimer);
-    clearInterval(MM.onlineCountInterval);
-    MM.searchInterval = null;
-    MM.searchTimer = null;
-  }
-  _origShowScreenMM(id);
-  if(id !== 'multiplayer'){
-    restoreShellPadding(); // restore when leaving challenge screen
-  }
-  if(id==='multiplayer'){
-    // Only reset to lobby if NOT currently in a battle or results
-    const inBattle = CH.challengeId && 
-      (document.getElementById('ch-battle')?.style.display==='block' ||
-       document.getElementById('ch-results')?.style.display==='block' ||
-       document.getElementById('ch-countdown')?.style.display==='block');
-    if(!inBattle){
-      loadChallengeStats();
-      loadPlayerRating();
-      loadGlobalRankings();
-      cleanStaleQueueEntries();
-      showChallengeSection('lobby');
+
+// ── UNIFIED showScreen POST-HOOKS (consolidated — was 5 separate overrides) ──
+(function(){
+  const _baseShow = showScreen;
+  showScreen = function(id){
+    // ── GAME ACTIVE CHECK ──
+    if(window._gameActive && id !== 'challenge'){
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(10,31,110,.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+      overlay.innerHTML = '<div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:300px;width:90%;text-align:center;">' +
+        '<div style="font-size:36px;margin-bottom:12px;">⚠️</div>' +
+        '<div style="font-size:17px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Leave Game?</div>' +
+        '<div style="font-size:13px;color:#64748B;margin-bottom:24px;line-height:1.5;">Your progress in this game will be lost.</div>' +
+        '<button id="exit-yes-btn" style="width:100%;padding:12px;border-radius:12px;background:#DC2626;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:var(--font-body);">Yes, Leave</button>' +
+        '<button id="exit-no-btn" style="width:100%;padding:10px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);">Keep Playing</button>' +
+        '</div>';
+      document.body.appendChild(overlay);
+      document.getElementById('exit-no-btn').onclick = function(){ overlay.remove(); };
+      document.getElementById('exit-yes-btn').onclick = function(){
+        overlay.remove();
+        window._gameActive = null;
+        if(typeof taTimer !== 'undefined') clearInterval(taTimer);
+        if(typeof bossTimer !== 'undefined') clearInterval(bossTimer);
+        _baseShow(id);
+      };
+      return;
     }
-    clearInterval(MM.onlineCountInterval);
-    MM.onlineCountInterval = setInterval(updateOnlineCount, 30000);
-  }
-};
+    // ── STOP TIMERS ──
+    if(id !== 'challenge'){
+      if(typeof taTimer !== 'undefined' && taTimer){ clearInterval(taTimer); taTimer=null; taTime=0; }
+      if(typeof bossTimer !== 'undefined' && bossTimer){ clearInterval(bossTimer); bossTimer=null; }
+    }
+    // ── MULTIPLAYER CLEANUP ──
+    if(id !== 'multiplayer' && typeof MM !== 'undefined' && MM.searchInterval && !CH.challengeId){
+      clearInterval(MM.searchInterval); clearInterval(MM.searchTimer); clearInterval(MM.onlineCountInterval);
+      MM.searchInterval=null; MM.searchTimer=null;
+    }
+    // ── CALL BASE ──
+    _baseShow(id);
+    // ── POST-NAVIGATION HOOKS ──
+    if(id !== 'multiplayer') restoreShellPadding();
+    if(id === 'profile'){
+      setTimeout(()=>{ renderStudyDonut(); renderRadarChart(); updateProfileStats(); },100);
+    }
+    if(id === 'progress'){
+      setTimeout(buildLearningPath, 50);
+    }
+    if(id === 'multiplayer'){
+      const inBattle = typeof CH !== 'undefined' && CH.challengeId &&
+        (document.getElementById('ch-battle')?.style.display==='block' ||
+         document.getElementById('ch-results')?.style.display==='block' ||
+         document.getElementById('ch-countdown')?.style.display==='block');
+      if(!inBattle){
+        if(typeof loadChallengeStats==='function') loadChallengeStats();
+        if(typeof loadPlayerRating==='function') loadPlayerRating();
+        if(typeof loadGlobalRankings==='function') loadGlobalRankings();
+        if(typeof cleanStaleQueueEntries==='function') cleanStaleQueueEntries();
+        if(typeof showChallengeSection==='function') showChallengeSection('lobby');
+      }
+      clearInterval(MM.onlineCountInterval);
+      MM.onlineCountInterval = setInterval(updateOnlineCount, 30000);
+    }
+  };
+})();
 
 // ── AUTO SAVE EVERY 30s ──
 setInterval(saveUserProgress, 30000);
