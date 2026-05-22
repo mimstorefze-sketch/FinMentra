@@ -5280,7 +5280,6 @@ async function populateJEDropdown(){
     });
   }catch(e){loadLocalJEDropdown();}
 }
-
 function loadLocalJEDropdown(){
   const sel=document.getElementById('je-scenario');if(!sel) return;
   const keys=JE_SCENARIOS_BY_CAT[currentJECat]||JE_SCENARIOS_BY_CAT.all;
@@ -5294,12 +5293,6 @@ function loadLocalJEDropdown(){
     });
     sel.appendChild(grp);
   });
-}
-  const sel=document.getElementById('je-scenario');if(!sel) return;
-  const keys=JE_SCENARIOS_BY_CAT[currentJECat]||JE_SCENARIOS_BY_CAT.all;
-  const byStd={};keys.forEach(k=>{const d=JE_DATA[k];if(!byStd[d.std]) byStd[d.std]=[];byStd[d.std].push({key:k,title:d.title});});
-  sel.innerHTML='<option value="">Choose a scenario...</option>';
-  Object.keys(byStd).sort().forEach(std=>{const grp=document.createElement('optgroup');grp.label=std;byStd[std].forEach(item=>{const opt=document.createElement('option');opt.value=item.key;opt.textContent=item.title;grp.appendChild(opt);});sel.appendChild(grp);});
 }
 function loadJEScenario(){
   const val=document.getElementById('je-scenario').value;
@@ -5319,24 +5312,9 @@ function loadJEScenario(){
   document.getElementById('je-std-pill').textContent=je.std;
   document.getElementById('je-para').textContent=je.std+(je.para?' — '+je.para:'');
   document.getElementById('je-note').textContent=je.note;
-  const trapBox=document.getElementById('je-trap-box');
-  const trapText=document.getElementById('je-trap');
-  if(je.trap){trapText.textContent=je.trap;trapBox.style.display='block';}
-  else{trapBox.style.display='none';}
-  document.getElementById('je-entries').innerHTML=je.entries.map(e=>`<div class="je-row"><span class="je-dr" style="${e.dr?'':'padding-left:18px;'}">${e.dr?'Dr ':'Cr '}<strong>${e.dr||e.cr}</strong></span><span class="je-cr">${e.amt||''}</span></div>`).join('');
-  out.style.display='block';
-}
-  const val=document.getElementById('je-scenario').value;const out=document.getElementById('je-output');
-  if(!val){out.style.display='none';return;}
-  const je=JE_DATA[val];if(!je) return;
-  document.getElementById('je-title').textContent=je.title;
-  document.getElementById('je-std-pill').textContent=je.std;
-  document.getElementById('je-para').textContent=je.std+' — '+je.para;
-  document.getElementById('je-note').textContent=je.note;
   const trapBox=document.getElementById('je-trap-box');const trapText=document.getElementById('je-trap');
   if(je.trap){trapText.textContent=je.trap;trapBox.style.display='block';}else{trapBox.style.display='none';}
-  const entries=document.getElementById('je-entries');
-  entries.innerHTML=je.entries.map(e=>`<div class="je-row"><span class="je-dr" style="${e.dr?'':'padding-left:18px;'}">${e.dr?'Dr ':'Cr '}<strong>${e.dr||e.cr}</strong></span><span class="je-cr">${e.amt||''}</span></div>`).join('');
+  document.getElementById('je-entries').innerHTML=je.entries.map(e=>`<div class="je-row"><span class="je-dr" style="${e.dr?'':'padding-left:18px;'}">${e.dr?'Dr ':'Cr '}<strong>${e.dr||e.cr}</strong></span><span class="je-cr">${e.amt||''}</span></div>`).join('');
   out.style.display='block';
 }
 setTimeout(()=>populateJEDropdown(),100);
