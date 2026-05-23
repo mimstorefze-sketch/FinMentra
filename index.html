@@ -4332,7 +4332,6 @@ function _toggleTestPro(){
 }
 // Also expose in console: type _toggleTestPro() anytime
 
-// Initialise from saved XP so level-up only fires for NEW rank achievements
 const PREV_RANK_IDX={idx:0};
 function initPrevRankIdx(){
   const r=getRank(S.xp);
@@ -4660,10 +4659,8 @@ function getDailyQKey(){
 }
 
 function getDailyQRemaining(){
-  // Pro users always unlimited
   if(isPro()) return 999;
   try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return 999; }catch(e){}
-  // Logged-in users: wait until plan confirmed loaded before enforcing
   if(_currentUser && !_planLoaded) return 999;
   const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
   return Math.max(0, 15 - used);
@@ -4674,15 +4671,11 @@ function getDailyQUsed(){
 }
 
 function checkDailyQLimit(){
-  // Pro users always pass
   if(isPro()) return true;
   try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return true; }catch(e){}
-  // Logged-in users: wait until plan confirmed loaded
   if(_currentUser && !_planLoaded) return true;
   const used = getDailyQUsed();
-  // Hard stop at 15 for everyone (free + guest)
   if(used >= 15) return false;
-  // At question 10: show signup/upgrade popup
   if(used >= 10){
     const bonusKey = 'fm_bonus_used_' + new Date().toDateString().replace(/ /g,'_');
     const bonusUsed = localStorage.getItem(bonusKey);
@@ -4692,10 +4685,8 @@ function checkDailyQLimit(){
 }
 
 function incrementDailyQ(){
-  // Pro users don't count
   if(isPro()) return;
   try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return; }catch(e){}
-  // Count for ALL non-pro users (free logged-in AND guests)
   const key = getDailyQKey();
   const used = parseInt(localStorage.getItem(key) || '0');
   localStorage.setItem(key, String(used + 1));
@@ -7674,7 +7665,7 @@ function showContinuePopup(std, remaining){
   contBtn.textContent = 'Continue Practicing →';
   contBtn.onclick = async function(){
     overlay.remove();
-    // Hard block — check limit BEFORE loading more questions
+    // Hard block — recheck limit before loading more questions
     if(!isPro() && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
     // FIX4: reload from Supabase, not local QB[]
     let pool = [];
@@ -7809,7 +7800,7 @@ function loadState(){
 }
 // Auto-save every 30s and on answer
 loadState();
-initPrevRankIdx(); // set rank baseline from saved XP — prevents false level-up on load
+initPrevRankIdx();
 S.plan = S.plan || 'free'; // free, pro, elite
 // Always start on home screen — never restore challenge/multiplayer
 if(S.screen === 'multiplayer' || S.screen === 'challenge'){
@@ -8272,7 +8263,6 @@ function getGuestThreshold(){
 }
 
 function checkGuestPrompt(){
-  // For guests: show register popup at 10, hard stop at 15
   if(_isGuest && !_currentUser){
     _guestQCount++;
     const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
@@ -8280,7 +8270,6 @@ function checkGuestPrompt(){
     if(used >= 15) showDailyLimitPopup();
     return;
   }
-  // For logged-in free users: hard stop at 15
   if(_currentUser && isFree()){
     const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
     if(used >= 15) showDailyLimitPopup();
@@ -10142,7 +10131,6 @@ showChallengeSection = function(section){
 (function(){
   const _baseShow = showScreen;
   showScreen = function(id){
-    // ── GAME ACTIVE CHECK ──
     if(window._gameActive && id !== 'challenge'){
       const overlay = document.createElement('div');
       overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(10,31,110,.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
@@ -10164,26 +10152,20 @@ showChallengeSection = function(section){
       };
       return;
     }
-    // ── STOP TIMERS ──
     if(id !== 'challenge'){
       if(typeof taTimer !== 'undefined' && taTimer){ clearInterval(taTimer); taTimer=null; taTime=0; }
       if(typeof bossTimer !== 'undefined' && bossTimer){ clearInterval(bossTimer); bossTimer=null; }
     }
-    // ── MULTIPLAYER CLEANUP ──
     if(id !== 'multiplayer' && typeof MM !== 'undefined' && MM.searchInterval && !CH.challengeId){
       clearInterval(MM.searchInterval); clearInterval(MM.searchTimer); clearInterval(MM.onlineCountInterval);
       MM.searchInterval=null; MM.searchTimer=null;
     }
-    // ── CALL BASE ──
     _baseShow(id);
-    // ── POST-NAVIGATION HOOKS ──
     if(id !== 'multiplayer') restoreShellPadding();
     if(id === 'profile'){
       setTimeout(()=>{ renderStudyDonut(); renderRadarChart(); updateProfileStats(); },100);
     }
-    if(id === 'progress'){
-      setTimeout(buildLearningPath, 50);
-    }
+    if(id === 'progress') setTimeout(buildLearningPath, 50);
     if(id === 'multiplayer'){
       const inBattle = typeof CH !== 'undefined' && CH.challengeId &&
         (document.getElementById('ch-battle')?.style.display==='block' ||
@@ -10247,6 +10229,21 @@ document.addEventListener('keydown', function(e){
 document.addEventListener('selectstart', function(e){
   if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
   e.preventDefault();
+});
+
+// ── ANDROID BACK BUTTON HANDLER ──
+window.addEventListener('native:backpressed', function() {
+  const homeScreens = ['home', 'pro-home'];
+  // Already on home — do nothing (Android minimizes app)
+  if(homeScreens.includes(S.screen)) return;
+  // In multiplayer battle — don't navigate away accidentally
+  if(S.screen === 'multiplayer'){
+    const inBattle = typeof CH !== 'undefined' && CH.challengeId &&
+      document.getElementById('ch-battle')?.style.display === 'block';
+    if(inBattle) return;
+  }
+  // All other screens — go to correct home
+  showScreen(S.mode === 'professional' ? 'pro-home' : 'home');
 });
 </script>
 </body>
