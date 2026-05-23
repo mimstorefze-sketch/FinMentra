@@ -30,7 +30,6 @@ const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
     storage: window.localStorage
   }
 });
-console.log('✅ Supabase initialized');
 </script>
 <style>
 /* ── SUPABASE AUTH SCREEN ── */
@@ -3277,12 +3276,16 @@ function applyModeUI(mode){
   const pBtn = document.getElementById('ms-pro');
   if(sBtn) sBtn.classList.toggle('active', mode==='student');
   if(pBtn) pBtn.classList.toggle('active', mode==='professional');
+  // Always navigate to correct home screen matching the mode
+  const targetScreen = mode === 'professional' ? 'pro-home' : 'home';
+  // Switch screen without triggering the popup chain
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const target = document.getElementById('screen-'+targetScreen);
+  if(target) target.classList.add('active');
+  S.screen = targetScreen;
   if(mode === 'professional'){
-    showScreen('pro-home');
     const pg = document.getElementById('pro-greeting');
     if(pg) pg.textContent = getMoodGreeting(true);
-  } else {
-    showScreen('home');
   }
   renderBottomNav();
 }
@@ -3474,11 +3477,9 @@ async function startTopicPractice(num){
   const supaQs = await fetchQuestionsForStandard(num);
   if(supaQs && supaQs.length >= 1){
     pool = supaQs;
-    console.log('✅ Topics: loaded',pool.length,'questions for',num);
   } else {
     // Fallback to local QB
     pool = QB[num] ? [...QB[num]] : [...(QB_BY_DOMAIN[t?t.cat:'IFRS']||[])];
-    console.log('Topics fallback QB for',num,'count:',pool.length);
   }
 
   // Apply limits based on plan and position
@@ -3567,9 +3568,7 @@ const SQ_CACHE = {};
 
 async function fetchQuestionsFromSupabase(category, count){
   const cacheKey = category||'Mixed';
-  console.log('  🔍 fetchQuestionsFromSupabase:', cacheKey, 'need:', count, 'cached:', SQ_CACHE[cacheKey]?.length||0);
   if(SQ_CACHE[cacheKey] && SQ_CACHE[cacheKey].length >= count){
-    console.log('  ✅ Cache hit for', cacheKey);
     return [...SQ_CACHE[cacheKey]].sort(()=>Math.random()-.5).slice(0,count);
   }
   try{
@@ -3584,9 +3583,9 @@ async function fetchQuestionsFromSupabase(category, count){
       mode: 'cors',
       credentials: 'omit'
     });
-    if(!res.ok){ console.log('Supabase error:',res.status,res.statusText); return null; }
+    if(!res.ok){ return null; }
     const allData = await res.json();
-    if(!allData||allData.length===0){ console.log('No questions in Supabase'); return null; }
+    if(!allData||allData.length===0){ return null; }
 
     // Shuffle options to avoid answer bias
     const allConverted = allData.map(q=>shuffleOptions({
@@ -3617,10 +3616,8 @@ async function fetchQuestionsFromSupabase(category, count){
 
     SQ_CACHE[cacheKey] = filtered;
     const stds=[...new Set(filtered.map(q=>q.standard))];
-    console.log('✅ Loaded',filtered.length,'questions for',category,'. Standards:',stds.slice(0,6));
     return [...filtered].sort(()=>Math.random()-.5).slice(0,count);
   }catch(e){
-    console.log('Fetch error:',e.message);
     return null;
   }
 }
@@ -3650,10 +3647,8 @@ async function startSession(){
     pool = fresh.sort(()=>Math.random()-.5).slice(0, Math.max(1, limit));
     // Track recently seen
     S.recentQs = pool.map(q=>q.q.substring(0,30));
-    console.log('✅ Arena: using',pool.length,'questions from Supabase for',category);
   } else {
     // Fallback to ALL local QB questions for this domain
-    console.log('Arena fallback to local QB for:',category);
     const allLocal = [];
     Object.entries(QB).forEach(([std, qs])=>{
       const t = TOPICS.find(x=>x.num===std);
@@ -3680,22 +3675,17 @@ async function startSession(){
 
 // Get questions for challenge — uses same Supabase pool as Arena
 async function getChallengeQuestionsAsync(category, count){
-  console.log('🎯 getChallengeQuestionsAsync called:', category, count);
-  console.log('📦 SQ_CACHE status:', Object.keys(SQ_CACHE).map(k=>k+':'+SQ_CACHE[k].length));
   let supaQs = [];
   if(category === 'Mixed' || !category){
     const domains = ['IFRS','IAS','ISA','Costing','Tax','FM'];
     for(const d of domains){
       const qs = await fetchQuestionsFromSupabase(d, Math.ceil(count/2));
-      console.log('  Domain',d,':',qs?qs.length:'null','questions');
       if(qs) supaQs.push(...qs);
       if(supaQs.length >= count * 2) break;
     }
   } else {
     supaQs = await fetchQuestionsFromSupabase(category, count*2) || [];
-    console.log('  Category',category,':',supaQs.length,'questions');
   }
-  console.log('📊 Total supaQs:', supaQs.length);
   if(supaQs.length >= 3){
     return supaQs.sort(()=>Math.random()-.5).slice(0,count);
   }
@@ -5652,8 +5642,7 @@ function toggleCheckItem(item){
         });
         if(!SQ_CACHE[cat].length) SQ_CACHE[cat] = allConverted;
       });
-      console.log('✅ Preloaded',allConverted.length,'questions from Supabase into cache');
-    }catch(e){ console.log('Preload failed:',e.message); }
+    }catch(e){ }
   })();
 
   // Init session deferred — called after auth check completes (Fix A)
@@ -6050,6 +6039,7 @@ function closeExitConfirm(){
 function confirmExit(){
   closeExitConfirm();
   clearInterval(questionTimer);
+  questionTimer = null;
   if(S.sessionQ>0){
     toast('Session: '+S.sessionCorrect+'/'+S.sessionQ+' correct · XP saved');
   }
@@ -6140,16 +6130,13 @@ function sendFollowUp(){
   var aiPrompt = 'Standard: ' + std + ' | Question: ' + questionText + ' | Correct answer: ' + correctAns + ' | Student asks: ' + q;
   var aiSystem = 'You are Mr. Ledger AI, an expert finance and accounting tutor for FinMentra. Answer ANY finance, accounting, IFRS, IAS, ISA, Tax, Costing, or FM question the student asks. Use the provided question context only as background — focus on what the student actually asked. Give concise exam-focused answers under 150 words. Bold key terms with **text**. Reference specific standard paragraphs where relevant. End with one practical exam tip.';
   function doAICall() {
-    console.log('🤖 Calling AI proxy with:', { prompt: q, question: questionText, standard: std });
     fetch('/api/ai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt: q, question: questionText, standard: std, correctAnswer: correctAns })
     }).then(function(r){
-      console.log('AI response status:', r.status);
       return r.json();
     }).then(function(data){
-      console.log('AI response data:', data);
       var text = data.content && data.content[0] ? data.content[0].text : null;
       if(!text && data.error) text = 'Error: ' + data.error;
       if(!text) text = 'Sorry, could not get a response.';
@@ -7665,7 +7652,6 @@ function showContinuePopup(std, remaining){
   contBtn.textContent = 'Continue Practicing →';
   contBtn.onclick = async function(){
     overlay.remove();
-    // Hard block — recheck limit before loading more questions
     if(!isPro() && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
     // FIX4: reload from Supabase, not local QB[]
     let pool = [];
@@ -8263,6 +8249,7 @@ function getGuestThreshold(){
 }
 
 function checkGuestPrompt(){
+  // For guests (clicked Try Free button): show register popup at 10, hard stop at 15
   if(_isGuest && !_currentUser){
     _guestQCount++;
     const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
@@ -8270,6 +8257,15 @@ function checkGuestPrompt(){
     if(used >= 15) showDailyLimitPopup();
     return;
   }
+  // For web visitors who never clicked Try Free (no _isGuest flag):
+  // Still enforce limit using localStorage counter
+  if(!_currentUser && !_isGuest){
+    const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
+    if(used === 10 && !_guestBonusUsed) showRegisterPopup();
+    if(used >= 15) showDailyLimitPopup();
+    return;
+  }
+  // For logged-in free users: hard stop at 15
   if(_currentUser && isFree()){
     const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
     if(used >= 15) showDailyLimitPopup();
@@ -8449,7 +8445,7 @@ async function loadUserProgress() {
         total_correct: S.totalCorrect, hearts: S.hearts
       });
     }
-  } catch(e){ console.log('Progress load error:', e); }
+  } catch(e){ }
 
   // Reset any in-progress challenge/battle state
   CH.challengeId = null; CH.role = null; CH.isOnlineMatch = false;
@@ -8607,6 +8603,13 @@ async function doLogout(){
   if(!data.session){
     // No logged-in session — show auth screen
     document.getElementById('auth-screen').classList.add('show');
+    // FIX: Apply saved mode for non-logged-in users (web visitors)
+    if(S.mode === 'professional'){
+      const sBtn = document.getElementById('ms-student');
+      const pBtn = document.getElementById('ms-pro');
+      if(sBtn) sBtn.classList.remove('active');
+      if(pBtn) pBtn.classList.add('active');
+    }
   }
   if(data.session){
     _currentUser = data.session.user;
@@ -8845,7 +8848,6 @@ function resetCH(){
   const gs=document.getElementById('battle-guest-score');
   if(hs) hs.textContent='0';
   if(gs) gs.textContent='0';
-  console.log('✅ CH state fully reset');
   _endChallengeCalled = false;
 }
 
@@ -9263,7 +9265,6 @@ function endChallenge(challengeData){
   const oppName = CH.role==='host'
     ? (challengeData.guest_name || 'Opponent')
     : (challengeData.host_name || 'Opponent');
-  console.log('🏁 Final scores — Me ('+CH.role+'):',myScore,'Opp:',oppScore);
 
   const didWin = myScore > oppScore;
   const isDraw = myScore === oppScore;
@@ -9716,7 +9717,6 @@ async function findOnlineMatch(){
           player_name: payload.new.host_name||'Opponent',
           player_rating: 1000
         });
-        console.log('✅ Matched as GUEST for challenge:', payload.new.id);
         await onMatchFound(payload.new.id, payload.new.host_id, payload.new.category||category, 'guest');
       }
     ).subscribe();
@@ -9784,8 +9784,6 @@ async function searchForOpponent(category){
       console.error('Challenge insert failed:', chalError.message);
       clearTimeout(matchingTimeout); MM.isMatching=false; return;
     }
-
-    console.log('✅ HOST matched:', MM.myName, 'vs', opp.player_name, '| challenge:', challenge.id);
     clearTimeout(matchingTimeout);
     MM.isMatching = false;
     await onMatchFound(challenge.id, opp.player_id, matchCategory, 'host', opp, questions);
@@ -9835,11 +9833,9 @@ async function onMatchFound(challengeId, oppId, category, myRole, oppData, quest
       : await getChallengeQuestionsAsync(category||'Mixed', 10);
     // Use the battleStartsAt that was set in searchForOpponent insert
     CH.battleStartsAt = new Date(Date.now() + 4000).toISOString();
-    console.log('✅ Host ready with', CH.questions.length, 'questions');
 
   } else {
     // Guest — fetch EXACT same questions + battle start time from Supabase
-    console.log('👥 Guest: fetching questions from challenge record...');
     let loaded = false;
     for(let attempt = 0; attempt < 10; attempt++){
       try{
@@ -9853,15 +9849,13 @@ async function onMatchFound(challengeId, oppId, category, myRole, oppData, quest
             CH.battleStartsAt = ch.started_at || null;
             if(!oppData) oppData = {player_name: ch.host_name||'Opponent'};
             loaded = true;
-            console.log('✅ Guest loaded',parsed.length,'questions, battle starts:',ch.started_at);
             break;
           }
         }
-      }catch(e){ console.log('Guest fetch attempt',attempt,'failed:',e.message); }
+      }catch(e){ }
       await new Promise(r=>setTimeout(r,500));
     }
     if(!loaded || !CH.questions || CH.questions.length===0){
-      console.log('⚠️ Guest fallback: using own cache');
       CH.questions = await getChallengeQuestionsAsync(category||'Mixed', 10);
       CH.battleStartsAt = new Date(Date.now() + 3500).toISOString();
     }
@@ -9873,8 +9867,6 @@ async function onMatchFound(challengeId, oppId, category, myRole, oppData, quest
     showChallengeSection('lobby');
     return;
   }
-
-  console.log('✅ Battle ready with',CH.questions.length,'questions');
   subscribeToChallenge(challengeId);
   await new Promise(r=>setTimeout(r,1000));
   startCountdown(oppData);
@@ -9895,9 +9887,7 @@ function startCountdown(oppData){
     : Date.now() + 4000;
   if(battleTime < Date.now() + 1000){
     battleTime = Date.now() + 2000; // ensure at least 2s countdown
-    console.log('⏱ Battle time adjusted (late load)');
   }
-  console.log('⏱ Battle starts at:', new Date(battleTime).toISOString(), '| now:', new Date().toISOString());
 
   const countDown = setInterval(()=>{
     const msLeft = battleTime - Date.now();
@@ -10001,30 +9991,33 @@ window.addEventListener('beforeunload', ()=>{
 
 // Also clean up when tab becomes hidden
 document.addEventListener('visibilitychange', ()=>{
-  if(document.hidden && MM.myPlayerId){
+  if(document.hidden && typeof MM !== 'undefined' && MM.myPlayerId){
     _supa.from('matchmaking_queue').delete().eq('player_id',MM.myPlayerId);
     clearInterval(MM.searchInterval);
     clearInterval(MM.searchTimer);
   }
-  // When app comes back to foreground — re-check plan from Supabase
+  // When tab comes back — ONLY refresh plan if user just paid (not on every focus)
+  // This prevents the repeated re-render / refresh bug
   if(!document.hidden && typeof _currentUser !== 'undefined' && _currentUser){
-    // Poll every 3 seconds for up to 30 seconds (webhook may have slight delay)
-    let pollCount = 0;
-    const planPoller = setInterval(async () => {
-      pollCount++;
-      await loadUserProgress();
-      // Stop polling once Pro is confirmed or after 10 attempts
-      if(isPro() || pollCount >= 10){
-        clearInterval(planPoller);
-        if(isPro()){
-          // Clear any limit popups and update UI
-          document.querySelectorAll('.daily-limit-overlay').forEach(e=>e.remove());
-          if(typeof updatePlanUI==='function') updatePlanUI();
-          if(typeof updateAIBanner==='function') updateAIBanner();
-          if(typeof renderTopics==='function') renderTopics();
+    const stripeInProgress = localStorage.getItem('fm_stripe_in_progress');
+    if(stripeInProgress === '1'){
+      // Only poll after Stripe payment — not on every tab switch
+      let pollCount = 0;
+      const planPoller = setInterval(async () => {
+        pollCount++;
+        await loadUserProgress();
+        if(isPro() || pollCount >= 10){
+          clearInterval(planPoller);
+          localStorage.removeItem('fm_stripe_in_progress');
+          if(isPro()){
+            document.querySelectorAll('.daily-limit-overlay').forEach(e=>e.remove());
+            if(typeof updatePlanUI==='function') updatePlanUI();
+            if(typeof updateAIBanner==='function') updateAIBanner();
+            if(typeof renderTopics==='function') renderTopics();
+          }
         }
-      }
-    }, 3000);
+      }, 3000);
+    }
   }
 });
 
@@ -10079,7 +10072,7 @@ async function loadGlobalRankings(){
       const tier=getRatingTier(p.rating);
       const isMe=p.player_id===MM.myPlayerId;
       // Clean up display name
-      const displayName = p.player_name||'Anonymous';
+      const displayName = (p.player_name && p.player_name.length > 3) ? p.player_name : 'FinMentra User';
       return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);${isMe?'background:var(--blue-ll);margin:0 -4px;padding:10px 4px;border-radius:8px;':''}">
         <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:${i<3?['#F59E0B','#94A3B8','#CD7C2F'][i]:'var(--muted)'};width:24px;text-align:center;">${i<3?['🥇','🥈','🥉'][i]:(i+1)}</div>
         <div style="font-size:18px;">${tier.icon}</div>
@@ -10234,15 +10227,12 @@ document.addEventListener('selectstart', function(e){
 // ── ANDROID BACK BUTTON HANDLER ──
 window.addEventListener('native:backpressed', function() {
   const homeScreens = ['home', 'pro-home'];
-  // Already on home — do nothing (Android minimizes app)
   if(homeScreens.includes(S.screen)) return;
-  // In multiplayer battle — don't navigate away accidentally
   if(S.screen === 'multiplayer'){
     const inBattle = typeof CH !== 'undefined' && CH.challengeId &&
       document.getElementById('ch-battle')?.style.display === 'block';
     if(inBattle) return;
   }
-  // All other screens — go to correct home
   showScreen(S.mode === 'professional' ? 'pro-home' : 'home');
 });
 </script>
