@@ -34,11 +34,14 @@ const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
 <style>
 /* ── SUPABASE AUTH SCREEN ── */
 #auth-screen {
-  position:fixed;inset:0;z-index:9990;background:#0A1F6E;
-  display:none;align-items:center;justify-content:center;
+  position:fixed;inset:0;z-index:9993;background:#0A1F6E;
+  display:flex;align-items:center;justify-content:center;
   font-family:var(--font-body);
   backdrop-filter:blur(8px);
   padding-top:0;
+}
+#auth-screen.hidden {
+  display:none;
 }
 #auth-screen.show {
   display:flex;
@@ -47,7 +50,7 @@ const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
 #session-loader {
   position:fixed;inset:0;z-index:9995;
   background:#0A1F6E;
-  display:flex;align-items:center;justify-content:center;
+  display:none;align-items:center;justify-content:center;
   flex-direction:column;gap:16px;
 }
 #session-loader.hidden { display:none; }
@@ -655,7 +658,7 @@ a{color:inherit;text-decoration:none;}
 .alert-close{font-size:15px;cursor:pointer;opacity:.6;background:none;border:none;}
 
 /* ── ONBOARDING ── */
-#onboarding{position:fixed;inset:0;z-index:9992;background:rgba(10,31,110,.96);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
+#onboarding{position:fixed;inset:0;z-index:9992;background:rgba(10,31,110,.96);display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
 .ob-box,.overlay-card{background:var(--surface);border-radius:20px;padding:24px;max-width:360px;width:92%;text-align:center;animation:obIn .5s cubic-bezier(.34,1.56,.64,1);display:flex;flex-direction:column;gap:12px;}
 .ob-box{position:relative;overflow:hidden;}
 .ob-box::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--navy),var(--blue),var(--navy));}
@@ -1387,6 +1390,21 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,600;0,700;1,500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+// CRITICAL: Runs before anything else
+// Auth shows first. Onboarding and app hidden until after login.
+(function(){
+  // Hide onboarding immediately - auth goes first
+  document.addEventListener('DOMContentLoaded', function(){
+    var ob = document.getElementById('onboarding');
+    if(ob) ob.style.display = 'none';
+    var auth = document.getElementById('auth-screen');
+    if(auth && !auth.classList.contains('hidden')){
+      document.body.classList.add('auth-visible');
+    }
+  });
+})();
+</script>
 </head>
 <body>
 <!-- Session loader — shows while checking if user is logged in -->
@@ -5851,12 +5869,9 @@ function toggleCheckItem(item){
 
 // ── INIT ──
 (function initApp(){
-  // Show auth screen by default immediately
-  // It will be hidden if user is already logged in
-  const _authEl = document.getElementById('auth-screen');
-  const _loaderEl = document.getElementById('session-loader');
-  if(_authEl) { _authEl.classList.add('show'); }
-  if(_loaderEl) { _loaderEl.classList.add('hidden'); }
+  // Auth screen is visible by default (CSS display:flex)
+  // Will be hidden by .hidden class when user is confirmed logged in
+  // Session loader stays hidden unless actively loading
   // Restore dark mode from localStorage
   try{
     const saved=localStorage.getItem('fm_dark');
@@ -10768,6 +10783,11 @@ body.onboard-visible .nav,
 body.onboard-visible #fm-float-fox {
   display: none !important;
 }
+/* Hide nav and fox when auth screen is visible (default state) */
+#auth-screen:not(.hidden) ~ * .nav,
+#auth-screen:not(.hidden) ~ * #fm-float-fox {
+  display: none !important;
+}
 
 
 /* ══════════════════════════════════════════════
@@ -11156,7 +11176,7 @@ function startAsGuest(){
   _isGuest = true;
   _guestQCount = 0;
   _guestBonusUsed = false;
-  document.getElementById('auth-screen').classList.remove('show');
+  document.getElementById('auth-screen').classList.add('hidden'); document.getElementById('auth-screen').classList.remove('show');
     document.getElementById('top-nav')?.classList.remove('nav-logged-out');
     document.getElementById('nav-hearts')?.style.removeProperty('display');
   // FIX A: Load questions for guest immediately
@@ -11293,7 +11313,7 @@ async function handleAuth() {
     }
     _currentUser = result.data.user;
     _isGuest = false;
-    document.getElementById('auth-screen').classList.remove('show');
+    document.getElementById('auth-screen').classList.add('hidden'); document.getElementById('auth-screen').classList.remove('show');
     document.getElementById('top-nav')?.classList.remove('nav-logged-out');
     document.getElementById('nav-hearts')?.style.removeProperty('display');
     closeRegPopup();
@@ -11391,7 +11411,7 @@ async function loadUserProgress() {
   
   if(!hasCompletedOnboarding){
     // Brand new user — show onboarding
-    if(onboardingEl) onboardingEl.style.display = 'flex';
+    if(onboardingEl){ onboardingEl.style.display = 'flex'; }
     updateHUD();
     return;
   }
@@ -11556,7 +11576,7 @@ async function doLogout(){
         if(lt && lt !== 'free'){ S.plan=lt; S.tier=lt; S.aiPlan=lt; }
       }catch(e){}
     }
-    document.getElementById('auth-screen').classList.remove('show');
+    document.getElementById('auth-screen').classList.add('hidden'); document.getElementById('auth-screen').classList.remove('show');
     document.getElementById('top-nav')?.classList.remove('nav-logged-out');
     document.getElementById('nav-hearts')?.style.removeProperty('display');
     await loadUserProgress();
@@ -11573,7 +11593,7 @@ async function doLogout(){
       // Hide auth, show app
       const _ae = document.getElementById('auth-screen');
       const _le = document.getElementById('session-loader');
-      if(_ae) _ae.classList.remove('show');
+      if(_ae) { _ae.classList.add('hidden'); _ae.classList.remove('show'); }
       if(_le) _le.classList.add('hidden');
       // Mark onboarding as done for any signing-in user
       S.onboardingDone = true;
@@ -11587,7 +11607,7 @@ async function doLogout(){
         S.plan='pro'; S.tier='pro'; S.aiPlan='pro';
         try{ localStorage.setItem('fm_tier','pro'); }catch(e){}
       }
-      document.getElementById('auth-screen').classList.remove('show');
+      document.getElementById('auth-screen').classList.add('hidden'); document.getElementById('auth-screen').classList.remove('show');
     document.getElementById('top-nav')?.classList.remove('nav-logged-out');
     document.getElementById('nav-hearts')?.style.removeProperty('display');
       // Hide onboarding immediately
