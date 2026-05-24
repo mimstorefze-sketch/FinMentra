@@ -1798,13 +1798,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <span class="q-standard" id="q-standard">◆ IFRS 15</span>
       <span class="level-pip" id="q-pip"></span>
       <span class="q-level-text" id="q-level">Advanced</span>
-      <div class="timer-ring-wrap" id="q-timer-ring" style="margin-left:auto;">
-        <svg width="40" height="40" viewBox="0 0 48 48">
-          <circle cx="24" cy="24" r="20" fill="none" stroke="var(--border2)" stroke-width="3"/>
-          <circle class="timer-ring-circle" cx="24" cy="24" r="20" fill="none" stroke="var(--gold)" stroke-width="3" stroke-dasharray="125.6" stroke-dashoffset="0" stroke-linecap="round"/>
-        </svg>
-        <div class="timer-ring-text" id="q-timer-text">30</div>
-      </div>
+      <!-- Timer removed from Arena — kept in Time Attack & Boss Battle only -->
     </div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;" id="q-meta-row">
         <span class="diff-dot diff-medium" id="q-diff-dot"></span>
@@ -3276,9 +3270,7 @@ function applyModeUI(mode){
   const pBtn = document.getElementById('ms-pro');
   if(sBtn) sBtn.classList.toggle('active', mode==='student');
   if(pBtn) pBtn.classList.toggle('active', mode==='professional');
-  // Always navigate to correct home screen matching the mode
   const targetScreen = mode === 'professional' ? 'pro-home' : 'home';
-  // Switch screen without triggering the popup chain
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const target = document.getElementById('screen-'+targetScreen);
   if(target) target.classList.add('active');
@@ -3750,6 +3742,7 @@ function loadQuestion(){
   const dd=document.getElementById('q-diff-dot');const dl=document.getElementById('q-diff-label');const dt=document.getElementById('q-est-time');
   if(dd){dd.className='diff-dot '+d.dot;}if(dl) dl.textContent=d.label;if(dt) dt.textContent='⏱ '+d.time;
 
+  // Timer disabled in Arena — only used in Time Attack & Boss Battle
   // BUG FIX: Rebuild options fresh — ensures no stale disabled state
   const optsContainer=document.getElementById('options');
   if(optsContainer){
@@ -7558,20 +7551,10 @@ function updateCombo(correct){
 // ── TIMER RING on Practice ──
 let questionTimer=null,questionSecs=30;
 function startQuestionTimer(){
-  clearInterval(questionTimer);questionSecs=30;
-  const ring=document.getElementById('q-timer-ring');
-  if(!ring) return;
-  const circle=ring.querySelector('.timer-ring-circle');
-  const text=ring.querySelector('.timer-ring-text');
-  const circumference=2*Math.PI*20;
-  if(circle) circle.style.strokeDasharray=circumference;
-  questionTimer=setInterval(()=>{
-    questionSecs--;
-    if(circle) circle.style.strokeDashoffset=circumference*(1-questionSecs/30);
-    if(text) text.textContent=questionSecs;
-    if(questionSecs<=5&&circle) circle.style.stroke='var(--red)';
-    if(questionSecs<=0){clearInterval(questionTimer);if(!S.answered){loseHeart();toast("Time's up!");}}
-  },1000);
+  // Timer disabled in Arena practice mode — no pressure learning!
+  // Timer still works in Time Attack (taTimer) and Boss Battle (bossTimer)
+  clearInterval(questionTimer);
+  questionTimer = null;
 }
 
 // ── CONFIDENCE SLIDER ──
@@ -7617,7 +7600,7 @@ function setScenarioCat(el,cat){
   toast('Category: '+cat);
 }
 
-// ── ENHANCE LOAD QUESTION with timer + confidence ──
+// ── ENHANCE LOAD QUESTION (timer removed — confidence slider kept) ──
 const _origLoadQ=loadQuestion;
 loadQuestion=function(){
   _origLoadQ();
@@ -8249,7 +8232,6 @@ function getGuestThreshold(){
 }
 
 function checkGuestPrompt(){
-  // For guests (clicked Try Free button): show register popup at 10, hard stop at 15
   if(_isGuest && !_currentUser){
     _guestQCount++;
     const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
@@ -8257,15 +8239,12 @@ function checkGuestPrompt(){
     if(used >= 15) showDailyLimitPopup();
     return;
   }
-  // For web visitors who never clicked Try Free (no _isGuest flag):
-  // Still enforce limit using localStorage counter
   if(!_currentUser && !_isGuest){
     const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
     if(used === 10 && !_guestBonusUsed) showRegisterPopup();
     if(used >= 15) showDailyLimitPopup();
     return;
   }
-  // For logged-in free users: hard stop at 15
   if(_currentUser && isFree()){
     const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
     if(used >= 15) showDailyLimitPopup();
@@ -8603,13 +8582,6 @@ async function doLogout(){
   if(!data.session){
     // No logged-in session — show auth screen
     document.getElementById('auth-screen').classList.add('show');
-    // FIX: Apply saved mode for non-logged-in users (web visitors)
-    if(S.mode === 'professional'){
-      const sBtn = document.getElementById('ms-student');
-      const pBtn = document.getElementById('ms-pro');
-      if(sBtn) sBtn.classList.remove('active');
-      if(pBtn) pBtn.classList.add('active');
-    }
   }
   if(data.session){
     _currentUser = data.session.user;
@@ -9996,12 +9968,10 @@ document.addEventListener('visibilitychange', ()=>{
     clearInterval(MM.searchInterval);
     clearInterval(MM.searchTimer);
   }
-  // When tab comes back — ONLY refresh plan if user just paid (not on every focus)
-  // This prevents the repeated re-render / refresh bug
+  // Only reload plan after Stripe payment — not on every tab switch (fixes refresh bug)
   if(!document.hidden && typeof _currentUser !== 'undefined' && _currentUser){
     const stripeInProgress = localStorage.getItem('fm_stripe_in_progress');
     if(stripeInProgress === '1'){
-      // Only poll after Stripe payment — not on every tab switch
       let pollCount = 0;
       const planPoller = setInterval(async () => {
         pollCount++;
@@ -10155,9 +10125,7 @@ showChallengeSection = function(section){
     }
     _baseShow(id);
     if(id !== 'multiplayer') restoreShellPadding();
-    if(id === 'profile'){
-      setTimeout(()=>{ renderStudyDonut(); renderRadarChart(); updateProfileStats(); },100);
-    }
+    if(id === 'profile') setTimeout(()=>{ renderStudyDonut(); renderRadarChart(); updateProfileStats(); },100);
     if(id === 'progress') setTimeout(buildLearningPath, 50);
     if(id === 'multiplayer'){
       const inBattle = typeof CH !== 'undefined' && CH.challengeId &&
