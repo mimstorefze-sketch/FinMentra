@@ -202,58 +202,7 @@ a{color:inherit;text-decoration:none;}
 .shell.no-top-pad{padding-top:0 !important;padding-bottom:0 !important;}
 .screen{display:none;max-width:720px;margin:0 auto;padding:16px 14px;flex-direction:column;gap:14px;}
 .screen.active{display:flex;}
-/* Challenge screen — hidden by default, shown only when active */
-#screen-multiplayer:not(.active),
-#screen-challenge:not(.active){
-  display: none !important;
-}
-
-/* Remove shell top padding on desktop when challenge active */
-@media (min-width: 769px){
-  .shell:has(#screen-multiplayer.active){
-    padding-top: 0 !important;
-  }
-}
-
-/* Desktop: challenge screen full width centered */
-#screen-multiplayer.active{
-  background: #f0f4ff;
-  max-width: 720px !important;
-  margin: 0 auto !important;
-  width: 100% !important;
-}
-
-/* Mobile: true fullscreen */
-@media (max-width: 768px){
-  #screen-multiplayer.active{
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-    height: 100dvh !important;
-    z-index: 100 !important;
-    overflow-y: auto !important;
-    margin: 0 !important;
-  }
-}
-/* Legacy selector kept for compatibility */
-#screen-multiplayer.active-old{
-  padding: 0 !important;
-  margin: 0 !important;
-  overflow-y: auto !important;
-  height: 100vh !important;
-  max-height: 100vh !important;
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  z-index: 100 !important;
-  background: #fff !important;
-}
+/* Challenge screen CSS removed */
 
 /* ── CARD (index.html style) ── */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);}
@@ -439,14 +388,6 @@ a{color:inherit;text-decoration:none;}
 .actionrow,.action-row{display:flex;gap:6px;align-items:center;background:var(--surface);border-top:1px solid var(--border2);padding:10px 14px;margin:8px 0 0;border-radius:12px;box-shadow:0 2px 8px rgba(10,31,110,.06);}
 /* Normal flow — no fixed/floating on practice screen */
 #screen-practice { padding-bottom: 20px; }
-#screen-multiplayer { padding: 0 !important; margin: 0 !important; gap: 0 !important; flex-direction: column; }
-#screen-multiplayer > *:not(style):not(script) { flex-shrink: 0; }
-#screen-multiplayer #ch-lobby { padding: calc(env(safe-area-inset-top) + 8px) 14px calc(70px + env(safe-area-inset-bottom)) 14px; overflow-y: auto; height: 100%; box-sizing: border-box; }
-#screen-multiplayer #ch-waiting { padding: calc(env(safe-area-inset-top) + 8px) 14px calc(70px + env(safe-area-inset-bottom)) 14px; overflow-y: auto; height: 100%; box-sizing: border-box; }
-#screen-multiplayer #ch-battle { padding: 8px 14px; padding-top: calc(env(safe-area-inset-top) + 8px); padding-bottom: calc(70px + env(safe-area-inset-bottom)); overflow-y: auto; flex: 1; min-height: 0; box-sizing: border-box; }
-#screen-multiplayer #ch-results { padding: calc(env(safe-area-inset-top) + 12px) 14px 80px 14px; overflow-y: auto; height: 100%; box-sizing: border-box; }
-#screen-multiplayer #ch-matchmaking { padding: calc(env(safe-area-inset-top) + 12px) 14px 12px 14px; overflow-y: auto; height: 100%; box-sizing: border-box; }
-#screen-multiplayer #ch-countdown { padding: calc(env(safe-area-inset-top) + 12px) 14px 12px 14px; overflow-y: auto; height: 100%; box-sizing: border-box; }
 .actionrow .btn{flex:1;}
 .btn-back{height:40px;padding:0 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface);display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--navy);cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0;}
 .btn-bookmark{width:40px;height:40px;border:1px solid var(--border);border-radius:10px;background:var(--surface);display:grid;place-items:center;font-size:16px;flex-shrink:0;cursor:pointer;font-family:var(--font-body);}
@@ -1613,8 +1554,8 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 
 <!-- MODE SWITCH -->
 <div class="mode-switch">
-  <button class="ms-btn active" id="ms-student" onclick="switchMode('student')">🎓 Student</button>
-  <button class="ms-btn" id="ms-pro" onclick="switchMode('professional')">💼 Professional</button>
+  <button class="ms-btn active" id="ms-student" onclick="event.stopPropagation();switchMode('student')">🎓 Student</button>
+  <button class="ms-btn" id="ms-pro" onclick="event.stopPropagation();switchMode('professional')">💼 Professional</button>
 </div>
 
 <!-- BREADCRUMB -->
@@ -1712,7 +1653,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div class="qa-card teal" onclick="showTimeAttack()"><div class="qa-icon">⚡</div><div class="qa-title">Time Attack</div><div class="qa-sub">3-minute sprint</div></div>
     <div class="qa-card gold" onclick="showScreen('askai')"><div class="qa-icon">🤖</div><div class="qa-title">Ask the AI</div><div class="qa-sub">Chat any standard</div><div class="qa-lock">3/day</div></div>
     <div class="qa-card green" onclick="showScreen('vault')"><div class="qa-icon">🗄️</div><div class="qa-title">Mistake Vault</div><div class="qa-sub">Conquer weak spots</div></div>
-    <div class="qa-card" style="border-bottom-color:var(--purple);" onclick="showScreen('multiplayer')"><div class="qa-icon">⚔️</div><div class="qa-title">Challenge a Friend</div><div class="qa-sub">Beat them in a live quiz!</div></div>
+
   </div>
   <div class="sec-label">Global Leaderboard</div>
   <div class="card">
@@ -1798,7 +1739,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <span class="q-standard" id="q-standard">◆ IFRS 15</span>
       <span class="level-pip" id="q-pip"></span>
       <span class="q-level-text" id="q-level">Advanced</span>
-      <!-- Timer removed from Arena — kept in Time Attack & Boss Battle only -->
+<!-- Timer removed from Arena -->
     </div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;" id="q-meta-row">
         <span class="diff-dot diff-medium" id="q-diff-dot"></span>
@@ -1847,6 +1788,254 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <!-- Session bar -->
   <div class="session-bar"><div class="session-acc"><div class="session-label">Session accuracy</div><div class="session-track"><div class="session-fill" id="session-fill" style="width:0%"></div></div></div><div class="session-count" id="session-count">0 / 0</div></div>
 </div>
+
+
+<!-- ══ CHALLENGE MODE — FRESH BUILD ══ -->
+<div class="screen" id="screen-challenge">
+
+  <!-- ── LOBBY ── -->
+  <div id="chl-lobby">
+    <!-- Hero -->
+    <div class="ch-hero">
+      <div class="ch-hero-icon">⚔️</div>
+      <div class="ch-hero-title">Battle Arena</div>
+      <div class="ch-hero-sub">Challenge anyone, anywhere. Prove your finance knowledge.</div>
+      <div class="ch-stats-row">
+        <div class="ch-stat-box"><div class="ch-stat-val" id="chl-wins">0</div><div class="ch-stat-lbl">Wins</div></div>
+        <div class="ch-stat-box"><div class="ch-stat-val" id="chl-losses">0</div><div class="ch-stat-lbl">Losses</div></div>
+        <div class="ch-stat-box"><div class="ch-stat-val" id="chl-streak">0</div><div class="ch-stat-lbl">Streak</div></div>
+      </div>
+    </div>
+
+    <!-- Online Matchmaking -->
+    <div class="ch-online-card">
+      <div class="ch-online-header">
+        <div style="flex:1;">
+          <div class="ch-online-title">🌍 Play Online</div>
+          <div class="ch-online-sub">Matched with a real opponent instantly</div>
+        </div>
+        <div class="ch-online-count">
+          <div class="ch-online-count-num" id="chl-online-count">—</div>
+          <div class="ch-online-count-lbl">Online now</div>
+        </div>
+      </div>
+      <!-- ELO Badge -->
+      <div class="ch-elo-badge">
+        <div class="ch-elo-icon" id="chl-elo-icon">🌱</div>
+        <div style="flex:1;">
+          <div class="ch-elo-name" id="chl-elo-name">Initiate</div>
+          <div class="ch-elo-rating">Rating: <span id="chl-elo-rating" style="font-weight:800;">1000</span></div>
+        </div>
+        <div style="text-align:right;">
+          <div class="ch-elo-wld-lbl">W / L / D</div>
+          <div class="ch-elo-wld"><span id="chl-elo-w">0</span>/<span id="chl-elo-l">0</span>/<span id="chl-elo-d">0</span></div>
+        </div>
+      </div>
+      <!-- Category -->
+      <select class="ch-select" id="chl-mm-category">
+        <option value="Mixed">🎲 Any Topic — Mixed</option>
+        <option value="IFRS">📘 IFRS Standards</option>
+        <option value="IAS">📗 IAS Standards</option>
+        <option value="ISA">📋 Audit (ISA)</option>
+        <option value="Costing">🔢 Costing</option>
+        <option value="Tax">💰 Tax</option>
+        <option value="FM">📊 Financial Management</option>
+      </select>
+      <button class="ch-btn-primary" onclick="chlFindMatch()" id="chl-find-btn">⚡ Find Opponent Now</button>
+    </div>
+
+    <!-- Challenge a Friend -->
+    <div class="ch-card">
+      <div class="ch-card-header">
+        <div class="ch-card-icon" style="background:var(--blue-ll);">🎮</div>
+        <div>
+          <div class="ch-card-title">Challenge a Friend</div>
+          <div class="ch-card-sub">Create a private room and share your code</div>
+        </div>
+      </div>
+      <select class="ch-select-dark" id="chl-create-cat">
+        <option value="Mixed">🎲 Mixed Topics</option>
+        <option value="IFRS">📘 IFRS</option>
+        <option value="IAS">📗 IAS</option>
+        <option value="ISA">📋 Audit</option>
+        <option value="Costing">🔢 Costing</option>
+        <option value="Tax">💰 Tax</option>
+        <option value="FM">📊 Financial Management</option>
+      </select>
+      <select class="ch-select-dark" id="chl-create-count">
+        <option value="5">5 Questions — Quick (3 min)</option>
+        <option value="10" selected>10 Questions — Standard (6 min)</option>
+        <option value="15">15 Questions — Long (10 min)</option>
+      </select>
+      <button class="ch-btn-navy" onclick="chlCreateChallenge()">⚔️ Create Private Challenge</button>
+    </div>
+
+    <!-- Join a Friend -->
+    <div class="ch-card">
+      <div class="ch-card-header">
+        <div class="ch-card-icon" style="background:var(--green-l);">🔗</div>
+        <div>
+          <div class="ch-card-title">Join a Friend</div>
+          <div class="ch-card-sub">Enter the 6-letter code they shared</div>
+        </div>
+      </div>
+      <input class="ch-code-input" id="chl-join-input" placeholder="ABC123" maxlength="6" oninput="this.value=this.value.toUpperCase()"/>
+      <button class="ch-btn-navy" onclick="chlJoinChallenge()">🚀 Join Challenge</button>
+    </div>
+
+    <!-- Global Rankings -->
+    <div class="ch-card">
+      <div class="ch-card-header">
+        <div class="ch-card-icon" style="background:var(--gold-l);">🏆</div>
+        <div>
+          <div class="ch-card-title">Global Rankings</div>
+          <div class="ch-card-sub">Top players worldwide</div>
+        </div>
+        <button onclick="chlLoadRankings()" style="margin-left:auto;background:var(--blue-ll);border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;color:var(--navy);cursor:pointer;font-family:var(--font-body);">Refresh</button>
+      </div>
+      <div id="chl-rankings"><div style="text-align:center;padding:16px;color:var(--muted);font-size:12px;">Loading rankings...</div></div>
+    </div>
+
+    <!-- How it works -->
+    <div class="ch-card">
+      <div class="ch-card-header">
+        <div class="ch-card-icon" style="background:var(--purple-l);">📖</div>
+        <div><div class="ch-card-title">How it works</div></div>
+      </div>
+      <div class="ch-step"><div class="ch-step-num">1</div><div class="ch-step-txt"><strong>Create</strong> a challenge and get a 6-letter code</div></div>
+      <div class="ch-step"><div class="ch-step-num">2</div><div class="ch-step-txt"><strong>Share</strong> the code with your friend via WhatsApp</div></div>
+      <div class="ch-step"><div class="ch-step-num">3</div><div class="ch-step-txt"><strong>Battle</strong> on the same questions simultaneously</div></div>
+      <div class="ch-step"><div class="ch-step-num">4</div><div class="ch-step-txt"><strong>Win</strong> XP, coins and climb the ELO leaderboard 🏆</div></div>
+    </div>
+  </div>
+
+  <!-- ── WAITING ROOM ── -->
+  <div id="chl-waiting" style="display:none;">
+    <div class="ch-code-display">
+      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:8px;text-transform:uppercase;letter-spacing:.1em;">Your Challenge Code</div>
+      <div class="ch-code-value" id="chl-code-value">------</div>
+      <button onclick="chlCopyCode()" style="background:rgba(255,255,255,.15);border:none;border-radius:8px;padding:7px 16px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);">📋 Copy Code</button>
+    </div>
+    <div class="ch-card" style="text-align:center;padding:28px;">
+      <div class="ch-spinner"></div>
+      <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:6px;">Waiting for opponent...</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:20px;">Share the code above with a friend</div>
+      <div style="background:var(--bg);border-radius:10px;padding:10px;font-size:12px;color:var(--navy);margin-bottom:16px;">
+        Category: <strong id="chl-wait-cat">Mixed</strong> · <strong id="chl-wait-count">10</strong> Questions
+      </div>
+      <button class="ch-btn-danger" onclick="chlCancelWaiting()">✕ Cancel</button>
+    </div>
+  </div>
+
+  <!-- ── MATCHMAKING ── -->
+  <div id="chl-matchmaking" style="display:none;">
+    <div style="text-align:center;padding:28px 16px 16px;">
+      <div class="ch-mm-pulse">🌍</div>
+      <div style="font-size:16px;font-weight:800;color:var(--navy);margin-bottom:4px;" id="chl-mm-title">Finding your opponent...</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;" id="chl-mm-sub">Searching worldwide</div>
+      <div class="ch-mm-timer" id="chl-mm-timer">0:00</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:20px;" id="chl-mm-hint">More players online on weekday evenings 🌙</div>
+    </div>
+    <div style="padding:0 4px;">
+      <div class="ch-player-card" style="margin-bottom:8px;">
+        <div class="ch-player-avatar">🎓</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:var(--navy);" id="chl-my-name">You</div>
+          <div style="font-size:11px;color:var(--muted);">Rating: <span id="chl-my-rating" style="font-family:var(--font-mono);color:var(--gold);font-weight:700;">1000</span></div>
+        </div>
+        <div style="font-size:18px;">✅</div>
+      </div>
+      <div class="ch-vs">VS</div>
+      <div class="ch-player-card" id="chl-opp-card" style="margin-top:8px;">
+        <div class="ch-player-avatar" id="chl-opp-avatar">❓</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:var(--muted);" id="chl-opp-name">Searching...</div>
+          <div style="font-size:11px;color:var(--muted);">Rating: <span id="chl-opp-rating" style="font-family:var(--font-mono);">???</span></div>
+        </div>
+        <div style="font-size:18px;" id="chl-opp-status">⏳</div>
+      </div>
+    </div>
+    <div style="text-align:center;padding:16px;font-size:12px;font-weight:700;color:var(--navy);background:var(--bg);border-radius:10px;margin:12px 4px;" id="chl-mm-topic">Topic: Mixed</div>
+    <button class="ch-btn-secondary" onclick="chlCancelMatchmaking()">Cancel Search</button>
+  </div>
+
+  <!-- ── COUNTDOWN ── -->
+  <div id="chl-countdown" style="display:none;">
+    <div style="text-align:center;padding:40px 24px;">
+      <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:16px;" id="chl-cd-vs">You vs Opponent</div>
+      <div class="ch-countdown-num" id="chl-cd-num">3</div>
+      <div style="margin-top:24px;padding:16px;background:var(--bg);border-radius:14px;">
+        <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px;">💡 Battle Tip</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.6;" id="chl-cd-tip">Answer fast — faster correct answers earn more points!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BATTLE ── -->
+  <div id="chl-battle" style="display:none;">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+      <button class="ch-btn-danger" onclick="chlForfeit()">🏳️ Forfeit</button>
+    </div>
+    <div class="ch-battle-header">
+      <div class="ch-scores">
+        <div class="ch-score-side">
+          <div class="ch-score-name" id="chl-b-my-name">You</div>
+          <div class="ch-score-num" id="chl-b-my-score">0</div>
+        </div>
+        <div class="ch-score-vs">VS</div>
+        <div class="ch-score-side">
+          <div class="ch-score-name" id="chl-b-opp-name">Opponent</div>
+          <div class="ch-score-num" id="chl-b-opp-score">0</div>
+        </div>
+      </div>
+      <div class="ch-timer-bar-wrap">
+        <div class="ch-timer-txt" id="chl-b-timer">20</div>
+        <div class="ch-timer-bar"><div class="ch-timer-fill" id="chl-b-timer-fill" style="width:100%;"></div></div>
+        <div class="ch-qnum" id="chl-b-qnum">Question 1 of 10</div>
+        <div class="ch-speed-hint">⚡ &lt;7s = 3pts · &lt;14s = 2pts · else 1pt</div>
+      </div>
+    </div>
+    <div class="ch-opp-status">
+      <div class="ch-opp-dot"></div>
+      <span id="chl-b-opp-status">Opponent is thinking...</span>
+    </div>
+    <div class="ch-card" style="padding:16px;">
+      <div style="font-size:16px;font-weight:600;line-height:1.5;color:var(--text);margin-bottom:16px;" id="chl-b-question">Loading question...</div>
+      <div id="chl-b-options"></div>
+      <div id="chl-b-explain" style="display:none;margin-top:12px;padding:12px;background:var(--blue-ll);border-radius:10px;font-size:12px;line-height:1.6;color:var(--navy);"></div>
+    </div>
+  </div>
+
+  <!-- ── RESULTS ── -->
+  <div id="chl-results" style="display:none;">
+    <div class="ch-result-hero" id="chl-r-hero">
+      <div class="ch-result-trophy" id="chl-r-trophy">🏆</div>
+      <div class="ch-result-title" id="chl-r-title">You Won!</div>
+      <div class="ch-result-sub" id="chl-r-sub">Outstanding performance!</div>
+      <div class="ch-result-xp" id="chl-r-xp">+150 XP</div>
+    </div>
+    <div class="ch-score-compare">
+      <div class="ch-score-box" id="chl-r-my-box">
+        <div class="ch-score-big" id="chl-r-my-score">0</div>
+        <div class="ch-score-name-lbl">You</div>
+      </div>
+      <div class="ch-score-compare-vs">VS</div>
+      <div class="ch-score-box" id="chl-r-opp-box">
+        <div class="ch-score-big" id="chl-r-opp-score">0</div>
+        <div class="ch-score-name-lbl" id="chl-r-opp-lbl">Opponent</div>
+      </div>
+    </div>
+    <div class="ch-rating-change" id="chl-r-rating">
+      <span>📊 Rating change:</span>
+      <span id="chl-r-rating-val" style="font-family:var(--font-mono);font-weight:800;"></span>
+    </div>
+    <div id="chl-r-breakdown" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;"></div>
+    <button class="ch-btn-navy" onclick="chlPlayAgain()">⚔️ Play Again</button>
+    <button class="ch-btn-secondary" onclick="chlShowSection('lobby')">← Back to Lobby</button>
+  </div>
+
+</div>
+<!-- ══ END CHALLENGE ══ -->
 
 <!-- ══ PATH / PROGRESS ══ -->
 <div class="screen" id="screen-progress">
@@ -2138,7 +2327,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div class="card">
     <button class="profile-item" onclick="showScreen('trophy')"><div class="profile-item-icon">🏆</div><div class="profile-item-label">Trophy Room</div><div class="profile-item-val">3 earned</div><div class="profile-item-arrow">›</div></button>
     <button class="profile-item" onclick="showScreen('community')"><div class="profile-item-icon">👥</div><div class="profile-item-label">Community</div><div class="profile-item-arrow">›</div></button>
-    <button class="profile-item" onclick="showScreen('challenge')"><div class="profile-item-icon">🏛️</div><div class="profile-item-label">Challenge League</div><div class="profile-item-arrow">›</div></button>
+
     <button class="profile-item" onclick="showScreen('bookmarks')"><div class="profile-item-icon">🔖</div><div class="profile-item-label">My Bookmarks</div><div class="profile-item-arrow">›</div></button>
     <button class="profile-item" onclick="showScreen('notes')"><div class="profile-item-icon">📝</div><div class="profile-item-label">My Notes</div><div class="profile-item-arrow">›</div></button>
     <button class="profile-item" onclick="showScreen('coinshop')"><div class="profile-item-icon">🪙</div><div class="profile-item-label">Coin Shop</div><div class="profile-item-val" id="profile-coins">240 🪙</div><div class="profile-item-arrow">›</div></button>
@@ -3140,7 +3329,7 @@ const JE_SCENARIOS_BY_CAT={all:Object.keys(JE_DATA),IFRS:Object.keys(JE_DATA).fi
 let currentJECat='all';
 
 // ── SCREEN NAV ──
-const STUDENT_TABS=[{id:'home',icon:'🏠',label:'Home'},{id:'topics',icon:'📚',label:'Topics'},{id:'practice',icon:'🏛️',label:'Arena'},{id:'multiplayer',icon:'⚔️',label:'Challenge'},{id:'progress',icon:'🗺️',label:'Path'},{id:'profile',icon:'👤',label:'Profile'}];
+const STUDENT_TABS=[{id:'home',icon:'🏠',label:'Home'},{id:'topics',icon:'📚',label:'Topics'},{id:'practice',icon:'🏛️',label:'Arena'},{id:'challenge',icon:'⚔️',label:'Battle'},{id:'progress',icon:'🗺️',label:'Path'},{id:'profile',icon:'👤',label:'Profile'}];
 const PRO_TABS=[{id:'pro-home',icon:'🏠',label:'Home'},{id:'quickref',icon:'📋',label:'Reference'},{id:'fsbuilder',icon:'📊',label:'Stmts'},{id:'cpd',icon:'📜',label:'CPD'},{id:'profile',icon:'👤',label:'Profile'}];
 
 function renderBottomNav(){
@@ -3219,26 +3408,15 @@ function showScreen(id){
 }
 
 function switchMode(mode){
-  // Always sync button UI first regardless of current mode
-  const sBtn = document.getElementById('ms-student');
-  const pBtn = document.getElementById('ms-pro');
-  if(sBtn) sBtn.classList.toggle('active', S.mode==='student'||S.mode===undefined||S.mode===null);
-  if(pBtn) pBtn.classList.toggle('active', S.mode==='professional');
-  if(mode === S.mode) return;
+  if((S.mode || 'student') === mode) return;
   const toLabel = mode === 'professional' ? '💼 Professional' : '🎓 Student';
   showModeConfirm(toLabel, function(){
-    // Reset all practice state
-    S.currentStandard = null;
-    S.sessionQs = [];
-    S.qIndex = 0;
-    S.answered = false;
+    S.currentStandard = null; S.sessionQs = []; S.qIndex = 0; S.answered = false;
     S.mode = mode;
-    // Sync button UI
     const sBtn = document.getElementById('ms-student');
     const pBtn = document.getElementById('ms-pro');
     if(sBtn) sBtn.classList.toggle('active', mode==='student');
     if(pBtn) pBtn.classList.toggle('active', mode==='professional');
-    // Directly show correct screen — bypass all wrappers
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     const targetId = mode==='professional' ? 'screen-pro-home' : 'screen-home';
     const target = document.getElementById(targetId);
@@ -3247,13 +3425,8 @@ function switchMode(mode){
     if(mode==='professional'){
       const pg=document.getElementById('pro-greeting');
       if(pg) pg.textContent=getMoodGreeting(true);
-    } else {
-      updateMissions();
-      loadLeaderboard();
-    }
-    renderBottomNav();
-    saveState();
-    window.scrollTo(0,0);
+    } else { updateMissions(); loadLeaderboard(); }
+    renderBottomNav(); saveState(); window.scrollTo(0,0);
     toast('Switched to '+toLabel+' mode');
   }, function(){
     const sBtn=document.getElementById('ms-student');
@@ -3742,7 +3915,6 @@ function loadQuestion(){
   const dd=document.getElementById('q-diff-dot');const dl=document.getElementById('q-diff-label');const dt=document.getElementById('q-est-time');
   if(dd){dd.className='diff-dot '+d.dot;}if(dl) dl.textContent=d.label;if(dt) dt.textContent='⏱ '+d.time;
 
-  // Timer disabled in Arena — only used in Time Attack & Boss Battle
   // BUG FIX: Rebuild options fresh — ensures no stale disabled state
   const optsContainer=document.getElementById('options');
   if(optsContainer){
@@ -6895,7 +7067,7 @@ rankPulseStyle.textContent='@keyframes rankPulse{0%,100%{box-shadow:0 0 0 0 rgba
 document.head.appendChild(rankPulseStyle);
 
 // Render profile charts when profile screen is shown
-// [profile hook → unified below]
+// [profile hook → unified]
 
 // ── IN-APP NOTIFICATIONS ──
 const _notifQueue=[];
@@ -7339,7 +7511,7 @@ function buildLearningPath(){
 }
 
 // Call buildLearningPath when progress screen is shown
-// [progress hook → unified below]
+// [progress hook → unified]
 
 // ══════════════════════════════════════════════════
 // INTERACTIVE FORMULA CALCULATORS
@@ -7551,10 +7723,8 @@ function updateCombo(correct){
 // ── TIMER RING on Practice ──
 let questionTimer=null,questionSecs=30;
 function startQuestionTimer(){
-  // Timer disabled in Arena practice mode — no pressure learning!
-  // Timer still works in Time Attack (taTimer) and Boss Battle (bossTimer)
-  clearInterval(questionTimer);
-  questionTimer = null;
+  // Timer disabled in Arena — no pressure learning!
+  clearInterval(questionTimer); questionTimer = null;
 }
 
 // ── CONFIDENCE SLIDER ──
@@ -7600,7 +7770,7 @@ function setScenarioCat(el,cat){
   toast('Category: '+cat);
 }
 
-// ── ENHANCE LOAD QUESTION (timer removed — confidence slider kept) ──
+// ── ENHANCE LOAD QUESTION with timer + confidence ──
 const _origLoadQ=loadQuestion;
 loadQuestion=function(){
   _origLoadQ();
@@ -7608,7 +7778,7 @@ loadQuestion=function(){
 };
 
 // ── SCREEN TRANSITION ANIMATION ──
-// [fade-in hook → unified below]
+// [fade-in hook → unified]
 
 // ── FIX 3 & 4: Continue popup — reloads from Supabase ──
 function showContinuePopup(std, remaining){
@@ -7756,9 +7926,7 @@ function loadState(){
       Object.assign(S,d);
       // Never restore multiplayer/challenge as starting screen
       // Always start on home screen
-      if(S.screen === 'multiplayer' || S.screen === 'challenge'){
-        S.screen = S.mode === 'professional' ? 'pro-home' : 'home';
-      }
+      // multiplayer screen removed
       // Sync button UI silently — no popup
       const sBtn=document.getElementById('ms-student');
       const pBtn=document.getElementById('ms-pro');
@@ -7772,14 +7940,9 @@ loadState();
 initPrevRankIdx();
 S.plan = S.plan || 'free'; // free, pro, elite
 // Always start on home screen — never restore challenge/multiplayer
-if(S.screen === 'multiplayer' || S.screen === 'challenge'){
-  S.screen = S.mode === 'professional' ? 'pro-home' : 'home';
-}
+// multiplayer screen removed
 // Force hide multiplayer and challenge screens on init
-const _mpInit = document.getElementById('screen-multiplayer');
-if(_mpInit) _mpInit.classList.remove('active');
-const _chInit = document.getElementById('screen-challenge');
-if(_chInit) _chInit.classList.remove('active');
+// multiplayer elements removed
 setInterval(saveState,30000);
 const _origAnswerQ=answerQ;
 // Already handled in answerQ — also save after each answer
@@ -7850,330 +8013,483 @@ const _origAnswerQ=answerQ;
 </div>
 
 <style>
-.challenge-hero{background:linear-gradient(135deg,#0A1F6E,#4A6CF7);border-radius:20px;padding:24px;color:#fff;text-align:center;margin-bottom:16px;}
-.challenge-hero-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;margin-bottom:4px;}
-.challenge-hero-sub{font-size:12px;opacity:.7;}
-.ch-card{background:var(--surface);border-radius:16px;border:1px solid var(--border2);padding:20px;margin-bottom:14px;}
-.ch-card-title{font-size:13px;font-weight:800;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
-.ch-input{width:100%;padding:14px;border:2px solid var(--border2);border-radius:12px;font-size:18px;font-weight:700;text-align:center;letter-spacing:6px;font-family:var(--font-mono);outline:none;color:var(--navy);text-transform:uppercase;}
-.ch-input:focus{border-color:var(--blue);}
-.ch-btn{width:100%;padding:14px;border-radius:12px;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);margin-bottom:8px;}
-.ch-btn-primary{background:var(--navy);color:#fff;}
-.ch-btn-secondary{background:var(--bg);color:var(--navy);border:1px solid var(--border2);}
-.ch-code-display{font-family:var(--font-mono);font-size:36px;font-weight:700;color:var(--navy);letter-spacing:8px;text-align:center;padding:16px;background:var(--bg);border-radius:12px;margin:12px 0;}
-.ch-waiting{text-align:center;padding:24px;}
-.ch-waiting-spinner{font-size:48px;animation:spin 2s linear infinite;display:inline-block;margin-bottom:12px;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.ch-waiting-title{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:6px;}
-.ch-waiting-sub{font-size:12px;color:var(--muted);}
-.battle-header{background:linear-gradient(135deg,#0A1F6E,#1E3A8A);border-radius:16px;padding:16px;margin-bottom:14px;color:#fff;}
-.battle-scores{display:flex;align-items:center;justify-content:space-between;}
-.battle-player{text-align:center;flex:1;}
-.battle-player-name{font-size:11px;font-weight:700;opacity:.7;margin-bottom:4px;}
-.battle-player-score{font-family:var(--font-mono);font-size:32px;font-weight:700;}
-.battle-vs{font-size:14px;font-weight:700;opacity:.5;padding:0 12px;}
-.battle-timer{text-align:center;margin-top:10px;}
-.battle-timer-bar{height:6px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden;margin-top:6px;}
-.battle-timer-fill{height:100%;background:var(--gold);border-radius:3px;transition:width .1s linear;}
-.battle-timer-text{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--gold);}
-.battle-q-num{font-size:11px;opacity:.6;margin-top:4px;}
-.battle-question{font-size:16px;font-weight:600;line-height:1.5;margin-bottom:16px;color:var(--text);}
-.battle-opt{width:100%;padding:14px;border-radius:12px;border:2px solid var(--border2);background:var(--surface);font-size:14px;font-weight:600;color:var(--text);cursor:pointer;margin-bottom:8px;text-align:left;font-family:var(--font-body);transition:all .2s;display:flex;align-items:center;gap:12px;}
-.battle-opt:hover{border-color:var(--blue);background:var(--blue-ll);}
-.battle-opt.correct{background:#DCFCE7;border-color:var(--green);color:var(--green);}
-.battle-opt.wrong{background:#FEE2E2;border-color:var(--red);color:var(--red);}
-.battle-opt.disabled{pointer-events:none;opacity:.6;}
-.battle-opt-letter{width:28px;height:28px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0;}
-.opponent-status{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg);border-radius:10px;margin-bottom:14px;font-size:12px;font-weight:600;color:var(--navy);}
-.opponent-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 1s infinite;}
-.result-hero{text-align:center;padding:24px;background:linear-gradient(135deg,#0A1F6E,#4A6CF7);border-radius:20px;color:#fff;margin-bottom:16px;}
-.result-trophy{font-size:64px;margin-bottom:8px;}
-.result-title{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;margin-bottom:4px;}
-.result-sub{font-size:13px;opacity:.7;}
-.result-scores{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
-.result-score-card{background:var(--surface);border-radius:14px;padding:16px;text-align:center;border:2px solid var(--border);}
-.result-score-card.winner{border-color:var(--gold);background:#FFF8E7;}
-.result-score-num{font-family:var(--font-mono);font-size:36px;font-weight:700;color:var(--navy);}
-.result-score-label{font-size:11px;color:var(--muted);margin-top:2px;}
-.result-breakdown{background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden;margin-bottom:16px;}
-.result-breakdown-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;}
-.result-breakdown-row:last-child{border-bottom:none;}
-.mm-pulse{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#0A1F6E,#4A6CF7);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;position:relative;font-size:48px;}
-.mm-pulse::before,.mm-pulse::after{content:'';position:absolute;border-radius:50%;border:3px solid #4A6CF7;animation:mmring 2s ease-out infinite;}
-.mm-pulse::before{width:140px;height:140px;animation-delay:0s;}
-.mm-pulse::after{width:170px;height:170px;animation-delay:.5s;}
-@keyframes mmring{0%{opacity:1;transform:scale(.8);}100%{opacity:0;transform:scale(1.3);}}
-.mm-player-card{background:var(--surface);border-radius:16px;padding:16px;display:flex;align-items:center;gap:12px;margin-bottom:10px;border:2px solid var(--border2);}
-.mm-player-card.found{border-color:var(--green);background:#F0FDF4;animation:foundPulse .5s ease;}
-@keyframes foundPulse{0%{transform:scale(1);}50%{transform:scale(1.02);}100%{transform:scale(1);}}
-.mm-vs-divider{text-align:center;font-size:28px;font-weight:800;color:var(--navy);padding:8px;font-family:var(--font-mono);}
-.countdown-num{font-family:var(--font-mono);font-size:96px;font-weight:700;color:var(--navy);text-align:center;animation:countPop .5s ease;}
-@keyframes countPop{0%{transform:scale(1.5);opacity:0;}100%{transform:scale(1);opacity:1;}}
+/* Challenge CSS removed */
+
+/* ══════════════════════════════════════════════
+   CHALLENGE MODE — FRESH BUILD
+   ══════════════════════════════════════════════ */
+
+/* Lobby hero */
+.ch-hero {
+  background: linear-gradient(135deg, #0A1F6E 0%, #1D4ED8 50%, #7C3AED 100%);
+  border-radius: 20px;
+  padding: 28px 20px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.ch-hero::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.06);
+}
+.ch-hero::after {
+  content: '';
+  position: absolute;
+  bottom: -30px; left: -30px;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.04);
+}
+.ch-hero-icon { font-size: 48px; margin-bottom: 8px; animation: chFloat 3s ease-in-out infinite; }
+@keyframes chFloat { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
+.ch-hero-title { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.ch-hero-sub { font-size: 12px; color: rgba(255,255,255,.65); margin-bottom: 16px; }
+.ch-stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.ch-stat-box { background: rgba(255,255,255,.12); border-radius: 12px; padding: 10px; text-align: center; backdrop-filter: blur(8px); }
+.ch-stat-val { font-family: var(--font-mono); font-size: 22px; font-weight: 700; color: #fff; }
+.ch-stat-lbl { font-size: 9px; color: rgba(255,255,255,.55); text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; }
+
+/* Cards */
+.ch-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.ch-card-header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+}
+.ch-card-icon {
+  width: 40px; height: 40px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.ch-card-title { font-size: 14px; font-weight: 800; color: var(--navy); }
+.ch-card-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+/* Online matchmaking card */
+.ch-online-card {
+  background: linear-gradient(135deg, #0A1F6E, #1E3A8A);
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 12px;
+}
+.ch-online-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.ch-online-title { font-size: 15px; font-weight: 800; color: #fff; }
+.ch-online-sub { font-size: 11px; color: rgba(255,255,255,.6); margin-top: 1px; }
+.ch-online-count { text-align: right; }
+.ch-online-count-num { font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: #4ADE80; }
+.ch-online-count-lbl { font-size: 9px; color: rgba(255,255,255,.5); text-transform: uppercase; }
+
+/* ELO badge */
+.ch-elo-badge {
+  background: rgba(255,255,255,.1);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ch-elo-icon { font-size: 32px; }
+.ch-elo-name { font-size: 13px; font-weight: 700; color: #fff; }
+.ch-elo-rating { font-family: var(--font-mono); font-size: 11px; color: var(--gold); margin-top: 2px; }
+.ch-elo-wld { font-size: 12px; font-weight: 700; color: #fff; font-family: var(--font-mono); }
+.ch-elo-wld-lbl { font-size: 9px; color: rgba(255,255,255,.5); text-transform: uppercase; }
+
+/* Category select */
+.ch-select {
+  width: 100%; padding: 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(255,255,255,.2);
+  background: rgba(255,255,255,.1);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 13px;
+  margin-bottom: 10px;
+  outline: none;
+}
+.ch-select-dark {
+  width: 100%; padding: 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  margin-bottom: 10px;
+  outline: none;
+}
+
+/* Buttons */
+.ch-btn-primary {
+  width: 100%; padding: 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--gold), #FCD34D);
+  color: var(--navy);
+  font-size: 14px; font-weight: 800;
+  border: none; cursor: pointer;
+  font-family: var(--font-body);
+  transition: transform .15s, box-shadow .15s;
+}
+.ch-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245,158,11,.3); }
+.ch-btn-navy {
+  width: 100%; padding: 14px;
+  border-radius: 12px;
+  background: var(--navy);
+  color: #fff;
+  font-size: 14px; font-weight: 700;
+  border: none; cursor: pointer;
+  font-family: var(--font-body);
+  margin-bottom: 8px;
+  transition: all .15s;
+}
+.ch-btn-navy:hover { background: var(--navy2); }
+.ch-btn-secondary {
+  width: 100%; padding: 12px;
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--navy);
+  font-size: 13px; font-weight: 700;
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  font-family: var(--font-body);
+  margin-bottom: 8px;
+  transition: all .15s;
+}
+.ch-btn-danger {
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: var(--red-l);
+  color: var(--red);
+  border: 2px solid var(--red);
+  font-size: 12px; font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-body);
+  display: inline-flex; align-items: center; gap: 5px;
+}
+
+/* Code input */
+.ch-code-input {
+  width: 100%; padding: 16px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  font-size: 24px; font-weight: 700;
+  text-align: center;
+  letter-spacing: 8px;
+  font-family: var(--font-mono);
+  color: var(--navy);
+  background: var(--surface);
+  outline: none;
+  text-transform: uppercase;
+  transition: border-color .2s;
+  margin-bottom: 10px;
+}
+.ch-code-input:focus { border-color: var(--blue); }
+
+/* Code display */
+.ch-code-display {
+  background: linear-gradient(135deg, var(--navy), #1D4ED8);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 14px;
+}
+.ch-code-value {
+  font-family: var(--font-mono);
+  font-size: 40px; font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 10px;
+  margin-bottom: 8px;
+}
+.ch-code-lbl { font-size: 11px; color: rgba(255,255,255,.6); }
+
+/* Waiting spinner */
+.ch-spinner {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  border: 4px solid var(--border);
+  border-top-color: var(--navy);
+  animation: chSpin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes chSpin { to { transform: rotate(360deg); } }
+
+/* Matchmaking pulse */
+.ch-mm-pulse {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--navy), #4A6CF7);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px;
+  margin: 0 auto 20px;
+  position: relative;
+  box-shadow: 0 0 0 0 rgba(74,108,247,.4);
+  animation: chPulse 2s ease-in-out infinite;
+}
+@keyframes chPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(74,108,247,.4); }
+  50% { box-shadow: 0 0 0 20px rgba(74,108,247,0); }
+}
+.ch-mm-timer {
+  font-family: var(--font-mono);
+  font-size: 32px; font-weight: 700;
+  color: var(--navy);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+/* Player cards */
+.ch-player-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex; align-items: center; gap: 12px;
+  transition: all .3s;
+}
+.ch-player-card.found {
+  border-color: var(--green);
+  background: var(--green-l);
+}
+.ch-player-avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.ch-vs {
+  text-align: center;
+  font-size: 24px; font-weight: 900;
+  color: var(--navy);
+  font-family: var(--font-mono);
+  padding: 8px 0;
+}
+
+/* Countdown */
+.ch-countdown-num {
+  font-family: var(--font-mono);
+  font-size: 100px; font-weight: 700;
+  color: var(--navy);
+  text-align: center;
+  line-height: 1;
+  animation: chPop .4s ease;
+}
+@keyframes chPop { 0%{transform:scale(1.4);opacity:0;} 100%{transform:scale(1);opacity:1;} }
+
+/* Battle screen */
+.ch-battle-header {
+  background: linear-gradient(135deg, #0A1F6E, #1E3A8A);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  color: #fff;
+}
+.ch-scores {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.ch-score-side { text-align: center; flex: 1; }
+.ch-score-name { font-size: 11px; font-weight: 700; opacity: .65; margin-bottom: 4px; }
+.ch-score-num {
+  font-family: var(--font-mono);
+  font-size: 36px; font-weight: 700;
+}
+.ch-score-vs { font-size: 16px; font-weight: 800; opacity: .4; padding: 0 10px; }
+.ch-timer-bar-wrap { margin-top: 10px; }
+.ch-timer-txt {
+  font-family: var(--font-mono);
+  font-size: 20px; font-weight: 700;
+  color: var(--gold);
+  text-align: center;
+  margin-bottom: 4px;
+}
+.ch-timer-bar {
+  height: 6px;
+  background: rgba(255,255,255,.15);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.ch-timer-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), #FCD34D);
+  border-radius: 3px;
+  transition: width .1s linear;
+}
+.ch-qnum { font-size: 10px; opacity: .55; text-align: center; margin-top: 4px; }
+.ch-speed-hint { font-size: 9px; opacity: .45; text-align: center; }
+
+/* Opponent status */
+.ch-opp-status {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px;
+  background: var(--bg);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  font-size: 12px; font-weight: 600;
+  color: var(--navy);
+}
+.ch-opp-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Battle options */
+.ch-opt {
+  width: 100%; padding: 14px 16px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  font-size: 14px; font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  margin-bottom: 8px;
+  text-align: left;
+  font-family: var(--font-body);
+  display: flex; align-items: center; gap: 12px;
+  transition: all .15s;
+}
+.ch-opt:hover:not(.ch-opt-disabled) { border-color: var(--blue); background: var(--blue-ll); }
+.ch-opt.ch-opt-correct { background: var(--green-l); border-color: var(--green); color: var(--green); animation: rippleCorrect .7s ease; }
+.ch-opt.ch-opt-wrong { background: var(--red-l); border-color: var(--red); color: var(--red); animation: shakeWrong .45s ease; }
+.ch-opt.ch-opt-disabled { pointer-events: none; opacity: .7; }
+.ch-opt-letter {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: var(--blue-ll);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 13px;
+  color: var(--navy);
+  flex-shrink: 0;
+  transition: all .15s;
+}
+.ch-opt.ch-opt-correct .ch-opt-letter { background: var(--green); color: #fff; }
+.ch-opt.ch-opt-wrong .ch-opt-letter { background: var(--red); color: #fff; }
+
+/* Speed bonus flash */
+.ch-speed-flash {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 28px; font-weight: 900;
+  z-index: 9999;
+  pointer-events: none;
+  animation: chSpeedPop .8s ease-out forwards;
+}
+@keyframes chSpeedPop {
+  0% { opacity: 1; transform: translateX(-50%) scale(1); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-60px) scale(1.4); }
+}
+
+/* Results screen */
+.ch-result-hero {
+  border-radius: 20px;
+  padding: 28px;
+  text-align: center;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.ch-result-hero.win { background: linear-gradient(135deg, #065F46, #059669); }
+.ch-result-hero.draw { background: linear-gradient(135deg, #1E3A8A, #4A6CF7); }
+.ch-result-hero.loss { background: linear-gradient(135deg, #7F1D1D, #DC2626); }
+.ch-result-trophy { font-size: 64px; margin-bottom: 8px; }
+.ch-result-title { font-family: var(--font-display); font-size: 32px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.ch-result-sub { font-size: 12px; color: rgba(255,255,255,.7); margin-bottom: 16px; }
+.ch-result-xp {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.2);
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-family: var(--font-mono);
+  font-size: 14px; font-weight: 700;
+  color: #fff;
+}
+
+/* Score comparison */
+.ch-score-compare {
+  display: grid; grid-template-columns: 1fr auto 1fr;
+  gap: 10px; align-items: center;
+  margin-bottom: 14px;
+}
+.ch-score-box {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  text-align: center;
+  transition: all .3s;
+}
+.ch-score-box.winner { border-color: var(--gold); background: var(--gold-l); }
+.ch-score-big { font-family: var(--font-mono); font-size: 40px; font-weight: 700; color: var(--navy); }
+.ch-score-box.winner .ch-score-big { color: #92400E; }
+.ch-score-name-lbl { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.ch-score-compare-vs { font-size: 18px; font-weight: 900; color: var(--muted); font-family: var(--font-mono); }
+
+/* Rating change */
+.ch-rating-change {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px;
+  background: var(--bg);
+  border-radius: 12px;
+  margin-bottom: 14px;
+  font-size: 13px; font-weight: 700;
+  color: var(--navy);
+}
+
+/* Leaderboard */
+.ch-lb-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border2);
+}
+.ch-lb-row:last-child { border-bottom: none; }
+.ch-lb-rank {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 12px; font-weight: 800;
+  background: var(--blue-ll);
+  color: var(--navy);
+  flex-shrink: 0;
+}
+.ch-lb-rank.gold { background: linear-gradient(135deg, #F59E0B, #FCD34D); color: #fff; }
+.ch-lb-rank.silver { background: linear-gradient(135deg, #9CA3AF, #E5E7EB); color: #fff; }
+.ch-lb-rank.bronze { background: linear-gradient(135deg, #C2410C, #FED7AA); color: #fff; }
+
+/* How it works steps */
+.ch-step {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border2);
+}
+.ch-step:last-child { border-bottom: none; }
+.ch-step-num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800;
+  flex-shrink: 0;
+}
+.ch-step-txt { font-size: 12px; color: var(--text); line-height: 1.6; }
+.ch-step-txt strong { color: var(--navy); }
 </style>
 
 <!-- ══ MULTIPLAYER CHALLENGE SCREEN ══ -->
-<div class="screen" id="screen-multiplayer" style="gap:0;padding:0;margin-top:0;display:none;">
 
-  <!-- LOBBY (choose create or join) -->
-  <div id="ch-lobby" style="display:none;">
-    <div class="challenge-hero">
-      <div style="font-size:40px;margin-bottom:8px;">⚔️</div>
-      <div class="challenge-hero-title">Challenge a Friend!</div>
-      <div class="challenge-hero-sub">Dare your friend to a live finance quiz — who knows more?</div>
-    </div>
-
-    <!-- Stats row -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
-      <div class="ch-card" style="padding:12px;text-align:center;">
-        <div style="font-size:20px;margin-bottom:4px;">🏆</div>
-        <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--navy);" id="ch-stat-wins">0</div>
-        <div style="font-size:10px;color:var(--muted);">Wins</div>
-      </div>
-      <div class="ch-card" style="padding:12px;text-align:center;">
-        <div style="font-size:20px;margin-bottom:4px;">💔</div>
-        <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--navy);" id="ch-stat-losses">0</div>
-        <div style="font-size:10px;color:var(--muted);">Losses</div>
-      </div>
-      <div class="ch-card" style="padding:12px;text-align:center;">
-        <div style="font-size:20px;margin-bottom:4px;">🎯</div>
-        <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--navy);" id="ch-stat-streak">0</div>
-        <div style="font-size:10px;color:var(--muted);">Win Streak</div>
-      </div>
-    </div>
-
-    <!-- ONLINE MATCHMAKING CARD -->
-    <div class="ch-card" style="background:linear-gradient(135deg,#0A1F6E,#1E3A8A);border:none;margin-bottom:14px;">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-        <div style="font-size:36px;">🌍</div>
-        <div>
-          <div style="font-size:15px;font-weight:800;color:#fff;">Play Online</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.6);">Match with anyone worldwide instantly</div>
-        </div>
-        <div style="margin-left:auto;text-align:right;">
-          <div style="font-size:10px;color:rgba(255,255,255,.5);">Online now</div>
-          <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:#4ADE80;" id="online-count">—</div>
-        </div>
-      </div>
-      <!-- ELO Rating display -->
-      <div style="background:rgba(255,255,255,.08);border-radius:12px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:12px;">
-        <div style="font-size:28px;" id="mm-rank-icon">🌱</div>
-        <div style="flex:1;">
-          <div style="font-size:12px;font-weight:700;color:#fff;" id="mm-rank-name">Initiate</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.5);">Rating: <span id="mm-rating" style="font-family:var(--font-mono);color:var(--gold);">1000</span></div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:10px;color:rgba(255,255,255,.5);">W/L/D</div>
-          <div style="font-size:12px;font-weight:700;color:#fff;font-family:var(--font-mono);"><span id="mm-wins">0</span>/<span id="mm-losses">0</span>/<span id="mm-draws">0</span></div>
-        </div>
-      </div>
-      <!-- Category select -->
-      <select id="mm-category" style="width:100%;padding:10px;border-radius:10px;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);font-family:var(--font-body);font-size:13px;margin-bottom:10px;outline:none;">
-        <option value="Mixed">🎲 Any Topic — Mixed</option>
-        <option value="IFRS">📘 IFRS Standards</option>
-        <option value="IAS">📗 IAS Standards</option>
-        <option value="ISA">📋 Audit (ISA)</option>
-        <option value="Costing">🔢 Costing</option>
-        <option value="Tax">💰 Tax</option>
-        <option value="FM">📊 Financial Management</option>
-      </select>
-      <button class="ch-btn" onclick="findOnlineMatch()" id="mm-find-btn" style="background:linear-gradient(135deg,#F59E0B,#FBBF24);color:#0A1F6E;font-size:15px;font-weight:800;padding:16px;border-radius:14px;width:100%;border:none;cursor:pointer;font-family:var(--font-body);">
-        🌍 Find Online Opponent
-      </button>
-    </div>
-
-    <!-- GLOBAL LEADERBOARD MINI -->
-    <div class="ch-card">
-      <div class="ch-card-title">🏆 Global Ranking</div>
-      <div id="global-rating-list"><div style="text-align:center;padding:16px;color:var(--muted);font-size:12px;">Loading rankings...</div></div>
-      <button class="ch-btn ch-btn-secondary" style="margin-top:10px;font-size:12px;padding:8px;" onclick="loadGlobalRankings()">Refresh Rankings</button>
-    </div>
-
-    <div class="ch-card">
-      <div class="ch-card-title">🎮 Challenge a Friend</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Pick a topic and share your code with a friend</div>
-      <select id="ch-create-category" class="form-select" style="margin-bottom:12px;width:100%;padding:10px;border:1.5px solid var(--border2);border-radius:10px;font-family:var(--font-body);font-size:13px;">
-        <option value="IFRS">IFRS Standards</option>
-        <option value="IAS">IAS Standards</option>
-        <option value="ISA">Audit (ISA)</option>
-        <option value="Costing">Costing</option>
-        <option value="Tax">Tax</option>
-        <option value="FM">Financial Management</option>
-        <option value="Mixed">🎲 Mixed — All Topics</option>
-      </select>
-      <select id="ch-create-count" class="form-select" style="margin-bottom:12px;width:100%;padding:10px;border:1.5px solid var(--border2);border-radius:10px;font-family:var(--font-body);font-size:13px;">
-        <option value="5">5 Questions — Quick (3 min)</option>
-        <option value="10" selected>10 Questions — Standard (6 min)</option>
-        <option value="15">15 Questions — Long (10 min)</option>
-      </select>
-      <button class="ch-btn ch-btn-primary" onclick="createChallenge()">⚔️ Create Private Challenge</button>
-    </div>
-
-    <div class="ch-card">
-      <div class="ch-card-title">🔗 Join a Friend's Challenge</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Enter the 6-letter code your friend shared</div>
-      <input class="ch-input" id="ch-join-code" placeholder="ABC123" maxlength="6" oninput="this.value=this.value.toUpperCase()"/>
-      <button class="ch-btn ch-btn-primary" style="margin-top:12px;" onclick="joinChallenge()">🚀 Join Challenge</button>
-    </div>
-
-    <div class="ch-card" style="background:linear-gradient(135deg,#EEF2FF,#F4F7FF);">
-      <div class="ch-card-title">📖 How it works</div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <div style="display:flex;gap:12px;align-items:flex-start;"><div style="font-size:20px;">1️⃣</div><div style="font-size:12px;color:var(--steel);line-height:1.6;"><strong>Create</strong> a challenge and get a 6-letter code</div></div>
-        <div style="display:flex;gap:12px;align-items:flex-start;"><div style="font-size:20px;">2️⃣</div><div style="font-size:12px;color:var(--steel);line-height:1.6;"><strong>Share</strong> the code with your friend via WhatsApp or any app</div></div>
-        <div style="display:flex;gap:12px;align-items:flex-start;"><div style="font-size:20px;">3️⃣</div><div style="font-size:12px;color:var(--steel);line-height:1.6;"><strong>Battle</strong> on the same questions simultaneously — fastest correct answer wins each round</div></div>
-        <div style="display:flex;gap:12px;align-items:flex-start;"><div style="font-size:20px;">4️⃣</div><div style="font-size:12px;color:var(--steel);line-height:1.6;"><strong>Win</strong> XP bonus and climb the leaderboard</div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MATCHMAKING SEARCHING -->
-  <div id="ch-matchmaking" style="display:none;">
-    <div style="text-align:center;padding:32px 16px 16px;">
-      <div class="mm-pulse">🌍</div>
-      <div style="font-size:18px;font-weight:800;color:var(--navy);margin-bottom:6px;" id="mm-search-title">Finding your opponent...</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:4px;" id="mm-search-sub">Searching worldwide</div>
-      <div style="font-family:var(--font-mono);font-size:28px;font-weight:700;color:var(--blue);margin:12px 0;" id="mm-search-timer">0:00</div>
-      <div style="font-size:11px;color:var(--muted);" id="mm-search-hint">Tip: More players online on weekday evenings</div>
-    </div>
-    <!-- Players found -->
-    <div style="padding:0 4px;">
-      <div class="mm-player-card">
-        <div style="font-size:28px;" id="mm-you-avatar">🎓</div>
-        <div style="flex:1;">
-          <div style="font-size:13px;font-weight:700;color:var(--navy);">You</div>
-          <div style="font-size:11px;color:var(--muted);">Rating: <span id="mm-your-rating-display" style="font-family:var(--font-mono);color:var(--gold);">1000</span></div>
-        </div>
-        <div style="font-size:20px;">✅</div>
-      </div>
-      <div class="mm-vs-divider">VS</div>
-      <div class="mm-player-card" id="mm-opponent-card">
-        <div style="font-size:28px;" id="mm-opp-avatar">❓</div>
-        <div style="flex:1;">
-          <div style="font-size:13px;font-weight:700;color:var(--muted);" id="mm-opp-name">Searching...</div>
-          <div style="font-size:11px;color:var(--muted);">Rating: <span id="mm-opp-rating" style="font-family:var(--font-mono);">???</span></div>
-        </div>
-        <div style="font-size:20px;" id="mm-opp-status">⏳</div>
-      </div>
-    </div>
-    <!-- Topic -->
-    <div style="text-align:center;padding:12px;background:var(--bg);border-radius:10px;margin:12px 4px;font-size:12px;color:var(--navy);font-weight:700;" id="mm-topic-display">Topic: Mixed</div>
-    <button class="ch-btn ch-btn-secondary" onclick="cancelMatchmaking()" style="margin:0 4px;">Cancel Search</button>
-  </div>
-
-  <!-- COUNTDOWN TO BATTLE -->
-  <div id="ch-countdown" style="display:none;">
-    <div style="text-align:center;padding:40px 24px;">
-      <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px;">Match found! Get ready...</div>
-      <div class="countdown-num" id="countdown-num">3</div>
-      <div style="font-size:13px;color:var(--muted);margin-top:16px;" id="countdown-vs-text">You vs Opponent</div>
-      <div style="margin-top:24px;padding:16px;background:var(--bg);border-radius:14px;">
-        <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;">Quick Tips 💡</div>
-        <div style="font-size:11px;color:var(--muted);line-height:1.6;" id="countdown-tip">Faster correct answers earn more points!</div>
-      </div>
-    </div>
-  </div>
-  <div id="ch-waiting" style="display:none;">
-    <div class="ch-card">
-      <div style="text-align:center;margin-bottom:16px;">
-        <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px;">Your Challenge Code</div>
-        <div class="ch-code-display" id="ch-display-code">------</div>
-        <button class="ch-btn ch-btn-secondary" onclick="copyCode()" style="margin-top:4px;width:auto;padding:8px 20px;">📋 Copy Code</button>
-      </div>
-      <div class="ch-waiting">
-        <div class="ch-waiting-spinner">⏳</div>
-        <div class="ch-waiting-title">Waiting for your opponent...</div>
-        <div class="ch-waiting-sub">Share the code above with a friend</div>
-      </div>
-      <div style="margin-top:8px;padding:12px;background:var(--bg);border-radius:10px;font-size:12px;color:var(--muted);text-align:center;">
-        Category: <strong id="ch-wait-category">IFRS</strong> · <strong id="ch-wait-count">10</strong> Questions
-      </div>
-      <button onclick="cancelWaiting()" style="width:100%;margin-top:12px;padding:12px;border-radius:12px;background:var(--red-l);color:var(--red);border:2px solid var(--red);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:6px;">
-        ✕ <span>Cancel / Quit</span>
-      </button>
-    </div>
-    <button class="ch-btn ch-btn-secondary" onclick="cancelChallenge()">Cancel</button>
-  </div>
-
-  <!-- BATTLE SCREEN -->
-  <div id="ch-battle" style="display:none;">
-    <!-- Exit button — always at top, always visible for ALL users -->
-    <div style="display:flex;justify-content:flex-end;padding:4px 0 6px;">
-      <button onclick="forfeitChallenge()" style="padding:7px 16px;border-radius:999px;background:#FEE2E2;color:#DC2626;border:2px solid #DC2626;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);display:inline-flex;align-items:center;gap:5px;">
-        🚪 Exit Game
-      </button>
-    </div>
-    <div class="battle-header">
-      <div class="battle-scores">
-        <div class="battle-player">
-          <div class="battle-player-name" id="battle-host-name">You</div>
-          <div class="battle-player-score" id="battle-host-score">0</div>
-        </div>
-        <div class="battle-vs">VS</div>
-        <div class="battle-player">
-          <div class="battle-player-name" id="battle-guest-name">Opponent</div>
-          <div class="battle-player-score" id="battle-guest-score">0</div>
-        </div>
-      </div>
-      <div class="battle-timer">
-        <div class="battle-timer-text" id="battle-timer">20</div>
-        <div class="battle-timer-bar"><div class="battle-timer-fill" id="battle-timer-fill" style="width:100%;"></div></div>
-        <div class="battle-q-num" id="battle-q-num">Question 1 of 10</div>
-        <div style="font-size:9px;color:rgba(255,255,255,.5);text-align:center;margin-top:2px;">⚡ Fast = 3pts · Med = 2pts · Slow = 1pt</div>
-      </div>
-    </div>
-
-    <div class="opponent-status">
-      <div class="opponent-dot"></div>
-      <span id="opponent-status-text">Opponent is thinking...</span>
-    </div>
-
-    <div class="ch-card" style="padding:16px;">
-      <div class="battle-question" id="battle-question">Loading question...</div>
-      <div id="battle-options"></div>
-      <div id="battle-explanation" style="display:none;margin-top:12px;padding:12px;background:var(--blue-ll);border-radius:10px;font-size:12px;line-height:1.6;color:var(--navy);"></div>
-    </div>
-  </div>
-
-  <!-- RESULTS SCREEN -->
-  <div id="ch-results" style="display:none;">
-    <div class="result-hero" id="result-hero">
-      <div class="result-trophy" id="result-trophy">🏆</div>
-      <div class="result-title" id="result-title">You Won!</div>
-      <div class="result-sub" id="result-sub">Great performance!</div>
-    </div>
-
-    <div style="text-align:center;margin-bottom:8px;">
-      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;">Points Scored</div>
-      <div style="font-size:10px;color:var(--muted);margin-top:3px;">⚡ Fast answer = 3pts &nbsp;·&nbsp; Medium = 2pts &nbsp;·&nbsp; Slow = 1pt</div>
-    </div>
-    <div class="result-scores" style="display:flex;align-items:center;gap:12px;">
-      <div class="result-score-card" id="result-host-card" style="flex:1;text-align:center;">
-        <div class="result-score-num" id="result-host-score">0</div>
-        <div class="result-score-label" id="result-host-label">You</div>
-        <div style="font-size:9px;color:var(--muted);margin-top:2px;">correct answers</div>
-      </div>
-      <div style="font-size:18px;font-weight:800;color:var(--muted);">VS</div>
-      <div class="result-score-card" id="result-guest-card" style="flex:1;text-align:center;">
-        <div class="result-score-num" id="result-guest-score">0</div>
-        <div class="result-score-label" id="result-guest-label">Opponent</div>
-        <div style="font-size:9px;color:var(--muted);margin-top:2px;">correct answers</div>
-      </div>
-    </div>
-
-    <div class="result-breakdown" id="result-breakdown"></div>
-
-    <div id="result-xp-reward" style="text-align:center;padding:16px;background:linear-gradient(135deg,#FFF8E7,#FEF3C7);border-radius:14px;margin-bottom:16px;">
-      <div style="font-size:24px;margin-bottom:4px;">🎁</div>
-      <div style="font-size:18px;font-weight:800;color:var(--navy);" id="result-xp-text">+100 XP earned!</div>
-      <div style="font-size:11px;color:var(--muted);">Added to your profile</div>
-    </div>
-
-    <button class="ch-btn ch-btn-primary" onclick="playAgain()">⚔️ Play Again</button>
-    <button class="ch-btn ch-btn-secondary" onclick="CH.challengeId=null;CH.role=null;loadChallengeStats();loadPlayerRating();loadGlobalRankings();showChallengeSection('lobby')">Back to Lobby</button>
-  </div>
-
-</div>
-<!-- ══ END MULTIPLAYER ══ -->
+<!-- Multiplayer removed -->
 
 <!-- FLOATING ACTION BUTTON -->
 <div id="fab">
@@ -8660,26 +8976,7 @@ async function doLogout(){
 // ══════════════════════════════════════════
 // MULTIPLAYER CHALLENGE SYSTEM
 // ══════════════════════════════════════════
-const CH = {
-  challengeId: null,
-  code: null,
-  role: null,          // 'host' or 'guest'
-  questions: [],
-  currentQ: 0,
-  myScore: 0,
-  opponentScore: 0,
-  myAnswers: [],
-  opponentAnswers: [],
-  timerInterval: null,
-  timerSeconds: 20,
-  answered: false,
-  qStartTime: null,
-  subscription: null,
-  wins: 0,
-  losses: 0,
-  winStreak: 0,
-  totalPlayed: 0,
-};
+// CH object removed
 
 // Load stats from localStorage
 function loadChallengeStats(){
@@ -8871,7 +9168,7 @@ async function createChallenge(){
 
 // ── JOIN CHALLENGE ──
 async function joinChallenge(){
-  if(!checkPlanFeature('multiplayer')) return;
+  
   resetCH();
   const code = document.getElementById('ch-join-code').value.trim().toUpperCase();
   if(code.length !== 6){ toast('Enter a 6-letter code','error'); return; }
@@ -9222,7 +9519,7 @@ function endChallenge(challengeData){
   if(CH.subscription){ CH.subscription.unsubscribe(); CH.subscription = null; }
   if(MM.queueSubscription){ MM.queueSubscription.unsubscribe(); MM.queueSubscription = null; }
   // Make sure we are on the multiplayer screen
-  showScreen('multiplayer');
+  showScreen('home');
 
   // Use DB scores as single source of truth — both players wrote their own scores
   const myScore = CH.role==='host'
@@ -9397,7 +9694,7 @@ async function confirmForfeit(){
   resetCH();
   loadChallengeStats();
   loadPlayerRating();
-  showScreen('multiplayer');
+  showScreen('home');
   showChallengeSection('lobby');
   toast('Match forfeited — counted as a loss 🏳️');
 }
@@ -9463,40 +9760,14 @@ function playAgain(){
   const sub = document.getElementById('mm-search-sub');
   if(title) title.textContent = 'Finding your opponent...';
   if(sub) sub.textContent = 'Matching you with a player at your level';
-  showScreen('multiplayer');
+  showScreen('home');
   showChallengeSection('lobby');
 }
 
 // ══════════════════════════════════════════
 // ONLINE MATCHMAKING SYSTEM
 // ══════════════════════════════════════════
-const MM = {
-  myPlayerId: null,
-  myRating: 1000,
-  myName: 'Player',
-  searchInterval: null,
-  searchSeconds: 0,
-  searchTimer: null,
-  queueSubscription: null,
-  onlineCountInterval: null,
-  isMatching: false,
-  tips: [
-    'Faster correct answers earn more points! ⚡',
-    'Speed bonus: answer in <7s = 3pts, <14s = 2pts, else 1pt ⚡',
-    'Win 3 in a row for a hot streak bonus 🔥',
-    'Wrong answers still give 0 — never guess randomly!',
-    'Your rating goes up with every win 📈',
-    'Mixed mode tests all IFRS, IAS and Audit standards',
-  ],
-  ratingTiers: [
-    {min:0,    max:999,  name:'Initiate',     icon:'🌱', color:'#0A6E3A'},
-    {min:1000, max:1199, name:'Analyst',      icon:'📊', color:'#1E3A8A'},
-    {min:1200, max:1399, name:'Associate',    icon:'📈', color:'#92400E'},
-    {min:1400, max:1599, name:'Qualified',    icon:'🎓', color:'#5B21B6'},
-    {min:1600, max:1799, name:'Distinguished',icon:'⭐', color:'#9A3412'},
-    {min:1800, max:9999, name:'Partner',      icon:'👑', color:'#0A1F6E'},
-  ],
-};
+// MM object removed
 
 function getMyPlayerId(){
   if(_currentUser) return _currentUser.id;
@@ -9951,24 +10222,11 @@ async function cleanStaleQueueEntries(){
 }
 
 // Remove from queue when user closes/leaves page
-window.addEventListener('beforeunload', ()=>{
-  if(MM.myPlayerId){
-    // Use sendBeacon for reliable cleanup on page close
-    const url = `${SUPA_URL}/rest/v1/matchmaking_queue?player_id=eq.${MM.myPlayerId}`;
-    navigator.sendBeacon && navigator.sendBeacon(url);
-    // Also try sync delete
-    _supa.from('matchmaking_queue').delete().eq('player_id',MM.myPlayerId);
-  }
-});
+// matchmaking cleanup removed
 
 // Also clean up when tab becomes hidden
 document.addEventListener('visibilitychange', ()=>{
-  if(document.hidden && typeof MM !== 'undefined' && MM.myPlayerId){
-    _supa.from('matchmaking_queue').delete().eq('player_id',MM.myPlayerId);
-    clearInterval(MM.searchInterval);
-    clearInterval(MM.searchTimer);
-  }
-  // Only reload plan after Stripe payment — not on every tab switch (fixes refresh bug)
+  // Only reload plan after Stripe payment — not on every tab switch
   if(!document.hidden && typeof _currentUser !== 'undefined' && _currentUser){
     const stripeInProgress = localStorage.getItem('fm_stripe_in_progress');
     if(stripeInProgress === '1'){
@@ -10042,7 +10300,7 @@ async function loadGlobalRankings(){
       const tier=getRatingTier(p.rating);
       const isMe=p.player_id===MM.myPlayerId;
       // Clean up display name
-      const displayName = (p.player_name && p.player_name.length > 3) ? p.player_name : 'FinMentra User';
+      const displayName = p.player_name||'Anonymous';
       return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);${isMe?'background:var(--blue-ll);margin:0 -4px;padding:10px 4px;border-radius:8px;':''}">
         <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:${i<3?['#F59E0B','#94A3B8','#CD7C2F'][i]:'var(--muted)'};width:24px;text-align:center;">${i<3?['🥇','🥈','🥉'][i]:(i+1)}</div>
         <div style="font-size:18px;">${tier.icon}</div>
@@ -10087,10 +10345,10 @@ showChallengeSection = function(section){
 };
 
 // Clear game timers when navigating away
-// [timer/game hook → unified below]
+// [timer hook → unified]
 // Load online matchmaking data when screen shown
 
-// ── UNIFIED showScreen POST-HOOKS (consolidated — fixes mobile refresh) ──
+// ── UNIFIED showScreen POST-HOOKS ──
 (function(){
   const _baseShow = showScreen;
   showScreen = function(id){
@@ -10107,8 +10365,7 @@ showChallengeSection = function(section){
       document.body.appendChild(overlay);
       document.getElementById('exit-no-btn').onclick = function(){ overlay.remove(); };
       document.getElementById('exit-yes-btn').onclick = function(){
-        overlay.remove();
-        window._gameActive = null;
+        overlay.remove(); window._gameActive = null;
         if(typeof taTimer !== 'undefined') clearInterval(taTimer);
         if(typeof bossTimer !== 'undefined') clearInterval(bossTimer);
         _baseShow(id);
@@ -10119,29 +10376,9 @@ showChallengeSection = function(section){
       if(typeof taTimer !== 'undefined' && taTimer){ clearInterval(taTimer); taTimer=null; taTime=0; }
       if(typeof bossTimer !== 'undefined' && bossTimer){ clearInterval(bossTimer); bossTimer=null; }
     }
-    if(id !== 'multiplayer' && typeof MM !== 'undefined' && MM.searchInterval && !CH.challengeId){
-      clearInterval(MM.searchInterval); clearInterval(MM.searchTimer); clearInterval(MM.onlineCountInterval);
-      MM.searchInterval=null; MM.searchTimer=null;
-    }
     _baseShow(id);
-    if(id !== 'multiplayer') restoreShellPadding();
     if(id === 'profile') setTimeout(()=>{ renderStudyDonut(); renderRadarChart(); updateProfileStats(); },100);
     if(id === 'progress') setTimeout(buildLearningPath, 50);
-    if(id === 'multiplayer'){
-      const inBattle = typeof CH !== 'undefined' && CH.challengeId &&
-        (document.getElementById('ch-battle')?.style.display==='block' ||
-         document.getElementById('ch-results')?.style.display==='block' ||
-         document.getElementById('ch-countdown')?.style.display==='block');
-      if(!inBattle){
-        if(typeof loadChallengeStats==='function') loadChallengeStats();
-        if(typeof loadPlayerRating==='function') loadPlayerRating();
-        if(typeof loadGlobalRankings==='function') loadGlobalRankings();
-        if(typeof cleanStaleQueueEntries==='function') cleanStaleQueueEntries();
-        if(typeof showChallengeSection==='function') showChallengeSection('lobby');
-      }
-      clearInterval(MM.onlineCountInterval);
-      MM.onlineCountInterval = setInterval(updateOnlineCount, 30000);
-    }
   };
 })();
 
@@ -10196,12 +10433,922 @@ document.addEventListener('selectstart', function(e){
 window.addEventListener('native:backpressed', function() {
   const homeScreens = ['home', 'pro-home'];
   if(homeScreens.includes(S.screen)) return;
-  if(S.screen === 'multiplayer'){
-    const inBattle = typeof CH !== 'undefined' && CH.challengeId &&
-      document.getElementById('ch-battle')?.style.display === 'block';
-    if(inBattle) return;
-  }
   showScreen(S.mode === 'professional' ? 'pro-home' : 'home');
+});
+
+// ══════════════════════════════════════════════════════════
+// CHALLENGE MODE — FRESH BUILD
+// Clean, no legacy conflicts
+// ══════════════════════════════════════════════════════════
+
+// ── STATE ──
+const CHL = {
+  // session
+  challengeId: null,
+  code: null,
+  role: null,           // 'host' | 'guest' | 'online'
+  isOnline: false,
+  // game
+  questions: [],
+  currentQ: 0,
+  myScore: 0,
+  oppScore: 0,
+  myAnswers: [],
+  answered: false,
+  qStartTime: null,
+  timerInterval: null,
+  timerSecs: 20,
+  battleStartsAt: null,
+  battleStarted: false,
+  myFinished: false,
+  endCalled: false,
+  // player
+  myId: null,
+  myName: 'Player',
+  myRating: 1000,
+  oppName: 'Opponent',
+  oppRating: 1000,
+  // subscription
+  sub: null,
+  queueSub: null,
+  // matchmaking
+  searchInterval: null,
+  searchTimer: null,
+  searchSecs: 0,
+  isSearching: false,
+  onlineCountInterval: null,
+  // stats
+  wins: 0,
+  losses: 0,
+  draws: 0,
+  winStreak: 0,
+};
+
+const CHL_TIPS = [
+  'Answer in under 7 seconds for 3 points! ⚡',
+  'Speed bonus: <7s = 3pts · <14s = 2pts · else = 1pt',
+  'Wrong answers give 0 points — think before you tap!',
+  'Win 3 in a row for a hot streak bonus 🔥',
+  'Your ELO rating goes up with every win 📈',
+];
+
+const CHL_RATING_TIERS = [
+  {min:0,    name:'Initiate',     icon:'🌱'},
+  {min:1000, name:'Analyst',      icon:'📊'},
+  {min:1200, name:'Associate',    icon:'📈'},
+  {min:1400, name:'Qualified',    icon:'🎓'},
+  {min:1600, name:'Distinguished',icon:'⭐'},
+  {min:1800, name:'Partner',      icon:'👑'},
+];
+
+function chlGetTier(rating){
+  let t = CHL_RATING_TIERS[0];
+  for(const tier of CHL_RATING_TIERS) if(rating >= tier.min) t = tier;
+  return t;
+}
+
+// ── SECTION SWITCHER (no fixed positioning, no shell overrides) ──
+function chlShowSection(section){
+  ['lobby','waiting','matchmaking','countdown','battle','results'].forEach(s=>{
+    const el = document.getElementById('chl-'+s);
+    if(el) el.style.display = s === section ? 'block' : 'none';
+  });
+  window.scrollTo(0,0);
+}
+
+// ── INIT when screen shown ──
+function chlInit(){
+  CHL.myId = chlGetMyId();
+  CHL.myName = chlGetMyName();
+  chlLoadStats();
+  chlLoadRating();
+  chlLoadRankings();
+  chlUpdateOnlineCount();
+  clearInterval(CHL.onlineCountInterval);
+  CHL.onlineCountInterval = setInterval(chlUpdateOnlineCount, 30000);
+  chlShowSection('lobby');
+}
+
+function chlGetMyId(){
+  if(typeof _currentUser !== 'undefined' && _currentUser) return _currentUser.id;
+  let gid = localStorage.getItem('chl_guest_id');
+  if(!gid){ gid = 'g_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2,5); localStorage.setItem('chl_guest_id', gid); }
+  return gid;
+}
+
+function chlGetMyName(){
+  if(typeof _currentUser !== 'undefined' && _currentUser){
+    return (_currentUser.user_metadata?.full_name || '').split(' ')[0] || _currentUser.email?.split('@')[0] || 'Player';
+  }
+  let n = localStorage.getItem('chl_guest_name');
+  if(!n){
+    const names = ['IFRSPro','TaxWiz','AuditAce','CFOMaster','BalanceGuru','LedgerKing','DebitPro'];
+    n = names[Math.floor(Math.random()*names.length)] + '_' + Math.floor(Math.random()*999);
+    localStorage.setItem('chl_guest_name', n);
+  }
+  return n;
+}
+
+// ── LOAD STATS ──
+function chlLoadStats(){
+  try{
+    const s = JSON.parse(localStorage.getItem('chl_stats') || '{}');
+    CHL.wins = s.wins || 0;
+    CHL.losses = s.losses || 0;
+    CHL.draws = s.draws || 0;
+    CHL.winStreak = s.winStreak || 0;
+    const w = document.getElementById('chl-wins');
+    const l = document.getElementById('chl-losses');
+    const st = document.getElementById('chl-streak');
+    if(w) w.textContent = CHL.wins;
+    if(l) l.textContent = CHL.losses;
+    if(st) st.textContent = CHL.winStreak;
+  }catch(e){}
+}
+
+function chlSaveStats(){
+  try{
+    localStorage.setItem('chl_stats', JSON.stringify({
+      wins: CHL.wins, losses: CHL.losses,
+      draws: CHL.draws, winStreak: CHL.winStreak
+    }));
+  }catch(e){}
+}
+
+// ── LOAD RATING ──
+async function chlLoadRating(){
+  try{
+    const {data} = await _supa.from('player_ratings').select('*').eq('player_id', CHL.myId).single();
+    if(data){
+      CHL.myRating = data.rating || 1000;
+      const tier = chlGetTier(CHL.myRating);
+      const icon = document.getElementById('chl-elo-icon');
+      const name = document.getElementById('chl-elo-name');
+      const rating = document.getElementById('chl-elo-rating');
+      const w = document.getElementById('chl-elo-w');
+      const l = document.getElementById('chl-elo-l');
+      const d = document.getElementById('chl-elo-d');
+      const myR = document.getElementById('chl-my-rating');
+      if(icon) icon.textContent = tier.icon;
+      if(name) name.textContent = tier.name;
+      if(rating) rating.textContent = CHL.myRating;
+      if(w) w.textContent = data.wins || 0;
+      if(l) l.textContent = data.losses || 0;
+      if(d) d.textContent = data.draws || 0;
+      if(myR) myR.textContent = CHL.myRating;
+    } else {
+      // Create rating entry
+      await _supa.from('player_ratings').insert({
+        player_id: CHL.myId, player_name: CHL.myName, rating: 1000
+      });
+    }
+  }catch(e){}
+}
+
+// ── ONLINE COUNT ──
+async function chlUpdateOnlineCount(){
+  try{
+    const fiveMinAgo = new Date(Date.now() - 5*60*1000).toISOString();
+    const {count} = await _supa.from('matchmaking_queue').select('*',{count:'exact',head:true}).gte('created_at', fiveMinAgo);
+    const el = document.getElementById('chl-online-count');
+    if(el) el.textContent = (100 + (count||0));
+  }catch(e){}
+}
+
+// ── GLOBAL RANKINGS ──
+async function chlLoadRankings(){
+  const el = document.getElementById('chl-rankings');
+  if(!el) return;
+  try{
+    const {data} = await _supa.from('player_ratings').select('*').order('rating',{ascending:false}).limit(10);
+    if(!data||!data.length){
+      el.innerHTML = '<div style="text-align:center;padding:12px;color:var(--muted);font-size:12px;">No ranked players yet. Play a match to appear here!</div>';
+      return;
+    }
+    const medals = ['gold','silver','bronze'];
+    el.innerHTML = data.map((p,i) => {
+      const tier = chlGetTier(p.rating||1000);
+      const isMe = p.player_id === CHL.myId;
+      const name = (p.player_name && p.player_name.length > 2) ? p.player_name : 'FinMentra User';
+      return `<div class="ch-lb-row" style="${isMe?'background:var(--blue-ll);margin:0 -4px;padding:10px 4px;border-radius:8px;':''}">
+        <div class="ch-lb-rank ${medals[i]||''}">${i<3?['🥇','🥈','🥉'][i]:i+1}</div>
+        <div style="font-size:18px;">${tier.icon}</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:var(--navy);">${name}${isMe?' 👈':''}</div>
+          <div style="font-size:10px;color:var(--muted);">${tier.name} · ${p.wins||0}W ${p.losses||0}L · Streak: ${p.win_streak||0}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:var(--font-mono);font-size:15px;font-weight:700;color:var(--navy);">${p.rating||1000}</div>
+          <div style="font-size:9px;color:var(--muted);">${p.total_played||0} played</div>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    el.innerHTML = '<div style="text-align:center;padding:12px;color:var(--muted);font-size:12px;">Could not load rankings</div>';
+  }
+}
+
+// ── QUESTIONS ──
+function chlGetQuestions(category, count){
+  let pool = [];
+  if(typeof QB_BY_DOMAIN !== 'undefined'){
+    if(!category || category === 'Mixed'){
+      Object.values(QB_BY_DOMAIN).forEach(qs=>{ if(Array.isArray(qs)) pool.push(...qs); });
+    } else if(QB_BY_DOMAIN[category]){
+      pool = [...QB_BY_DOMAIN[category]];
+    }
+  }
+  if(!pool.length && typeof QB !== 'undefined'){
+    Object.values(QB).forEach(qs=>{ if(Array.isArray(qs)) pool.push(...qs); });
+  }
+  // Hardcoded fallback
+  if(!pool.length){
+    pool = [
+      {q:'Under IFRS 15, revenue is recognised when:',opts:['Cash is received','Control transfers','Invoice is issued','Contract is signed'],correct:1,explain:'IFRS 15: Revenue recognised when control transfers to customer.'},
+      {q:'Under IAS 36, recoverable amount is:',opts:['Lower of FV and VIU','Higher of FVLCD and VIU','Carrying amount','Replacement cost'],correct:1,explain:'Recoverable amount = HIGHER of FVLCD and Value in Use.'},
+      {q:'IFRS 16 requires lessees to recognise:',opts:['Lease expense only','ROU asset and lease liability','Nothing for short leases','Finance leases only'],correct:1,explain:'IFRS 16: All leases recognised as ROU asset + lease liability.'},
+      {q:'Under IAS 37, a provision is recognised when:',opts:['Management decides','Future loss expected','Present obligation, probable outflow, reliable estimate','Auditor requires it'],correct:2,explain:'All 3 criteria must be met for a provision.'},
+      {q:'Under IAS 2, inventory is measured at:',opts:['Cost','NRV','Lower of cost and NRV','Higher of cost and NRV'],correct:2,explain:'IAS 2: Inventory = LOWER of cost and NRV.'},
+    ];
+  }
+  return pool.sort(()=>Math.random()-.5).slice(0, parseInt(count)||10).map(q=>({
+    q: q.q || q.question || '',
+    opts: q.opts || q.options || [],
+    correct: typeof q.correct === 'number' ? q.correct : 0,
+    explain: q.explain || q.explanation || '',
+  }));
+}
+
+// ── GENERATE CODE ──
+function chlGenerateCode(){
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for(let i=0;i<6;i++) code += chars[Math.floor(Math.random()*chars.length)];
+  return code;
+}
+
+// ── RESET STATE ──
+function chlReset(){
+  clearInterval(CHL.timerInterval);
+  clearInterval(CHL.searchInterval);
+  clearInterval(CHL.searchTimer);
+  CHL.timerInterval = null;
+  CHL.searchInterval = null;
+  CHL.searchTimer = null;
+  CHL.searchSecs = 0;
+  CHL.isSearching = false;
+  if(CHL.sub){ try{ CHL.sub.unsubscribe(); }catch(e){} CHL.sub = null; }
+  if(CHL.queueSub){ try{ CHL.queueSub.unsubscribe(); }catch(e){} CHL.queueSub = null; }
+  CHL.challengeId = null; CHL.code = null; CHL.role = null; CHL.isOnline = false;
+  CHL.questions = []; CHL.currentQ = 0;
+  CHL.myScore = 0; CHL.oppScore = 0;
+  CHL.myAnswers = []; CHL.answered = false;
+  CHL.battleStartsAt = null; CHL.battleStarted = false;
+  CHL.myFinished = false; CHL.endCalled = false;
+  CHL.timerSecs = 20;
+}
+
+// ══════════════════════════════════════════════════
+// ONLINE MATCHMAKING
+// ══════════════════════════════════════════════════
+async function chlFindMatch(){
+  if(!checkPlanFeature('multiplayer')) return;
+  chlReset();
+  CHL.myId = chlGetMyId();
+  CHL.myName = chlGetMyName();
+  CHL.isOnline = true;
+  const category = document.getElementById('chl-mm-category')?.value || 'Mixed';
+
+  // Clean up old queue entries
+  try{ await _supa.from('matchmaking_queue').delete().eq('player_id', CHL.myId); }catch(e){}
+  // Enter queue
+  const {error} = await _supa.from('matchmaking_queue').insert({
+    player_id: CHL.myId, player_name: CHL.myName,
+    player_rating: CHL.myRating, category, status: 'waiting'
+  });
+  if(error){ toast('Could not enter matchmaking. Try again.'); return; }
+
+  // Show matchmaking screen
+  const myNameEl = document.getElementById('chl-my-name');
+  const myRatingEl = document.getElementById('chl-my-rating');
+  const topicEl = document.getElementById('chl-mm-topic');
+  const oppNameEl = document.getElementById('chl-opp-name');
+  const oppRatingEl = document.getElementById('chl-opp-rating');
+  const oppStatusEl = document.getElementById('chl-opp-status');
+  const oppCard = document.getElementById('chl-opp-card');
+  const titleEl = document.getElementById('chl-mm-title');
+  if(myNameEl) myNameEl.textContent = CHL.myName;
+  if(myRatingEl) myRatingEl.textContent = CHL.myRating;
+  if(topicEl) topicEl.textContent = 'Topic: ' + category;
+  if(oppNameEl) oppNameEl.textContent = 'Searching...';
+  if(oppRatingEl) oppRatingEl.textContent = '???';
+  if(oppStatusEl) oppStatusEl.textContent = '⏳';
+  if(oppCard) oppCard.classList.remove('found');
+  if(titleEl) titleEl.textContent = 'Finding your opponent...';
+  chlShowSection('matchmaking');
+
+  // Search timer
+  CHL.searchSecs = 0;
+  const timerEl = document.getElementById('chl-mm-timer');
+  const hintEl = document.getElementById('chl-mm-hint');
+  CHL.searchTimer = setInterval(()=>{
+    CHL.searchSecs++;
+    const m = Math.floor(CHL.searchSecs/60);
+    const s = CHL.searchSecs % 60;
+    if(timerEl) timerEl.textContent = m + ':' + (s<10?'0':'') + s;
+    if(CHL.searchSecs === 30 && hintEl) hintEl.textContent = 'Still searching... invite a friend to play! 🔗';
+    if(CHL.searchSecs === 60 && hintEl) hintEl.textContent = 'Hang tight! A real opponent is on the way... ⏳';
+    if(CHL.searchSecs >= 90){
+      clearInterval(CHL.searchTimer);
+      clearInterval(CHL.searchInterval);
+      chlCancelMatchmaking(true);
+      toast('No opponents found right now. Try again later or challenge a friend!');
+    }
+  }, 1000);
+
+  // Listen for challenge where we are the guest
+  CHL.queueSub = _supa.channel('chl_guest_' + CHL.myId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'challenges',filter:'guest_id=eq.'+CHL.myId},
+      async(payload)=>{
+        if(!payload.new || CHL.endCalled) return;
+        if(payload.new.guest_id !== CHL.myId) return;
+        clearInterval(CHL.searchTimer);
+        clearInterval(CHL.searchInterval);
+        chlShowOpponentFound(payload.new.host_name || 'Opponent', 1000);
+        await chlOnMatchFound(payload.new.id, 'guest', payload.new.category||category);
+      }
+    ).subscribe();
+
+  // Poll for opponents
+  const stagger = Math.floor(Math.random() * 1500);
+  setTimeout(()=>{
+    CHL.searchInterval = setInterval(()=>chlSearchForOpponent(category), 2500);
+  }, stagger);
+}
+
+async function chlSearchForOpponent(category){
+  if(CHL.isSearching || CHL.endCalled) return;
+  CHL.isSearching = true;
+  const timeout = setTimeout(()=>{ CHL.isSearching = false; }, 8000);
+  try{
+    const {data: result, error} = await _supa.rpc('find_and_match_opponent',{
+      p_player_id: CHL.myId, p_player_name: CHL.myName,
+      p_category: category, p_rating: CHL.myRating
+    });
+    if(error || !result || !result.matched){ clearTimeout(timeout); CHL.isSearching = false; return; }
+    clearInterval(CHL.searchTimer);
+    clearInterval(CHL.searchInterval);
+    const opp = { player_id: result.opponent_id, player_name: result.opponent_name, player_rating: result.opponent_rating || 1000, category: result.category || category };
+    chlShowOpponentFound(opp.player_name, opp.player_rating);
+    const questions = chlGetQuestions(opp.category, 10);
+    const battleStartsAt = new Date(Date.now() + 7000).toISOString();
+    const {data: challenge, error: chalErr} = await _supa.from('challenges').insert({
+      code: chlGenerateCode(),
+      host_id: CHL.myId, host_name: CHL.myName,
+      guest_id: opp.player_id, guest_name: opp.player_name,
+      status: 'active', total_questions: 10,
+      questions: JSON.stringify(questions),
+      category: opp.category, started_at: battleStartsAt,
+    }).select().single();
+    clearTimeout(timeout); CHL.isSearching = false;
+    if(chalErr || !challenge){ return; }
+    CHL.oppName = opp.player_name; CHL.oppRating = opp.player_rating;
+    await chlOnMatchFound(challenge.id, 'host', opp.category, questions, battleStartsAt);
+  }catch(e){ clearTimeout(timeout); CHL.isSearching = false; }
+}
+
+function chlShowOpponentFound(name, rating){
+  const oppNameEl = document.getElementById('chl-opp-name');
+  const oppRatingEl = document.getElementById('chl-opp-rating');
+  const oppStatusEl = document.getElementById('chl-opp-status');
+  const oppCard = document.getElementById('chl-opp-card');
+  const titleEl = document.getElementById('chl-mm-title');
+  const subEl = document.getElementById('chl-mm-sub');
+  if(oppNameEl) oppNameEl.textContent = name;
+  if(oppNameEl) oppNameEl.style.color = 'var(--navy)';
+  if(oppRatingEl) oppRatingEl.textContent = rating || 1000;
+  if(oppStatusEl) oppStatusEl.textContent = '✅';
+  if(oppCard) oppCard.classList.add('found');
+  if(titleEl) titleEl.textContent = 'Opponent found! 🎉';
+  if(subEl) subEl.textContent = name + ' has joined the battle';
+  CHL.oppName = name; CHL.oppRating = rating || 1000;
+}
+
+async function chlOnMatchFound(challengeId, role, category, questions, battleStartsAt){
+  try{ await _supa.from('matchmaking_queue').delete().eq('player_id', CHL.myId); }catch(e){}
+  CHL.challengeId = challengeId;
+  CHL.role = role;
+  CHL.isOnline = true;
+
+  if(role === 'host'){
+    CHL.questions = questions || chlGetQuestions(category, 10);
+    CHL.battleStartsAt = battleStartsAt || new Date(Date.now() + 5000).toISOString();
+  } else {
+    // Guest: fetch questions from challenge record
+    let loaded = false;
+    for(let i=0; i<10; i++){
+      try{
+        const {data: ch} = await _supa.from('challenges').select('questions,host_name,started_at').eq('id', challengeId).single();
+        if(ch && ch.questions){
+          const parsed = typeof ch.questions === 'string' ? JSON.parse(ch.questions) : ch.questions;
+          if(parsed && parsed.length > 0){
+            CHL.questions = parsed;
+            CHL.battleStartsAt = ch.started_at;
+            CHL.oppName = ch.host_name || 'Opponent';
+            loaded = true; break;
+          }
+        }
+      }catch(e){}
+      await new Promise(r=>setTimeout(r, 500));
+    }
+    if(!loaded){ CHL.questions = chlGetQuestions(category, 10); CHL.battleStartsAt = new Date(Date.now() + 4000).toISOString(); }
+  }
+
+  chlSubscribeToChallenge(challengeId);
+  await new Promise(r=>setTimeout(r, 800));
+  chlStartCountdown();
+}
+
+async function chlCancelMatchmaking(silent){
+  clearInterval(CHL.searchInterval);
+  clearInterval(CHL.searchTimer);
+  CHL.searchInterval = null; CHL.searchTimer = null; CHL.isSearching = false;
+  if(CHL.queueSub){ try{ CHL.queueSub.unsubscribe(); }catch(e){} CHL.queueSub = null; }
+  try{ await _supa.from('matchmaking_queue').delete().eq('player_id', CHL.myId); }catch(e){}
+  if(!silent){ chlShowSection('lobby'); toast('Search cancelled'); }
+}
+
+// ══════════════════════════════════════════════════
+// PRIVATE CHALLENGE (code-based)
+// ══════════════════════════════════════════════════
+async function chlCreateChallenge(){
+  if(!checkPlanFeature('multiplayer')) return;
+  chlReset();
+  CHL.myId = chlGetMyId(); CHL.myName = chlGetMyName();
+  const category = document.getElementById('chl-create-cat')?.value || 'Mixed';
+  const count = document.getElementById('chl-create-count')?.value || '10';
+  const code = chlGenerateCode();
+  const questions = chlGetQuestions(category, parseInt(count));
+  try{
+    const {data, error} = await _supa.from('challenges').insert({
+      code, host_id: CHL.myId, host_name: CHL.myName,
+      status: 'waiting', total_questions: parseInt(count),
+      questions: JSON.stringify(questions), category,
+    }).select().single();
+    if(error){ toast('Could not create challenge. Try again.'); return; }
+    CHL.challengeId = data.id; CHL.code = code; CHL.role = 'host'; CHL.questions = questions;
+    const codeEl = document.getElementById('chl-code-value');
+    const catEl = document.getElementById('chl-wait-cat');
+    const cntEl = document.getElementById('chl-wait-count');
+    if(codeEl) codeEl.textContent = code;
+    if(catEl) catEl.textContent = category;
+    if(cntEl) cntEl.textContent = count;
+    chlShowSection('waiting');
+    chlSubscribeToChallenge(data.id);
+  }catch(e){ toast('Error creating challenge'); }
+}
+
+async function chlJoinChallenge(){
+  if(!checkPlanFeature('multiplayer')) return;
+  chlReset();
+  CHL.myId = chlGetMyId(); CHL.myName = chlGetMyName();
+  const code = (document.getElementById('chl-join-input')?.value || '').trim().toUpperCase();
+  if(code.length !== 6){ toast('Enter a valid 6-letter code'); return; }
+  try{
+    const {data: challenge, error} = await _supa.from('challenges').select('*').eq('code', code).eq('status','waiting').single();
+    if(error || !challenge){ toast('Challenge not found or already started'); return; }
+    await _supa.from('challenges').update({
+      guest_id: CHL.myId, guest_name: CHL.myName, status: 'active', started_at: new Date().toISOString()
+    }).eq('id', challenge.id);
+    CHL.challengeId = challenge.id; CHL.code = code; CHL.role = 'guest';
+    CHL.oppName = challenge.host_name || 'Opponent';
+    let parsedQs = [];
+    try{ parsedQs = typeof challenge.questions === 'string' ? JSON.parse(challenge.questions) : (challenge.questions||[]); }catch(e){}
+    CHL.questions = parsedQs.length > 0 ? parsedQs : chlGetQuestions(challenge.category||'Mixed', challenge.total_questions||10);
+    chlSubscribeToChallenge(challenge.id);
+    toast('Joined! Waiting for host... ⚔️');
+    // Poll for battle start
+    let attempts = 0;
+    const waitStart = setInterval(async()=>{
+      attempts++;
+      try{
+        const {data: ch} = await _supa.from('challenges').select('started_at,host_name').eq('id', challenge.id).single();
+        if(ch && ch.started_at && ch.started_at !== challenge.started_at){
+          clearInterval(waitStart);
+          CHL.battleStartsAt = ch.started_at;
+          CHL.oppName = ch.host_name || 'Opponent';
+          chlStartCountdown();
+        }
+      }catch(e){}
+      if(attempts >= 20){ clearInterval(waitStart); CHL.battleStartsAt = new Date(Date.now()+2000).toISOString(); chlStartCountdown(); }
+    }, 500);
+  }catch(e){ toast('Error joining challenge'); }
+}
+
+function chlCopyCode(){
+  if(navigator.clipboard) navigator.clipboard.writeText(CHL.code).then(()=>toast('Code copied! Share it with your friend 🎉'));
+}
+
+async function chlCancelWaiting(){
+  if(CHL.challengeId) try{ await _supa.from('challenges').update({status:'cancelled'}).eq('id',CHL.challengeId); }catch(e){}
+  chlReset();
+  chlShowSection('lobby');
+}
+
+// ══════════════════════════════════════════════════
+// REALTIME SUBSCRIPTION
+// ══════════════════════════════════════════════════
+function chlSubscribeToChallenge(challengeId){
+  if(CHL.sub){ try{ CHL.sub.unsubscribe(); }catch(e){} }
+  CHL.sub = _supa.channel('chl_' + challengeId)
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'challenges',filter:'id=eq.'+challengeId},
+      (payload)=>{
+        const upd = payload.new;
+        // Private challenge: host starts when guest joins
+        if(upd.status === 'active' && CHL.role === 'host' && !CHL.isOnline && !CHL.battleStarted){
+          CHL.battleStarted = true;
+          const startAt = new Date(Date.now() + 4000).toISOString();
+          CHL.battleStartsAt = startAt;
+          CHL.oppName = upd.guest_name || 'Opponent';
+          _supa.from('challenges').update({started_at: startAt}).eq('id', CHL.challengeId).then(()=>{});
+          chlStartCountdown();
+        }
+        if(upd.status === 'forfeited' && !CHL.endCalled){
+          CHL.endCalled = true;
+          clearInterval(CHL.timerInterval);
+          CHL.wins++; CHL.winStreak++;
+          chlSaveStats();
+          chlShowResults('win', CHL.myScore, 0, 150, 20);
+        }
+        if(upd.status === 'finished' && !CHL.myFinished){
+          chlEndGame(upd);
+        }
+        if(upd.status === 'finished' && CHL.myFinished){
+          chlEndGame(upd);
+        }
+      }
+    )
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'challenge_moves',filter:'challenge_id=eq.'+challengeId},
+      (payload)=>{ chlHandleOpponentMove(payload.new); }
+    )
+    .subscribe();
+}
+
+function chlHandleOpponentMove(move){
+  const myPlayerId = CHL.myId;
+  if(move.player_id === myPlayerId) return;
+  const pts = move.points || (move.correct ? 1 : 0);
+  if(move.correct || move.is_correct){ CHL.oppScore += pts; }
+  const oppScoreEl = document.getElementById('chl-b-opp-score');
+  if(oppScoreEl) oppScoreEl.textContent = CHL.oppScore;
+  const statusEl = document.getElementById('chl-b-opp-status');
+  if(statusEl) statusEl.textContent = (move.correct||move.is_correct) ? '✅ Opponent got it! +'+pts+'pt' : '❌ Opponent got it wrong!';
+}
+
+// ══════════════════════════════════════════════════
+// COUNTDOWN
+// ══════════════════════════════════════════════════
+function chlStartCountdown(){
+  chlShowSection('countdown');
+  const vsEl = document.getElementById('chl-cd-vs');
+  const tipEl = document.getElementById('chl-cd-tip');
+  if(vsEl) vsEl.textContent = 'You vs ' + (CHL.oppName || 'Opponent');
+  if(tipEl) tipEl.textContent = CHL_TIPS[Math.floor(Math.random()*CHL_TIPS.length)];
+
+  let battleTime = CHL.battleStartsAt ? new Date(CHL.battleStartsAt).getTime() : Date.now() + 4000;
+  if(battleTime < Date.now() + 1000) battleTime = Date.now() + 2000;
+
+  const numEl = document.getElementById('chl-cd-num');
+  const countDown = setInterval(()=>{
+    const msLeft = battleTime - Date.now();
+    const count = Math.ceil(msLeft / 1000);
+    if(numEl){
+      if(count > 0){ numEl.textContent = Math.min(count,3); numEl.style.color = 'var(--navy)'; }
+      else { numEl.textContent = 'GO!'; numEl.style.color = 'var(--green)'; }
+    }
+    if(msLeft <= 0){ clearInterval(countDown); setTimeout(chlStartBattle, 200); }
+  }, 100);
+}
+
+// ══════════════════════════════════════════════════
+// BATTLE
+// ══════════════════════════════════════════════════
+function chlStartBattle(){
+  CHL.myScore = 0; CHL.oppScore = 0; CHL.currentQ = 0;
+  CHL.myAnswers = []; CHL.myFinished = false; CHL.endCalled = false;
+  const myNameEl = document.getElementById('chl-b-my-name');
+  const oppNameEl = document.getElementById('chl-b-opp-name');
+  if(myNameEl) myNameEl.textContent = 'You';
+  if(oppNameEl) oppNameEl.textContent = CHL.oppName || 'Opponent';
+  chlShowSection('battle');
+  chlLoadBattleQuestion();
+}
+
+function chlLoadBattleQuestion(){
+  const q = CHL.questions[CHL.currentQ];
+  if(!q) return;
+  CHL.answered = false;
+  CHL.qStartTime = Date.now();
+
+  const qNumEl = document.getElementById('chl-b-qnum');
+  const qEl = document.getElementById('chl-b-question');
+  const explainEl = document.getElementById('chl-b-explain');
+  const oppStatusEl = document.getElementById('chl-b-opp-status');
+
+  if(qNumEl) qNumEl.textContent = 'Question ' + (CHL.currentQ+1) + ' of ' + CHL.questions.length;
+  if(qEl) qEl.textContent = q.q;
+  if(explainEl){ explainEl.style.display='none'; explainEl.textContent=''; }
+  if(oppStatusEl) oppStatusEl.textContent = 'Opponent is thinking...';
+
+  // Render options
+  const optsEl = document.getElementById('chl-b-options');
+  if(optsEl){
+    const letters = ['A','B','C','D'];
+    optsEl.innerHTML = q.opts.map((opt,i) =>
+      `<button class="ch-opt" id="chl-opt-${i}" onclick="chlAnswer(${i})">
+        <div class="ch-opt-letter">${letters[i]}</div>
+        <span>${opt}</span>
+      </button>`
+    ).join('');
+  }
+
+  // Start timer
+  chlStartBattleTimer();
+}
+
+function chlStartBattleTimer(){
+  clearInterval(CHL.timerInterval);
+  CHL.timerSecs = 20;
+  const timerEl = document.getElementById('chl-b-timer');
+  const fillEl = document.getElementById('chl-b-timer-fill');
+  if(timerEl) timerEl.textContent = 20;
+  if(fillEl) fillEl.style.width = '100%';
+
+  CHL.timerInterval = setInterval(()=>{
+    CHL.timerSecs--;
+    if(timerEl) timerEl.textContent = CHL.timerSecs;
+    if(fillEl) fillEl.style.width = (CHL.timerSecs/20*100) + '%';
+    if(timerEl) timerEl.style.color = CHL.timerSecs <= 5 ? '#DC2626' : CHL.timerSecs <= 10 ? '#F59E0B' : 'var(--gold)';
+    if(CHL.timerSecs <= 0){ clearInterval(CHL.timerInterval); if(!CHL.answered) chlAnswer(-1); }
+  }, 1000);
+}
+
+async function chlAnswer(answerIdx){
+  if(CHL.answered) return;
+  CHL.answered = true;
+  clearInterval(CHL.timerInterval);
+
+  const q = CHL.questions[CHL.currentQ];
+  const isCorrect = answerIdx === q.correct;
+  const timeTaken = Date.now() - CHL.qStartTime;
+
+  // Visual feedback
+  for(let i=0; i<4; i++){
+    const btn = document.getElementById('chl-opt-'+i);
+    if(btn){
+      btn.classList.add('ch-opt-disabled');
+      if(i === q.correct) btn.classList.add('ch-opt-correct');
+      else if(i === answerIdx && !isCorrect) btn.classList.add('ch-opt-wrong');
+    }
+  }
+
+  // Show explanation
+  if(q.explain){
+    const explainEl = document.getElementById('chl-b-explain');
+    if(explainEl){ explainEl.innerHTML = (isCorrect?'✅ ':'❌ ') + q.explain; explainEl.style.display='block'; }
+  }
+
+  // Speed points
+  const speedPts = CHL.timerSecs >= 13 ? 3 : CHL.timerSecs >= 6 ? 2 : 1;
+  if(isCorrect){
+    CHL.myScore += speedPts;
+    playSound('correct');
+    // Speed bonus flash
+    const flash = document.createElement('div');
+    flash.className = 'ch-speed-flash';
+    flash.textContent = '+' + speedPts + (speedPts===3?' ⚡⚡⚡':speedPts===2?' ⚡⚡':' ⚡');
+    flash.style.color = speedPts===3?'#F59E0B':speedPts===2?'#10B981':'#64748B';
+    document.body.appendChild(flash);
+    setTimeout(()=>flash.remove(), 900);
+  } else {
+    playSound('wrong');
+  }
+
+  // Update my score display
+  const myScoreEl = document.getElementById('chl-b-my-score');
+  if(myScoreEl) myScoreEl.textContent = CHL.myScore;
+
+  // Record answer
+  CHL.myAnswers.push({ q_idx: CHL.currentQ, answer: answerIdx, correct: isCorrect, time_ms: timeTaken, points: isCorrect ? speedPts : 0 });
+
+  // Send to Supabase
+  try{
+    const updateData = {};
+    if(CHL.role === 'host') updateData.host_score = CHL.myScore;
+    else updateData.guest_score = CHL.myScore;
+    await _supa.from('challenges').update(updateData).eq('id', CHL.challengeId);
+    await _supa.from('challenge_moves').insert({
+      challenge_id: CHL.challengeId, player_id: CHL.myId,
+      q_idx: CHL.currentQ, answer: answerIdx,
+      correct: isCorrect, time_ms: timeTaken,
+      points: isCorrect ? speedPts : 0,
+    });
+  }catch(e){}
+
+  // Last question
+  if(CHL.currentQ >= CHL.questions.length - 1){
+    CHL.myFinished = true;
+    setTimeout(async()=>{
+      try{
+        const {data: final} = await _supa.from('challenges').select('*').eq('id', CHL.challengeId).single();
+        if(final){
+          if(final.status !== 'finished'){
+            await _supa.from('challenges').update({ status:'finished', finished_at: new Date().toISOString() }).eq('id', CHL.challengeId);
+            final.status = 'finished';
+          }
+          chlEndGame(final);
+        }
+      }catch(e){
+        chlEndGame({ host_score: CHL.role==='host'?CHL.myScore:0, guest_score: CHL.role==='guest'?CHL.myScore:0 });
+      }
+    }, 3500);
+  } else {
+    setTimeout(()=>{ CHL.currentQ++; chlLoadBattleQuestion(); }, 1800);
+  }
+}
+
+// ══════════════════════════════════════════════════
+// FORFEIT
+// ══════════════════════════════════════════════════
+function chlForfeit(){
+  const popup = document.createElement('div');
+  popup.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(10,31,110,.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+  popup.innerHTML = '<div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:300px;width:90%;text-align:center;">' +
+    '<div style="font-size:40px;margin-bottom:12px;">🏳️</div>' +
+    '<div style="font-size:17px;font-weight:800;color:#DC2626;margin-bottom:8px;">Forfeit Match?</div>' +
+    '<div style="font-size:13px;color:#64748B;margin-bottom:24px;line-height:1.5;">This counts as a <strong style="color:#DC2626;">loss</strong>. Your opponent wins automatically.</div>' +
+    '<button id="chl-forfeit-yes" style="width:100%;padding:12px;border-radius:12px;background:#DC2626;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:var(--font-body);">Yes, Forfeit</button>' +
+    '<button id="chl-forfeit-no" style="width:100%;padding:10px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);">Keep Playing</button>' +
+    '</div>';
+  document.body.appendChild(popup);
+  document.getElementById('chl-forfeit-yes').onclick = async function(){
+    popup.remove();
+    clearInterval(CHL.timerInterval);
+    CHL.endCalled = true;
+    if(CHL.challengeId){
+      try{
+        await _supa.from('challenges').update({
+          status:'forfeited', finished_at: new Date().toISOString(),
+          winner: CHL.role==='host'?'guest':'host'
+        }).eq('id', CHL.challengeId);
+      }catch(e){}
+    }
+    CHL.losses++; CHL.winStreak = 0; chlSaveStats();
+    if(CHL.isOnline) await chlUpdateElo('loss', CHL.oppRating);
+    chlShowResults('loss', CHL.myScore, CHL.oppScore+3, 25, -15);
+  };
+  document.getElementById('chl-forfeit-no').onclick = function(){ popup.remove(); };
+}
+
+// ══════════════════════════════════════════════════
+// END GAME
+// ══════════════════════════════════════════════════
+let chlEndCalled = false;
+function chlEndGame(challengeData){
+  if(chlEndCalled) return;
+  chlEndCalled = true;
+  setTimeout(()=>{ chlEndCalled = false; }, 5000);
+  clearInterval(CHL.timerInterval);
+  if(CHL.sub){ try{ CHL.sub.unsubscribe(); }catch(e){} CHL.sub = null; }
+
+  const myScore = CHL.role==='host' ? (challengeData.host_score||CHL.myScore) : (challengeData.guest_score||CHL.myScore);
+  const oppScore = CHL.role==='host' ? (challengeData.guest_score||CHL.oppScore) : (challengeData.host_score||CHL.oppScore);
+  const result = myScore > oppScore ? 'win' : myScore < oppScore ? 'loss' : 'draw';
+
+  if(result==='win'){ CHL.wins++; CHL.winStreak++; }
+  else if(result==='loss'){ CHL.losses++; CHL.winStreak=0; }
+  else { CHL.draws++; }
+  chlSaveStats();
+
+  const xpReward = result==='win'?150:result==='draw'?75:50;
+  S.xp += xpReward; S.coins += result==='win'?30:10;
+  updateHUD(); saveState();
+
+  let ratingChange = 0;
+  if(CHL.isOnline){
+    chlUpdateElo(result, CHL.oppRating).then(change=>{ ratingChange = change; });
+  }
+
+  chlShowResults(result, myScore, oppScore, xpReward, ratingChange);
+}
+
+function chlShowResults(result, myScore, oppScore, xpReward, ratingChange){
+  const heroEl = document.getElementById('chl-r-hero');
+  const trophyEl = document.getElementById('chl-r-trophy');
+  const titleEl = document.getElementById('chl-r-title');
+  const subEl = document.getElementById('chl-r-sub');
+  const xpEl = document.getElementById('chl-r-xp');
+  const myScoreEl = document.getElementById('chl-r-my-score');
+  const oppScoreEl = document.getElementById('chl-r-opp-score');
+  const myBoxEl = document.getElementById('chl-r-my-box');
+  const oppBoxEl = document.getElementById('chl-r-opp-box');
+  const oppLblEl = document.getElementById('chl-r-opp-lbl');
+  const ratingEl = document.getElementById('chl-r-rating-val');
+  const breakdownEl = document.getElementById('chl-r-breakdown');
+
+  if(heroEl) heroEl.className = 'ch-result-hero ' + result;
+  if(trophyEl) trophyEl.textContent = result==='win'?'🏆':result==='draw'?'🤝':'😢';
+  if(titleEl) titleEl.textContent = result==='win'?'You Won! 🎉':result==='draw'?"It's a Draw!":'You Lost!';
+  if(subEl) subEl.textContent = result==='win'?'Outstanding performance!':result==='draw'?'Neck and neck!':'Better luck next time!';
+  if(xpEl) xpEl.textContent = '+' + xpReward + ' XP earned!';
+  if(myScoreEl) myScoreEl.textContent = myScore;
+  if(oppScoreEl) oppScoreEl.textContent = oppScore;
+  if(oppLblEl) oppLblEl.textContent = CHL.oppName || 'Opponent';
+  if(myBoxEl) myBoxEl.classList.toggle('winner', result==='win');
+  if(oppBoxEl) oppBoxEl.classList.toggle('winner', result==='loss');
+  if(ratingEl){
+    const sign = ratingChange >= 0 ? '+' : '';
+    ratingEl.textContent = sign + ratingChange + (ratingChange >= 0 ? ' 📈' : ' 📉');
+    ratingEl.style.color = ratingChange >= 0 ? 'var(--green)' : 'var(--red)';
+  }
+
+  // Breakdown
+  if(breakdownEl){
+    const header = '<div style="padding:12px 14px;font-size:11px;font-weight:700;color:var(--navy);border-bottom:1px solid var(--border);">Your answers</div>';
+    const rows = CHL.myAnswers.map((a,i)=>{
+      const q = CHL.questions[i];
+      const pts = a.points || 0;
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--border2);font-size:12px;">' +
+        '<span style="font-weight:700;">Q'+( i+1)+'</span>' +
+        '<span style="flex:1;margin:0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);">' + (q?q.q.substring(0,35)+'...':'') + '</span>' +
+        '<span>' + (a.correct?'✅':'❌') + ' +' + pts + 'pt</span>' +
+        '</div>';
+    }).join('');
+    breakdownEl.innerHTML = header + rows;
+  }
+
+  // Confetti for winner
+  if(result === 'win'){
+    spawnConfetti();
+    playSound('levelup');
+  }
+
+  chlShowSection('results');
+}
+
+// ══════════════════════════════════════════════════
+// ELO RATING
+// ══════════════════════════════════════════════════
+function chlCalcElo(myRating, oppRating, result){
+  const K = 32;
+  const expected = 1 / (1 + Math.pow(10, (oppRating - myRating) / 400));
+  const score = result==='win'?1:result==='draw'?0.5:0;
+  return Math.round(K * (score - expected));
+}
+
+async function chlUpdateElo(result, oppRating){
+  const change = chlCalcElo(CHL.myRating, oppRating||1000, result);
+  const newRating = Math.max(0, CHL.myRating + change);
+  CHL.myRating = newRating;
+  try{
+    await _supa.from('player_ratings').upsert({
+      player_id: CHL.myId, player_name: CHL.myName,
+      rating: newRating,
+      wins: CHL.wins, losses: CHL.losses, draws: CHL.draws,
+      total_played: CHL.wins + CHL.losses + CHL.draws,
+      win_streak: CHL.winStreak,
+      best_streak: Math.max(CHL.winStreak, 0),
+      updated_at: new Date().toISOString()
+    },{ onConflict: 'player_id' });
+  }catch(e){}
+  return change;
+}
+
+// ── PLAY AGAIN ──
+function chlPlayAgain(){
+  chlEndCalled = false;
+  chlReset();
+  chlLoadStats();
+  chlLoadRating();
+  chlLoadRankings();
+  chlUpdateOnlineCount();
+  chlShowSection('lobby');
+}
+
+// ── HOOK into showScreen for challenge ──
+const _chlOrigShow = showScreen;
+showScreen = function(id){
+  _chlOrigShow(id);
+  if(id === 'challenge'){
+    setTimeout(chlInit, 50);
+  }
+};
+
+// ── CLEANUP on page hide ──
+window.addEventListener('beforeunload', ()=>{
+  if(CHL.myId){
+    _supa.from('matchmaking_queue').delete().eq('player_id', CHL.myId);
+  }
 });
 </script>
 </body>
