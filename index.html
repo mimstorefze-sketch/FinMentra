@@ -4463,6 +4463,12 @@ function closeOnboarding(){
     }
   }
   document.getElementById('onboarding').style.display='none';
+  // If guest came via Try 15 free, go to home now
+  if(window._guestAfterOnboard){
+    window._guestAfterOnboard = false;
+    showScreen('home');
+    setTimeout(function(){ if(typeof startSession==='function') startSession(); }, 300);
+  }
   saveState();
   if(typeof saveUserProgress === 'function') saveUserProgress();
     document.getElementById('hw-greeting').textContent=getMoodGreeting();
@@ -11195,9 +11201,18 @@ function getGuestThreshold(){
 function checkGuestPrompt(){
   if(_isGuest && !_currentUser){
     _guestQCount++;
-    const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
-    if(used === 10 && !_guestBonusUsed) showRegisterPopup();
-    if(used >= 15) showDailyLimitPopup();
+    // Always increment daily count for guests
+    try{
+      var key = getDailyQKey();
+      var used = parseInt(localStorage.getItem(key)||'0') + 1;
+      localStorage.setItem(key, String(used));
+      S.dailyQCount = used;
+      if(used === 10 && !_guestBonusUsed){
+        _guestBonusUsed = true;
+        showRegisterPopup(); // Soft block at 10
+      }
+      if(used > 15) showDailyLimitPopup(); // Hard block at 15
+    }catch(e){}
     return;
   }
   if(!_currentUser && !_isGuest){
@@ -13089,6 +13104,14 @@ document.addEventListener('selectstart', function(e){
 
 // ── ANDROID BACK BUTTON HANDLER ──
 window.addEventListener('native:backpressed', function() {
+  // If fox is minimized, expand it first on back press
+  var foxEl = document.getElementById('fm-float-fox');
+  var miniIcon = document.getElementById('fm-fox-mini-icon');
+  if(foxEl && miniIcon){
+    // Fox is minimized — expand it
+    if(typeof fmFoxExpand === 'function') fmFoxExpand();
+    return;
+  }
   const homeScreens = ['home', 'pro-home'];
   if(homeScreens.includes(S.screen)) return;
   showScreen(S.mode === 'professional' ? 'pro-home' : 'home');
