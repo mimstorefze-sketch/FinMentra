@@ -4099,7 +4099,7 @@ async function startSession(){
     let fresh = supaQs.filter(q => !recentIds.includes(q.q.substring(0,30)));
     if(fresh.length < 5) fresh = supaQs; // reset if too few fresh
     // Cap to remaining daily questions for free users
-    const limit = isPro() ? 20 : isFree() ? Math.min(8, getDailyQRemaining()) : 8; // FIX E: Pro=20
+    const limit = isPro() ? 20 : Math.min(10, getDailyQRemaining()); // Pro=20, Free/Guest=10
     if(isFree() && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
     pool = fresh.sort(()=>Math.random()-.5).slice(0, Math.max(1, limit));
     // Track recently seen
@@ -4941,13 +4941,13 @@ function getDailyQKey(){
 }
 
 function getDailyQRemaining(){
-  if(isPro()) return 999;
-  try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return 999; }catch(e){}
-  if(_currentUser && !_planLoaded) return 999;
+  // Never return unlimited for non-logged-in users
+  // Only unlimited for confirmed logged-in pro users
+  if(_currentUser && isPro()) return 999;
+  // Everyone else: check localStorage count
   const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
   return Math.max(0, 15 - used);
 }
-
 function getDailyQUsed(){
   return parseInt(localStorage.getItem(getDailyQKey()) || '0');
 }
@@ -11216,11 +11216,11 @@ function checkGuestPrompt(){
   if(!isPro()){
     const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
     if(!_currentUser){
-      // Guest or unsigned user
+      // Guest or unsigned user - soft block at 10, hard block at 15
       if(used === 10 && !_guestBonusUsed){ _guestBonusUsed=true; showRegisterPopup(); }
-      if(used >= 15){ showDailyLimitPopup(); return; }
+      if(used > 10 && used >= 15){ showDailyLimitPopup(); return; }
     } else if(isFree()){
-      // Logged in free user
+      // Logged in free user - hard block at 15
       if(used >= 15){ showDailyLimitPopup(); return; }
     }
   }
@@ -15064,8 +15064,19 @@ function achInitScreen(){
 
     // Events — only on the fox element itself
     foxEl.addEventListener('mousedown',  onMouseDown);
-    foxEl.addEventListener('touchstart', onTouchStart, {passive: false});
-    if (foxClose) foxClose.addEventListener('click', minimize);
+    foxEl.addEventListener('touchstart', function(e){
+      // Don't start drag if touching the close button
+      if(e.target === foxClose || (foxClose && foxClose.contains(e.target))) return;
+      onTouchStart(e);
+    }, {passive: false});
+    if (foxClose) {
+      foxClose.addEventListener('click', function(e){
+        e.stopPropagation(); e.preventDefault(); minimize();
+      });
+      foxClose.addEventListener('touchend', function(e){
+        e.stopPropagation(); e.preventDefault(); minimize();
+      }, {passive:false});
+    }
 
     // Global move/up
     window.addEventListener('mousemove', onMouseMove);
@@ -15074,6 +15085,7 @@ function achInitScreen(){
     window.addEventListener('touchend',  onMouseUp);
 
     // Click fox body to expand if minimized
+    // Click/touch expand handled in minimize() function
     foxEl.addEventListener('click', function(e) {
       if (isMin && e.target !== foxClose) expand();
     });
@@ -15114,6 +15126,21 @@ function achInitScreen(){
     mini.textContent = '🦊';
     mini.style.cssText = 'font-size:22px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;pointer-events:none;';
     foxEl.appendChild(mini);
+    // Both click AND touchend so it works on mobile WebView
+    function _expandOnTouch(e){
+      e.preventDefault();
+      e.stopPropagation();
+      expand();
+      foxEl.removeEventListener('click', _expandOnClick);
+      foxEl.removeEventListener('touchend', _expandOnTouch);
+    }
+    function _expandOnClick(e){
+      expand();
+      foxEl.removeEventListener('click', _expandOnClick);
+      foxEl.removeEventListener('touchend', _expandOnTouch);
+    }
+    foxEl.addEventListener('click', _expandOnClick);
+    foxEl.addEventListener('touchend', _expandOnTouch, {passive:false});
   }
 
   // ── EXPAND ──
@@ -15224,6 +15251,37 @@ function achInitScreen(){
 
   // ── WALK ──
   function pickWalk() { /* disabled */ }
+
+  // ── FINANCE TAGLINES — shown periodically ──
+  var FM_TAGLINES = [
+    "Assets = Liabilities + Equity! 📊",
+    "IFRS 9 says hi! 👋",
+    "Debit left, credit right! ⚖️",
+    "Revenue recognised yet? 🤔",
+    "Goodwill isn't always good! 😅",
+    "Fair value or historical cost? 🤷",
+    "IFRS 16 changed everything! 😱",
+    "EPS rising? 📈 Let's go!",
+    "Impairment test time! 🔍",
+    "Cash flow > Profit. Always! 💰",
+    "Ask AI if you're lost! 🤖",
+    "IAS 36 wants a word... 😬",
+    "Disclosure disclosure disclosure! 📝",
+    "Substance over form! ✨",
+    "Going concern? Hope so! 🤞",
+    "WACC it up! 💸",
+    "Materiality matters! ⚖️",
+    "Finance bro in training! 🦊",
+    "IFRS Master unlocking... 🔓",
+    "Accruals beat cash! 🎯",
+  ];
+  var _taglineIdx = 0;
+  setInterval(function(){
+    if(!foxEl || isMin || isDrag) return;
+    var screen = typeof S !== 'undefined' ? S.screen : 'home';
+    _taglineIdx = (_taglineIdx + 1) % FM_TAGLINES.length;
+    showBubble(FM_TAGLINES[_taglineIdx], 3000);
+  }, 12000); // Every 12 seconds
   function scheduleWalk() { /* disabled - fox stays still */ }
 
   // ── PHYSICS LOOP ──
@@ -15245,7 +15303,7 @@ function achInitScreen(){
           vx *= 0.4; vy *= 0.4;
           squash('land');
           if (Math.random() < 0.3) {
-            var tips = ['Study time! 📚', 'IFRS pro! 🦊', 'Quick quiz? ⚡', 'Keep going! 🏆'];
+            var tips = ['Study time! 📚', 'IFRS pro! 🦊', 'Quick quiz? ⚡', 'Keep going! 🏆', 'Revenue recognised? 🤔', 'Debit left! ⚖️', 'WACC it up! 💸'];
             showBubble(tips[Math.floor(Math.random() * tips.length)], 2000);
           }
         } else {
@@ -15484,7 +15542,7 @@ function showFreePopup(type){
     ? 'You have used your <strong>15 free questions</strong> for today.<br><small>Resets at midnight</small>'
     : 'This feature is limited for free users.<br><small>Upgrade for unlimited access</small>';
   var div = document.createElement('div');
-  div.style.cssText = 'background:#fff;border-radius:24px;padding:32px 24px;max-width:340px;width:100%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.3);';
+  div.style.cssText = 'background:#fff;border-radius:24px;padding:28px 20px;max-width:340px;width:100%;max-height:90vh;overflow-y:auto;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.3);box-sizing:border-box;';
   div.innerHTML = '<div style="font-size:52px;margin-bottom:12px;">🦊</div>'
     + '<div style="font-family:var(--font-display);font-size:24px;font-weight:700;color:#0A1F6E;margin-bottom:8px;">' + title + '</div>'
     + '<div style="font-size:13px;color:#64748B;margin-bottom:6px;line-height:1.6;">' + body + '</div>';
