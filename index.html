@@ -2539,7 +2539,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 <div class="screen" id="screen-profile">
   <div class="profile-h">
     <div class="av" id="profile-avatar">👨</div>
-    <h2 id="profile-name">Your Profile</h2>
+    <h2 id="profile-name"><span id="profile-name-display">Your Profile</span></h2>
     <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:2px;">
       <span id="profile-email-label" style="font-size:11px;color:rgba(255,255,255,.55);"></span>
       <button onclick="showEditNamePopup()" style="background:rgba(255,255,255,.15);border:none;border-radius:999px;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;cursor:pointer;">✏️ Edit Name</button>
@@ -4418,6 +4418,27 @@ function updateHUD(){
   if(nextR){set('xp-next',(nextR.min-S.xp)+' XP to '+nextR.title);}
   set('profile-rank-text',r.emblem+' '+r.title);
   set('challenge-rank',r.emblem+' '+r.title);
+  // Show user name in banner and profile
+  var _displayName = '';
+  if(typeof _currentUser !== 'undefined' && _currentUser){
+    _displayName = (_currentUser.user_metadata && (_currentUser.user_metadata.full_name||_currentUser.user_metadata.name)) || _currentUser.email.split('@')[0];
+  } else if(S.username) {
+    _displayName = S.username;
+  }
+  if(_displayName){
+    var _nameEls = ['home-mentor-name','profile-name-display','nav-user-name'];
+    _nameEls.forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.textContent = _displayName;
+    });
+    // Update hero greeting with name
+    var _greetEl = document.getElementById('hw-greeting');
+    if(_greetEl && _displayName){
+      var _hr = new Date().getHours();
+      var _tod = _hr<12?'Good morning':'Good afternoon';
+      _greetEl.textContent = _tod+', '+_displayName.split(' ')[0]+'!';
+    }
+  }
   const rs=document.getElementById('readiness-score');if(rs) rs.textContent=Math.min(100,Math.round(S.totalQ>0?(S.totalCorrect/S.totalQ)*60+S.xp/200:0))+'%';
 }
 
@@ -4985,7 +5006,7 @@ function showDailyLimitPopup(){
   const loggedIn = !!(typeof _currentUser !== 'undefined' && _currentUser);
   const overlay = document.createElement('div');
   overlay.className = 'daily-limit-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(10,31,110,0.92);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;backdrop-filter:blur(6px);';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(10,31,110,0.95);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;backdrop-filter:blur(6px);';
 
   const box = document.createElement('div');
   box.style.cssText = 'background:#fff;border-radius:24px;padding:28px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.3);max-height:85vh;overflow-y:auto;box-sizing:border-box;';
@@ -5010,7 +5031,7 @@ function showDailyLimitPopup(){
     const upgradeBtn = document.createElement('button');
     upgradeBtn.style.cssText = 'width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:inherit;';
     upgradeBtn.textContent = 'Upgrade to Pro 🚀';
-    upgradeBtn.onclick = function(){ dismiss(); showScreen('profile'); };
+    upgradeBtn.onclick = function(){ dismiss(); startProTrial(); };
     box.appendChild(upgradeBtn);
   }
 
@@ -15568,7 +15589,7 @@ function showFreePopup(type){
   var btnUpgrade = document.createElement('button');
   btnUpgrade.textContent = '⚡ Upgrade to Pro';
   btnUpgrade.style.cssText = 'width:100%;padding:14px;background:linear-gradient(135deg,#0A1F6E,#1E3A8A);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:800;cursor:pointer;margin-top:16px;font-family:inherit;';
-  btnUpgrade.onclick = function(){ d.remove(); if(typeof showScreen==='function') showScreen('settings'); };
+  btnUpgrade.onclick = function(){ d.remove(); startProTrial(); };
   var btnClose = document.createElement('button');
   btnClose.textContent = 'Continue Browsing';
   btnClose.style.cssText = 'width:100%;padding:12px;background:#EEF2FF;color:#0A1F6E;border:none;border-radius:14px;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;font-family:inherit;';
