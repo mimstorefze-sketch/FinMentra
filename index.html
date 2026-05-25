@@ -4714,7 +4714,7 @@ function showCancelConfirm(){
   const popup = document.createElement('div');
   popup.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.8);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
   const box = document.createElement('div');
-  box.style.cssText = 'background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;';
+  box.style.cssText = 'background:#fff;border-radius:24px;padding:28px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.3);max-height:85vh;overflow-y:auto;box-sizing:border-box;';
   box.innerHTML =
     '<div style="font-size:40px;margin-bottom:12px;">😢</div>'+
     '<div style="font-size:17px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Cancel Pro?</div>'+
@@ -4985,10 +4985,10 @@ function showDailyLimitPopup(){
   const loggedIn = !!(typeof _currentUser !== 'undefined' && _currentUser);
   const overlay = document.createElement('div');
   overlay.className = 'daily-limit-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(10,31,110,0.92);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;backdrop-filter:blur(6px);';
 
   const box = document.createElement('div');
-  box.style.cssText = 'background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;';
+  box.style.cssText = 'background:#fff;border-radius:24px;padding:28px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.3);max-height:85vh;overflow-y:auto;box-sizing:border-box;';
 
   box.innerHTML =
     '<div style="font-size:48px;margin-bottom:12px;">🎯</div>' +
@@ -8060,13 +8060,15 @@ const _origAnswerQ=answerQ;
     <div class="reg-popup-title">Amazing session!</div>
     <div class="reg-popup-sub">Create a free account to save your progress and start your next session.</div>
     <div class="reg-popup-xp" id="reg-popup-stats">You earned 0 XP • 0 correct answers</div>
+    <button id="reg-popup-continue-btn" onclick="closeRegPopup();continueFreeQuestions()" style="width:100%;padding:13px;border-radius:14px;background:linear-gradient(135deg,#0A1F6E,#1E3A8A);color:#fff;font-size:14px;font-weight:800;border:none;cursor:pointer;font-family:inherit;margin-bottom:12px;">⚡ Continue 5 More Questions</button>
+    <div style="font-size:11px;color:#94A3B8;margin-bottom:12px;">— or save your progress —</div>
     <button class="auth-social-btn" style="margin-bottom:8px;" onclick="closeRegPopup();signInWithGoogle()">
       <svg width="16" height="16" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
-      Save with Google
+      Sign Up with Google
     </button>
     <button class="auth-social-btn" style="margin-bottom:8px;" onclick="closeRegPopup();signInWithLinkedIn()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="#0077B5"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-      Save with LinkedIn
+      Sign Up with LinkedIn
     </button>
     <button class="reg-popup-btn" onclick="closeRegPopup();showEmailAuth()">Create Account with Email</button>
     <div class="reg-popup-skip" onclick="continueAsGuest()" id="reg-popup-skip-btn">Get 5 more questions first →</div>
@@ -11231,10 +11233,27 @@ function showRegisterPopup(){
   const popup = document.getElementById('register-popup');
   const stats = document.getElementById('reg-popup-stats');
   const skipBtn = document.getElementById('reg-popup-skip-btn');
+  const contBtn = document.getElementById('reg-popup-continue-btn');
   if(stats) stats.textContent = 'You earned ' + S.xp + ' XP • ' + S.totalCorrect + ' correct answers';
   // Hide skip button if daily limit reached or bonus already used
   if(skipBtn) skipBtn.style.display = (_guestBonusUsed || (isFree() && getDailyQRemaining() <= 0)) ? 'none' : 'block';
+  // Hide continue button if bonus already used or at hard limit
+  if(contBtn) contBtn.style.display = (_guestBonusUsed || getDailyQRemaining() <= 0) ? 'none' : 'block';
   if(popup) popup.classList.add('show');
+}
+
+function continueFreeQuestions(){
+  // Give 5 more questions but mark bonus as used
+  _guestBonusUsed = true;
+  // Allow 5 more questions by bumping the remaining threshold
+  try{
+    var key = getDailyQKey();
+    var used = parseInt(localStorage.getItem(key)||'0');
+    // If they've used 10, allow up to 15 (5 more)
+    // Just close popup and let them continue - hard block at 15 still applies
+  }catch(e){}
+  // Start a new session
+  if(typeof startSession === 'function') startSession();
 }
 
 function closeRegPopup(){
@@ -13118,14 +13137,14 @@ document.addEventListener('selectstart', function(e){
 
 // ── ANDROID BACK BUTTON HANDLER ──
 window.addEventListener('native:backpressed', function() {
-  // If fox is minimized, expand it first on back press
-  var foxEl = document.getElementById('fm-float-fox');
-  var miniIcon = document.getElementById('fm-fox-mini-icon');
-  if(foxEl && miniIcon){
-    // Fox is minimized — expand it
-    if(typeof fmFoxExpand === 'function') fmFoxExpand();
-    return;
-  }
+  // Close any open popups first
+  var dlOverlay = document.querySelector('.daily-limit-overlay');
+  if(dlOverlay){ dlOverlay.remove(); return; }
+  var freePopup = document.getElementById('fm-free-popup');
+  if(freePopup){ freePopup.remove(); return; }
+  var regPopup = document.getElementById('register-popup');
+  if(regPopup && regPopup.classList.contains('show')){ closeRegPopup(); return; }
+  // Navigate back
   const homeScreens = ['home', 'pro-home'];
   if(homeScreens.includes(S.screen)) return;
   showScreen(S.mode === 'professional' ? 'pro-home' : 'home');
