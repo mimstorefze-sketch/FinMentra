@@ -2884,7 +2884,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <button class="btn btn-block" style="background:var(--navy);color:#fff;margin-top:8px;" onclick="logoutUser()">🚪 Logout</button>
 
   <!-- Version footer — tap 5× to toggle Pro test mode -->
-  <div onclick="_devTap()" style="text-align:center;margin-top:18px;padding-bottom:8px;font-size:10px;color:var(--muted);cursor:default;user-select:none;">FinMentra v1.0 · Built with ❤️ for finance learners</div>
+  <div  style="text-align:center;margin-top:18px;padding-bottom:8px;font-size:10px;color:var(--muted);cursor:default;user-select:none;">FinMentra v1.0 · Built with ❤️ for finance learners</div>
 </div>
 
 <!-- ══ BOOKMARKS ══ -->
@@ -4463,11 +4463,14 @@ function closeOnboarding(){
     }
   }
   document.getElementById('onboarding').style.display='none';
-  // If guest came via Try 15 free, go to home now
+  window._guestOnboardDone = true;
+  // After onboarding - always go to home
   if(window._guestAfterOnboard){
     window._guestAfterOnboard = false;
     showScreen('home');
     setTimeout(function(){ if(typeof startSession==='function') startSession(); }, 300);
+  } else {
+    showScreen('home');
   }
   saveState();
   if(typeof saveUserProgress === 'function') saveUserProgress();
@@ -4598,30 +4601,6 @@ function checkSecretBadge(){
 function showBadgeToast(msg){const t=document.getElementById('badgeToast');const m=document.getElementById('badgeMsg');if(!t||!m) return;m.textContent=msg;t.classList.add('show');playSound('notification');clearTimeout(badgeTimer);badgeTimer=setTimeout(()=>t.classList.remove('show'),3500);}
 function toast(msg){let host=document.querySelector('.toast-host');if(!host){host=document.createElement('div');host.className='toast-host';document.body.appendChild(host);}const t=document.createElement('div');t.className='toast';t.textContent=msg;host.appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transition='.3s';},2200);setTimeout(()=>t.remove(),2700);}
 
-// ── DEV / TEST MODE ── (secret: type "GOPRO" in console, or tap version 5×)
-let _devTaps=0,_devTimer=null;
-function _devTap(){
-  _devTaps++;
-  clearTimeout(_devTimer);
-  _devTimer=setTimeout(()=>_devTaps=0,2000);
-  if(_devTaps>=5){ _devTaps=0; _toggleTestPro(); }
-}
-function _toggleTestPro(){
-  const isPro = S.plan==='pro'||S.tier==='pro';
-  if(isPro){
-    S.plan='free'; S.tier='free'; S.aiPlan='free';
-    try{localStorage.removeItem('fm_tier');}catch(e){}
-    saveState(); updateHUD(); renderTopics && renderTopics();
-    toast('🔓 DEV: Switched to FREE mode');
-  } else {
-    S.plan='pro'; S.tier='pro'; S.aiPlan='pro'; S.aiUsedMonth=0;
-    try{localStorage.setItem('fm_tier','pro');}catch(e){}
-    saveState(); updateHUD(); renderTopics && renderTopics();
-    spawnConfetti();
-    toast('🚀 DEV: Switched to PRO mode — all features unlocked');
-  }
-}
-// Also expose in console: type _toggleTestPro() anytime
 
 const PREV_RANK_IDX={idx:0};
 function initPrevRankIdx(){
@@ -4926,9 +4905,13 @@ function updateAIBanner(){
   }
 }
 
-function isPro(){ 
-  try{ if(typeof _currentUser !== 'undefined' && _currentUser && _currentUser.email === 'demo@finmentra.com') return true; }catch(e){}
-  return S.plan==='pro'||S.plan==='elite'; 
+function isPro(){
+  // Demo account always pro
+  try{ if(typeof _currentUser!=='undefined'&&_currentUser&&_currentUser.email==='demo@finmentra.com') return true; }catch(e){}
+  // Must be logged in AND have server-confirmed plan
+  if(typeof _currentUser==='undefined'||!_currentUser) return false;
+  // Check server-confirmed plan (set by loadUserPlan from Supabase)
+  return S.plan==='pro'||S.plan==='elite';
 }
 function isElite(){ return S.plan==='elite'; }
 function isFree(){ 
@@ -9789,7 +9772,7 @@ const _origAnswerQ=answerQ;
   position: fixed;
   left: 12px;
   bottom: 100px;
-  z-index: 400;
+  z-index: 600;
   cursor: grab;
   user-select: none;
   touch-action: none;
@@ -11182,16 +11165,35 @@ function startAsGuest(){
   _isGuest = true;
   _guestQCount = 0;
   _guestBonusUsed = false;
-  document.getElementById('auth-screen').classList.add('hidden'); document.getElementById('auth-screen').classList.remove('show');
-    document.getElementById('top-nav')?.classList.remove('nav-logged-out');
-    document.getElementById('nav-hearts')?.style.removeProperty('display');
-  // FIX A: Load questions for guest immediately
-  setTimeout(()=>{ if(S.screen==='practice'||S.screen==='home') startSession(); }, 200);
-  // Always start with 10 question threshold — day-2 logic removed as it caused early interruptions
-  try {
-    localStorage.setItem('fm_guest_threshold', '10');
+
+  // Hide auth screen
+  var ae = document.getElementById('auth-screen');
+  if(ae){ ae.classList.add('hidden'); ae.classList.remove('show'); }
+  document.body.classList.remove('auth-visible');
+
+  // Show nav
+  var nav = document.getElementById('top-nav');
+  if(nav) nav.classList.remove('nav-logged-out');
+  var hearts = document.getElementById('nav-hearts');
+  if(hearts) hearts.style.removeProperty('display');
+
+  // Set thresholds
+  try{
+    localStorage.setItem('fm_guest_threshold','10');
     localStorage.setItem('fm_last_visit', new Date().toDateString());
-  } catch(e){}
+  }catch(e){}
+
+  // Always show onboarding first (Get Started -> Name -> etc)
+  // loadState may have set onboardingDone=true from a previous visit
+  // For guests we always show it fresh unless they already completed it this session
+  var ob = document.getElementById('onboarding');
+  if(ob && !window._guestOnboardDone){
+    ob.style.display = 'flex';
+    window._guestAfterOnboard = true;
+  } else {
+    // Skip onboarding - go straight to home
+    showScreen('home');
+  }
 }
 
 function getGuestThreshold(){
@@ -11506,6 +11508,21 @@ async function doLogout(){
   _isGuest = false;
   _guestQCount = 0;
   _guestBonusUsed = false;
+  // Clear displayed name
+  var nameEl = document.getElementById('home-mentor-name');
+  if(nameEl) nameEl.textContent = '';
+  var navAvatar = document.getElementById('nav-avatar');
+  if(navAvatar) navAvatar.textContent = '👤';
+  // Reset plan
+  S.plan = 'free';
+  S.username = '';
+  // Clear localStorage plan cache
+  try{ localStorage.removeItem('fm_plan'); localStorage.removeItem('fm_tier'); }catch(e){}
+  // Show auth screen
+  var authEl = document.getElementById('auth-screen');
+  if(authEl){ authEl.classList.remove('hidden'); authEl.style.display='flex'; }
+  // Hide nav
+  document.body.classList.add('auth-visible');
 
   // Clear ALL user-specific localStorage so next visitor starts fresh
   const keysToRemove = [
@@ -14920,7 +14937,7 @@ function achInitScreen(){
 <!-- FinMentra Fox Mascot JS -->
 
 <!-- ══ FLOAT FOX ══ -->
-<div id="fm-float-fox" style="position:fixed;left:12px;bottom:100px;z-index:400;width:68px;height:88px;touch-action:none;user-select:none;display:none;">
+<div id="fm-float-fox" style="position:fixed;left:12px;bottom:100px;z-index:600;width:68px;height:88px;touch-action:none;user-select:none;display:none;-webkit-tap-highlight-color:transparent;">
   <div id="fm-fox-bubble" style="position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#fff;border-radius:10px;padding:4px 9px;font-size:10px;font-weight:800;color:#0A1F6E;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.15);font-family:Nunito,sans-serif;opacity:0;pointer-events:none;transition:opacity .3s;margin-bottom:6px;">Hey! 🦊</div>
   <button id="fm-fox-close" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#EF4444;color:#fff;border:2px solid #fff;font-size:12px;font-weight:900;line-height:1;display:flex;align-items:center;justify-content:center;z-index:10;box-shadow:0 2px 6px rgba(0,0,0,.2);font-family:sans-serif;cursor:pointer;">×</button>
   <svg id="fm-fox-svg" viewBox="0 0 140 230" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:68px;height:88px;overflow:visible;display:block;filter:drop-shadow(0 4px 14px rgba(10,31,110,.2));">
@@ -15464,7 +15481,7 @@ function showFreePopup(type){
   if(el) el.remove();
   var d=document.createElement('div');
   d.id='fm-free-popup';
-  d.style.cssText='position:fixed;inset:0;background:rgba(10,31,110,.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);';
+  d.style.cssText='position:fixed;inset:0;background:rgba(10,31,110,.92);z-index:99999;display:flex;align-items:flex-start;justify-content:center;padding:60px 16px 20px;backdrop-filter:blur(6px);overflow-y:auto;';
   var title = type==='quiz' ? 'Daily Limit Reached' : 'Pro Feature';
   var body  = type==='quiz'
     ? 'You have used your <strong>15 free questions</strong> for today.<br><small>Resets at midnight</small>'
@@ -15498,20 +15515,20 @@ window.addEventListener('load', function(){
   var _orig = typeof showScreen==='function' ? showScreen : null;
   if(!_orig) return;
   window.showScreen = function(id){
-    // Quiz screens
-    if(quizScreens.includes(id)){
-      if(typeof getDailyQRemaining==='function'&&getDailyQRemaining()<=0&&
-         !(typeof isPro==='function'&&isPro())&&!(typeof _currentUser!=='undefined'&&_currentUser)){
-        showFreePopup('quiz'); return;
-      }
+    // Always recheck - Continue Browsing does NOT bypass
+    var userOk = (typeof isPro==='function'&&isPro()) ||
+                 (typeof _currentUser!=='undefined'&&!!_currentUser);
+    // Quiz screens - hard gate
+    if(quizScreens.includes(id) && !userOk){
+      var rem = typeof getDailyQRemaining==='function' ? getDailyQRemaining() : 999;
+      if(rem <= 0){ showFreePopup('quiz'); return; }
     }
     // Pro tool screens
-    if(proToolMap[id]){
+    if(proToolMap[id] && !userOk){
       if(!checkFreeAccess(proToolMap[id],3)) return;
     }
     _orig(id);
-  };
-});
+  };});
 </script>
 
 
