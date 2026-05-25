@@ -35,7 +35,7 @@ const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
 /* ── SUPABASE AUTH SCREEN ── */
 #auth-screen {
   position:fixed;inset:0;z-index:9993;background:#0A1F6E;
-  display:flex;align-items:center;justify-content:center;
+  display:none;align-items:center;justify-content:center;
   font-family:var(--font-body);
   backdrop-filter:blur(8px);
   padding-top:0;
@@ -50,7 +50,7 @@ const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
 #session-loader {
   position:fixed;inset:0;z-index:9995;
   background:#0A1F6E;
-  display:none;align-items:center;justify-content:center;
+  display:flex;align-items:center;justify-content:center;
   flex-direction:column;gap:16px;
 }
 #session-loader.hidden { display:none; }
@@ -212,7 +212,7 @@ a{color:inherit;text-decoration:none;}
 /* ── SHELL ── */
 .shell{padding-top:calc(112px + env(safe-area-inset-top));padding-bottom:calc(80px + env(safe-area-inset-bottom));min-height:100vh;}
 .shell.no-top-pad{padding-top:0 !important;padding-bottom:0 !important;}
-.screen{display:none;max-width:720px;margin:0 auto;padding:16px 14px;flex-direction:column;gap:14px;}
+.screen{display:none;max-width:480px;width:100%;margin:0 auto;padding:16px 14px 80px;flex-direction:column;gap:14px;box-sizing:border-box;}
 .screen.active{display:flex;}
 /* Challenge screen CSS removed */
 
@@ -658,7 +658,7 @@ a{color:inherit;text-decoration:none;}
 .alert-close{font-size:15px;cursor:pointer;opacity:.6;background:none;border:none;}
 
 /* ── ONBOARDING ── */
-#onboarding{position:fixed;inset:0;z-index:9992;background:rgba(10,31,110,.96);display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
+#onboarding{position:fixed;inset:0;z-index:9994;background:rgba(10,31,110,.96);display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
 .ob-box,.overlay-card{background:var(--surface);border-radius:20px;padding:24px;max-width:360px;width:92%;text-align:center;animation:obIn .5s cubic-bezier(.34,1.56,.64,1);display:flex;flex-direction:column;gap:12px;}
 .ob-box{position:relative;overflow:hidden;}
 .ob-box::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--navy),var(--blue),var(--navy));}
@@ -4996,54 +4996,6 @@ function incrementDailyQ(){
   S.dailyQCount = used + 1;
 }
 
-function showDailyLimitPopup(){
-  // Pro users and logged-in users with pro in localStorage never see this
-  if(isPro()) return;
-  try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return; }catch(e){}
-  // Remove any existing
-  document.querySelectorAll('.daily-limit-overlay').forEach(e=>e.remove());
-
-  const loggedIn = !!(typeof _currentUser !== 'undefined' && _currentUser);
-  const overlay = document.createElement('div');
-  overlay.className = 'daily-limit-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(10,31,110,0.95);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;backdrop-filter:blur(6px);';
-
-  const box = document.createElement('div');
-  box.style.cssText = 'background:#fff;border-radius:24px;padding:28px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.3);max-height:85vh;overflow-y:auto;box-sizing:border-box;';
-
-  box.innerHTML =
-    '<div style="font-size:48px;margin-bottom:12px;">🎯</div>' +
-    '<div style="font-size:18px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Daily Limit Reached</div>' +
-    '<div style="font-size:13px;color:#64748B;margin-bottom:6px;line-height:1.5;">You have used your <strong>15 free questions</strong> for today.</div>' +
-    '<div style="font-size:12px;color:#94A3B8;margin-bottom:24px;">Resets at midnight · Upgrade for unlimited access</div>';
-
-  function dismiss(){ overlay.remove(); }
-
-  if(!loggedIn){
-    // Guest: offer Sign Up (primary) and Come Back Tomorrow
-    const signupBtn = document.createElement('button');
-    signupBtn.style.cssText = 'width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:inherit;';
-    signupBtn.textContent = "Sign Up — It's Free 🚀";
-    signupBtn.onclick = function(){ dismiss(); showAuthPopup(); };
-    box.appendChild(signupBtn);
-  } else {
-    // Logged-in free user: offer Upgrade to Pro (no Sign Up button)
-    const upgradeBtn = document.createElement('button');
-    upgradeBtn.style.cssText = 'width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:inherit;';
-    upgradeBtn.textContent = 'Upgrade to Pro 🚀';
-    upgradeBtn.onclick = function(){ dismiss(); startProTrial(); };
-    box.appendChild(upgradeBtn);
-  }
-
-  const tomorrowBtn = document.createElement('button');
-  tomorrowBtn.style.cssText = 'width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
-  tomorrowBtn.textContent = 'Come Back Tomorrow';
-  tomorrowBtn.onclick = dismiss;
-  box.appendChild(tomorrowBtn);
-
-  overlay.appendChild(box);
-  document.body.appendChild(overlay);
-}
 function checkPlanFeature(feature){
   // Demo account has all pro features
   try{ 
@@ -5887,9 +5839,13 @@ function toggleCheckItem(item){
 
 // ── INIT ──
 (function initApp(){
-  // Auth screen is visible by default (CSS display:flex)
-  // Will be hidden by .hidden class when user is confirmed logged in
-  // Session loader stays hidden unless actively loading
+  // Show session loader immediately (navy, no gap)
+  // It will hide once Supabase confirms session status
+  var _loaderEl = document.getElementById('session-loader');
+  if(_loaderEl) _loaderEl.style.display = 'flex';
+  // Auth screen hidden until we know user is logged out
+  var _authEl = document.getElementById('auth-screen');
+  if(_authEl) _authEl.style.display = 'none';
   // Restore dark mode from localStorage
   try{
     const saved=localStorage.getItem('fm_dark');
@@ -8051,6 +8007,126 @@ S.plan = S.plan || 'free'; // free, pro, elite
 // multiplayer screen removed
 // Force hide multiplayer and challenge screens on init
 // multiplayer elements removed
+
+function showLimitPopup(type){
+  // type: 'soft' = at 10 questions (offer 5 more), 'hard' = at 15 (upgrade only)
+  // Remove any existing limit popups
+  document.querySelectorAll('.fm-limit-overlay').forEach(function(e){e.remove();});
+  var popup = document.getElementById('register-popup');
+  if(popup && popup.classList.contains('show')){ popup.classList.remove('show'); }
+
+  var isLoggedIn = !!(typeof _currentUser !== 'undefined' && _currentUser);
+  var isSoft = type === 'soft';
+
+  // Build overlay
+  var overlay = document.createElement('div');
+  overlay.className = 'fm-limit-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(10,31,110,0.95);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;backdrop-filter:blur(8px);';
+
+  var box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:24px;padding:28px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.35);box-sizing:border-box;';
+
+  // Header
+  var icon = document.createElement('div');
+  icon.style.cssText = 'font-size:50px;margin-bottom:10px;';
+  icon.textContent = isSoft ? '\uD83C\uDF89' : '\uD83E\uDD8A';
+  box.appendChild(icon);
+
+  var title = document.createElement('div');
+  title.style.cssText = 'font-family:var(--font-display,serif);font-size:21px;font-weight:700;color:#0A1F6E;margin-bottom:8px;';
+  title.textContent = isSoft ? 'Amazing session!' : 'Daily Limit Reached';
+  box.appendChild(title);
+
+  var sub = document.createElement('div');
+  sub.style.cssText = 'font-size:12px;color:#64748B;margin-bottom:16px;line-height:1.6;';
+  sub.textContent = isSoft
+    ? 'You\'ve used 10 free questions today. Upgrade for unlimited access or continue with 5 more.'
+    : 'You have used all 15 free questions for today. Resets at midnight.';
+  box.appendChild(sub);
+
+  // Stats (XP earned)
+  var stats = document.createElement('div');
+  stats.style.cssText = 'background:#EEF2FF;border-radius:12px;padding:8px 12px;font-size:12px;font-weight:700;color:#0A1F6E;margin-bottom:16px;';
+  stats.textContent = 'You earned ' + (S.xp||0) + ' XP \u2022 ' + (S.totalCorrect||0) + ' correct answers';
+  box.appendChild(stats);
+
+  // PRIMARY: Upgrade to Pro button
+  var upgradeBtn = document.createElement('button');
+  upgradeBtn.style.cssText = 'width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,#0A1F6E,#1E3A8A);color:#fff;font-size:14px;font-weight:800;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px;';
+  upgradeBtn.textContent = '\u26A1 Upgrade to Pro';
+  upgradeBtn.addEventListener('click', function(){
+    overlay.remove();
+    if(typeof startProTrial === 'function') startProTrial();
+  });
+  upgradeBtn.addEventListener('touchend', function(e){
+    e.preventDefault();
+    overlay.remove();
+    if(typeof startProTrial === 'function') startProTrial();
+  }, {passive:false});
+  box.appendChild(upgradeBtn);
+
+  // SECONDARY (soft only): 5 more free questions
+  if(isSoft && !_guestBonusUsed){
+    var fiveBtn = document.createElement('button');
+    fiveBtn.style.cssText = 'width:100%;padding:12px;border-radius:14px;background:#EEF2FF;color:#0A1F6E;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px;';
+    fiveBtn.textContent = 'Continue with 5 more free \u27A1';
+    fiveBtn.addEventListener('click', function(){
+      _guestBonusUsed = true;
+      overlay.remove();
+      if(typeof startSession === 'function') startSession();
+    });
+    fiveBtn.addEventListener('touchend', function(e){
+      e.preventDefault();
+      _guestBonusUsed = true;
+      overlay.remove();
+      if(typeof startSession === 'function') startSession();
+    }, {passive:false});
+    box.appendChild(fiveBtn);
+  }
+
+  // For non-logged-in: sign up options
+  if(!isLoggedIn){
+    var divider = document.createElement('div');
+    divider.style.cssText = 'font-size:11px;color:#94A3B8;margin:4px 0 10px;';
+    divider.textContent = '\u2014 or create a free account \u2014';
+    box.appendChild(divider);
+
+    var googleBtn = document.createElement('button');
+    googleBtn.style.cssText = 'width:100%;padding:11px;border-radius:14px;background:#fff;border:1.5px solid #E2E8F0;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;';
+    googleBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.734H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.684A5.456 5.456 0 0 1 3.682 9c0-.593.102-1.17.282-1.684V4.984H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.016l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.984L3.964 6.316C4.672 4.166 6.656 3.58 9 3.58z"/></svg>Sign Up with Google';
+    googleBtn.addEventListener('click', function(){ overlay.remove(); if(typeof signInWithGoogle==='function') signInWithGoogle(); });
+    googleBtn.addEventListener('touchend', function(e){ e.preventDefault(); overlay.remove(); if(typeof signInWithGoogle==='function') signInWithGoogle(); },{passive:false});
+    box.appendChild(googleBtn);
+  }
+
+  // Hard limit: Come Back Tomorrow
+  if(!isSoft){
+    var backBtn = document.createElement('button');
+    backBtn.style.cssText = 'width:100%;padding:11px;border-radius:14px;background:transparent;color:#94A3B8;font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:inherit;margin-top:4px;';
+    backBtn.textContent = 'Come Back Tomorrow';
+    backBtn.addEventListener('click', function(){ overlay.remove(); if(typeof showScreen==='function') showScreen('home'); });
+    backBtn.addEventListener('touchend', function(e){ e.preventDefault(); overlay.remove(); if(typeof showScreen==='function') showScreen('home'); },{passive:false});
+    box.appendChild(backBtn);
+  }
+
+  overlay.appendChild(box);
+  // Prevent click-outside dismiss
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) e.stopPropagation(); });
+  document.body.appendChild(overlay);
+}
+
+// Keep old names pointing to new function for compatibility
+function showDailyLimitPopup(){ showLimitPopup('hard'); }
+function showRegisterPopup(){
+  // Only show soft popup if not yet used bonus
+  if(!_guestBonusUsed) showLimitPopup('soft');
+  else showLimitPopup('hard');
+}
+function showFreePopup(type){ showLimitPopup(type==='quiz'?'hard':'hard'); }
+function closeRegPopup(){
+  document.querySelectorAll('.fm-limit-overlay').forEach(function(e){e.remove();});
+  var p=document.getElementById('register-popup'); if(p) p.classList.remove('show');
+}
 
 function saveState(){
   try{
@@ -11156,6 +11232,14 @@ body.auth-visible #fm-float-fox {
 .profile-item:nth-child(8) .profile-item-icon { background: #FEF9C3; }
 .profile-item:nth-child(9) .profile-item-icon { background: #F1F5F9; }
 .profile-item:nth-child(10) .profile-item-icon { background: #EDE9FE; }
+
+/* ── BODY FULL COVERAGE ── */
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  background: var(--bg, #F0F4FF);
+}
 </style>
 
 <!-- ══ MULTIPLAYER CHALLENGE SCREEN ══ -->
@@ -11205,10 +11289,18 @@ function startAsGuest(){
   _guestQCount = 0;
   _guestBonusUsed = false;
 
-  // Hide auth screen
+  // Hide auth screen completely - clear ALL display states
   var ae = document.getElementById('auth-screen');
-  if(ae){ ae.classList.add('hidden'); ae.classList.remove('show'); }
+  if(ae){
+    ae.style.display = 'none';
+    ae.classList.add('hidden');
+    ae.classList.remove('show');
+  }
   document.body.classList.remove('auth-visible');
+
+  // Hide session loader too
+  var le = document.getElementById('session-loader');
+  if(le){ le.style.display = 'none'; le.classList.add('hidden'); }
 
   // Show nav
   var nav = document.getElementById('top-nav');
@@ -11250,19 +11342,6 @@ function checkGuestPrompt(){
 }
 
 // ── REGISTER POPUP ──
-function showRegisterPopup(){
-  const popup = document.getElementById('register-popup');
-  const stats = document.getElementById('reg-popup-stats');
-  const skipBtn = document.getElementById('reg-popup-skip-btn');
-  const contBtn = document.getElementById('reg-popup-continue-btn');
-  if(stats) stats.textContent = 'You earned ' + S.xp + ' XP • ' + S.totalCorrect + ' correct answers';
-  // Hide skip button if daily limit reached or bonus already used
-  if(skipBtn) skipBtn.style.display = (_guestBonusUsed || (isFree() && getDailyQRemaining() <= 0)) ? 'none' : 'block';
-  // Hide continue button if bonus already used or at hard limit
-  if(contBtn) contBtn.style.display = (_guestBonusUsed || getDailyQRemaining() <= 0) ? 'none' : 'block';
-  if(popup) popup.classList.add('show');
-}
-
 function continueFreeQuestions(){
   // Give 5 more questions but mark bonus as used
   _guestBonusUsed = true;
@@ -11662,8 +11741,8 @@ async function doLogout(){
       // Hide auth, show app
       const _ae = document.getElementById('auth-screen');
       const _le = document.getElementById('session-loader');
-      if(_ae) { _ae.classList.add('hidden'); _ae.classList.remove('show'); }
-      if(_le) _le.classList.add('hidden');
+      if(_ae) { _ae.style.display='none'; _ae.classList.add('hidden'); _ae.classList.remove('show'); }
+      if(_le) { _le.style.display='none'; _le.classList.add('hidden'); }
       // Mark onboarding as done for any signing-in user
       S.onboardingDone = true;
       try{
@@ -11691,9 +11770,29 @@ async function doLogout(){
       const ne = document.getElementById('home-mentor-name');
       if(ne) ne.textContent = 'Welcome, ' + dn;
       S.username = dn;
-      toast('Welcome, ' + dn + '! 🎉');
+      toast('Welcome, ' + dn + '! ');
+    } else {
+      // No session or signed out — hide loader, show auth immediately
+      var _le2 = document.getElementById('session-loader');
+      var _ae2 = document.getElementById('auth-screen');
+      if(_le2) { _le2.style.display = 'none'; _le2.classList.add('hidden'); }
+      if(_ae2) { _ae2.style.display = 'flex'; _ae2.classList.remove('hidden'); }
+      document.body.classList.add('auth-visible');
     }
   });
+  // Safety: if Supabase takes >2s, show auth anyway
+  setTimeout(function(){
+    var loader = document.getElementById('session-loader');
+    var auth = document.getElementById('auth-screen');
+    if(loader && loader.style.display !== 'none' && !loader.classList.contains('hidden')){
+      loader.style.display = 'none';
+      loader.classList.add('hidden');
+      if(auth && !document.getElementById('screen-home').offsetParent){
+        auth.style.display = 'flex';
+        document.body.classList.add('auth-visible');
+      }
+    }
+  }, 2000);
 })();
 
 // ══════════════════════════════════════════
@@ -15571,87 +15670,25 @@ function checkFreeAccess(tool, limit){
   incrementFreeToolUse(tool);
   return true;
 }
-function showFreePopup(type){
-  var el=document.getElementById('fm-free-popup');
-  if(el) el.remove();
-  var d=document.createElement('div');
-  d.id='fm-free-popup';
-  d.style.cssText='position:fixed;inset:0;background:rgba(10,31,110,.92);z-index:99999;display:flex;align-items:flex-start;justify-content:center;padding:60px 16px 20px;backdrop-filter:blur(6px);overflow-y:auto;';
-  var title = type==='quiz' ? 'Daily Limit Reached' : 'Pro Feature';
-  var body  = type==='quiz'
-    ? 'You have used your <strong>15 free questions</strong> for today.<br><small>Resets at midnight</small>'
-    : 'This feature is limited for free users.<br><small>Upgrade for unlimited access</small>';
-  var div = document.createElement('div');
-  div.style.cssText = 'background:#fff;border-radius:24px;padding:28px 20px;max-width:340px;width:100%;max-height:90vh;overflow-y:auto;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.3);box-sizing:border-box;';
-  div.innerHTML = '<div style="font-size:52px;margin-bottom:12px;">🦊</div>'
-    + '<div style="font-family:var(--font-display);font-size:24px;font-weight:700;color:#0A1F6E;margin-bottom:8px;">' + title + '</div>'
-    + '<div style="font-size:13px;color:#64748B;margin-bottom:6px;line-height:1.6;">' + body + '</div>';
-  var btnUpgrade = document.createElement('button');
-  btnUpgrade.textContent = '⚡ Upgrade to Pro';
-  btnUpgrade.style.cssText = 'width:100%;padding:14px;background:linear-gradient(135deg,#0A1F6E,#1E3A8A);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:800;cursor:pointer;margin-top:16px;font-family:inherit;';
-  btnUpgrade.onclick = function(){ d.remove(); startProTrial(); };
-  var btnClose = document.createElement('button');
-  btnClose.textContent = 'Continue Browsing';
-  btnClose.style.cssText = 'width:100%;padding:12px;background:#EEF2FF;color:#0A1F6E;border:none;border-radius:14px;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;font-family:inherit;';
-  btnClose.onclick = function(){ d.remove(); };
-  div.appendChild(btnUpgrade);
-  div.appendChild(btnClose);
-  d.appendChild(div);
-  document.body.appendChild(d);
-}
-// Hook into showScreen after it's defined
-window.addEventListener('load', function(){
-  var quizScreens=['practice','challenge'];
-  var proToolMap={
-    fsbuilder:'fsbuilder', jebuilder:'jebuilder',
-    'client-scenario':'client_scenario', 'audit-file':'audit_file',
-    cpd:'cpd', excel:'excel', askai:'askai'
-  };
-  var _orig = typeof showScreen==='function' ? showScreen : null;
-  if(!_orig) return;
-  window.showScreen = function(id){
-    // Always recheck - Continue Browsing does NOT bypass
-    var userOk = (typeof isPro==='function'&&isPro()) ||
-                 (typeof _currentUser!=='undefined'&&!!_currentUser);
-    // Quiz screens - hard gate
-    if(quizScreens.includes(id) && !userOk){
-      var rem = typeof getDailyQRemaining==='function' ? getDailyQRemaining() : 999;
-      if(rem <= 0){ showFreePopup('quiz'); return; }
-    }
-    // Pro tool screens
-    if(proToolMap[id] && !userOk){
-      if(!checkFreeAccess(proToolMap[id],3)) return;
-    }
-    _orig(id);
-  };});
-</script>
-
-
-<script>
-// ── FOX SCREEN MESSAGES ──
-// Fun messages for each screen shown in the speech bubble
 var FOX_SCREEN_MSG = {
-  'home':        ["Ready to level up? 🚀", "IFRS won't study itself! 📚", "You're on a roll! 🔥", "Let's crush it today! 💪"],
-  'pro-home':    ["Time to impress clients! 💼", "Pro mode activated! ⚡", "Let's build something great!", "Your CPD isn't going to track itself! 😄"],
-  'topics':      ["Pick your standard! 📖", "81 standards, infinite wisdom 🦊", "Knowledge is power!", "Which one today? 🎯"],
-  'practice':    ["Answer fast for bonus XP! ⚡", "Think before you click! 🤔", "You've got this! 💪", "IFRS master in progress! 📊"],
-  'challenge':   ["Let's battle! ⚔️", "Opponent detected! 🦊", "ELO on the line! 😤", "Show them who's boss!"],
-  'vault':       ["Time to fix those mistakes! 🔧", "Learn from errors, earn XP! 💡", "Your weak spots are showing! 😅", "Let's turn losses into wins!"],
-  'progress':    ["Look how far you've come! 🏆", "Stats don't lie! 📈", "Keep climbing! 🦊", "Your future self thanks you!"],
-  'profile':     ["Looking good! 🦊", "Rank up faster, study more!", "Trophy collection loading... 🏅", "Who's that smart professional? 😎"],
-  'askai':       ["Ask me anything! 🤖", "IFRS 16 confusing? Ask away!", "No judgment here! 💡", "I've read ALL the standards! 📚"],
-  'fsbuilder':   ["Balance that sheet! 📊", "Assets = Liabilities + Equity! 🎯", "IFRS 9 says hello! 👋", "Let's build some financials!"],
-  'jebuilder':   ["Debit left, credit right! 📝", "Double-entry time! ⚖️", "Every debit has a credit! 🦊", "Journal entry incoming!"],
-  'quickref':    ["Standards at a glance! 🔍", "IASB made it complex, I made it simple! 😄", "Quick! Before the exam! ⏰"],
-  'comparisons': ["IFRS vs GAAP — fight! 🥊", "The differences will surprise you! 😮", "Global accounting, one fox! 🦊"],
-  'formulas':    ["Math time! Don't worry, I'll help 🧮", "Key ratios for key decisions! 📊", "These formulas = exam gold! 🥇"],
-  'cpd':         ["Log those CPD hours! ⏱️", "Your license won't renew itself! 😅", "Professional development rocks! 🚀"],
-  'settings':    ["Customise your experience! ⚙️", "Dark mode? Smart choice! 🌙", "Making it yours! 🦊"],
-  'leaderboard': ["Can you reach #1? 🏆", "I believe in you! 💪", "Top of the league incoming! ⬆️"],
-  'community':   ["Connect with finance pros! 🤝", "You're not alone! 🦊", "Network = Net worth! 💼"],
+  "home":        ["Ready to level up? 🚀","IFRS won't study itself! 📚","You're on a roll! 🔥","Let's crush it today! 💪"],
+  "pro-home":    ["Time to impress clients! 💼","Pro mode activated! ⚡","Let's build something great!","CPD hours ticking! ⏱️"],
+  "topics":      ["Pick your standard! 📖","81 standards, infinite wisdom 🦊","Knowledge is power!","Which one today? 🎯"],
+  "practice":    ["Answer fast for bonus XP! ⚡","Think before you click! 🤔","You've got this! 💪","FinFox believes in you! 📊"],
+  "challenge":   ["Let's battle! ⚔️","ELO on the line! 😤","Show them who's boss!","FinFox is watching! 🦊"],
+  "vault":       ["Fix those mistakes! 🔧","Learn from errors, earn XP! 💡","Let's turn losses into wins!","FinFox never forgets! 😅"],
+  "progress":    ["Look how far you've come! 🏆","Stats don't lie! 📈","Keep climbing! 🦊","Your future self thanks you!"],
+  "profile":     ["Looking good! 🦊","Rank up faster, study more!","Trophy collection loading! 🏅","Who's that finance pro? 😎"],
+  "askai":       ["Ask me anything! 🤖","IFRS 16 confusing? Ask away!","I've read ALL the standards! 📚","FinFox AI at your service!"],
+  "fsbuilder":   ["Balance that sheet! 📊","Assets = Liabilities + Equity! 🎯","Let's build some financials!","IFRS 9 says hello! 👋"],
+  "jebuilder":   ["Debit left, credit right! 📝","Double-entry time! ⚖️","Every debit has a credit! 🦊"],
+  "quickref":    ["Standards at a glance! 🔍","Quick! Before the exam! ⏰","IASB simplified it! 😄"],
+  "comparisons": ["IFRS vs GAAP - fight! 🥊","The differences will surprise you! 😮"],
+  "formulas":    ["Math time! FinFox will help 🧮","Key ratios for key decisions! 📊","Exam gold formulas! 🥇"],
+  "cpd":         ["Log those CPD hours! ⏱️","Your license needs renewing! 😅","Professional development rocks! 🚀"],
+  "settings":    ["Customise your experience! ⚙️","Dark mode? Smart choice! 🌙","Making it yours! 🦊"],
+  "leaderboard": ["Can you reach #1? 🏆","FinFox believes in you! 💪","Top of the league incoming! ⬆️"]
 };
-
-var _foxMsgTimers = {};
 
 function showFoxScreenMessage(screenId) {
   // Hero fox bubble
