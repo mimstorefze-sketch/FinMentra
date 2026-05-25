@@ -50,7 +50,7 @@ const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
 #session-loader {
   position:fixed;inset:0;z-index:9995;
   background:#0A1F6E;
-  display:none;align-items:center;justify-content:center;
+  display:flex;align-items:center;justify-content:center;
   flex-direction:column;gap:16px;
 }
 #session-loader.hidden { display:none; }
@@ -5845,13 +5845,8 @@ function toggleCheckItem(item){
 
 // ── INIT ──
 (function initApp(){
-  // Show session loader immediately (navy, no gap)
-  // It will hide once Supabase confirms session status
-  var _loaderEl = document.getElementById('session-loader');
-  if(_loaderEl) _loaderEl.style.display = 'flex';
-  // Auth screen hidden until we know user is logged out
-  var _authEl = document.getElementById('auth-screen');
-  if(_authEl) _authEl.style.display = 'none';
+  // Auth shown via .show class (see checkSession)
+  // Loader visible by CSS default
   // Restore dark mode from localStorage
   try{
     const saved=localStorage.getItem('fm_dark');
@@ -11658,7 +11653,7 @@ async function doLogout(){
 
 // ── CHECK IF ALREADY LOGGED IN (returning user) ──
 (async function checkSession() {
-  // Handle token in URL hash (Supabase redirects here with token)
+  // Handle token in URL hash (Supabase OAuth redirect)
   if(window.location.hash && window.location.hash.includes('access_token')){
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const accessToken = hashParams.get('access_token');
@@ -11680,17 +11675,19 @@ async function doLogout(){
   }
 
   const { data } = await _supa.auth.getSession();
-  // Hide the session loader now that we know the state
+  // Hide the session loader
   const loader = document.getElementById('session-loader');
   if(loader) loader.classList.add('hidden');
+
   if(!data.session){
-    // No logged-in session — show auth screen
+    // No session — show auth screen
     document.getElementById('auth-screen').classList.add('show');
+    document.body.classList.add('app-ready');
   }
+
   if(data.session){
     _currentUser = data.session.user;
     _isGuest = false;
-    // FIX6: Immediately hide onboarding + persist flag before any await
     S.onboardingDone = true;
     const _obFix = document.getElementById('onboarding');
     if(_obFix) _obFix.style.display = 'none';
@@ -11699,112 +11696,62 @@ async function doLogout(){
       _st.onboardingDone = true;
       localStorage.setItem('fm_state', JSON.stringify(_st));
     }catch(e){}
-    // Set username immediately from auth metadata
+    // Set username immediately
     if(!S.username || S.username === 'Scholar'){
       S.username = (_currentUser.user_metadata && (_currentUser.user_metadata.full_name || _currentUser.user_metadata.name)) || _currentUser.email.split('@')[0];
     }
-    // Update name on dashboard immediately before Supabase loads
-    // Hide onboarding screen right away
-    const obEl = document.getElementById('onboarding');
-    if(obEl) obEl.style.display = 'none';
-    // Demo account: set pro immediately before async Supabase load
-    if(_currentUser && _currentUser.email === 'demo@finmentra.com'){
+    // Demo account
+    if(_currentUser.email === 'demo@finmentra.com'){
       S.plan='pro'; S.tier='pro'; S.aiPlan='pro';
       try{ localStorage.setItem('fm_tier','pro'); }catch(e){}
     } else {
-      // Restore plan from localStorage while Supabase loads (prevents flash of free)
       try{
         const lt = localStorage.getItem('fm_tier');
         if(lt && lt !== 'free'){ S.plan=lt; S.tier=lt; S.aiPlan=lt; }
       }catch(e){}
     }
-    document.getElementById('auth-screen').classList.add('hidden'); document.getElementById('auth-screen').classList.remove('show');
-    document.getElementById('top-nav')?.classList.remove('nav-logged-out');
-    document.getElementById('nav-hearts')?.style.removeProperty('display');
+    document.getElementById('auth-screen').classList.remove('show');
+    document.body.classList.add('app-ready');
     await loadUserProgress();
     updatePlanUI();
     checkStripeReturn();
-    // Show daily reward if not claimed today
-    setTimeout(checkAndShowDailyReward, 1000);
+    // Update display name
+    const dn = S.username || _currentUser.email.split('@')[0];
+    const ne = document.getElementById('home-mentor-name');
+    if(ne) ne.textContent = 'Welcome, ' + dn;
+    setTimeout(function(){ if(typeof checkAndShowDailyReward==='function') checkAndShowDailyReward(); }, 1000);
   }
-  // Listen for OAuth redirect callback
+
+  // Listen for OAuth sign-in
   _supa.auth.onAuthStateChange(async (event, session) => {
-    if((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session){
+    if(event === 'SIGNED_IN' && session){
       _currentUser = session.user;
       _isGuest = false;
-      // Hide auth, show app
-      const _ae = document.getElementById('auth-screen');
-      const _le = document.getElementById('session-loader');
-      if(_ae) { _ae.style.display='none'; _ae.classList.add('hidden'); _ae.classList.remove('show'); }
-      if(_le) { _le.style.display='none'; _le.classList.add('hidden'); }
-      // Mark onboarding as done for any signing-in user
       S.onboardingDone = true;
       try{
         const st = JSON.parse(localStorage.getItem('fm_state')||'{}');
         st.onboardingDone = true;
         localStorage.setItem('fm_state', JSON.stringify(st));
       }catch(e){}
-      // Demo account: set pro immediately before async load
-      if(_currentUser && _currentUser.email === 'demo@finmentra.com'){
+      if(_currentUser.email === 'demo@finmentra.com'){
         S.plan='pro'; S.tier='pro'; S.aiPlan='pro';
         try{ localStorage.setItem('fm_tier','pro'); }catch(e){}
       }
-      document.getElementById('auth-screen').classList.add('hidden'); document.getElementById('auth-screen').classList.remove('show');
-    document.getElementById('top-nav')?.classList.remove('nav-logged-out');
-    document.getElementById('nav-hearts')?.style.removeProperty('display');
-      // Hide onboarding immediately
+      document.getElementById('auth-screen').classList.remove('show');
       const ob = document.getElementById('onboarding');
       if(ob) ob.style.display = 'none';
       closeRegPopup();
+      document.body.classList.add('app-ready');
       await loadUserProgress();
       updatePlanUI();
       checkStripeReturn();
-      // Update display name immediately
-      const dn = getDisplayName(_currentUser);
+      const dn = (_currentUser.user_metadata && (_currentUser.user_metadata.full_name || _currentUser.user_metadata.name)) || _currentUser.email.split('@')[0];
       const ne = document.getElementById('home-mentor-name');
       if(ne) ne.textContent = 'Welcome, ' + dn;
       S.username = dn;
-      toast('Welcome, ' + dn + '! ');
-      document.body.classList.add('app-ready');
-    } else {
-      // No session or signed out — hide loader, show auth immediately
-      var _le2 = document.getElementById('session-loader');
-      var _ae2 = document.getElementById('auth-screen');
-      if(_le2) { _le2.style.display = 'none'; _le2.classList.add('hidden'); }
-      if(_ae2) { _ae2.style.display = 'flex'; _ae2.classList.remove('hidden'); }
-      document.body.classList.add('auth-visible');
-      document.body.classList.add('app-ready');
+      toast('Welcome, ' + dn + '! 🎉');
     }
   });
-  // Safety timeouts — multiple fallbacks
-  function _showAuthNow(){
-    var loader = document.getElementById('session-loader');
-    var auth = document.getElementById('auth-screen');
-    if(loader){ loader.style.display='none'; loader.classList.add('hidden'); }
-    if(auth){ auth.style.display='flex'; auth.classList.remove('hidden'); document.body.classList.add('auth-visible'); }
-  }
-  function _showAppNow(){
-    var loader = document.getElementById('session-loader');
-    if(loader){ loader.style.display='none'; loader.classList.add('hidden'); }
-    if(typeof showScreen==='function') showScreen('home');
-  }
-  // Check every 500ms for up to 4s
-  var _initCheck = 0;
-  var _initTimer = setInterval(function(){
-    _initCheck++;
-    var loader = document.getElementById('session-loader');
-    var loaderVisible = loader && loader.style.display !== 'none';
-    if(!loaderVisible){
-      clearInterval(_initTimer); // Already handled
-      return;
-    }
-    if(_initCheck >= 8){ // 4 seconds max
-      clearInterval(_initTimer);
-      document.body.classList.add('app-ready');
-      if(typeof _currentUser!=='undefined' && _currentUser) _showAppNow();
-      else _showAuthNow();
-    }
-  }, 500);
 })();
 
 // ══════════════════════════════════════════
