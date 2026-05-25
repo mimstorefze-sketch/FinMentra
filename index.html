@@ -96,12 +96,12 @@ const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
 /* Register popup overlay */
 #register-popup {
   position:fixed;inset:0;z-index:1900;background:rgba(10,31,110,0.85);
-  display:none;align-items:flex-end;justify-content:center;
-  backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);padding:20px;
 }
 #register-popup.show{display:flex;}
 .reg-popup-box {
-  background:#fff;border-radius:24px 24px 0 0;padding:28px 24px 32px;
+  background:#fff;border-radius:24px;padding:28px 24px 32px;
   width:100%;max-width:480px;text-align:center;
 }
 .reg-popup-emoji{font-size:40px;margin-bottom:8px;}
@@ -4230,8 +4230,32 @@ function loadQuestion(){
 function answerQ(idx,btn,q){
   try{localStorage.setItem('fm_last_study_date',new Date().toDateString());}catch(e){}
   if(S.answered) return;
+  // Hard block - check localStorage count directly for ANY non-pro user
+  // This works even after app reopen when _isGuest may have reset
+  if(!isPro()){
+    var _used = parseInt(localStorage.getItem(getDailyQKey())||'0');
+    if(_used >= 15){
+      showDailyLimitPopup();
+      return;
+    }
+    if(_used >= 10 && !_currentUser && !_guestBonusUsed){
+      // Soft block - show register popup
+      _guestBonusUsed = true;
+      showRegisterPopup();
+      // Don't return - let them answer this question
+    }
+  }
   if((isFree()||_isGuest) && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
   S.answered=true;
+  // Increment daily count for all non-pro users
+  if(!isPro()){
+    try{
+      const _dk = getDailyQKey();
+      const _dc = parseInt(localStorage.getItem(_dk)||'0') + 1;
+      localStorage.setItem(_dk, String(_dc));
+      S.dailyQCount = _dc;
+    }catch(e){}
+  }
   const optsContainer=document.getElementById('options');
   if(optsContainer) optsContainer.querySelectorAll('.opt').forEach(o=>o.classList.add('disabled'));
   if(idx===q.correct){
@@ -4932,9 +4956,13 @@ function getDailyQKey(){
 }
 
 function getDailyQRemaining(){
-  if(isPro()) return 999;
-  try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return 999; }catch(e){}
-  if(_currentUser && !_planLoaded) return 999;
+  // Only return unlimited if CONFIRMED pro user with plan loaded
+  if(isPro() && _planLoaded) return 999;
+  // Check localStorage tier only if user is logged in
+  if(_currentUser && _planLoaded){
+    try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return 999; }catch(e){}
+  }
+  // For guests and free users - always check the daily count
   const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
   return Math.max(0, 15 - used);
 }
@@ -4967,54 +4995,52 @@ function incrementDailyQ(){
 }
 
 function showDailyLimitPopup(){
-  // Pro users and logged-in users with pro in localStorage never see this
-  if(isPro()) return;
-  try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return; }catch(e){}
-  // Remove any existing
-  document.querySelectorAll('.daily-limit-overlay').forEach(e=>e.remove());
-
-  const loggedIn = !!(typeof _currentUser !== 'undefined' && _currentUser);
-  const overlay = document.createElement('div');
+  if(isPro() && _planLoaded) return;
+  if(_currentUser && _planLoaded){
+    try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return; }catch(e){}
+  }
+  document.querySelectorAll('.daily-limit-overlay').forEach(function(e){e.remove();});
+  var loggedIn = !!(typeof _currentUser!=='undefined' && _currentUser);
+  var overlay = document.createElement('div');
   overlay.className = 'daily-limit-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
-
-  const box = document.createElement('div');
-  box.style.cssText = 'background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;';
-
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(10,31,110,0.95);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);padding:20px;';
+  var box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:24px;padding:32px 24px;max-width:340px;width:100%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.3);';
   box.innerHTML =
-    '<div style="font-size:48px;margin-bottom:12px;">🎯</div>' +
-    '<div style="font-size:18px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Daily Limit Reached</div>' +
-    '<div style="font-size:13px;color:#64748B;margin-bottom:6px;line-height:1.5;">You have used your <strong>15 free questions</strong> for today.</div>' +
-    '<div style="font-size:12px;color:#94A3B8;margin-bottom:24px;">Resets at midnight · Upgrade for unlimited access</div>';
-
-  function dismiss(){ overlay.remove(); }
-
+    '<div style="font-size:52px;margin-bottom:12px;">&#x1F98A;</div>' +
+    '<div style="font-family:var(--font-display,serif);font-size:22px;font-weight:700;color:#0A1F6E;margin-bottom:8px;">Daily Limit Reached</div>' +
+    '<div style="font-size:13px;color:#64748B;margin-bottom:6px;line-height:1.6;">You have used your <strong>15 free questions</strong> for today.</div>' +
+    '<div style="font-size:11px;color:#94A3B8;margin-bottom:20px;">Resets at midnight &middot; Upgrade for unlimited access</div>';
   if(!loggedIn){
-    // Guest: offer Sign Up (primary) and Come Back Tomorrow
-    const signupBtn = document.createElement('button');
-    signupBtn.style.cssText = 'width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:inherit;';
-    signupBtn.textContent = "Sign Up — It's Free 🚀";
-    signupBtn.onclick = function(){ dismiss(); showAuthPopup(); };
+    var signupBtn = document.createElement('button');
+    signupBtn.style.cssText = 'width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,#0A1F6E,#1E3A8A);color:#fff;font-size:14px;font-weight:800;border:none;cursor:pointer;margin-bottom:10px;font-family:inherit;';
+    signupBtn.textContent = "Sign Up - It's Free";
+    signupBtn.onclick = function(){
+      overlay.remove();
+      var ae = document.getElementById('auth-screen');
+      if(ae){ ae.classList.remove('hidden'); ae.style.display='flex'; }
+      document.body.classList.add('auth-visible');
+    };
     box.appendChild(signupBtn);
   } else {
-    // Logged-in free user: offer Upgrade to Pro (no Sign Up button)
-    const upgradeBtn = document.createElement('button');
-    upgradeBtn.style.cssText = 'width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:inherit;';
-    upgradeBtn.textContent = 'Upgrade to Pro 🚀';
-    upgradeBtn.onclick = function(){ dismiss(); showScreen('profile'); };
+    var upgradeBtn = document.createElement('button');
+    upgradeBtn.style.cssText = 'width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,#0A1F6E,#1E3A8A);color:#fff;font-size:14px;font-weight:800;border:none;cursor:pointer;margin-bottom:10px;font-family:inherit;';
+    upgradeBtn.textContent = 'Upgrade to Pro';
+    upgradeBtn.onclick = function(){ overlay.remove(); if(typeof showScreen==='function') showScreen('settings'); };
     box.appendChild(upgradeBtn);
   }
-
-  const tomorrowBtn = document.createElement('button');
-  tomorrowBtn.style.cssText = 'width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
+  var tomorrowBtn = document.createElement('button');
+  tomorrowBtn.style.cssText = 'width:100%;padding:12px;border-radius:14px;background:#EEF2FF;color:#0A1F6E;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
   tomorrowBtn.textContent = 'Come Back Tomorrow';
-  tomorrowBtn.onclick = dismiss;
+  tomorrowBtn.onclick = function(){
+    overlay.remove();
+    if(typeof showScreen==='function') showScreen('home');
+  };
   box.appendChild(tomorrowBtn);
-
   overlay.appendChild(box);
   document.body.appendChild(overlay);
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) e.stopPropagation(); });
 }
-
 function checkPlanFeature(feature){
   // Demo account has all pro features
   try{ 
@@ -7883,7 +7909,7 @@ function showContinuePopup(std, remaining){
   overlay.id = 'continue-popup-overlay';
   overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.82);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);';
   const box = document.createElement('div');
-  box.style.cssText = 'background:#fff;border-radius:24px 24px 0 0;padding:28px 24px 32px;width:100%;max-width:480px;text-align:center;box-shadow:0 -8px 40px rgba(10,31,110,.2);';
+  box.style.cssText = 'background:#fff;border-radius:24px;padding:28px 24px 32px;width:100%;max-width:480px;text-align:center;box-shadow:0 -8px 40px rgba(10,31,110,.2);';
   const acc = S.sessionQ > 0 ? Math.round(S.sessionCorrect/S.sessionQ*100) : 0;
   const accColor = acc >= 70 ? '#0A6E3A' : acc >= 50 ? '#D97706' : '#DC2626';
   const accEmoji = acc >= 70 ? '🌟' : acc >= 50 ? '👍' : '📖';
