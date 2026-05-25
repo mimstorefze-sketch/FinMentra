@@ -97,7 +97,7 @@ const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
 #register-popup {
   position:fixed;inset:0;z-index:1900;background:rgba(10,31,110,0.85);
   display:none;align-items:center;justify-content:center;
-  backdrop-filter:blur(4px);padding:16px;
+  backdrop-filter:blur(4px);padding:16px;box-sizing:border-box;
 }
 #register-popup.show{display:flex;}
 .reg-popup-box {
@@ -1928,6 +1928,11 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <div style="font-size:24px;margin-bottom:4px;">🏛️</div>
       <div style="font-size:12px;font-weight:800;color:#fff;">Arena</div>
       <div style="font-size:10px;color:rgba(255,255,255,.7);">MCQ Practice</div>
+    </div>
+    <div class="pro-mini-card" onclick="showScreen('challenge')" style="background:linear-gradient(135deg,#5B21B6,#7C3AED);">
+      <div style="font-size:24px;margin-bottom:4px;">⚔️</div>
+      <div style="font-size:12px;font-weight:800;color:#fff;">Challenge</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.7);">Live Match</div>
     </div>
     <div class="pro-mini-card" onclick="showBossBattle()">
       <div style="font-size:24px;margin-bottom:4px;">👹</div>
@@ -4230,7 +4235,11 @@ function loadQuestion(){
 function answerQ(idx,btn,q){
   try{localStorage.setItem('fm_last_study_date',new Date().toDateString());}catch(e){}
   if(S.answered) return;
-
+  // Hard block via localStorage — works after reopen regardless of _isGuest state
+  if(!isPro()){
+    var _aqUsed = parseInt(localStorage.getItem(getDailyQKey())||'0');
+    if(_aqUsed >= 15){ showDailyLimitPopup(); return; }
+  }
   S.answered=true;
   const optsContainer=document.getElementById('options');
   if(optsContainer) optsContainer.querySelectorAll('.opt').forEach(o=>o.classList.add('disabled'));
@@ -7878,9 +7887,11 @@ loadQuestion=function(){
 function showContinuePopup(std, remaining){
   const existing = document.getElementById('continue-popup-overlay');
   if(existing) existing.remove();
+  // Free users: no session-end popup — just end quietly
+  if(!isPro()){ return; }
   const overlay = document.createElement('div');
   overlay.id = 'continue-popup-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.82);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.82);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:16px;';
   const box = document.createElement('div');
   box.style.cssText = 'background:#fff;border-radius:24px;padding:28px 24px 32px;width:100%;max-width:480px;text-align:center;box-shadow:0 -8px 40px rgba(10,31,110,.2);';
   const acc = S.sessionQ > 0 ? Math.round(S.sessionCorrect/S.sessionQ*100) : 0;
@@ -7899,6 +7910,11 @@ function showContinuePopup(std, remaining){
   contBtn.textContent = 'Continue Practicing →';
   contBtn.onclick = async function(){
     overlay.remove();
+    // Check via localStorage directly — works after reopen
+    if(!isPro()){
+      const _cpUsed = parseInt(localStorage.getItem(getDailyQKey())||'0');
+      if(_cpUsed >= 15){ showDailyLimitPopup(); return; }
+    }
     if(!isPro() && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
     // FIX4: reload from Supabase, not local QB[]
     let pool = [];
@@ -7994,14 +8010,15 @@ function loadState(){
     if(saved){
       const d=JSON.parse(saved);
       Object.assign(S,d);
-      // Never restore multiplayer/challenge as starting screen
-      // Always start on home screen
-      // multiplayer screen removed
-      // Sync button UI silently — no popup
+      // Apply saved mode to UI buttons
       const sBtn=document.getElementById('ms-student');
       const pBtn=document.getElementById('ms-pro');
-      if(sBtn) sBtn.classList.toggle('active', S.mode==='student');
+      if(sBtn) sBtn.classList.toggle('active', S.mode==='student'||!S.mode);
       if(pBtn) pBtn.classList.toggle('active', S.mode==='professional');
+      // Apply mode properly after DOM ready
+      setTimeout(function(){
+        if(typeof applyModeUI==='function') applyModeUI(S.mode||'student');
+      }, 100);
     }
   }catch(e){}
 }
@@ -11195,22 +11212,17 @@ function getGuestThreshold(){
 }
 
 function checkGuestPrompt(){
-  if(_isGuest && !_currentUser){
-    _guestQCount++;
+  // Always check via localStorage — works after reopen regardless of _isGuest state
+  if(!isPro()){
     const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
-    if(used === 10 && !_guestBonusUsed) showRegisterPopup();
-    if(used >= 15) showDailyLimitPopup();
-    return;
-  }
-  if(!_currentUser && !_isGuest){
-    const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
-    if(used === 10 && !_guestBonusUsed) showRegisterPopup();
-    if(used >= 15) showDailyLimitPopup();
-    return;
-  }
-  if(_currentUser && isFree()){
-    const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
-    if(used >= 15) showDailyLimitPopup();
+    if(!_currentUser){
+      // Guest or unsigned user
+      if(used === 10 && !_guestBonusUsed){ _guestBonusUsed=true; showRegisterPopup(); }
+      if(used >= 15){ showDailyLimitPopup(); return; }
+    } else if(isFree()){
+      // Logged in free user
+      if(used >= 15){ showDailyLimitPopup(); return; }
+    }
   }
 }
 
