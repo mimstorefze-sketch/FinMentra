@@ -4236,9 +4236,13 @@ function answerQ(idx,btn,q){
   try{localStorage.setItem('fm_last_study_date',new Date().toDateString());}catch(e){}
   if(S.answered) return;
   // Hard block via localStorage — works after reopen regardless of _isGuest state
+  // Hard block for ALL non-pro users (guest, free, or any user)
   if(!isPro()){
     var _aqUsed = parseInt(localStorage.getItem(getDailyQKey())||'0');
-    if(_aqUsed >= 15){ showDailyLimitPopup(); return; }
+    if(_aqUsed >= 15){
+      showDailyLimitPopup();
+      return;
+    }
   }
   S.answered=true;
   const optsContainer=document.getElementById('options');
@@ -4908,9 +4912,8 @@ function checkStripeReturn(){
 function showAuthPopup(){
   var ae = document.getElementById('auth-screen');
   if(ae){
-    ae.style.display = 'flex';
-    ae.classList.remove('hidden');
     ae.classList.add('show');
+    ae.style.display = 'flex';
     document.body.classList.add('auth-visible');
   }
 }
@@ -8049,8 +8052,10 @@ function showLimitPopup(type){
     }
   }));
 
-  // 5 more free (soft only, bonus not used)
-  if(isSoft && !_guestBonusUsed){
+  // 5 more free (soft only, bonus not used today)
+  var _bonusKey = getDailyQKey() + '_bonus';
+  var _bonusUsedToday = localStorage.getItem(_bonusKey) === '1' || _guestBonusUsed;
+  if(isSoft && !_bonusUsedToday){
     box.appendChild(makeBtn('Continue with 5 more free \u27A1','#EEF2FF','#0A1F6E', function(){
       _guestBonusUsed = true;
       overlay.remove();
@@ -11316,17 +11321,25 @@ function getGuestThreshold(){
 }
 
 function checkGuestPrompt(){
-  // Always check via localStorage — works after reopen regardless of _isGuest state
-  if(!isPro()){
-    const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
-    if(!_currentUser){
-      // Guest or unsigned user - soft block at 10, hard block at 15
-      if(used === 10 && !_guestBonusUsed){ _guestBonusUsed=true; showRegisterPopup(); }
-      if(used > 10 && used >= 15){ showDailyLimitPopup(); return; }
-    } else if(isFree()){
-      // Logged in free user - hard block at 15
-      if(used >= 15){ showDailyLimitPopup(); return; }
+  if(isPro()) return;
+  var used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
+  // Persist bonus state in localStorage so it survives page reloads
+  var bonusKey = getDailyQKey() + '_bonus';
+  var bonusUsed = localStorage.getItem(bonusKey) === '1' || _guestBonusUsed;
+  
+  if(!_currentUser){
+    // Soft block at 10 (show once per day)
+    if(used === 10 && !bonusUsed){
+      _guestBonusUsed = true;
+      localStorage.setItem(bonusKey, '1');
+      showRegisterPopup();
+      return;
     }
+    // Hard block at 15
+    if(used >= 15){ showDailyLimitPopup(); return; }
+  } else if(isFree()){
+    // Logged-in free user hard block at 15
+    if(used >= 15){ showDailyLimitPopup(); return; }
   }
 }
 
