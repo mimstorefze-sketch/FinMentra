@@ -4963,7 +4963,8 @@ function isFree(){
 
 // Daily question limit for free users
 function getDailyQKey(){
-  return 'fm_dq_' + new Date().toDateString().replace(/ /g,'_');
+  var d=new Date();
+  return 'fm_dq_'+d.getFullYear()+'_'+(d.getMonth()+1)+'_'+d.getDate();
 }
 
 function getDailyQRemaining(){
@@ -7252,18 +7253,14 @@ function matchStudyBuddy(){
 // ── PRO TRIAL ──
 S.tier = S.tier || 'free';
 async function startProTrial(){
-  // Must be logged in to upgrade to Pro
   if(!_currentUser){
-    // Show auth screen directly — no toast, just open signup
     if(typeof showAuthPopup === 'function') showAuthPopup();
     return;
   }
-  // Already Pro
   if(isPro()){
     toast('You are already on Pro! ✓');
     return;
   }
-  // Show loading state
   toast('Redirecting to secure payment... 🔒');
   try{
     const resp = await fetch('/api/create-checkout', {
@@ -7274,17 +7271,15 @@ async function startProTrial(){
         userEmail: _currentUser.email
       })
     });
-    const data = await resp.json();
-    if(data.url){
-      // Redirect to Stripe Checkout
-      // Set flag so app knows to refresh plan when it reloads
-      try{ localStorage.setItem('fm_stripe_in_progress', '1'); }catch(e){}
-      // Redirect to Stripe — after payment Stripe sends back to finmentra.com?upgraded=true
-      window.location.href = data.url;
-    } else {
-      toast('Payment setup failed. Please try again.');
-      console.error('Stripe error:', data.error);
+    if(resp.ok){
+      const data = await resp.json();
+      if(data.url){
+        try{ localStorage.setItem('fm_stripe_in_progress', '1'); }catch(e){}
+        window.location.href = data.url;
+        return;
+      }
     }
+    toast('Payment setup failed. Please try again.');
   } catch(err){
     toast('Connection error. Please try again.');
     console.error('Checkout error:', err);
@@ -11233,6 +11228,12 @@ html, body {
   overflow-x: hidden;
   background: var(--bg, #F0F4FF);
 }
+
+/* Hide fox and nav during initial load */
+body:not(.app-ready) #fm-float-fox,
+body:not(.app-ready) .nav {
+  display: none !important;
+}
 </style>
 
 <!-- ══ MULTIPLAYER CHALLENGE SCREEN ══ -->
@@ -11728,7 +11729,7 @@ async function doLogout(){
   }
   // Listen for OAuth redirect callback
   _supa.auth.onAuthStateChange(async (event, session) => {
-    if(event === 'SIGNED_IN' && session){
+    if((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session){
       _currentUser = session.user;
       _isGuest = false;
       // Hide auth, show app
@@ -11764,6 +11765,7 @@ async function doLogout(){
       if(ne) ne.textContent = 'Welcome, ' + dn;
       S.username = dn;
       toast('Welcome, ' + dn + '! ');
+      document.body.classList.add('app-ready');
     } else {
       // No session or signed out — hide loader, show auth immediately
       var _le2 = document.getElementById('session-loader');
@@ -11771,6 +11773,7 @@ async function doLogout(){
       if(_le2) { _le2.style.display = 'none'; _le2.classList.add('hidden'); }
       if(_ae2) { _ae2.style.display = 'flex'; _ae2.classList.remove('hidden'); }
       document.body.classList.add('auth-visible');
+      document.body.classList.add('app-ready');
     }
   });
   // Safety timeouts — multiple fallbacks
@@ -11797,6 +11800,7 @@ async function doLogout(){
     }
     if(_initCheck >= 8){ // 4 seconds max
       clearInterval(_initTimer);
+      document.body.classList.add('app-ready');
       if(typeof _currentUser!=='undefined' && _currentUser) _showAppNow();
       else _showAuthNow();
     }
