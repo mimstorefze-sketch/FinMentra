@@ -4906,8 +4906,13 @@ function checkStripeReturn(){
 }
 
 function showAuthPopup(){
-  const authScreen = document.getElementById('auth-screen');
-  if(authScreen){ authScreen.classList.add('show'); return; }
+  var ae = document.getElementById('auth-screen');
+  if(ae){
+    ae.style.display = 'flex';
+    ae.classList.remove('hidden');
+    ae.classList.add('show');
+    document.body.classList.add('auth-visible');
+  }
 }
 
 function updateAIBanner(){
@@ -8009,120 +8014,108 @@ S.plan = S.plan || 'free'; // free, pro, elite
 // multiplayer elements removed
 
 function showLimitPopup(type){
-  // type: 'soft' = at 10 questions (offer 5 more), 'hard' = at 15 (upgrade only)
-  // Remove any existing limit popups
   document.querySelectorAll('.fm-limit-overlay').forEach(function(e){e.remove();});
   var popup = document.getElementById('register-popup');
-  if(popup && popup.classList.contains('show')){ popup.classList.remove('show'); }
+  if(popup) popup.classList.remove('show');
 
-  var isLoggedIn = !!(typeof _currentUser !== 'undefined' && _currentUser);
-  var isSoft = type === 'soft';
+  var isLoggedIn = !!(typeof _currentUser!=='undefined' && _currentUser);
+  var isSoft = (type==='soft');
+  var used = parseInt(localStorage.getItem(getDailyQKey())||'0');
 
-  // Build overlay
   var overlay = document.createElement('div');
   overlay.className = 'fm-limit-overlay';
   overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(10,31,110,0.95);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;backdrop-filter:blur(8px);';
 
   var box = document.createElement('div');
-  box.style.cssText = 'background:#fff;border-radius:24px;padding:28px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.35);box-sizing:border-box;';
+  box.style.cssText = 'background:#fff;border-radius:24px;padding:28px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.35);box-sizing:border-box;max-height:90vh;overflow-y:auto;';
 
-  // Header
-  var icon = document.createElement('div');
-  icon.style.cssText = 'font-size:50px;margin-bottom:10px;';
-  icon.textContent = isSoft ? '\uD83C\uDF89' : '\uD83E\uDD8A';
-  box.appendChild(icon);
+  box.innerHTML = '<div style="font-size:48px;margin-bottom:10px;">'+(isSoft?'\uD83C\uDF89':'\uD83E\uDD8A')+'</div>'
+    +'<div style="font-family:var(--font-display,serif);font-size:20px;font-weight:700;color:#0A1F6E;margin-bottom:8px;">'+(isSoft?'Amazing session!':'Daily Limit Reached')+'</div>'
+    +'<div style="font-size:12px;color:#64748B;margin-bottom:12px;line-height:1.6;">'
+    +(isSoft
+      ? 'You used <strong>10 free questions</strong> today. Upgrade for unlimited or continue with 5 more.'
+      : 'You used all <strong>15 free questions</strong> for today.<br><small style="color:#94A3B8;">Resets at midnight</small>')
+    +'</div>'
+    +'<div style="background:#EEF2FF;border-radius:12px;padding:8px;font-size:12px;font-weight:700;color:#0A1F6E;margin-bottom:14px;">You earned '+(typeof S!=='undefined'?S.xp||0:0)+' XP</div>';
 
-  var title = document.createElement('div');
-  title.style.cssText = 'font-family:var(--font-display,serif);font-size:21px;font-weight:700;color:#0A1F6E;margin-bottom:8px;';
-  title.textContent = isSoft ? 'Amazing session!' : 'Daily Limit Reached';
-  box.appendChild(title);
+  function makeBtn(text, bg, color, fn){
+    var b = document.createElement('button');
+    b.style.cssText = 'width:100%;padding:13px;border-radius:14px;background:'+bg+';color:'+color+';font-size:13px;font-weight:800;border:none;cursor:pointer;font-family:inherit;margin-bottom:8px;';
+    b.textContent = text;
+    b.addEventListener('click', fn);
+    b.addEventListener('touchend', function(e){e.preventDefault(); fn();}, {passive:false});
+    return b;
+  }
 
-  var sub = document.createElement('div');
-  sub.style.cssText = 'font-size:12px;color:#64748B;margin-bottom:16px;line-height:1.6;';
-  sub.textContent = isSoft
-    ? 'You\'ve used 10 free questions today. Upgrade for unlimited access or continue with 5 more.'
-    : 'You have used all 15 free questions for today. Resets at midnight.';
-  box.appendChild(sub);
-
-  // Stats (XP earned)
-  var stats = document.createElement('div');
-  stats.style.cssText = 'background:#EEF2FF;border-radius:12px;padding:8px 12px;font-size:12px;font-weight:700;color:#0A1F6E;margin-bottom:16px;';
-  stats.textContent = 'You earned ' + (S.xp||0) + ' XP \u2022 ' + (S.totalCorrect||0) + ' correct answers';
-  box.appendChild(stats);
-
-  // PRIMARY: Upgrade to Pro button
-  var upgradeBtn = document.createElement('button');
-  upgradeBtn.style.cssText = 'width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,#0A1F6E,#1E3A8A);color:#fff;font-size:14px;font-weight:800;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px;';
-  upgradeBtn.textContent = '\u26A1 Upgrade to Pro';
-  upgradeBtn.addEventListener('click', function(){
+  // Upgrade to Pro (always first)
+  box.appendChild(makeBtn('\u26A1 Upgrade to Pro','linear-gradient(135deg,#0A1F6E,#1E3A8A)','#fff', function(){
     overlay.remove();
-    if(typeof startProTrial === 'function') startProTrial();
-  });
-  upgradeBtn.addEventListener('touchend', function(e){
-    e.preventDefault();
-    overlay.remove();
-    if(typeof startProTrial === 'function') startProTrial();
-  }, {passive:false});
-  box.appendChild(upgradeBtn);
+    if(isLoggedIn){ startProTrial(); }
+    else {
+      // Show auth screen
+      var ae=document.getElementById('auth-screen');
+      if(ae){ae.style.display='flex';ae.classList.remove('hidden');}
+      document.body.classList.add('auth-visible');
+    }
+  }));
 
-  // SECONDARY (soft only): 5 more free questions
+  // 5 more free (soft only, bonus not used)
   if(isSoft && !_guestBonusUsed){
-    var fiveBtn = document.createElement('button');
-    fiveBtn.style.cssText = 'width:100%;padding:12px;border-radius:14px;background:#EEF2FF;color:#0A1F6E;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px;';
-    fiveBtn.textContent = 'Continue with 5 more free \u27A1';
-    fiveBtn.addEventListener('click', function(){
+    box.appendChild(makeBtn('Continue with 5 more free \u27A1','#EEF2FF','#0A1F6E', function(){
       _guestBonusUsed = true;
       overlay.remove();
-      if(typeof startSession === 'function') startSession();
-    });
-    fiveBtn.addEventListener('touchend', function(e){
-      e.preventDefault();
-      _guestBonusUsed = true;
-      overlay.remove();
-      if(typeof startSession === 'function') startSession();
-    }, {passive:false});
-    box.appendChild(fiveBtn);
+      if(typeof startSession==='function') startSession();
+    }));
   }
 
-  // For non-logged-in: sign up options
+  // Sign up options (non logged in)
   if(!isLoggedIn){
-    var divider = document.createElement('div');
-    divider.style.cssText = 'font-size:11px;color:#94A3B8;margin:4px 0 10px;';
-    divider.textContent = '\u2014 or create a free account \u2014';
-    box.appendChild(divider);
+    var div2 = document.createElement('div');
+    div2.style.cssText = 'font-size:11px;color:#94A3B8;margin:4px 0 8px;';
+    div2.textContent = '\u2014 or create a free account \u2014';
+    box.appendChild(div2);
 
-    var googleBtn = document.createElement('button');
-    googleBtn.style.cssText = 'width:100%;padding:11px;border-radius:14px;background:#fff;border:1.5px solid #E2E8F0;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;';
-    googleBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.734H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.684A5.456 5.456 0 0 1 3.682 9c0-.593.102-1.17.282-1.684V4.984H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.016l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.984L3.964 6.316C4.672 4.166 6.656 3.58 9 3.58z"/></svg>Sign Up with Google';
-    googleBtn.addEventListener('click', function(){ overlay.remove(); if(typeof signInWithGoogle==='function') signInWithGoogle(); });
-    googleBtn.addEventListener('touchend', function(e){ e.preventDefault(); overlay.remove(); if(typeof signInWithGoogle==='function') signInWithGoogle(); },{passive:false});
-    box.appendChild(googleBtn);
+    // Google
+    var gBtn = document.createElement('button');
+    gBtn.style.cssText = 'width:100%;padding:11px;border-radius:14px;background:#fff;border:1.5px solid #E2E8F0;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;';
+    gBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.734H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.684A5.456 5.456 0 0 1 3.682 9c0-.593.102-1.17.282-1.684V4.984H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.016l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.984L3.964 6.316C4.672 4.166 6.656 3.58 9 3.58z"/></svg>Sign Up with Google';
+    gBtn.addEventListener('click', function(){overlay.remove(); if(typeof signInWithGoogle==='function') signInWithGoogle();});
+    gBtn.addEventListener('touchend', function(e){e.preventDefault(); overlay.remove(); if(typeof signInWithGoogle==='function') signInWithGoogle();},{passive:false});
+    box.appendChild(gBtn);
+
+    // LinkedIn
+    var liBtn = document.createElement('button');
+    liBtn.style.cssText = 'width:100%;padding:11px;border-radius:14px;background:#fff;border:1.5px solid #E2E8F0;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;';
+    liBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>Sign Up with LinkedIn';
+    liBtn.addEventListener('click', function(){overlay.remove(); if(typeof signInWithLinkedIn==='function') signInWithLinkedIn();});
+    liBtn.addEventListener('touchend', function(e){e.preventDefault(); overlay.remove(); if(typeof signInWithLinkedIn==='function') signInWithLinkedIn();},{passive:false});
+    box.appendChild(liBtn);
   }
 
-  // Hard limit: Come Back Tomorrow
+  // Come Back Tomorrow (hard only)
   if(!isSoft){
     var backBtn = document.createElement('button');
-    backBtn.style.cssText = 'width:100%;padding:11px;border-radius:14px;background:transparent;color:#94A3B8;font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:inherit;margin-top:4px;';
+    backBtn.style.cssText = 'width:100%;padding:10px;border-radius:14px;background:transparent;color:#94A3B8;font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:inherit;';
     backBtn.textContent = 'Come Back Tomorrow';
-    backBtn.addEventListener('click', function(){ overlay.remove(); if(typeof showScreen==='function') showScreen('home'); });
-    backBtn.addEventListener('touchend', function(e){ e.preventDefault(); overlay.remove(); if(typeof showScreen==='function') showScreen('home'); },{passive:false});
+    backBtn.addEventListener('click', function(){overlay.remove(); if(typeof showScreen==='function') showScreen('home');});
+    backBtn.addEventListener('touchend', function(e){e.preventDefault(); overlay.remove(); if(typeof showScreen==='function') showScreen('home');},{passive:false});
     box.appendChild(backBtn);
   }
 
   overlay.appendChild(box);
-  // Prevent click-outside dismiss
-  overlay.addEventListener('click', function(e){ if(e.target===overlay) e.stopPropagation(); });
+  overlay.addEventListener('click', function(e){if(e.target===overlay) e.stopPropagation();});
   document.body.appendChild(overlay);
 }
 
-// Keep old names pointing to new function for compatibility
+// Keep old names pointing to new function
 function showDailyLimitPopup(){ showLimitPopup('hard'); }
-function showRegisterPopup(){
-  // Only show soft popup if not yet used bonus
-  if(!_guestBonusUsed) showLimitPopup('soft');
-  else showLimitPopup('hard');
+function showRegisterPopup(){ _guestBonusUsed ? showLimitPopup('hard') : showLimitPopup('soft'); }
+function showFreePopup(type){ showLimitPopup('hard'); }
+function closeRegPopup(){
+  document.querySelectorAll('.fm-limit-overlay').forEach(function(e){e.remove();});
+  var p=document.getElementById('register-popup'); if(p) p.classList.remove('show');
 }
-function showFreePopup(type){ showLimitPopup(type==='quiz'?'hard':'hard'); }
+
 function closeRegPopup(){
   document.querySelectorAll('.fm-limit-overlay').forEach(function(e){e.remove();});
   var p=document.getElementById('register-popup'); if(p) p.classList.remove('show');
@@ -11784,15 +11777,21 @@ async function doLogout(){
   setTimeout(function(){
     var loader = document.getElementById('session-loader');
     var auth = document.getElementById('auth-screen');
+    // Only force-show auth if still loading AND no user session
     if(loader && loader.style.display !== 'none' && !loader.classList.contains('hidden')){
-      loader.style.display = 'none';
-      loader.classList.add('hidden');
-      if(auth && !document.getElementById('screen-home').offsetParent){
-        auth.style.display = 'flex';
-        document.body.classList.add('auth-visible');
+      if(typeof _currentUser !== 'undefined' && _currentUser){
+        // User is logged in - hide loader, go to home
+        loader.style.display = 'none';
+        loader.classList.add('hidden');
+        if(typeof showScreen === 'function') showScreen('home');
+      } else {
+        // No user - show auth
+        loader.style.display = 'none';
+        loader.classList.add('hidden');
+        if(auth){ auth.style.display = 'flex'; document.body.classList.add('auth-visible'); }
       }
     }
-  }, 2000);
+  }, 3000);
 })();
 
 // ══════════════════════════════════════════
@@ -15715,6 +15714,7 @@ function showFoxScreenMessage(screenId) {
 
 // Hook into showScreen to trigger fox messages
 window.addEventListener('load', function() {
+  var _foxMsgTimers = {};
   var _orig = typeof showScreen === 'function' ? showScreen : null;
   if (!_orig) return;
   var _wrapped = window.showScreen;
