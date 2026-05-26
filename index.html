@@ -1443,6 +1443,9 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <input class="auth-input" id="auth-name" type="text" placeholder="Your full name"/>
     </div>
     <button class="auth-btn" id="auth-btn" onclick="handleAuth()">Login</button>
+    <div id="auth-forgot" style="text-align:center;margin-top:8px;display:block;">
+      <span onclick="handleForgotPassword()" style="font-size:12px;color:#4A6CF7;cursor:pointer;font-weight:600;">Forgot password?</span>
+    </div>
     <div class="auth-err" id="auth-err"></div>
     <div class="auth-loading" id="auth-loading">Please wait...</div>
 
@@ -11419,6 +11422,41 @@ function switchAuthTab(tab, el) {
 }
 
 // ── EMAIL/PASSWORD AUTH ──
+
+async function handleForgotPassword(){
+  const email = document.getElementById('auth-email').value.trim();
+  const errEl = document.getElementById('auth-err');
+  const loadEl = document.getElementById('auth-loading');
+  if(!email){
+    errEl.textContent = 'Please enter your email address first.';
+    errEl.style.display = 'block';
+    errEl.style.color = '#EF4444';
+    return;
+  }
+  errEl.style.display = 'none';
+  loadEl.style.display = 'block';
+  try{
+    const { error } = await _supa.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://www.finmentra.com?reset=true'
+    });
+    loadEl.style.display = 'none';
+    if(error){
+      errEl.textContent = error.message;
+      errEl.style.color = '#EF4444';
+      errEl.style.display = 'block';
+    } else {
+      errEl.textContent = 'Password reset email sent! Check your inbox.';
+      errEl.style.color = '#10B981';
+      errEl.style.display = 'block';
+    }
+  } catch(e){
+    loadEl.style.display = 'none';
+    errEl.textContent = 'Something went wrong. Please try again.';
+    errEl.style.color = '#EF4444';
+    errEl.style.display = 'block';
+  }
+}
+
 async function handleAuth() {
   const email = document.getElementById('auth-email').value.trim();
   const password = document.getElementById('auth-password').value.trim();
