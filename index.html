@@ -1438,7 +1438,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     </div>
 
     <input class="auth-input" id="auth-email" type="email" placeholder="Email address"/>
-    <input class="auth-input" id="auth-password" type="password" placeholder="Password (min 6 characters)"/>
+    <input class="auth-input" id="auth-password" type="password" placeholder="Password (min 8 characters)"/>
     <div id="auth-name-wrap" style="display:none;">
       <input class="auth-input" id="auth-name" type="text" placeholder="Your full name"/>
     </div>
@@ -8054,10 +8054,11 @@ function showLimitPopup(type){
 
   // 5 more free (soft only, bonus not used today)
   var _bonusKey = getDailyQKey() + '_bonus';
-  var _bonusUsedToday = localStorage.getItem(_bonusKey) === '1' || _guestBonusUsed;
+  var _bonusUsedToday = localStorage.getItem(_bonusKey) === '1';
   if(isSoft && !_bonusUsedToday){
     box.appendChild(makeBtn('Continue with 5 more free \u27A1','#EEF2FF','#0A1F6E', function(){
       _guestBonusUsed = true;
+      try{ localStorage.setItem(getDailyQKey()+'_bonus','1'); }catch(e){}
       overlay.remove();
       if(typeof startSession==='function') startSession();
     }));
@@ -8104,7 +8105,7 @@ function showLimitPopup(type){
 
 // Keep old names pointing to new function
 function showDailyLimitPopup(){ showLimitPopup('hard'); }
-function showRegisterPopup(){ _guestBonusUsed ? showLimitPopup('hard') : showLimitPopup('soft'); }
+function showRegisterPopup(){ showLimitPopup('soft'); }
 function showFreePopup(type){ showLimitPopup('hard'); }
 function closeRegPopup(){
   document.querySelectorAll('.fm-limit-overlay').forEach(function(e){e.remove();});
@@ -11330,9 +11331,8 @@ function checkGuestPrompt(){
   if(!_currentUser){
     // Soft block at 10 (show once per day)
     if(used === 10 && !bonusUsed){
-      _guestBonusUsed = true;
-      localStorage.setItem(bonusKey, '1');
-      showRegisterPopup();
+      // Show soft popup BEFORE setting bonus flag
+      showLimitPopup('soft');
       return;
     }
     // Hard block at 15
@@ -11426,6 +11426,8 @@ async function handleAuth() {
   const errEl = document.getElementById('auth-err');
   const loadEl = document.getElementById('auth-loading');
   if(!email || !password){ errEl.textContent='Please enter email and password.'; errEl.style.display='block'; return; }
+  if(password.length < 8){ errEl.textContent='Password must be at least 8 characters.'; errEl.style.display='block'; return; }
+  if(isSignup && !email.includes('@')){ errEl.textContent='Please enter a valid email address.'; errEl.style.display='block'; return; }
   errEl.style.display='none'; loadEl.style.display='block';
   try {
     let result;
@@ -12100,6 +12102,14 @@ function subscribeToChallenge(challengeId){
 
 // ── START BATTLE ──
 function startBattle(hostName, guestName){
+  // Reset scores for new game
+  CH.myScore = 0; CH.opponentScore = 0;
+  CH.myAnswers = []; CH.opponentAnswers = [];
+  CH.currentQ = 0; CH.answered = false;
+  var hs = document.getElementById('battle-host-score');
+  var gs = document.getElementById('battle-guest-score');
+  if(hs) hs.textContent = '0';
+  if(gs) gs.textContent = '0';
   showChallengeSection('battle');
   const myName = CH.role==='host' ? hostName : guestName;
   const oppName = CH.role==='host' ? guestName : hostName;
@@ -12866,8 +12876,9 @@ async function onMatchFound(challengeId, oppId, category, myRole, oppData, quest
   if(myRole === 'host'){
     // Questions and started_at were already saved in the INSERT in searchForOpponent
     // DO NOT do any extra UPDATE here — it would double-trigger the guest's subscription
-    CH.questions = questions && questions.length > 0 ? questions
+    var _rawQs = questions && questions.length > 0 ? questions
       : await getChallengeQuestionsAsync(category||'Mixed', 10);
+    CH.questions = _rawQs.map(function(q){ return typeof shuffleOptions==='function' ? shuffleOptions(q) : q; });
     // Use the battleStartsAt that was set in searchForOpponent insert
     CH.battleStartsAt = new Date(Date.now() + 4000).toISOString();
 
@@ -12893,7 +12904,8 @@ async function onMatchFound(challengeId, oppId, category, myRole, oppData, quest
       await new Promise(r=>setTimeout(r,500));
     }
     if(!loaded || !CH.questions || CH.questions.length===0){
-      CH.questions = await getChallengeQuestionsAsync(category||'Mixed', 10);
+      var _rq = await getChallengeQuestionsAsync(category||'Mixed', 10);;
+      CH.questions = _rq.map(function(q){ return typeof shuffleOptions==='function'?shuffleOptions(q):q; });
       CH.battleStartsAt = new Date(Date.now() + 3500).toISOString();
     }
   }
