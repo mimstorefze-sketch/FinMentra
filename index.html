@@ -3375,13 +3375,13 @@ const S = {
 };
 
 const RANKS=[
-  {min:0,title:'Initiate',emblem:'🌱',xpNext:200},
-  {min:200,title:'Analyst',emblem:'📊',xpNext:500},
-  {min:500,title:'Associate',emblem:'📈',xpNext:1000},
-  {min:1000,title:'Qualified',emblem:'🎓',xpNext:2000},
-  {min:2000,title:'Distinguished',emblem:'⭐',xpNext:4000},
-  {min:4000,title:'Chartered',emblem:'💎',xpNext:8000},
-  {min:8000,title:'Partner',emblem:'👑',xpNext:99999},
+  {min:0,    title:'Initiate',     emblem:'🌱',xpNext:1500},
+  {min:500,  title:'Analyst',      emblem:'📊',xpNext:1500},
+  {min:1500, title:'Associate',    emblem:'📈',xpNext:3000},
+  {min:3000, title:'Qualified',    emblem:'🎓',xpNext:6000},
+  {min:6000, title:'Distinguished',emblem:'⭐',xpNext:12000},
+  {min:12000,title:'Chartered',    emblem:'💎',xpNext:25000},
+  {min:25000,title:'Partner',      emblem:'👑',xpNext:99999},
 ];
 function getRank(xp){let r=RANKS[0];for(const rank of RANKS) if(xp>=rank.min) r=rank;return r;}
 
@@ -15603,13 +15603,13 @@ function achInitScreen(){
 function updateFMHomeStats(){
   if(typeof S==='undefined') return;
   var RANKS=[
-    {name:'Initiate',icon:'🌱',min:0,max:200},
-    {name:'Analyst',icon:'📊',min:201,max:500},
-    {name:'Associate',icon:'📈',min:501,max:1000},
-    {name:'Senior',icon:'🎓',min:1001,max:2000},
-    {name:'Manager',icon:'⭐',min:2001,max:4000},
-    {name:'Director',icon:'💎',min:4001,max:8000},
-    {name:'Partner',icon:'👑',min:8001,max:999999},
+    {name:'Initiate',icon:'🌱',min:0,max:499},
+    {name:'Analyst',icon:'📊',min:500,max:1499},
+    {name:'Associate',icon:'📈',min:1500,max:2999},
+    {name:'Qualified',icon:'🎓',min:3000,max:5999},
+    {name:'Distinguished',icon:'⭐',min:6000,max:11999},
+    {name:'Chartered',icon:'💎',min:12000,max:24999},
+    {name:'Partner',icon:'👑',min:25000,max:999999},
   ];
   var se=document.getElementById('fm-streak-num');
   var xe=document.getElementById('fm-xp-num');
@@ -15642,13 +15642,13 @@ function buildProfileRankCard(){
   if(!sc) return;
   var xp=(typeof S!=='undefined'?S.xp:0)||0;
   var RANKS=[
-    {name:'Initiate',icon:'🌱',min:0,max:200},
-    {name:'Analyst',icon:'📊',min:201,max:500},
-    {name:'Associate',icon:'📈',min:501,max:1000},
-    {name:'Senior',icon:'🎓',min:1001,max:2000},
-    {name:'Manager',icon:'⭐',min:2001,max:4000},
-    {name:'Director',icon:'💎',min:4001,max:8000},
-    {name:'Partner',icon:'👑',min:8001,max:999999},
+    {name:'Initiate',icon:'🌱',min:0,max:499},
+    {name:'Analyst',icon:'📊',min:500,max:1499},
+    {name:'Associate',icon:'📈',min:1500,max:2999},
+    {name:'Qualified',icon:'🎓',min:3000,max:5999},
+    {name:'Distinguished',icon:'⭐',min:6000,max:11999},
+    {name:'Chartered',icon:'💎',min:12000,max:24999},
+    {name:'Partner',icon:'👑',min:25000,max:999999},
   ];
   var rank=RANKS.find(function(r){return xp>=r.min&&xp<=r.max;})||RANKS[0];
   var next=RANKS[RANKS.indexOf(rank)+1];
