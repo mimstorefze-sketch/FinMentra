@@ -4237,14 +4237,11 @@ function loadQuestion(){
 function answerQ(idx,btn,q){
   try{localStorage.setItem('fm_last_study_date',new Date().toDateString());}catch(e){}
   if(S.answered) return;
-  // Hard block via localStorage — works after reopen regardless of _isGuest state
-  // Hard block for ALL non-pro users (guest, free, or any user)
+  // ── DAILY LIMIT CHECK (all non-pro users) ──
   if(!isPro()){
-    var _aqUsed = parseInt(localStorage.getItem(getDailyQKey())||'0');
-    if(_aqUsed >= 15){
-      showDailyLimitPopup();
-      return;
-    }
+    var _used = parseInt(localStorage.getItem(getDailyQKey())||'0');
+    // Hard block at 15
+    if(_used >= 15){ showLimitPopup('hard'); return; }
   }
   S.answered=true;
   const optsContainer=document.getElementById('options');
@@ -11338,22 +11335,16 @@ function getGuestThreshold(){
 function checkGuestPrompt(){
   if(isPro()) return;
   var used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
-  // Persist bonus state in localStorage so it survives page reloads
   var bonusKey = getDailyQKey() + '_bonus';
   var bonusUsed = localStorage.getItem(bonusKey) === '1' || _guestBonusUsed;
-  
-  if(!_currentUser){
-    // Soft block at 10 (show once per day)
-    if(used === 10 && !bonusUsed){
-      // Show soft popup BEFORE setting bonus flag
-      showLimitPopup('soft');
-      return;
-    }
-    // Hard block at 15
-    if(used >= 15){ showDailyLimitPopup(); return; }
-  } else if(isFree()){
-    // Logged-in free user hard block at 15
-    if(used >= 15){ showDailyLimitPopup(); return; }
+
+  // Hard block at 15 for ALL non-pro
+  if(used >= 15){ showLimitPopup('hard'); return; }
+
+  // Soft block at 10 for non-logged-in (show once per day)
+  if(!_currentUser && used >= 10 && !bonusUsed){
+    showLimitPopup('soft');
+    return;
   }
 }
 
