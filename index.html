@@ -476,8 +476,8 @@ a{color:inherit;text-decoration:none;}
 .ai-chat-sub{font-size:10px;color:var(--blue-l);}
 .ai-limit{font-family:var(--font-mono);font-size:10px;color:var(--gold);margin-left:auto;}
 .chat-body,.chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--bg);}
-.msg,.chat-msg{padding:8px 12px;border-radius:12px;max-width:80%;font-size:12px;}
-.msg.ai,.chat-msg.ai .msg-bubble{background:var(--surface);border:1px solid var(--border);align-self:flex-start;border-radius:14px 14px 14px 4px;padding:9px 13px;font-size:12px;line-height:1.6;}
+.msg,.chat-msg{padding:8px 12px;border-radius:12px;max-width:80%;font-size:12px;word-wrap:break-word;word-break:break-word;overflow-wrap:break-word;}
+.msg.ai,.chat-msg.ai .msg-bubble{background:var(--surface);border:1px solid var(--border);align-self:flex-start;border-radius:14px 14px 14px 4px;padding:9px 13px;font-size:12px;line-height:1.6;;word-wrap:break-word;word-break:break-word;overflow-wrap:break-word;}
 .msg.me,.chat-msg.user .msg-bubble{background:var(--navy);color:#fff;align-self:flex-end;border-radius:14px 14px 4px 14px;margin-left:auto;padding:9px 13px;font-size:12px;max-width:80%;}
 .chat-msg{margin-bottom:9px;}
 .suggestions{display:flex;gap:6px;padding:8px;flex-wrap:wrap;border-top:1px solid var(--border);}
@@ -2653,6 +2653,9 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 <div class="screen" id="screen-jebuilder">
   <div class="card">
     <div class="card-h"><div class="card-title">Journal Entry Builder</div></div>
+    <input id="je-search" type="text" placeholder="🔍 Search journal entries..." 
+      style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:12px;font-family:var(--font-body);font-size:13px;margin-bottom:10px;box-sizing:border-box;outline:none;background:var(--surface);color:var(--text);"
+      oninput="filterJEEntries(this.value)"/>
     <div style="display:flex;gap:6px;margin-bottom:10px;" id="je-cat-row">
       <button class="chip active" onclick="setJECat(this,'all')">All</button>
       <button class="chip" onclick="setJECat(this,'IFRS')">IFRS</button>
@@ -3702,6 +3705,12 @@ function showScreen(id){
 
 function switchMode(mode){
   if((S.mode || 'student') === mode) return;
+  if(typeof showModeConfirm !== 'function'){ 
+    // Fallback if showModeConfirm not loaded yet
+    S.mode = mode;
+    applyModeUI(mode);
+    return;
+  }
   const toLabel = mode === 'professional' ? '💼 Professional' : '🎓 Student';
   showModeConfirm(toLabel, function(){
     S.currentStandard = null; S.sessionQs = []; S.qIndex = 0; S.answered = false;
@@ -4373,7 +4382,25 @@ function nextQuestion(){
   if((isFree()||_isGuest) && remaining <= 0){ showDailyLimitPopup(); return; }
   showContinuePopup(std, remaining);
 }
-function toggleBookmark(){S.currentBookmarked=!S.currentBookmarked;const btn=document.getElementById('bookmark-btn');if(btn){btn.classList.toggle('saved',S.currentBookmarked);btn.textContent=S.currentBookmarked?'⭐':'🔖';}}
+function toggleBookmark(){
+  if(!S.currentQ && !S.sessionQs[S.qIndex]) return;
+  S.currentBookmarked = !S.currentBookmarked;
+  // Update both bookmark buttons (top and bottom)
+  ['bookmark-btn','bookmark-btn-top'].forEach(function(id){
+    var btn = document.getElementById(id);
+    if(btn){ btn.classList.toggle('saved', S.currentBookmarked); btn.textContent = S.currentBookmarked ? '⭐' : '🔖'; }
+  });
+  // Save to bookmarks
+  var q = S.sessionQs[S.qIndex];
+  if(!q) return;
+  if(S.currentBookmarked){
+    S.bookmarks = S.bookmarks || new Set();
+    S.bookmarks.add(q.id || q.q);
+  } else {
+    if(S.bookmarks) S.bookmarks.delete(q.id || q.q);
+  }
+  saveState();
+}
 function toggleNotes(){const p=document.getElementById('notes-panel');if(p) p.classList.toggle('show');}
 function updateSessionBar(){const acc=S.sessionQ>0?Math.round(S.sessionCorrect/S.sessionQ*100):0;const sf=document.getElementById('session-fill');const sc=document.getElementById('session-count');if(sf) sf.style.width=acc+'%';if(sc) sc.textContent=S.sessionCorrect+' / '+S.sessionQ+' correct';}
 
@@ -5412,10 +5439,12 @@ function showBossBattle(){
   showScreen('challenge');
   setTimeout(()=>{
     const content=document.getElementById('screen-challenge');if(!content) return;
+    // Save original challenge HTML before overwriting
+    if(!window._challengeScreenHTML) window._challengeScreenHTML = content.innerHTML;
     content.innerHTML=`<div class="boss-battle-header"><div class="bb-icon">👹</div><div class="bb-title">Boss Battle</div><div class="bb-sub">10 questions · 8 minutes</div><div class="bb-timer" id="bb-timer">8:00</div><div class="timer-bar"><div class="timer-fill" id="bb-timer-bar" style="width:100%"></div></div></div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:12px;"><div class="vault-stat"><div class="vault-stat-val" id="bb-score" style="color:var(--gold);">0</div><div class="vault-stat-lbl">Correct</div></div><div class="vault-stat"><div class="vault-stat-val" id="bb-qnum">1/10</div><div class="vault-stat-lbl">Question</div></div><div class="vault-stat"><div class="vault-stat-val" id="bb-acc">—</div><div class="vault-stat-lbl">Accuracy</div></div></div>
     <div class="qcard-q"><div class="qtext" id="bb-q-text">Loading...</div><div class="opts" id="bb-options"></div></div>
-    <button class="btn btn-secondary btn-block" style="margin-top:8px;" onclick="endBossMode()">← Retreat</button>`;
+    <button class="btn btn-secondary btn-block" style="margin-top:8px;" onclick="clearInterval(bossTimer);bossTimer=null;if(window._challengeScreenHTML){var cs=document.getElementById('screen-challenge');if(cs)cs.innerHTML=window._challengeScreenHTML;}showScreen('home');">← Retreat</button>`;
     bossTime=480;bossQ=0;bossScore=0;loadBossQuestion();
     bossTimer=setInterval(tickBossTimer,1000);
   },100);
@@ -5452,6 +5481,11 @@ function endBossMode(){
   const xpWon=bossScore*75;
   S.xp+=xpWon;S.coins+=bossScore*20;updateHUD();
   if(acc>=60){spawnConfetti();showBadgeToast('Boss Slayer 🏆 — '+acc+'% accuracy!');}
+  // Restore challenge screen to original HTML
+  if(window._challengeScreenHTML){
+    var chScreen = document.getElementById('screen-challenge');
+    if(chScreen) chScreen.innerHTML = window._challengeScreenHTML;
+  }
   showResultPopup('👹 Boss Battle Complete!', bossScore+'/'+Math.min(bossQ,10)+' correct · '+acc+'% accuracy', '+'+xpWon+' XP earned!', 'home');
 }
 
@@ -5567,6 +5601,22 @@ function loadLocalJEDropdown(){
     sel.appendChild(grp);
   });
 }
+function filterJEEntries(query){
+  var q = (query||'').toLowerCase();
+  var opts = document.querySelectorAll('#je-scenario option');
+  if(!opts.length) return;
+  var sel = document.getElementById('je-scenario');
+  if(!sel) return;
+  Array.from(opts).forEach(function(opt){
+    if(!q){
+      opt.style.display = '';
+    } else {
+      var text = (opt.textContent||'').toLowerCase();
+      opt.style.display = text.includes(q) ? '' : 'none';
+    }
+  });
+}
+
 function loadJEScenario(){
   const val=document.getElementById('je-scenario').value;
   const out=document.getElementById('je-output');
@@ -12143,19 +12193,22 @@ function subscribeToChallenge(challengeId){
 
 // ── START BATTLE ──
 function startBattle(hostName, guestName){
-  // Reset scores for new game
+  // Reset ALL scores for new game
   CH.myScore = 0; CH.opponentScore = 0;
   CH.myAnswers = []; CH.opponentAnswers = [];
   CH.currentQ = 0; CH.answered = false;
-  var hs = document.getElementById('battle-host-score');
-  var gs = document.getElementById('battle-guest-score');
-  if(hs) hs.textContent = '0';
-  if(gs) gs.textContent = '0';
   showChallengeSection('battle');
   const myName = CH.role==='host' ? hostName : guestName;
   const oppName = CH.role==='host' ? guestName : hostName;
   document.getElementById('battle-host-name').textContent = CH.role==='host'?'You ⭐':oppName;
   document.getElementById('battle-guest-name').textContent = CH.role==='guest'?'You ⭐':oppName;
+  // Force score display to 0 AFTER section renders
+  setTimeout(function(){
+    var hs = document.getElementById('battle-host-score');
+    var gs = document.getElementById('battle-guest-score');
+    if(hs) hs.textContent = '0';
+    if(gs) gs.textContent = '0';
+  }, 50);
   loadBattleQuestion();
 }
 
