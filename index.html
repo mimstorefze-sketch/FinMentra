@@ -1780,13 +1780,14 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <!-- ── QUICK ACCESS ── -->
   <div class="fm-sec-label">Quick Access</div>
   <div class="fm-qa-grid">
-    <div class="fm-qa-card fm-qa-navy" onclick="showScreen('practice')" data-e="🏛️"><span class="fm-qa-emoji">🏛️</span><div class="fm-qa-title">The Arena</div><div class="fm-qa-sub">MCQ practice</div></div>
-    <div class="fm-qa-card fm-qa-purple" onclick="showScreen('topics')" data-e="📚"><span class="fm-qa-emoji">📚</span><div class="fm-qa-title">Topic Library</div><div class="fm-qa-sub">All 81 standards</div></div>
-    <div class="fm-qa-card fm-qa-red" onclick="showBossBattle()" data-e="👹"><span class="fm-qa-emoji">👹</span><div class="fm-qa-title">Boss Battle</div><div class="fm-qa-sub">10 Qs · Timed</div></div>
-    <div class="fm-qa-card fm-qa-teal" onclick="showTimeAttack()" data-e="⚡"><span class="fm-qa-emoji">⚡</span><div class="fm-qa-title">Time Attack</div><div class="fm-qa-sub">3-min sprint</div></div>
-    <div class="fm-qa-card fm-qa-amber" onclick="showScreen('askai')" data-e="🤖"><span class="fm-qa-emoji">🤖</span><div class="fm-qa-title">Ask the AI</div><div class="fm-qa-sub">Chat any standard</div><div class="fm-qa-badge">3/day</div></div>
-    <div class="fm-qa-card fm-qa-green" onclick="showScreen('vault')" data-e="🗄️"><span class="fm-qa-emoji">🗄️</span><div class="fm-qa-title">Mistake Vault</div><div class="fm-qa-sub">Weak spot focus</div></div>
-    <div class="fm-qa-card" style="background:linear-gradient(135deg,#1E3A8A,#2563EB);color:#fff;" onclick="showScreen('challenge')" data-e="⚔️"><span class="fm-qa-emoji">⚔️</span><div class="fm-qa-title">Challenge</div><div class="fm-qa-sub">Live battle mode</div></div>
+    <div class="fm-qa-card fm-qa-navy"   onclick="fmCardTap(this,'practice')"  data-e="🏛️"><span class="fm-qa-emoji">🏛️</span><div class="fm-qa-title">The Arena</div><div class="fm-qa-sub">MCQ practice</div></div>
+    <div class="fm-qa-card fm-qa-green"  onclick="fmCardTap(this,'drcr')"      data-e="⚖️"><span class="fm-qa-emoji">⚖️</span><div class="fm-qa-title">Debit &amp; Credit</div><div class="fm-qa-sub">Journal entry drill</div></div>
+    <div class="fm-qa-card fm-qa-purple" onclick="fmCardTap(this,'topics')"    data-e="📚"><span class="fm-qa-emoji">📚</span><div class="fm-qa-title">Topic Library</div><div class="fm-qa-sub">All 81 standards</div></div>
+    <div class="fm-qa-card fm-qa-red"    onclick="fmCardTapFn(this,showBossBattle)" data-e="👹"><span class="fm-qa-emoji">👹</span><div class="fm-qa-title">Boss Battle</div><div class="fm-qa-sub">10 Qs · Timed</div></div>
+    <div class="fm-qa-card fm-qa-amber"  onclick="fmCardTapFn(this,showTimeAttack)" data-e="⚡"><span class="fm-qa-emoji">⚡</span><div class="fm-qa-title">Time Attack</div><div class="fm-qa-sub">3-min sprint</div></div>
+    <div class="fm-qa-card fm-qa-teal"   onclick="fmCardTap(this,'askai')"     data-e="🤖"><span class="fm-qa-emoji">🤖</span><div class="fm-qa-title">Ask the AI</div><div class="fm-qa-sub">Chat any standard</div><div class="fm-qa-badge">AI</div></div>
+    <div class="fm-qa-card fm-qa-rose"   onclick="fmCardTap(this,'vault')"     data-e="🗄️"><span class="fm-qa-emoji">🗄️</span><div class="fm-qa-title">Mistake Vault</div><div class="fm-qa-sub">Weak spot focus</div></div>
+    <div class="fm-qa-card fm-qa-indigo" onclick="fmCardTap(this,'challenge')" data-e="⚔️"><span class="fm-qa-emoji">⚔️</span><div class="fm-qa-title">Challenge</div><div class="fm-qa-sub">Live battle mode</div></div>
   </div>
 
   <!-- ── GLOBAL LEADERBOARD ── -->
@@ -1878,46 +1879,46 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     </div>
   </div>
 
-  <!-- PRO QUICK TOOLS GRID - Like Arena cards -->
+  <!-- PRO QUICK TOOLS GRID -->
   <div class="fm-sec-label" style="margin-top:4px;">Professional Tools</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-    <div class="pro-tool-card" style="background:linear-gradient(135deg,#0A1F6E,#1E3A8A);" onclick="showScreen('fsbuilder')">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div class="pro-tool-card" data-e="📊" style="background:#3B82F6;" onclick="fmCardTap(this,'fsbuilder')">
       <div class="pro-tool-emoji">📊</div>
       <div class="pro-tool-title">FS Builder</div>
       <div class="pro-tool-sub">SFP · P&L · Cash Flow</div>
     </div>
-    <div class="pro-tool-card" style="background:linear-gradient(135deg,#065F46,#047857);" onclick="showScreen('jebuilder')">
+    <div class="pro-tool-card" data-e="🗄️" style="background:#10B981;" onclick="fmCardTap(this,'jebuilder')">
       <div class="pro-tool-emoji">🗄️</div>
       <div class="pro-tool-title">JE Builder</div>
       <div class="pro-tool-sub">Journal entries</div>
     </div>
-    <div class="pro-tool-card" style="background:linear-gradient(135deg,#5B21B6,#7C3AED);" onclick="showScreen('comparisons')">
+    <div class="pro-tool-card" data-e="⚖️" style="background:#8B5CF6;" onclick="fmCardTap(this,'comparisons')">
       <div class="pro-tool-emoji">⚖️</div>
       <div class="pro-tool-title">Standard Compare</div>
       <div class="pro-tool-sub">IFRS vs GAAP</div>
     </div>
-    <div class="pro-tool-card" style="background:linear-gradient(135deg,#0891B2,#0E7490);" onclick="showScreen('formulas')">
+    <div class="pro-tool-card" data-e="🔢" style="background:#06B6D4;" onclick="fmCardTap(this,'formulas')">
       <div class="pro-tool-emoji">🔢</div>
       <div class="pro-tool-title">Formula Sheet</div>
       <div class="pro-tool-sub">Key ratios & formulas</div>
     </div>
-    <div class="pro-tool-card" style="background:linear-gradient(135deg,#92400E,#B45309);" onclick="showScreen('client-scenario')">
+    <div class="pro-tool-card" data-e="👔" style="background:#F59E0B;" onclick="fmCardTap(this,'client-scenario')">
       <div class="pro-tool-emoji">👔</div>
       <div class="pro-tool-title">Client Scenarios</div>
       <div class="pro-tool-sub">Real-world cases</div>
     </div>
-    <div class="pro-tool-card" style="background:linear-gradient(135deg,#7F1D1D,#991B1B);" onclick="showScreen('ethics')">
+    <div class="pro-tool-card" data-e="⚖️" style="background:#EF4444;" onclick="fmCardTap(this,'ethics')">
       <div class="pro-tool-emoji">⚖️</div>
       <div class="pro-tool-title">Ethics Module</div>
       <div class="pro-tool-sub">Professional standards</div>
     </div>
-    <div class="pro-tool-card" style="background:linear-gradient(135deg,#1F1035,#2D1057);" onclick="showScreen('askai')">
+    <div class="pro-tool-card" data-e="🤖" style="background:#6366F1;" onclick="fmCardTap(this,'askai')">
       <div class="pro-tool-emoji">🤖</div>
       <div class="pro-tool-title">AI Assistant</div>
       <div class="pro-tool-sub">Ask any standard</div>
-      <div style="position:absolute;top:10px;right:10px;background:var(--gold);color:var(--navy);font-size:9px;font-weight:900;border-radius:6px;padding:2px 6px;">PRO</div>
+      <div style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,.25);color:#fff;font-size:9px;font-weight:900;border-radius:6px;padding:2px 6px;">PRO</div>
     </div>
-    <div class="pro-tool-card" style="background:linear-gradient(135deg,#0D9488,#0F766E);" onclick="showScreen('cpd')">
+    <div class="pro-tool-card" data-e="📋" style="background:#EC4899;" onclick="fmCardTap(this,'cpd')">
       <div class="pro-tool-emoji">📋</div>
       <div class="pro-tool-title">CPD Tracker</div>
       <div class="pro-tool-sub">Track your hours</div>
@@ -1926,26 +1927,26 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 
   <!-- PRO PRACTICE SECTION -->
   <div class="fm-sec-label">Practice Arena</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-    <div class="pro-mini-card" onclick="showScreen('practice')">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <div class="pro-mini-card" style="background:#3B82F6;" onclick="fmCardTap(this,'practice')">
       <div style="font-size:24px;margin-bottom:4px;">🏛️</div>
       <div style="font-size:12px;font-weight:800;color:#fff;">Arena</div>
-      <div style="font-size:10px;color:rgba(255,255,255,.7);">MCQ Practice</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.75);">MCQ Practice</div>
     </div>
-    <div class="pro-mini-card" onclick="showScreen('challenge')" style="background:linear-gradient(135deg,#5B21B6,#7C3AED);">
+    <div class="pro-mini-card" style="background:#6366F1;" onclick="fmCardTap(this,'challenge')">
       <div style="font-size:24px;margin-bottom:4px;">⚔️</div>
       <div style="font-size:12px;font-weight:800;color:#fff;">Challenge</div>
-      <div style="font-size:10px;color:rgba(255,255,255,.7);">Live Match</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.75);">Live Match</div>
     </div>
-    <div class="pro-mini-card" onclick="showBossBattle()">
+    <div class="pro-mini-card" style="background:#EF4444;" onclick="fmCardTapFn(this,showBossBattle)">
       <div style="font-size:24px;margin-bottom:4px;">👹</div>
-      <div style="font-size:12px;font-weight:800;color:#fff;">Boss</div>
-      <div style="font-size:10px;color:rgba(255,255,255,.7);">Boss Battle</div>
+      <div style="font-size:12px;font-weight:800;color:#fff;">Boss Battle</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.75);">10 Qs Timed</div>
     </div>
-    <div class="pro-mini-card" onclick="showTimeAttack()">
+    <div class="pro-mini-card" style="background:#F59E0B;" onclick="fmCardTapFn(this,showTimeAttack)">
       <div style="font-size:24px;margin-bottom:4px;">⚡</div>
-      <div style="font-size:12px;font-weight:800;color:#fff;">Sprint</div>
-      <div style="font-size:10px;color:rgba(255,255,255,.7);">Time Attack</div>
+      <div style="font-size:12px;font-weight:800;color:#fff;">Time Attack</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.75);">3-min sprint</div>
     </div>
   </div>
 
@@ -2133,6 +2134,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
         <option value="Costing">🔢 Costing</option>
         <option value="Tax">💰 Tax</option>
         <option value="FM">📊 Financial Management</option>
+        <option value="DrCr">⚖️ Debit &amp; Credit</option>
       </select>
       <button class="ch-btn-primary" onclick="chlFindMatch()" id="chl-find-btn">⚡ Find Opponent Now</button>
     </div>
@@ -2154,6 +2156,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
         <option value="Costing">🔢 Costing</option>
         <option value="Tax">💰 Tax</option>
         <option value="FM">📊 Financial Management</option>
+        <option value="DrCr">⚖️ Debit &amp; Credit Challenge</option>
       </select>
       <select class="ch-select-dark" id="chl-create-count">
         <option value="5">5 Questions — Quick (3 min)</option>
@@ -2355,6 +2358,190 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   </div>
 </div>
 
+
+<!-- ══ DEBIT & CREDIT DRILL ══ -->
+<div class="screen" id="screen-drcr">
+  <style>
+  .drcr-topbar{background:#0A1F6E;border-radius:12px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
+  .drcr-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:7px;}
+  .drcr-stat{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:5px 4px;text-align:center;}
+  .drcr-stat-val{font-family:var(--font-mono);font-size:14px;font-weight:800;color:var(--navy);}
+  .drcr-stat-lbl{font-size:7px;color:var(--steel);font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+  .drcr-ind-row{display:flex;gap:4px;margin-bottom:6px;overflow-x:auto;scrollbar-width:none;}
+  .drcr-ind-row::-webkit-scrollbar{display:none;}
+  .drcr-ind-btn{flex:0 0 auto;padding:5px 10px;border-radius:999px;border:1.5px solid var(--border);background:var(--surface);font-size:9px;font-weight:700;color:var(--steel);cursor:pointer;white-space:nowrap;}
+  .drcr-ind-btn.active{background:#0A1F6E;border-color:#0A1F6E;color:#fff;}
+  .drcr-mode-row{display:flex;gap:4px;margin-bottom:6px;overflow-x:auto;scrollbar-width:none;}
+  .drcr-mode-row::-webkit-scrollbar{display:none;}
+  .drcr-mode-btn{flex:0 0 auto;padding:5px 10px;border-radius:999px;border:1.5px solid var(--border);background:var(--surface);font-size:9px;font-weight:700;color:var(--steel);cursor:pointer;white-space:nowrap;}
+  .drcr-mode-btn.active{background:#0A1F6E;border-color:#0A1F6E;color:#fff;}
+  .drcr-scenario{background:#0A1F6E;border-radius:12px;padding:10px 12px;margin-bottom:6px;}
+  .drcr-sc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px;}
+  .drcr-sc-std{background:rgba(255,255,255,.15);border-radius:999px;padding:2px 8px;font-size:8px;font-weight:700;color:#93C5FD;}
+  .drcr-sc-diff{border-radius:999px;padding:2px 8px;font-size:8px;font-weight:700;}
+  .drcr-diff-h{background:rgba(239,68,68,.3);color:#FCA5A5;}
+  .drcr-diff-m{background:rgba(245,158,11,.3);color:#FCD34D;}
+  .drcr-diff-e{background:rgba(16,185,129,.3);color:#6EE7B7;}
+  .drcr-sc-text{font-size:12px;color:#fff;font-weight:700;line-height:1.35;margin-bottom:3px;}
+  .drcr-sc-hint{font-size:9px;color:rgba(255,255,255,.5);}
+  .drcr-amount{background:rgba(16,185,129,.2);border-radius:6px;padding:2px 8px;font-size:10px;font-weight:800;color:#6EE7B7;display:inline-block;margin-top:3px;}
+  .drcr-combo-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+  .drcr-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);transition:background .2s;}
+  .drcr-dot.lit{background:#F59E0B;}
+  .drcr-je-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;}
+  .drcr-col{background:var(--surface);border-radius:10px;border:1.5px solid var(--border);padding:8px;}
+  .drcr-col-hd{display:flex;align-items:center;gap:4px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+  .drcr-col.drcr-dr .drcr-col-hd{color:#1D4ED8;}
+  .drcr-col.drcr-cr .drcr-col-hd{color:#7C3AED;}
+  .drcr-hdot{width:6px;height:6px;border-radius:50%;}
+  .drcr-col.drcr-dr .drcr-hdot{background:#1D4ED8;}
+  .drcr-col.drcr-cr .drcr-hdot{background:#7C3AED;}
+  .drcr-slot{background:var(--bg);border-radius:7px;padding:6px 8px;font-size:10px;font-weight:700;color:var(--steel);min-height:26px;display:flex;align-items:center;border:1.5px dashed var(--border);cursor:pointer;}
+  .drcr-slot.filled{background:var(--blue-ll);border-style:solid;border-color:var(--blue);color:var(--navy);}
+  .drcr-slot.correct{background:#DCFCE7;border-color:#16a34a;color:#15803D;border-style:solid;}
+  .drcr-slot.wrong{background:#FEE2E2;border-color:#DC2626;color:#991B1B;border-style:solid;}
+  .drcr-chips-label{font-size:8px;font-weight:700;color:var(--steel);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
+  .drcr-chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px;}
+  .drcr-chip{padding:6px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);font-size:10px;font-weight:700;color:var(--navy);cursor:pointer;}
+  .drcr-chip:active{transform:scale(.95);}
+  .drcr-chip.used{opacity:.3;pointer-events:none;}
+  .drcr-chip.correct-chip{background:#DCFCE7;border-color:#16a34a;color:#15803D;}
+  .drcr-chip.wrong-chip{background:#FEE2E2;border-color:#DC2626;color:#991B1B;}
+  .drcr-xp-pop{text-align:center;font-size:12px;font-weight:800;color:#F59E0B;margin:2px 0;display:none;animation:drcrXPpop .4s ease;}
+  .drcr-xp-pop.show{display:block;}
+  @keyframes drcrXPpop{0%{transform:scale(.7);opacity:0;}60%{transform:scale(1.15);}100%{transform:scale(1);opacity:1;}}
+  .drcr-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:5px;}
+  .drcr-btn-check{padding:10px;border-radius:10px;background:#0A1F6E;color:#fff;font-size:12px;font-weight:700;border:none;cursor:pointer;}
+  .drcr-btn-skip{padding:10px;border-radius:10px;background:var(--surface);color:var(--steel);font-size:12px;font-weight:700;border:1.5px solid var(--border);cursor:pointer;}
+  .drcr-btn-next{width:100%;padding:10px;border-radius:10px;background:#10B981;color:#fff;font-size:12px;font-weight:700;border:none;cursor:pointer;margin-bottom:5px;display:none;}
+  .drcr-btn-next.show{display:block;}
+  .drcr-fb{border-radius:10px;padding:9px 11px;margin-bottom:5px;display:none;}
+  .drcr-fb.show{display:block;}
+  .drcr-fb.ok{background:#DCFCE7;border:1.5px solid #86EFAC;}
+  .drcr-fb.bad{background:#FEE2E2;border:1.5px solid #FCA5A5;}
+  .drcr-fb-title{font-size:11px;font-weight:800;margin-bottom:3px;}
+  .drcr-fb.ok .drcr-fb-title{color:#15803D;}
+  .drcr-fb.bad .drcr-fb-title{color:#991B1B;}
+  .drcr-fb-body{font-size:10px;line-height:1.4;margin-bottom:4px;}
+  .drcr-fb.ok .drcr-fb-body{color:#166534;}
+  .drcr-fb.bad .drcr-fb-body{color:#7F1D1D;}
+  .drcr-para{display:inline-block;background:rgba(0,0,0,.07);border-radius:4px;padding:1px 6px;font-size:9px;font-weight:700;margin-bottom:5px;}
+  .drcr-btn-ai{width:100%;padding:8px;border-radius:9px;background:#0A1F6E;color:#fff;font-size:11px;font-weight:700;border:none;cursor:pointer;margin-bottom:4px;display:flex;align-items:center;justify-content:center;gap:5px;}
+  .drcr-ai-answer{background:var(--blue-ll);border:1px solid var(--blue-l);border-radius:8px;padding:8px 10px;font-size:10px;line-height:1.4;color:var(--navy);display:none;}
+  .drcr-ai-answer.show{display:block;}
+  .drcr-type-input{width:100%;padding:7px 10px;border:2px solid var(--border);border-radius:8px;font-size:11px;font-family:var(--font-body);background:var(--surface);color:var(--text);outline:none;margin-bottom:5px;box-sizing:border-box;}
+  .drcr-type-input:focus{border-color:var(--blue);}
+  </style>
+
+  <div class="drcr-topbar">
+    <div>
+      <div style="color:#fff;font-weight:800;font-size:15px;">⚖️ Debit &amp; Credit</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:1px;">Journal Entry Drill</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <div style="background:rgba(245,158,11,.25);border-radius:999px;padding:4px 10px;font-size:11px;font-weight:700;color:#FCD34D;" id="drcr-streak-pill">🔥 0 streak</div>
+      <div style="background:rgba(255,255,255,.15);border-radius:999px;padding:4px 10px;font-size:11px;font-weight:700;color:#fff;" id="drcr-xp-pill">⚡ 0 XP</div>
+    </div>
+  </div>
+
+  <div class="drcr-stats">
+    <div class="drcr-stat"><div class="drcr-stat-val" id="drcr-s-correct">0</div><div class="drcr-stat-lbl">Correct</div></div>
+    <div class="drcr-stat"><div class="drcr-stat-val" id="drcr-s-wrong">0</div><div class="drcr-stat-lbl">Wrong</div></div>
+    <div class="drcr-stat"><div class="drcr-stat-val" id="drcr-s-combo">0</div><div class="drcr-stat-lbl">Combo</div></div>
+    <div class="drcr-stat"><div class="drcr-stat-val" id="drcr-s-acc">0%</div><div class="drcr-stat-lbl">Accuracy</div></div>
+  </div>
+
+  <!-- Industry Tabs -->
+  <div class="drcr-ind-row">
+    <button class="drcr-ind-btn active" id="drcr-i0" onclick="drcrSetIndustry(0)">🌍 General</button>
+    <button class="drcr-ind-btn" id="drcr-i1" onclick="drcrSetIndustry(1)">🛍️ Retail</button>
+    <button class="drcr-ind-btn" id="drcr-i2" onclick="drcrSetIndustry(2)">🏦 Banking</button>
+    <button class="drcr-ind-btn" id="drcr-i3" onclick="drcrSetIndustry(3)">🏭 Manufacturing</button>
+    <button class="drcr-ind-btn" id="drcr-i4" onclick="drcrSetIndustry(4)">💼 Services</button>
+  </div>
+
+  <!-- Mode Tabs -->
+  <div class="drcr-mode-row">
+    <button class="drcr-mode-btn active" id="drcr-m0" onclick="drcrSetMode(0)">🃏 Tap Cards</button>
+    <button class="drcr-mode-btn" id="drcr-m1" onclick="drcrSetMode(1)">🎯 Error Hunt</button>
+    <button class="drcr-mode-btn" id="drcr-m2" onclick="drcrSetMode(2)">📝 Type It</button>
+  </div>
+
+  <div class="drcr-scenario" id="drcr-scenario">
+    <div class="drcr-sc-top">
+      <div class="drcr-sc-std" id="drcr-std">IAS 16 — PPE</div>
+      <div class="drcr-sc-diff drcr-diff-h" id="drcr-diff">Hard</div>
+    </div>
+    <div class="drcr-sc-text" id="drcr-text">Loading...</div>
+    <div class="drcr-sc-hint" id="drcr-hint"></div>
+    <div class="drcr-amount" id="drcr-amount"></div>
+  </div>
+
+  <div class="drcr-combo-row">
+    <div style="font-size:10px;font-weight:700;color:var(--steel);">Combo</div>
+    <div style="display:flex;gap:4px;" id="drcr-dots">
+      <div class="drcr-dot" id="drcr-d0"></div>
+      <div class="drcr-dot" id="drcr-d1"></div>
+      <div class="drcr-dot" id="drcr-d2"></div>
+      <div class="drcr-dot" id="drcr-d3"></div>
+      <div class="drcr-dot" id="drcr-d4"></div>
+    </div>
+    <div style="font-size:10px;font-weight:700;color:#F59E0B;" id="drcr-combo-label">+50 XP base</div>
+  </div>
+
+  <!-- Tap Cards mode -->
+  <div id="drcr-chip-mode">
+    <div class="drcr-je-grid">
+      <div class="drcr-col drcr-dr">
+        <div class="drcr-col-hd"><div class="drcr-hdot"></div>Debit</div>
+        <div class="drcr-slot" id="drcr-d-slot" onclick="drcrRemoveSlot('d')"><span id="drcr-d-text">tap account below</span></div>
+      </div>
+      <div class="drcr-col drcr-cr">
+        <div class="drcr-col-hd"><div class="drcr-hdot"></div>Credit</div>
+        <div class="drcr-slot" id="drcr-c-slot" onclick="drcrRemoveSlot('c')"><span id="drcr-c-text">tap account below</span></div>
+      </div>
+    </div>
+    <div class="drcr-chips-label">Choose the correct accounts:</div>
+    <div class="drcr-chips" id="drcr-chips"></div>
+  </div>
+
+  <!-- Error Hunt mode -->
+  <div id="drcr-error-mode" style="display:none;">
+    <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:7px;">👇 One entry is wrong — tap it:</div>
+    <div id="drcr-error-entries"></div>
+  </div>
+
+  <!-- Type It mode -->
+  <div id="drcr-type-mode" style="display:none;">
+    <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:6px;">Dr (Debit account):</div>
+    <input class="drcr-type-input" id="drcr-type-dr" placeholder="e.g. PPE / Equipment" oninput="drcrTypeSuggest('dr',this.value)">
+    <div id="drcr-suggest-dr" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden;box-shadow:var(--shadow2);"></div>
+    <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:6px;">Cr (Credit account):</div>
+    <input class="drcr-type-input" id="drcr-type-cr" placeholder="e.g. Cash / Bank" oninput="drcrTypeSuggest('cr',this.value)">
+    <div id="drcr-suggest-cr" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden;box-shadow:var(--shadow2);"></div>
+  </div>
+
+  <div class="drcr-xp-pop" id="drcr-xp-pop"></div>
+
+  <div class="drcr-actions">
+    <button class="drcr-btn-check" onclick="drcrCheck()">Check ✓</button>
+    <button class="drcr-btn-skip" onclick="drcrSkip()">Skip →</button>
+  </div>
+
+  <button class="drcr-btn-next" id="drcr-btn-next" onclick="drcrNext()">Next question →</button>
+
+  <div class="drcr-fb" id="drcr-fb">
+    <div class="drcr-fb-title" id="drcr-fb-title"></div>
+    <div class="drcr-fb-body" id="drcr-fb-body"></div>
+    <div class="drcr-para" id="drcr-fb-para"></div>
+    <button class="drcr-btn-ai" id="drcr-ai-btn" onclick="drcrAskAI()">🤖 Ask Mr. Ledger AI — Why?</button>
+    <div class="drcr-ai-answer" id="drcr-ai-answer">
+      <div style="font-size:9px;font-weight:700;color:var(--navy);margin-bottom:3px;">🤖 Mr. Ledger AI</div>
+      <div id="drcr-ai-text"><div style="display:flex;gap:4px;"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ MISTAKE VAULT ══ -->
 <div class="screen" id="screen-vault">
   <div class="statgrid">
@@ -2476,50 +2663,6 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 </div>
 
 <!-- ══ CHALLENGE LEAGUE ══ -->
-<div class="screen" id="screen-challenge" style="display:none;">
-  <!-- Daily Challenge -->
-  <div class="card" style="background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;overflow:hidden;position:relative;">
-    <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.05);"></div>
-    <div style="font-size:10px;font-weight:700;color:var(--blue-l);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">⚡ Daily Challenge</div>
-    <div style="font-family:var(--font-display);font-size:18px;font-weight:600;color:#fff;margin-bottom:6px;">IFRS 15 Sprint</div>
-    <div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:12px;">5 questions · Time limit 4 min · Resets in <span id="dc-reset">14h 22m</span></div>
-    <div style="display:flex;gap:8px;margin-bottom:12px;">
-      <div style="flex:1;background:rgba(255,255,255,.1);border-radius:8px;padding:8px;text-align:center;"><div style="font-family:var(--font-mono);font-size:18px;color:var(--gold);">150</div><div style="font-size:9px;color:rgba(255,255,255,.5);">XP REWARD</div></div>
-      <div style="flex:1;background:rgba(255,255,255,.1);border-radius:8px;padding:8px;text-align:center;"><div style="font-family:var(--font-mono);font-size:18px;color:var(--gold);">30</div><div style="font-size:9px;color:rgba(255,255,255,.5);">COINS</div></div>
-      <div style="flex:1;background:rgba(255,255,255,.1);border-radius:8px;padding:8px;text-align:center;"><div style="font-family:var(--font-mono);font-size:18px;color:var(--gold);">🏅</div><div style="font-size:9px;color:rgba(255,255,255,.5);">BADGE</div></div>
-    </div>
-    <button class="btn btn-gold btn-block" onclick="startDailyChallenge()" style="font-weight:800;">Start Daily Challenge →</button>
-  </div>
-  <!-- Weekly XP summary -->
-  <div class="card">
-    <div class="card-h"><div class="card-title">📊 Weekly XP</div><span class="pill pill-navy" id="weekly-total">+0 XP this week</span></div>
-    <div style="display:flex;align-items:flex-end;gap:4px;height:60px;padding:4px 0;" id="weekly-sparkline">
-      <div style="flex:1;background:var(--blue-ll);border-radius:4px 4px 0 0;" id="w0"></div>
-      <div style="flex:1;background:var(--blue-ll);border-radius:4px 4px 0 0;" id="w1"></div>
-      <div style="flex:1;background:var(--blue-ll);border-radius:4px 4px 0 0;" id="w2"></div>
-      <div style="flex:1;background:var(--blue-ll);border-radius:4px 4px 0 0;" id="w3"></div>
-      <div style="flex:1;background:var(--blue-ll);border-radius:4px 4px 0 0;" id="w4"></div>
-      <div style="flex:1;background:var(--blue-ll);border-radius:4px 4px 0 0;" id="w5"></div>
-      <div style="flex:1;background:var(--navy);border-radius:4px 4px 0 0;" id="w6"></div>
-    </div>
-    <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:4px;font-family:var(--font-mono);" id="weekly-days"></div>
-  </div>
-  <div class="card" style="text-align:center;">
-    <div class="sec-label" style="justify-content:center;"><span>Your rank</span></div>
-    <div style="font-family:var(--font-display);font-size:32px;font-weight:600;margin-top:8px;" id="challenge-rank">🌱 Initiate</div>
-  </div>
-  <div class="qa-grid">
-    <div class="qcard" style="border-bottom-color:var(--green);"><span class="q-icon">🌱</span><b>Initiate</b><span>0 XP</span></div>
-    <div class="qcard" style="border-bottom-color:var(--blue);"><span class="q-icon">📊</span><b>Analyst</b><span>200 XP</span></div>
-    <div class="qcard" style="border-bottom-color:var(--gold);"><span class="q-icon">📈</span><b>Associate</b><span>500 XP</span></div>
-    <div class="qcard" style="border-bottom-color:var(--teal);"><span class="q-icon">🎓</span><b>Qualified</b><span>1,000 XP</span></div>
-    <div class="qcard" style="border-bottom-color:var(--purple);"><span class="q-icon">⭐</span><b>Distinguished</b><span>2,000 XP</span></div>
-    <div class="qcard" style="border-bottom-color:var(--navy);"><span class="q-icon">👑</span><b>Partner</b><span>4,000 XP</span></div>
-  </div>
-  <button class="btn btn-primary btn-block" style="background:var(--purple);" onclick="showBossBattle()">👹 Boss Battle</button>
-  <button class="btn btn-primary btn-block" style="background:var(--teal);" onclick="showTimeAttack()">⚡ Time Attack</button>
-</div>
-
 <!-- ══ TROPHY ROOM ══ -->
 <div class="screen" id="screen-trophy">
   <div class="sec-label">Earned</div>
@@ -2658,8 +2801,9 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div class="card">
     <div class="card-h"><div class="card-title">Journal Entry Builder</div></div>
     <input id="je-search" type="text" placeholder="🔍 Search journal entries..." 
-      style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:12px;font-family:var(--font-body);font-size:13px;margin-bottom:10px;box-sizing:border-box;outline:none;background:var(--surface);color:var(--text);"
-      oninput="filterJEEntries(this.value)"/>
+      style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:12px;font-family:var(--font-body);font-size:13px;margin-bottom:6px;box-sizing:border-box;outline:none;background:var(--surface);color:var(--text);"
+      oninput="filterJEEntries(this.value)" autocomplete="off"/>
+    <div id="je-suggestions" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden;box-shadow:var(--shadow2);"></div>
     <div style="display:flex;gap:6px;margin-bottom:10px;" id="je-cat-row">
       <button class="chip active" onclick="setJECat(this,'all')">All</button>
       <button class="chip" onclick="setJECat(this,'IFRS')">IFRS</button>
@@ -2942,6 +3086,10 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 
 <!-- ══ FORMULA SHEET ══ -->
 <div class="screen" id="screen-formulas">
+  <div style="position:relative;margin-bottom:8px;">
+    <input id="formula-search-input" type="text" class="topic-search" placeholder="🔍 Search formulas — WACC, CAPM, ECL..." oninput="filterFormulas(this.value)" autocomplete="off" style="margin-bottom:0;">
+    <div id="formula-suggestions" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-top:4px;overflow:hidden;box-shadow:var(--shadow2);"></div>
+  </div>
   <div class="alert info" style="margin-bottom:8px;">
     🧮 Enter your own numbers — results update instantly. All inputs are editable.
   </div>
@@ -4147,6 +4295,33 @@ async function startSession(){
 
 // Get questions for challenge — uses same Supabase pool as Arena
 async function getChallengeQuestionsAsync(category, count){
+  // Handle Debit & Credit challenge — convert DRCR scenarios to MCQ format
+  if(category === 'DrCr'){
+    var drcrPool = [];
+    Object.values(DRCR_INDUSTRIES).forEach(function(industry){
+      industry.forEach(function(q){
+        // Build MCQ: correct answer is "Dr X / Cr Y", distractors from chips
+        var correct = 'Dr '+q.debit+' / Cr '+q.credit;
+        var wrongs = q.chips.filter(function(c){ return c!==q.debit && c!==q.credit; });
+        var opts = [correct];
+        // Build 3 wrong combos from chips
+        for(var i=0;i<wrongs.length-1&&opts.length<4;i++){
+          opts.push('Dr '+wrongs[i]+' / Cr '+wrongs[i+1]);
+        }
+        while(opts.length<4) opts.push('Dr '+q.correct_debit_alt+' / Cr '+q.credit);
+        opts = opts.sort(function(){return Math.random()-.5;});
+        drcrPool.push({
+          q: '⚖️ '+q.text,
+          opts: opts,
+          correct: opts.indexOf(correct),
+          explanation: q.explain+' ('+q.para+')',
+          standard: q.std,
+          domain: 'DrCr'
+        });
+      });
+    });
+    return drcrPool.sort(function(){return Math.random()-.5;}).slice(0,count);
+  }
   let supaQs = [];
   if(category === 'Mixed' || !category){
     const domains = ['IFRS','IAS','ISA','Costing','Tax','FM'];
@@ -5481,6 +5656,22 @@ function setCommTab(el){document.querySelectorAll('.comm-tab,.chip').forEach(c=>
 
 // ── BOSS BATTLE ──
 let bossTimer,bossTime=480,bossQ=0,bossScore=0;
+function fmCardTap(el, screen){
+  el.classList.remove('shimmer');
+  void el.offsetWidth;
+  el.classList.add('shimmer');
+  el.addEventListener('animationend', function(){ el.classList.remove('shimmer'); }, {once:true});
+  setTimeout(function(){ showScreen(screen); }, 120);
+  if(typeof playSound==='function') playSound('tap');
+}
+function fmCardTapFn(el, fn){
+  el.classList.remove('shimmer');
+  void el.offsetWidth;
+  el.classList.add('shimmer');
+  el.addEventListener('animationend', function(){ el.classList.remove('shimmer'); }, {once:true});
+  setTimeout(function(){ if(typeof fn==='function') fn(); }, 120);
+  if(typeof playSound==='function') playSound('tap');
+}
 function showBossBattle(){
   // FIX C: Free users get 1 Boss Battle. Track with localStorage.
   if(isFree()){
@@ -5733,20 +5924,398 @@ function loadLocalJEDropdown(){
   });
 }
 function filterJEEntries(query){
-  var q = (query||'').toLowerCase();
-  var opts = document.querySelectorAll('#je-scenario option');
-  if(!opts.length) return;
-  var sel = document.getElementById('je-scenario');
+  var q=(query||'').toLowerCase();
+  var sel=document.getElementById('je-scenario');
+  var sug=document.getElementById('je-suggestions');
   if(!sel) return;
-  Array.from(opts).forEach(function(opt){
-    if(!q){
-      opt.style.display = '';
+  var opts=Array.from(sel.querySelectorAll('option'));
+  if(!q){
+    opts.forEach(function(o){o.style.display='';});
+    if(sug) sug.style.display='none';
+    return;
+  }
+  var matches=opts.filter(function(o){return o.value&&(o.textContent||'').toLowerCase().includes(q);});
+  opts.forEach(function(o){o.style.display=o.value&&!(o.textContent||'').toLowerCase().includes(q)?'none':'';});
+  if(sug){
+    if(matches.length>0){
+      sug.innerHTML=matches.slice(0,6).map(function(o){
+        return '<div onclick="drPickJE(\''+o.value.replace(/'/g,"\\'")+'\')" style="padding:9px 12px;font-size:12px;font-weight:600;color:var(--navy);border-bottom:1px solid var(--border2);cursor:pointer;background:var(--surface);" onmouseover="this.style.background=\'var(--blue-ll)\'" onmouseout="this.style.background=\'var(--surface)\'">'+o.textContent+'</div>';
+      }).join('');
+      sug.style.display='block';
     } else {
-      var text = (opt.textContent||'').toLowerCase();
-      opt.style.display = text.includes(q) ? '' : 'none';
+      sug.innerHTML='<div style="padding:9px 12px;font-size:12px;color:var(--muted);">No matches found</div>';
+      sug.style.display='block';
     }
+  }
+}
+function drPickJE(val){
+  var sel=document.getElementById('je-scenario');
+  var sug=document.getElementById('je-suggestions');
+  if(sel){sel.value=val;loadJEScenario();}
+  if(sug) sug.style.display='none';
+  var inp=document.getElementById('je-search');
+  if(inp) inp.value='';
+}
+function filterFormulas(query){
+  var q=(query||'').toLowerCase();
+  var sug=document.getElementById('formula-suggestions');
+  var groups=document.querySelectorAll('.formula-group');
+  var FORMULA_LIST=[
+    'WACC','CAPM','NPV','IRR','Gearing','Interest Cover','Current Ratio','Quick Ratio',
+    'EPS','P/E Ratio','Depreciation','Straight-Line','Reducing Balance','Lease Liability',
+    'Right-of-Use Asset','ECL Stage 1','ECL Stage 2','Effective Interest Rate',
+    'Deferred Tax','Net Realisable Value','Goodwill Impairment','ROCE','ROE','Asset Turnover'
+  ];
+  if(!q){
+    groups.forEach(function(g){g.style.display='';});
+    if(sug) sug.style.display='none';
+    return;
+  }
+  var matched=false;
+  groups.forEach(function(g){
+    var txt=(g.textContent||'').toLowerCase();
+    var show=txt.includes(q);
+    g.style.display=show?'':'none';
+    if(show) matched=true;
+  });
+  if(sug){
+    var hints=FORMULA_LIST.filter(function(f){return f.toLowerCase().includes(q);}).slice(0,5);
+    if(hints.length>0){
+      sug.innerHTML=hints.map(function(h){
+        return '<div onclick="drPickFormula(\''+h+'\')" style="padding:8px 12px;font-size:12px;font-weight:600;color:var(--navy);border-bottom:1px solid var(--border2);cursor:pointer;background:var(--surface);" onmouseover="this.style.background=\'var(--blue-ll)\'" onmouseout="this.style.background=\'var(--surface)\'">🧮 '+h+'</div>';
+      }).join('');
+      sug.style.display='block';
+    } else {
+      sug.style.display='none';
+    }
+  }
+}
+function drPickFormula(name){
+  var inp=document.getElementById('formula-search-input');
+  if(inp){inp.value=name;filterFormulas(name);}
+  var sug=document.getElementById('formula-suggestions');
+  if(sug) sug.style.display='none';
+}
+
+// ══ DEBIT & CREDIT DRILL ENGINE ══
+var DRCR_INDUSTRIES = {
+  general:[
+    {std:'IAS 16',diff:'Hard',text:'Company revalues its building upward by $200,000. No prior revaluation surplus exists.',hint:'Revaluation gains — P&L or OCI?',amount:'$200,000',debit:'PPE / Building',credit:'Revaluation Surplus (OCI)',chips:['PPE / Building','Revaluation Surplus (OCI)','Retained Earnings','P&L — Gain on Revaluation','Depreciation Expense'],para:'IAS 16 Para 39',explain:'Upward revaluation → OCI as Revaluation Surplus in equity. NOT to P&L. This is a classic exam trap.'},
+    {std:'IAS 12',diff:'Hard',text:'Deferred tax liability of $30,000 arises from accelerated capital allowances.',hint:'DTL: carrying amount > tax base',amount:'$30,000',debit:'Tax Expense (P&L)',credit:'Deferred Tax Liability',chips:['Tax Expense (P&L)','Deferred Tax Liability','Current Tax Payable','Deferred Tax Asset','Tax Receivable'],para:'IAS 12 Para 15',explain:'Accelerated tax depreciation creates taxable temporary difference → DTL. Debit Tax Expense (not Current Tax), Credit DTL.'},
+    {std:'IAS 37',diff:'Medium',text:'Legal claim provision recognised where outflow is probable: $45,000.',hint:'Provision vs contingent liability',amount:'$45,000',debit:'Legal Expense (P&L)',credit:'Provision for Legal Claim',chips:['Legal Expense (P&L)','Provision for Legal Claim','Contingent Liability Note','Retained Earnings','Accounts Payable'],para:'IAS 37 Para 14',explain:'Recognise provision: Dr Expense (P&L), Cr Provision. Contingent = disclose only, not recognised.'},
+    {std:'IAS 16',diff:'Easy',text:'Company purchases equipment for $50,000 cash.',hint:'Asset in, asset out',amount:'$50,000',debit:'PPE / Equipment',credit:'Cash',chips:['PPE / Equipment','Cash','Accounts Payable','Depreciation Expense','Retained Earnings'],para:'IAS 16 Para 7',explain:'PPE increases (asset ↑ = Debit). Cash decreases (asset ↓ = Credit). Simple cost recognition.'},
+    {std:'IAS 19',diff:'Medium',text:'Company records current service cost of $80,000 for its defined benefit pension.',hint:'Service cost always goes to P&L',amount:'$80,000',debit:'Service Cost (P&L)',credit:'Defined Benefit Obligation',chips:['Service Cost (P&L)','Defined Benefit Obligation','Plan Assets','OCI — Remeasurement','Cash'],para:'IAS 19 Para 120',explain:'Current service cost → P&L. Increases DBO (liability). Actuarial remeasurements → OCI only.'},
+    {std:'IAS 36',diff:'Hard',text:'Goodwill impairment of $75,000 identified in annual impairment test.',hint:'Goodwill impairment — where does it go?',amount:'$75,000',debit:'Impairment Loss (P&L)',credit:'Goodwill',chips:['Impairment Loss (P&L)','Goodwill','Accumulated Amortisation','Revaluation Surplus','Retained Earnings'],para:'IAS 36 Para 60',explain:'Goodwill impairment: Dr Impairment Loss (P&L), Cr Goodwill directly. Cannot be reversed under IAS 36.'},
+  ],
+  retail:[
+    {std:'IAS 2',diff:'Easy',text:'Retailer buys inventory on credit for $20,000.',hint:'Asset up, liability up',amount:'$20,000',debit:'Inventory',credit:'Accounts Payable',chips:['Inventory','Accounts Payable','Cash','Revenue','Cost of Sales'],para:'IAS 2 Para 9',explain:'Inventory increases (asset ↑ = Debit). Accounts Payable increases (liability ↑ = Credit).'},
+    {std:'IAS 2',diff:'Medium',text:'Retailer writes down slow-moving inventory by $8,000 to NRV.',hint:'Lower of cost and NRV — how to record write-down?',amount:'$8,000',debit:'Cost of Sales / Inventory Write-down',credit:'Inventory',chips:['Cost of Sales / Inventory Write-down','Inventory','Accounts Payable','Revenue','P&L — Write-down'],para:'IAS 2 Para 34',explain:'Write-down to NRV: Dr Cost of Sales/Write-down (P&L expense), Cr Inventory to reduce carrying value.'},
+    {std:'IFRS 15',diff:'Medium',text:'Retailer receives $5,000 gift card sold. Not yet redeemed.',hint:'Gift card — revenue now or later?',amount:'$5,000',debit:'Cash',credit:'Contract Liability / Deferred Revenue',chips:['Cash','Contract Liability / Deferred Revenue','Revenue','Accounts Receivable','Deferred Tax Liability'],para:'IFRS 15 Para 31',explain:'Revenue only recognised when performance obligation satisfied (card redeemed). Until then: Dr Cash, Cr Contract Liability.'},
+    {std:'IFRS 15',diff:'Easy',text:'Customer returns goods worth $3,000. Refund issued.',hint:'Sales return — reverse the original entry',amount:'$3,000',debit:'Revenue',credit:'Cash / Refund Liability',chips:['Revenue','Cash / Refund Liability','Inventory','Cost of Sales','Accounts Receivable'],para:'IFRS 15 Para B21',explain:'Revenue reversed: Dr Revenue, Cr Cash (refund). Also reverse the cost entry if goods returned to inventory.'},
+    {std:'IAS 2',diff:'Hard',text:'Retailer uses AVCO method. Opening inventory $10,000, purchases $40,000. COGS calculated as $35,000.',hint:'AVCO COGS — which accounts?',amount:'$35,000',debit:'Cost of Sales',credit:'Inventory',chips:['Cost of Sales','Inventory','Revenue','Accounts Payable','Gross Profit'],para:'IAS 2 Para 25',explain:'When goods are sold, transfer cost from Inventory to Cost of Sales: Dr COGS, Cr Inventory. LIFO is prohibited under IFRS.'},
+  ],
+  banking:[
+    {std:'IFRS 9',diff:'Hard',text:'Bank recognises Stage 1 ECL provision of $5,000 on a performing loan.',hint:'Stage 1 = 12-month expected credit loss',amount:'$5,000',debit:'Impairment Loss (P&L)',credit:'Loss Allowance (contra-asset)',chips:['Impairment Loss (P&L)','Loss Allowance (contra-asset)','Loan Receivable','Interest Income','Provision for Bad Debts'],para:'IFRS 9 Para 5.5.5',explain:'Stage 1 ECL: Dr Impairment Loss (P&L), Cr Loss Allowance. Do NOT reduce the loan balance directly.'},
+    {std:'IFRS 9',diff:'Hard',text:'Loan moves to Stage 3 (credit-impaired). Lifetime ECL increases by $50,000.',hint:'Stage 3 = full lifetime expected credit loss',amount:'$50,000',debit:'Impairment Loss (P&L)',credit:'Loss Allowance (contra-asset)',chips:['Impairment Loss (P&L)','Loss Allowance (contra-asset)','Loan Receivable','Interest Income','Write-off Expense'],para:'IFRS 9 Para 5.5.3',explain:'Stage 3 triggers full lifetime ECL. Still Dr Impairment Loss, Cr Loss Allowance. Interest income now on net carrying amount.'},
+    {std:'IFRS 9',diff:'Medium',text:'Bank accrues interest income of $12,000 on a performing loan at effective interest rate.',hint:'Effective interest method — where does interest go?',amount:'$12,000',debit:'Accrued Interest Receivable',credit:'Interest Income',chips:['Accrued Interest Receivable','Interest Income','Cash','Loan Receivable','Fee Income'],para:'IFRS 9 Para 5.4.1',explain:'Interest under effective interest method: Dr Accrued Interest Receivable (asset), Cr Interest Income (P&L).'},
+    {std:'IFRS 9',diff:'Hard',text:'Bank writes off a loan of $25,000 deemed unrecoverable.',hint:'Write-off — remove the asset and the allowance',amount:'$25,000',debit:'Loss Allowance (contra-asset)',credit:'Loan Receivable',chips:['Loss Allowance (contra-asset)','Loan Receivable','Impairment Loss (P&L)','Cash','Write-off Expense'],para:'IFRS 9 Para 5.4.4',explain:'Write-off uses the existing allowance: Dr Loss Allowance, Cr Loan Receivable. No new P&L hit if allowance was sufficient.'},
+    {std:'IAS 21',diff:'Hard',text:'Bank holds USD loan. At year-end, FX loss of $8,000 on retranslation.',hint:'Monetary items retranslated — where does FX diff go?',amount:'$8,000',debit:'FX Loss (P&L)',credit:'Loan Receivable (USD)',chips:['FX Loss (P&L)','Loan Receivable (USD)','OCI — Translation Reserve','FX Gain','Cash'],para:'IAS 21 Para 28',explain:'Monetary items (loans) retranslated at closing rate. Exchange differences → P&L immediately, not OCI.'},
+  ],
+  manufacturing:[
+    {std:'IAS 23',diff:'Medium',text:'Borrowing costs of $12,000 capitalised on factory under construction.',hint:'Qualifying asset — capitalise or expense?',amount:'$12,000',debit:'Capital WIP (Asset)',credit:'Finance Costs Capitalised',chips:['Capital WIP (Asset)','Finance Costs Capitalised','Finance Cost (P&L)','Cash','Bank Loan'],para:'IAS 23 Para 8',explain:'Borrowing costs for qualifying asset → capitalised. Dr Capital WIP, Cr Finance Costs Capitalised. Reduces P&L charge.'},
+    {std:'IAS 16',diff:'Easy',text:'Factory machine depreciation charge for the year: $15,000.',hint:'Depreciation — which two accounts?',amount:'$15,000',debit:'Depreciation Expense (P&L)',credit:'Accumulated Depreciation',chips:['Depreciation Expense (P&L)','Accumulated Depreciation','PPE / Machinery','Cash','Retained Earnings'],para:'IAS 16 Para 50',explain:'Annual depreciation: Dr Depreciation Expense (P&L), Cr Accumulated Depreciation (contra-asset). The machine cost stays unchanged.'},
+    {std:'IAS 2',diff:'Medium',text:'Manufacturing overhead of $30,000 absorbed into WIP inventory.',hint:'Absorption costing — overhead goes into inventory',amount:'$30,000',debit:'Work in Progress (WIP)',credit:'Manufacturing Overhead Applied',chips:['Work in Progress (WIP)','Manufacturing Overhead Applied','Cost of Sales','Cash','Overhead Expense (P&L)'],para:'IAS 2 Para 12',explain:'Under IAS 2 absorption costing, fixed production overheads → inventory cost. Dr WIP, Cr Overhead Applied.'},
+    {std:'IAS 37',diff:'Medium',text:'Warranty provision recognised on goods sold: $18,000 estimated.',hint:'Constructive obligation from past sales',amount:'$18,000',debit:'Warranty Expense (P&L)',credit:'Warranty Provision',chips:['Warranty Expense (P&L)','Warranty Provision','Cash','Accounts Payable','Retained Earnings'],para:'IAS 37 Para 14',explain:'Warranty creates constructive obligation: Dr Warranty Expense (P&L), Cr Warranty Provision (liability). Recognised at point of sale.'},
+    {std:'IAS 16',diff:'Hard',text:'Machine sold for $40,000. Carrying amount was $55,000. Record the disposal.',hint:'Disposal — remove asset and record loss',amount:'$40,000',debit:'Cash / Accumulated Depreciation / Loss on Disposal',credit:'PPE / Machinery (Cost)',chips:['Cash','Accumulated Depreciation','Loss on Disposal (P&L)','PPE / Machinery (Cost)','Gain on Disposal'],para:'IAS 16 Para 67',explain:'Disposal: Dr Cash (proceeds) + Dr Accum. Depr. + Dr Loss on Disposal, Cr PPE at cost. Loss = CV minus proceeds.'},
+  ],
+  services:[
+    {std:'IFRS 15',diff:'Medium',text:'Consulting firm receives $50,000 upfront for 5-month project. Month 1 revenue: $10,000.',hint:'Recognise revenue as performance obligation satisfied',amount:'$10,000',debit:'Deferred Revenue / Contract Liability',credit:'Revenue',chips:['Deferred Revenue / Contract Liability','Revenue','Cash','Accounts Receivable','Accrued Revenue'],para:'IFRS 15 Para 35',explain:'Revenue recognised over time as service delivered. Dr Deferred Revenue (reducing liability), Cr Revenue each month.'},
+    {std:'IFRS 16',diff:'Hard',text:'Services firm signs office lease. Initial recognition: ROU asset and liability $120,000.',hint:'IFRS 16 — both sides go on balance sheet',amount:'$120,000',debit:'Right-of-Use Asset',credit:'Lease Liability',chips:['Right-of-Use Asset','Lease Liability','Rent Expense','Cash','Prepaid Rent'],para:'IFRS 16 Para 22',explain:'At commencement: Dr ROU Asset, Cr Lease Liability (PV of future payments). No rent expense on day 1.'},
+    {std:'IFRS 16',diff:'Medium',text:'Monthly lease payment of $3,000 made. Interest portion $800, principal portion $2,200.',hint:'Split lease payment between interest and principal',amount:'$3,000',debit:'Finance Cost (P&L) + Lease Liability',credit:'Cash',chips:['Finance Cost (P&L)','Lease Liability','Cash','Right-of-Use Asset','Rent Expense'],para:'IFRS 16 Para 26',explain:'Payment split: Dr Finance Cost $800 (P&L) + Dr Lease Liability $2,200, Cr Cash $3,000. ROU asset depreciated separately.'},
+    {std:'IAS 38',diff:'Hard',text:'Software development costs of $25,000 meet capitalisation criteria under IAS 38.',hint:'Development costs — capitalise if criteria met',amount:'$25,000',debit:'Intangible Asset — Software',credit:'Cash / Development Costs',chips:['Intangible Asset — Software','Cash / Development Costs','R&D Expense (P&L)','Accumulated Amortisation','Deferred Revenue'],para:'IAS 38 Para 57',explain:'Development costs capitalised if 6 criteria met. Dr Intangible Asset, Cr Cash. Research costs always expensed — never capitalised.'},
+    {std:'IFRS 15',diff:'Easy',text:'Agency invoices client $15,000 for completed project. Payment due in 30 days.',hint:'Revenue on invoice — performance obligation done',amount:'$15,000',debit:'Accounts Receivable',credit:'Revenue',chips:['Accounts Receivable','Revenue','Cash','Deferred Revenue','Contract Asset'],para:'IFRS 15 Para 31',explain:'Revenue recognised when performance obligation satisfied. Dr Accounts Receivable (asset ↑), Cr Revenue (income ↑).'},
+  ]
+};
+
+var DRCR_ALL_ACCOUNTS=['PPE / Equipment','PPE / Building','PPE / Machinery','Cash','Accounts Payable','Accounts Receivable','Revenue','Cost of Sales','Inventory','Work in Progress (WIP)','Revaluation Surplus (OCI)','Retained Earnings','P&L — Gain on Revaluation','Depreciation Expense (P&L)','Accumulated Depreciation','Deferred Tax Liability','Deferred Tax Asset','Tax Expense (P&L)','Current Tax Payable','Tax Receivable','Loss Allowance (contra-asset)','Loan Receivable (USD)','Loan Receivable','Impairment Loss (P&L)','Service Cost (P&L)','Defined Benefit Obligation','Plan Assets','OCI — Remeasurement','Legal Expense (P&L)','Provision for Legal Claim','Contingent Liability Note','Right-of-Use Asset','Lease Liability','Rent Expense','Finance Cost (P&L)','Finance Costs Capitalised','Contract Liability / Deferred Revenue','Deferred Revenue','Accrued Revenue','Contract Asset','Accrued Interest Receivable','Interest Income','Fee Income','Write-off Expense','FX Loss (P&L)','FX Gain','OCI — Translation Reserve','Capital WIP (Asset)','Bank Loan','Goodwill','Accumulated Amortisation','Intangible Asset — Software','R&D Expense (P&L)','Warranty Expense (P&L)','Warranty Provision','Manufacturing Overhead Applied','Overhead Expense (P&L)','Cost of Sales / Inventory Write-down','Loss on Disposal (P&L)','Gain on Disposal'];
+
+var drcrState={industry:0,mode:0,debitVal:'',creditVal:'',streak:0,xp:0,correct:0,wrong:0,combo:0,answered:false,shuffled:[],cur:0,currentQ:null};
+var DRCR_IND_KEYS=['general','retail','banking','manufacturing','services'];
+
+function drcrShuffleQ(){
+  var key=DRCR_IND_KEYS[drcrState.industry]||'general';
+  drcrState.shuffled=(DRCR_INDUSTRIES[key]||DRCR_INDUSTRIES.general).slice().sort(function(){return Math.random()-.5;});
+  drcrState.cur=0;
+}
+
+function drcrSetIndustry(i){
+  drcrState.industry=i;
+  for(var j=0;j<5;j++){var b=document.getElementById('drcr-i'+j);if(b) b.className='drcr-ind-btn'+(j===i?' active':'');}
+  drcrShuffleQ(); drcrLoadQ();
+}
+
+function drcrSetMode(m){
+  drcrState.mode=m;
+  for(var j=0;j<3;j++){var b=document.getElementById('drcr-m'+j);if(b) b.className='drcr-mode-btn'+(j===m?' active':'');}
+  var chipMode=document.getElementById('drcr-chip-mode');
+  var typeMode=document.getElementById('drcr-type-mode');
+  var errorMode=document.getElementById('drcr-error-mode');
+  if(chipMode) chipMode.style.display=m===0?'block':'none';
+  if(typeMode) typeMode.style.display=m===2?'block':'none';
+  if(errorMode) errorMode.style.display=m===1?'block':'none';
+  drcrLoadQ();
+}
+
+function drcrLoadQ(){
+  drcrState.answered=false;
+  drcrState.debitVal=''; drcrState.creditVal='';
+  if(!drcrState.shuffled||!drcrState.shuffled.length) drcrShuffleQ();
+  var q=drcrState.shuffled[drcrState.cur%drcrState.shuffled.length];
+  drcrState.currentQ=q;
+  var g=function(id){return document.getElementById(id);};
+  if(g('drcr-std')) g('drcr-std').textContent=q.std;
+  if(g('drcr-diff')){g('drcr-diff').textContent=q.diff;g('drcr-diff').className='drcr-sc-diff '+(q.diff==='Hard'?'drcr-diff-h':q.diff==='Medium'?'drcr-diff-m':'drcr-diff-e');}
+  if(g('drcr-text')) g('drcr-text').textContent=q.text;
+  if(g('drcr-hint')) g('drcr-hint').textContent='💡 '+q.hint;
+  if(g('drcr-amount')) g('drcr-amount').textContent=q.amount;
+  var ds=g('drcr-d-slot'); if(ds){ds.className='drcr-slot';}
+  var dt=g('drcr-d-text'); if(dt) dt.textContent='tap account below';
+  var cs=g('drcr-c-slot'); if(cs) cs.className='drcr-slot';
+  var ct=g('drcr-c-text'); if(ct) ct.textContent='tap account below';
+  if(g('drcr-fb')) g('drcr-fb').className='drcr-fb';
+  if(g('drcr-xp-pop')) g('drcr-xp-pop').className='drcr-xp-pop';
+  var nb=document.getElementById('drcr-btn-next'); if(nb) nb.className='drcr-btn-next';
+  if(g('drcr-ai-answer')){g('drcr-ai-answer').className='drcr-ai-answer';g('drcr-ai-answer').style.display='none';}
+  if(g('drcr-ai-btn')) g('drcr-ai-btn').style.display='flex';
+
+  if(drcrState.mode===2){
+    drcrBuildTypeMode(q);
+  } else if(drcrState.mode===1){
+    drcrBuildErrorMode(q);
+  } else {
+    var wrap=g('drcr-chips');
+    if(wrap){
+      wrap.innerHTML='';
+      var chips=q.chips.slice().sort(function(){return Math.random()-.5;});
+      chips.forEach(function(c){
+        var btn=document.createElement('button');
+        btn.className='drcr-chip';
+        btn.textContent=c;
+        btn.onclick=function(){drcrPlaceChip(btn,c);};
+        wrap.appendChild(btn);
+      });
+    }
+  }
+}
+
+function drcrBuildTypeMode(q){
+  var di=document.getElementById('drcr-type-dr'); if(di){di.value='';di.style.borderColor='var(--border)';}
+  var ci=document.getElementById('drcr-type-cr'); if(ci){ci.value='';ci.style.borderColor='var(--border)';}
+  var sd=document.getElementById('drcr-suggest-dr'); if(sd) sd.style.display='none';
+  var sc=document.getElementById('drcr-suggest-cr'); if(sc) sc.style.display='none';
+}
+
+function drcrBuildErrorMode(q){
+  var container=document.getElementById('drcr-error-entries');
+  if(!container) return;
+  var fakeAccounts=DRCR_ALL_ACCOUNTS.filter(function(a){return a!==q.debit;});
+  var wrongDebit=fakeAccounts[Math.floor(Math.random()*fakeAccounts.length)];
+  var entries=[
+    {label:'Entry A',dr:q.debit,cr:q.credit,isCorrect:true},
+    {label:'Entry B',dr:wrongDebit,cr:q.credit,isCorrect:false},
+  ];
+  if(Math.random()>.5) entries.reverse();
+  container.innerHTML='';
+  entries.forEach(function(e){
+    var div=document.createElement('div');
+    div.style.cssText='background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;cursor:pointer;transition:all .15s;';
+    div.innerHTML='<div style="font-size:10px;font-weight:700;color:var(--steel);margin-bottom:6px;">'+e.label+'</div>'
+      +'<div style="font-size:12px;font-weight:700;color:#1D4ED8;">Dr: '+e.dr+'</div>'
+      +'<div style="font-size:12px;font-weight:700;color:#7C3AED;margin-top:3px;">Cr: '+e.cr+'</div>';
+    div.onclick=function(){
+      if(drcrState.answered) return;
+      drcrState.answered=true;
+      if(!e.isCorrect){
+        div.style.background='#DCFCE7'; div.style.borderColor='#16a34a';
+        drcrShowFeedback(true,'✅ Correct! You spotted the wrong entry.',q.explain,q.para);
+        drcrScoreCorrect();
+      } else {
+        div.style.background='#FEE2E2'; div.style.borderColor='#DC2626';
+        drcrShowFeedback(false,'❌ That was actually correct! The wrong one had: Dr '+wrongDebit,q.explain,q.para);
+        drcrScoreWrong();
+      }
+    };
+    div.onmouseover=function(){if(!drcrState.answered) div.style.background='var(--blue-ll)';};
+    div.onmouseout=function(){if(!drcrState.answered) div.style.background='var(--surface)';};
+    container.appendChild(div);
   });
 }
+
+function drcrPlaceChip(btn,name){
+  if(drcrState.answered) return;
+  if(typeof playSound==='function') playSound('tap');
+  if(!drcrState.debitVal){
+    drcrState.debitVal=name;
+    var ds=document.getElementById('drcr-d-slot'); if(ds) ds.className='drcr-slot filled';
+    var dt=document.getElementById('drcr-d-text'); if(dt) dt.textContent=name;
+    btn.classList.add('used');
+  } else if(!drcrState.creditVal){
+    drcrState.creditVal=name;
+    var cs=document.getElementById('drcr-c-slot'); if(cs) cs.className='drcr-slot filled';
+    var ct=document.getElementById('drcr-c-text'); if(ct) ct.textContent=name;
+    btn.classList.add('used');
+  }
+}
+
+function drcrRemoveSlot(side){
+  if(drcrState.answered) return;
+  if(side==='d'&&drcrState.debitVal){
+    document.querySelectorAll('.drcr-chip').forEach(function(c){if(c.textContent===drcrState.debitVal) c.classList.remove('used');});
+    drcrState.debitVal='';
+    var ds=document.getElementById('drcr-d-slot'); if(ds) ds.className='drcr-slot';
+    var dt=document.getElementById('drcr-d-text'); if(dt) dt.textContent='tap account below';
+  } else if(side==='c'&&drcrState.creditVal){
+    document.querySelectorAll('.drcr-chip').forEach(function(c){if(c.textContent===drcrState.creditVal) c.classList.remove('used');});
+    drcrState.creditVal='';
+    var cs=document.getElementById('drcr-c-slot'); if(cs) cs.className='drcr-slot';
+    var ct=document.getElementById('drcr-c-text'); if(ct) ct.textContent='tap account below';
+  }
+}
+
+function drcrTypeSuggest(side,val){
+  var sugId='drcr-suggest-'+side;
+  var sug=document.getElementById(sugId);
+  if(!sug) return;
+  var q=val.toLowerCase();
+  if(!q){sug.style.display='none';return;}
+  var matches=DRCR_ALL_ACCOUNTS.filter(function(a){return a.toLowerCase().includes(q);}).slice(0,6);
+  if(!matches.length){sug.style.display='none';return;}
+  sug.innerHTML=matches.map(function(a){
+    return '<div onclick="drcrPickType(\''+side+'\',\''+a.replace(/'/g,"\\'")+'\')" style="padding:9px 12px;font-size:12px;font-weight:600;color:var(--navy);border-bottom:1px solid var(--border2);cursor:pointer;" onmouseover="this.style.background=\'var(--blue-ll)\'" onmouseout="this.style.background=\'\'">'+a+'</div>';
+  }).join('');
+  sug.style.display='block';
+}
+
+function drcrPickType(side,val){
+  var inp=document.getElementById('drcr-type-'+side);
+  var sug=document.getElementById('drcr-suggest-'+side);
+  if(inp) inp.value=val;
+  if(sug) sug.style.display='none';
+  if(side==='d') drcrState.debitVal=val;
+  else drcrState.creditVal=val;
+}
+
+function drcrCheck(){
+  if(drcrState.answered) return;
+  var q=drcrState.currentQ;
+  if(!q) return;
+  var dv=drcrState.debitVal, cv=drcrState.creditVal;
+  if(drcrState.mode===2){
+    dv=(document.getElementById('drcr-type-dr')||{}).value||'';
+    cv=(document.getElementById('drcr-type-cr')||{}).value||'';
+  }
+  if(!dv||!cv){if(typeof toast==='function') toast('Select both Debit and Credit first'); return;}
+  drcrState.answered=true;
+  var isOk=(dv.toLowerCase()===q.debit.toLowerCase()&&cv.toLowerCase()===q.credit.toLowerCase());
+
+  if(drcrState.mode===0){
+    var ds=document.getElementById('drcr-d-slot'); if(ds) ds.className='drcr-slot '+(dv===q.debit?'correct':'wrong');
+    var cs=document.getElementById('drcr-c-slot'); if(cs) cs.className='drcr-slot '+(cv===q.credit?'correct':'wrong');
+    document.querySelectorAll('.drcr-chip').forEach(function(chip){
+      if(chip.textContent===q.debit||chip.textContent===q.credit) chip.className='drcr-chip correct-chip';
+      else if(chip.classList.contains('used')) chip.className='drcr-chip wrong-chip';
+    });
+  }
+  if(drcrState.mode===2){
+    var di=document.getElementById('drcr-type-dr'); if(di) di.style.borderColor=isOk?'#16a34a':'#DC2626';
+    var ci=document.getElementById('drcr-type-cr'); if(ci) ci.style.borderColor=isOk?'#16a34a':'#DC2626';
+  }
+  if(typeof playSound==='function') playSound(isOk?'correct':'wrong');
+  if(isOk){drcrScoreCorrect(); drcrShowFeedback(true,'✅ Correct!',q.explain,q.para);}
+  else{drcrScoreWrong(); drcrShowFeedback(false,'❌ Not quite — correct entry: Dr '+q.debit+' / Cr '+q.credit,q.explain,q.para);}
+}
+
+function drcrScoreCorrect(){
+  drcrState.correct++; drcrState.streak++; drcrState.combo=Math.min(drcrState.combo+1,5);
+  var xpGain=50+(drcrState.combo>=5?100:drcrState.combo>=3?50:drcrState.combo>=2?25:0);
+  drcrState.xp+=xpGain;
+  if(typeof S!=='undefined'){S.xp=(S.xp||0)+xpGain; if(typeof updateHUD==='function') updateHUD(); if(typeof saveState==='function') saveState();}
+  var pop=document.getElementById('drcr-xp-pop');
+  if(pop){pop.textContent='+'+xpGain+' XP'+(drcrState.combo>=3?' 🔥 COMBO x'+drcrState.combo+'!':''); pop.className='drcr-xp-pop show';}
+  var sp=document.getElementById('drcr-streak-pill'); if(sp) sp.textContent='🔥 '+drcrState.streak+' streak';
+  var xp=document.getElementById('drcr-xp-pill'); if(xp) xp.textContent='⚡ '+drcrState.xp+' XP';
+  drcrUpdateStats(); drcrUpdateCombo();
+}
+
+function drcrScoreWrong(){
+  drcrState.wrong++; drcrState.streak=0; drcrState.combo=0;
+  var sp=document.getElementById('drcr-streak-pill'); if(sp) sp.textContent='🔥 0 streak';
+  drcrUpdateStats(); drcrUpdateCombo();
+}
+
+function drcrShowFeedback(ok,title,body,para){
+  var fb=document.getElementById('drcr-fb');
+  if(!fb) return;
+  fb.className='drcr-fb show '+(ok?'ok':'bad');
+  var ft=document.getElementById('drcr-fb-title'); if(ft) ft.textContent=title;
+  var fb2=document.getElementById('drcr-fb-body'); if(fb2) fb2.textContent=body;
+  var fp=document.getElementById('drcr-fb-para'); if(fp) fp.textContent='📖 '+para;
+  var nb=document.getElementById('drcr-btn-next'); if(nb) nb.className='drcr-btn-next show';
+}
+
+function drcrAskAI(){
+  var q=drcrState.currentQ;
+  if(!q) return;
+  var aiBox=document.getElementById('drcr-ai-answer');
+  var aiText=document.getElementById('drcr-ai-text');
+  var aiBtn=document.getElementById('drcr-ai-btn');
+  if(!aiBox||!aiText) return;
+  if(aiBtn) aiBtn.style.display='none';
+  aiBox.style.display='block';
+  aiBox.className='drcr-ai-answer show';
+  aiText.innerHTML='<div style="display:flex;gap:4px;padding:4px 0;"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+  var prompt='Explain this journal entry in simple terms for a student:\n\nScenario: '+q.text+'\nCorrect entry: Dr '+q.debit+' / Cr '+q.credit+'\nStandard: '+q.std+' ('+q.para+')\n\nWhy is this the correct entry? Keep it under 100 words, clear and exam-focused.';
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,system:'You are Mr. Ledger AI, a friendly accounting tutor. Explain journal entries simply. Under 100 words. Bold key terms. Reference the standard paragraph.',messages:[{role:'user',content:prompt}]})
+  }).then(function(r){return r.json();}).then(function(data){
+    var text=data.content&&data.content[0]?data.content[0].text:'Could not get explanation.';
+    aiText.innerHTML=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  }).catch(function(){
+    aiText.innerHTML='<em>AI temporarily unavailable. '+q.explain+'</em>';
+  });
+}
+
+function drcrUpdateStats(){
+  var total=drcrState.correct+drcrState.wrong;
+  var g=function(id){return document.getElementById(id);};
+  if(g('drcr-s-correct')) g('drcr-s-correct').textContent=drcrState.correct;
+  if(g('drcr-s-wrong')) g('drcr-s-wrong').textContent=drcrState.wrong;
+  if(g('drcr-s-combo')) g('drcr-s-combo').textContent=drcrState.combo;
+  if(g('drcr-s-acc')) g('drcr-s-acc').textContent=total>0?Math.round((drcrState.correct/total)*100)+'%':'0%';
+}
+
+function drcrUpdateCombo(){
+  for(var i=0;i<5;i++){var d=document.getElementById('drcr-d'+i);if(d) d.className='drcr-dot'+(i<drcrState.combo?' lit':'');}
+  var label=document.getElementById('drcr-combo-label');
+  if(label) label.textContent=drcrState.combo>=5?'+200 XP LEGENDARY!':drcrState.combo>=3?'+100 XP on next':drcrState.combo>=2?'+25 XP on next':'+50 XP base';
+}
+
+function drcrSkip(){if(drcrState.answered) return; drcrState.wrong++; drcrState.streak=0; drcrState.combo=0; drcrUpdateStats(); drcrUpdateCombo(); drcrState.cur++; drcrLoadQ();}
+function drcrNext(){drcrState.cur++; drcrLoadQ();}
+
+window.addEventListener('load',function(){
+  drcrShuffleQ();
+  var origShow=typeof showScreen==='function'?showScreen:null;
+  if(origShow){
+    var _prevDrcr=window.showScreen;
+    window.showScreen=function(id){
+      _prevDrcr(id);
+      if(id==='drcr'){setTimeout(function(){if(!drcrState.shuffled||!drcrState.shuffled.length){drcrShuffleQ();} drcrLoadQ();},200);}
+    };
+  }
+});
 
 function loadJEScenario(){
   const val=document.getElementById('je-scenario').value;
@@ -6971,6 +7540,7 @@ function hapticFeedback(type){
 const SCREEN_LABELS={
   home:'Home', 'pro-home':'Pro Home', topics:'Topics', practice:'Arena',
   progress:'Progress', vault:'Vault', askai:'AI Chat', community:'Community',
+  drcr:'Debit & Credit',
   challenge:'Challenge', trophy:'Trophy Room', profile:'Profile',
   quickref:'Quick Ref', jebuilder:'JE Builder', fsbuilder:'Statements',
   cpd:'CPD', disclosure:'Disclosures', updates:'Updates',
@@ -8352,11 +8922,6 @@ function showLimitPopup(type){
 function showDailyLimitPopup(){ showLimitPopup('hard'); }
 function showRegisterPopup(){ showLimitPopup('soft'); }
 function showFreePopup(type){ showLimitPopup('hard'); }
-function closeRegPopup(){
-  document.querySelectorAll('.fm-limit-overlay').forEach(function(e){e.remove();});
-  var p=document.getElementById('register-popup'); if(p) p.classList.remove('show');
-}
-
 function closeRegPopup(){
   document.querySelectorAll('.fm-limit-overlay').forEach(function(e){e.remove();});
   var p=document.getElementById('register-popup'); if(p) p.classList.remove('show');
@@ -9766,26 +10331,50 @@ const _origAnswerQ=answerQ;
 
 /* ── HERO ── */
 .fm-hero {
-  background: linear-gradient(155deg, #0A1F6E 0%, #1a2f8a 55%, #0f1f5e 100%);
+  background: linear-gradient(155deg, #0A1F6E 0%, #1a3494 40%, #0d2580 70%, #0A1F6E 100%);
+  background-size: 300% 300%;
+  animation: heroBgShift 8s ease-in-out infinite;
   border-radius: 24px;
   padding: 20px 16px 0;
   position: relative;
   overflow: hidden;
   min-height: 185px;
+  transition: transform .2s cubic-bezier(0.34,1.56,0.64,1), box-shadow .2s;
 }
-
+.fm-hero:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 40px rgba(10,31,110,.35);
+}
+@keyframes heroBgShift {
+  0%,100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
 .fm-hero::after {
   content: '';
   position: absolute;
   bottom: 0; left: 0; right: 0;
   height: 4px;
-  background: linear-gradient(90deg, var(--gold), #FCD34D, var(--gold));
-  background-size: 200% 100%;
-  animation: fmShimmer 3s linear infinite;
+  background: linear-gradient(90deg, var(--gold), #FCD34D, #fff, var(--gold));
+  background-size: 300% 100%;
+  animation: fmShimmer 2.5s linear infinite;
+}
+.fm-hero::before {
+  content: '';
+  position: absolute;
+  top: -40%; left: -20%;
+  width: 140%; height: 140%;
+  background: radial-gradient(ellipse at 30% 40%, rgba(99,102,241,.12) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 20%, rgba(16,185,129,.08) 0%, transparent 50%);
+  pointer-events: none;
+  animation: heroGlow 6s ease-in-out infinite alternate;
+}
+@keyframes heroGlow {
+  0% { opacity: .6; transform: scale(1); }
+  100% { opacity: 1; transform: scale(1.05); }
 }
 @keyframes fmShimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% { background-position: 300% 0; }
+  100% { background-position: -300% 0; }
 }
 .fm-hero-content {
   display: flex;
@@ -10030,32 +10619,57 @@ const _origAnswerQ=answerQ;
 }
 
 /* ── QA GRID ── */
-.fm-qa-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fm-qa-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .fm-qa-card {
-  border-radius: 20px; padding: 16px 14px;
+  border-radius: 20px; padding: 16px 14px 14px;
   cursor: pointer; position: relative; overflow: hidden;
-  transition: transform .15s cubic-bezier(0.34,1.56,0.64,1), box-shadow .15s;
+  transition: transform .2s cubic-bezier(0.34,1.56,0.64,1), box-shadow .2s;
+  color: #fff;
 }
-.fm-qa-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
-.fm-qa-card:active { transform: scale(.97); }
+.fm-qa-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(0,0,0,.18);
+}
+.fm-qa-card:active { transform: scale(.96); }
 .fm-qa-card::before {
   content: attr(data-e);
-  position: absolute; right: -8px; bottom: -8px;
-  font-size: 52px; opacity: .1; transform: rotate(-10deg);
-  pointer-events: none;
+  position: absolute; right: -10px; bottom: -10px;
+  font-size: 72px; opacity: .18; transform: rotate(-12deg);
+  pointer-events: none; line-height: 1;
 }
-.fm-qa-navy { background: linear-gradient(135deg,#0A1F6E,#1E3A8A); color: #fff; }
-.fm-qa-purple { background: linear-gradient(135deg,#5B21B6,#7C3AED); color: #fff; }
-.fm-qa-red { background: linear-gradient(135deg,#991B1B,#B91C1C); color: #fff; }
-.fm-qa-teal { background: linear-gradient(135deg,#0D9488,#0F766E); color: #fff; }
-.fm-qa-amber { background: linear-gradient(135deg,#92400E,#B45309); color: #fff; }
-.fm-qa-green { background: linear-gradient(135deg,#065F46,#047857); color: #fff; }
-.fm-qa-emoji { font-size: 28px; margin-bottom: 8px; display: block; }
-.fm-qa-title { font-size: 13px; font-weight: 900; margin-bottom: 2px; }
-.fm-qa-sub { font-size: 10px; opacity: .6; font-weight: 700; }
-.fm-qa-badge {
+.fm-qa-card::after {
+  content: '';
+  position: absolute; top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent);
+  transform: skewX(-20deg);
+  opacity: 0; pointer-events: none;
+  transition: none;
+}
+.fm-qa-card.shimmer::after {
+  animation: cardShimmer .55s ease forwards;
+}
+.fm-qa-card:hover::after {
+  animation: cardShimmer .6s ease forwards;
+}
+@keyframes cardShimmer {
+  0%   { left: -75%; opacity: 1; }
+  100% { left: 130%;  opacity: 0; }
+}
+.fm-qa-navy   { background: #3B82F6; }
+.fm-qa-purple { background: #8B5CF6; }
+.fm-qa-red    { background: #EF4444; }
+.fm-qa-teal   { background: #06B6D4; }
+.fm-qa-amber  { background: #F59E0B; }
+.fm-qa-green  { background: #10B981; }
+.fm-qa-indigo { background: #6366F1; }
+.fm-qa-rose   { background: #EC4899; }
+.fm-qa-emoji  { font-size: 28px; margin-bottom: 8px; display: block; }
+.fm-qa-title  { font-size: 13px; font-weight: 900; margin-bottom: 2px; color: #fff; }
+.fm-qa-sub    { font-size: 10px; opacity: .75; font-weight: 700; color: #fff; }
+.fm-qa-badge  {
   position: absolute; top: 10px; right: 10px;
-  background: var(--gold); color: var(--navy);
+  background: rgba(255,255,255,.25); color: #fff;
   font-size: 9px; font-weight: 900;
   border-radius: 6px; padding: 2px 6px;
 }
@@ -11022,21 +11636,35 @@ button:active { transform: scale(.97); }
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  transition: transform .15s cubic-bezier(0.34,1.56,0.64,1), box-shadow .15s;
+  transition: transform .2s cubic-bezier(0.34,1.56,0.64,1), box-shadow .2s;
   color: #fff;
-  border: 1.5px solid rgba(255,255,255,.1);
 }
-.pro-tool-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.15); }
-.pro-tool-card:active { transform: scale(.97); }
+.pro-tool-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(0,0,0,.18);
+}
+.pro-tool-card:active { transform: scale(.96); }
 .pro-tool-card::before {
   content: attr(data-e);
-  position: absolute; right: -8px; bottom: -8px;
-  font-size: 52px; opacity: .1; transform: rotate(-10deg);
-  pointer-events: none;
+  position: absolute; right: -10px; bottom: -10px;
+  font-size: 72px; opacity: .18; transform: rotate(-12deg);
+  pointer-events: none; line-height: 1;
+}
+.pro-tool-card::after {
+  content: '';
+  position: absolute; top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent);
+  transform: skewX(-20deg);
+  opacity: 0; pointer-events: none;
+}
+.pro-tool-card.shimmer::after,
+.pro-tool-card:hover::after {
+  animation: cardShimmer .6s ease forwards;
 }
 .pro-tool-emoji { font-size: 28px; margin-bottom: 8px; display: block; }
-.pro-tool-title { font-size: 13px; font-weight: 900; margin-bottom: 2px; }
-.pro-tool-sub { font-size: 10px; opacity: .65; font-weight: 700; }
+.pro-tool-title { font-size: 13px; font-weight: 900; margin-bottom: 2px; color: #fff; }
+.pro-tool-sub { font-size: 10px; opacity: .75; font-weight: 700; color: #fff; }
 
 /* ── PRO MINI CARDS ── */
 
@@ -11137,14 +11765,6 @@ body.onboard-visible #fm-float-fox {
 /* ── 1. SECTION LABELS — navy left border ── */
 
 
-/* ── 2. PRO MINI CARDS — navy blue ── */
-
-.pro-mini-card:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 6px 18px rgba(10,31,110,.3) !important;
-}
-.pro-mini-card div { color: #fff !important; }
-
 /* ── 3. BOTTOM NAV — solid navy active pill ── */
 .bn-item { position: relative; }
 
@@ -11202,14 +11822,16 @@ body.onboard-visible #fm-float-fox {
   border-left: 3px solid var(--gold) !important;
 }
 
-/* ── 8. COLORED QA CARDS — never change on hover ── */
-.fm-qa-navy  { background: linear-gradient(135deg,#0A1F6E,#1E3A8A) !important; }
-.fm-qa-purple{ background: linear-gradient(135deg,#5B21B6,#7C3AED) !important; }
-.fm-qa-red   { background: linear-gradient(135deg,#991B1B,#B91C1C) !important; }
-.fm-qa-teal  { background: linear-gradient(135deg,#0D9488,#0F766E) !important; }
-.fm-qa-amber { background: linear-gradient(135deg,#92400E,#B45309) !important; }
-.fm-qa-green { background: linear-gradient(135deg,#065F46,#047857) !important; }
-.fm-qa-card:hover { opacity: .93 !important; }
+/* ── 8. COLORED QA CARDS — vibrant, never dark ── */
+.fm-qa-navy   { background: #3B82F6 !important; }
+.fm-qa-purple { background: #8B5CF6 !important; }
+.fm-qa-red    { background: #EF4444 !important; }
+.fm-qa-teal   { background: #06B6D4 !important; }
+.fm-qa-amber  { background: #F59E0B !important; }
+.fm-qa-green  { background: #10B981 !important; }
+.fm-qa-indigo { background: #6366F1 !important; }
+.fm-qa-rose   { background: #EC4899 !important; }
+.fm-qa-card:active { transform: scale(.96) !important; }
 
 /* ── 9. LUMINOUS HERO LIGHT ── */
 
@@ -11302,23 +11924,34 @@ body.onboard-visible #fm-float-fox {
   border-radius: 999px;
 }
 
-/* ── 5. PRO MINI CARDS — navy blue ── */
+/* ── 5. PRO MINI CARDS — vibrant colors ── */
 .pro-mini-card {
-  background: linear-gradient(135deg, #0A1F6E, #1E3A8A);
-  border: none;
   border-radius: 16px;
   padding: 14px 10px;
   text-align: center;
   cursor: pointer;
   color: #fff;
-  transition: transform .15s cubic-bezier(0.34,1.56,0.64,1), box-shadow .15s;
-  box-shadow: 0 3px 10px rgba(10,31,110,.2);
+  position: relative;
+  overflow: hidden;
+  transition: transform .2s cubic-bezier(0.34,1.56,0.64,1), box-shadow .2s;
 }
 .pro-mini-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(10,31,110,.3);
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 10px 24px rgba(0,0,0,.18);
 }
-.pro-mini-card:active { transform: scale(.96); }
+.pro-mini-card:active { transform: scale(.95); }
+.pro-mini-card::after {
+  content: '';
+  position: absolute; top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent);
+  transform: skewX(-20deg);
+  opacity: 0; pointer-events: none;
+}
+.pro-mini-card.shimmer::after,
+.pro-mini-card:hover::after {
+  animation: cardShimmer .6s ease forwards;
+}
 
 /* ── 6. BOTTOM NAV — solid navy active pill ── */
 .bn-item.active .bn-ico {
@@ -11359,14 +11992,15 @@ body.onboard-visible #fm-float-fox {
 .lb-row { transition: background .15s; border-radius: 8px; }
 .lb-row.me { background: rgba(245,158,11,.06); border-left: 3px solid var(--gold); }
 
-/* ── 8. QA CARDS — never change ── */
-.fm-qa-navy   { background: linear-gradient(135deg,#0A1F6E,#1E3A8A); }
-.fm-qa-purple { background: linear-gradient(135deg,#5B21B6,#7C3AED); }
-.fm-qa-red    { background: linear-gradient(135deg,#991B1B,#B91C1C); }
-.fm-qa-teal   { background: linear-gradient(135deg,#0D9488,#0F766E); }
-.fm-qa-amber  { background: linear-gradient(135deg,#92400E,#B45309); }
-.fm-qa-green  { background: linear-gradient(135deg,#065F46,#047857); }
-.fm-qa-card:hover { opacity: .92; }
+/* ── 8. QA CARDS — vibrant mid-tone ── */
+.fm-qa-navy   { background: #3B82F6; }
+.fm-qa-purple { background: #8B5CF6; }
+.fm-qa-red    { background: #EF4444; }
+.fm-qa-teal   { background: #06B6D4; }
+.fm-qa-amber  { background: #F59E0B; }
+.fm-qa-green  { background: #10B981; }
+.fm-qa-indigo { background: #6366F1; }
+.fm-qa-rose   { background: #EC4899; }
 
 /* ── 9. HIDE NAV + FOX DURING AUTH ── */
 body.auth-visible .nav,
@@ -11616,11 +12250,6 @@ function continueFreeQuestions(){
   }catch(e){}
   // Start a new session
   if(typeof startSession === 'function') startSession();
-}
-
-function closeRegPopup(){
-  const popup = document.getElementById('register-popup');
-  if(popup) popup.classList.remove('show');
 }
 
 function continueAsGuest(){
@@ -12522,7 +13151,7 @@ function loadBattleQuestion(){
   // Update UI
   document.getElementById('battle-q-num').textContent = 'Question '+(CH.currentQ+1)+' of '+CH.questions.length;
   document.getElementById('battle-question').textContent = q.q;
-  document.getElementById('battle-explanation').style.display='none';
+  var _be=document.getElementById('battle-explanation'); if(_be) _be.style.display='none';
   document.getElementById('opponent-status-text').textContent = 'Opponent is thinking...';
 
   // Render options
@@ -14949,10 +15578,10 @@ function achLoadBattleQuestion(){
   ACH.answered = false;
   ACH.qStartTime = Date.now();
 
-  document.getElementById('ach-qnum').textContent = 'Q'+(ACH.currentQ+1)+' of '+ACH.questions.length;
-  document.getElementById('ach-question').textContent = q.q || q.question || '';
-  document.getElementById('ach-explanation').style.display = 'none';
-  document.getElementById('ach-opp-status-text').textContent = '⏳ Opponent thinking...';
+  var _achQ=document.getElementById('ach-qnum'); if(_achQ) _achQ.textContent = 'Q'+(ACH.currentQ+1)+' of '+ACH.questions.length;
+  var _achQtext=document.getElementById('ach-question'); if(_achQtext) _achQtext.textContent = q.q || q.question || '';
+  var _achExp=document.getElementById('ach-explanation'); if(_achExp) _achExp.style.display = 'none';
+  var _achOpp=document.getElementById('ach-opp-status-text'); if(_achOpp) _achOpp.textContent = '⏳ Opponent thinking...';
 
   const opts = document.getElementById('ach-options');
   const letters = ['A','B','C','D'];
@@ -14965,16 +15594,14 @@ function achLoadBattleQuestion(){
   // Timer
   ACH.timerSecs = 20;
   clearInterval(ACH.timerInterval);
-  document.getElementById('ach-timer-num').textContent = 20;
-  document.getElementById('ach-timer-num').classList.remove('danger');
-  document.getElementById('ach-timer-fill').style.width = '100%';
+  var _achTnum=document.getElementById('ach-timer-num'); if(_achTnum){_achTnum.textContent = 20; _achTnum.classList.remove('danger');}
+  var _achTfill=document.getElementById('ach-timer-fill'); if(_achTfill) _achTfill.style.width = '100%';
 
   ACH.timerInterval = setInterval(()=>{
     ACH.timerSecs--;
     const pct = (ACH.timerSecs/20)*100;
-    document.getElementById('ach-timer-num').textContent = ACH.timerSecs;
-    document.getElementById('ach-timer-fill').style.width = pct+'%';
-    if(ACH.timerSecs <= 5) document.getElementById('ach-timer-num').classList.add('danger');
+    var _tn=document.getElementById('ach-timer-num'); if(_tn){_tn.textContent = ACH.timerSecs; if(ACH.timerSecs <= 5) _tn.classList.add('danger');}
+    var _tf=document.getElementById('ach-timer-fill'); if(_tf) _tf.style.width = pct+'%';
     if(ACH.timerSecs <= 0){
       clearInterval(ACH.timerInterval);
       if(!ACH.answered) achAnswer(-1); // timeout = wrong
@@ -15156,7 +15783,7 @@ function achInitScreen(){
 
 
 <!-- ══ CHALLENGE ARENA ══ -->
-<div class="screen" id="screen-challenge">
+<div class="screen" id="screen-arena-v2">
 
   <!-- ─── LOBBY ─── -->
   <div id="ach-lobby">
