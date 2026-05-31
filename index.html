@@ -5542,19 +5542,27 @@ function showTimeAttack(){
     localStorage.setItem('fm_ta_used','1');
     toast('⚡ Free trial! Upgrade Pro for unlimited Time Attack.');
   }
-  showScreen('challenge');
-  setTimeout(()=>{
-    const content=document.getElementById('screen-challenge');if(!content) return;
-    content.innerHTML=`<div class="time-attack-header"><div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:3px;">⚡ TIME ATTACK</div><div class="ta-timer" id="ta-timer">3:00</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;" id="ta-score">0 correct · 0 answered</div><div style="height:5px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden;margin-top:9px;"><div id="ta-bar" style="height:100%;background:white;border-radius:3px;width:100%;transition:width .1s;"></div></div></div>
-    <div class="qcard-q"><div class="qtext" id="ta-q-text">Loading...</div><div class="opts" id="ta-options"></div></div>
-    <button class="btn btn-secondary btn-block" style="margin-top:8px;" onclick="confirmTAStop()">← Stop</button>`;
-    taTime=180;taScore=0;taTotal=0;
-    clearInterval(taTimer); // clear any existing timer first
-    loadTAQuestion();
-    taTimer=setInterval(tickTA,1000);
-    window._gameActive = "timeattack";
-  },100);
+  // Restore challenge screen if it was overwritten
+  if(window._challengeScreenHTML){
+    var cs = document.getElementById('screen-challenge');
+    if(cs) cs.innerHTML = window._challengeScreenHTML;
+  }
+  // Build Time Attack UI in a fixed overlay (not inside challenge screen)
+  var existing = document.getElementById('ta-overlay');
+  if(existing) existing.remove();
+  var overlay = document.createElement('div');
+  overlay.id = 'ta-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9000;background:var(--bg,#F0F4FF);overflow-y:auto;padding:16px 14px 80px;box-sizing:border-box;';
+  overlay.innerHTML = '<div class="time-attack-header"><div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:3px;">⚡ TIME ATTACK</div><div class="ta-timer" id="ta-timer">3:00</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;" id="ta-score">0 correct · 0 answered</div><div style="height:5px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden;margin-top:9px;"><div id="ta-bar" style="height:100%;background:white;border-radius:3px;width:100%;transition:width .1s;"></div></div></div>'
+    + '<div class="qcard-q"><div class="qtext" id="ta-q-text">Loading...</div><div class="opts" id="ta-options"></div></div>'
+    + '<button class="btn btn-secondary btn-block" style="margin-top:8px;" onclick="confirmTAStop()">← Stop</button>';
+  document.body.appendChild(overlay);
+  taTime=180; taScore=0; taTotal=0;
+  clearInterval(taTimer);
+  loadTAQuestion();
+  taTimer = setInterval(tickTA, 1000);
 }
+
 function tickTA(){taTime--;const m=Math.floor(taTime/60);const s=taTime%60;const t=document.getElementById('ta-timer');const b=document.getElementById('ta-bar');if(t) t.textContent=m+':'+(s<10?'0':'')+s;if(b) b.style.width=(taTime/180*100)+'%';if(taTime<=0) endTimeAttack();}
 function loadTAQuestion(){
   const allDomains=[...QB_BY_DOMAIN['IFRS'],...QB_BY_DOMAIN['IAS'],...QB_BY_DOMAIN['Costing'],...QB_BY_DOMAIN['Tax'],...QB_BY_DOMAIN['FM']];
@@ -5592,16 +5600,15 @@ function loadTAQuestion(){
   }
 }
 function confirmTAStop(){
-  // Pause timer while confirming
+  // Pause timer
   clearInterval(taTimer);
   var d = document.createElement('div');
-  d.className = 'fm-limit-overlay';
   d.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(10,31,110,0.95);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
   var box = document.createElement('div');
   box.style.cssText = 'background:#fff;border-radius:24px;padding:28px 24px;max-width:320px;width:100%;text-align:center;';
   box.innerHTML = '<div style="font-size:48px;margin-bottom:12px;">⚡</div>'
     + '<div style="font-size:18px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Stop Time Attack?</div>'
-    + '<div style="font-size:13px;color:#64748B;margin-bottom:20px;">Your current score will be saved.</div>';
+    + '<div style="font-size:13px;color:#64748B;margin-bottom:20px;">Score: ' + taScore + '/' + taTotal + ' correct</div>';
   var yesBtn = document.createElement('button');
   yesBtn.style.cssText = 'width:100%;padding:13px;border-radius:14px;background:#EF4444;color:#fff;font-size:14px;font-weight:800;border:none;cursor:pointer;font-family:inherit;margin-bottom:8px;';
   yesBtn.textContent = 'Yes, Stop';
@@ -5611,7 +5618,7 @@ function confirmTAStop(){
   noBtn.textContent = 'Keep Going! ⚡';
   noBtn.addEventListener('click', function(){
     d.remove();
-    // Resume timer
+    // Resume timer from where it stopped
     taTimer = setInterval(tickTA, 1000);
   });
   box.appendChild(yesBtn);
@@ -5623,15 +5630,22 @@ function confirmTAStop(){
 function endTimeAttack(){
   clearInterval(taTimer);
   taTimer = null;
-  if(taTotal === 0) { showScreen('home'); return; } // navigated away before answering
-  const xpWon=taScore*30;
-  S.xp+=xpWon;S.coins+=taScore*5;updateHUD();
-  if(taTotal>=10&&taScore/taTotal>=0.8) showBadgeToast('Speed Demon ⚡ — incredible pace!');
-  // Show popup instead of just toast
-  showResultPopup('⚡ Time Attack Complete!', taScore+'/'+taTotal+' correct', '+'+xpWon+' XP earned!', 'home');
+  var overlay = document.getElementById('ta-overlay');
+  if(!overlay){ showScreen('home'); return; }
+  const xpWon = taScore * 30;
+  S.xp += xpWon; S.coins += taScore * 5; updateHUD();
+  if(taTotal >= 10 && taScore/taTotal >= 0.8) showBadgeToast('Speed Demon ⚡ — incredible pace!');
+  saveState();
+  // Show result inside the overlay
+  overlay.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px;text-align:center;box-sizing:border-box;">'
+    + '<div style="font-size:64px;margin-bottom:16px;">⚡</div>'
+    + '<div style="font-family:var(--font-display,serif);font-size:24px;font-weight:700;color:var(--navy,#0A1F6E);margin-bottom:8px;">Time Attack Complete!</div>'
+    + '<div style="font-size:16px;color:var(--steel,#64748B);margin-bottom:8px;">' + taScore + '/' + taTotal + ' correct</div>'
+    + '<div style="font-size:14px;color:var(--green,#10B981);font-weight:700;margin-bottom:24px;">+' + xpWon + ' XP earned!</div>'
+    + '<button onclick="var o=document.getElementById(&quot;ta-overlay&quot;);if(o)o.remove();" style="padding:14px 32px;border-radius:14px;background:var(--navy,#0A1F6E);color:#fff;font-size:15px;font-weight:800;border:none;cursor:pointer;font-family:inherit;">← Back to Home</button>'
+    + '</div>';
 }
 
-// ── QUICK REF ──
 function toggleQRef(header){const arrow=header.querySelector('.qref-arrow');const body=header.nextElementSibling;const isOpen=body.classList.contains('open');document.querySelectorAll('.qref-body').forEach(b=>b.classList.remove('open'));document.querySelectorAll('.qref-arrow').forEach(a=>a.classList.remove('open'));if(!isOpen){body.classList.add('open');arrow.classList.add('open');}}
 function filterQRef(val){document.querySelectorAll('.qref-card').forEach(c=>{const text=c.textContent.toLowerCase();c.style.display=text.includes(val.toLowerCase())?'':'none';});}
 
@@ -7701,8 +7715,28 @@ function buildLearningPath(){
       const badge      = stage === 'locked' ? '<span style="font-size:9px;background:#F1F5F9;color:#94A3B8;padding:2px 7px;border-radius:999px;font-weight:700;margin-left:6px;">LOCKED</span>'
                        : stage === 'mastered' ? '<span style="font-size:9px;background:#D1FAE5;color:#059669;padding:2px 7px;border-radius:999px;font-weight:700;margin-left:6px;">DONE ✓</span>'
                        : '<span style="font-size:9px;background:#EEF2FF;color:#6366F1;padding:2px 7px;border-radius:999px;font-weight:700;margin-left:6px;">OPEN</span>';
-      labelDiv.innerHTML = `<div style="font-size:12px;font-weight:700;color:${labelColor};">${topic.std}${badge}</div>`
-        + `<div style="font-size:10px;color:${subColor};margin-top:1px;">${topic.name}</div>`;
+      // Get progress for this topic
+      const tp = (S.topicProgress && S.topicProgress[topic.std]) || {answered:0, correct:0};
+      const progressPct = Math.min(100, Math.round((tp.answered / 40) * 100));
+      const correctPct  = Math.min(100, Math.round((tp.correct / 20) * 100));
+      const showProgress = stage !== 'locked' && stage !== 'mastered';
+      const progressBar = showProgress ? `
+        <div style="margin-top:5px;">
+          <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--steel);margin-bottom:2px;">
+            <span>${tp.answered}/40 answered</span>
+            <span>${tp.correct}/20 correct</span>
+          </div>
+          <div style="height:5px;background:#E2E8F0;border-radius:3px;overflow:hidden;">
+            <div style="height:100%;width:${progressPct}%;background:${progressPct>=100?'#10B981':'#6366F1'};border-radius:3px;transition:width .3s;"></div>
+          </div>
+          <div style="height:4px;background:#FEF3C7;border-radius:3px;overflow:hidden;margin-top:2px;">
+            <div style="height:100%;width:${correctPct}%;background:${correctPct>=100?'#10B981':'#F59E0B'};border-radius:3px;transition:width .3s;"></div>
+          </div>
+          <div style="font-size:9px;color:var(--steel);margin-top:2px;">${tp.correct>=20&&tp.answered>=40?'✅ Complete! Next topic unlocked':'Need 40 answered + 20 correct to unlock next'}</div>
+        </div>` : '';
+      labelDiv.innerHTML = '<div style="font-size:12px;font-weight:700;color:'+labelColor+';">'+topic.std+badge+'</div>'
+        + '<div style="font-size:10px;color:'+subColor+';margin-top:1px;">'+topic.name+'</div>'
+        + progressBar;
 
       if(isLeft){
         nodeRow.appendChild(nodeBtn);
@@ -8061,15 +8095,15 @@ function showContinuePopup(std, remaining){
 // ── FIX A: Arena refresh function ──
 function arenaRefresh(){
   const btn = document.getElementById('arena-refresh-btn');
-  if(btn){ btn.textContent='⏳'; btn.disabled=true; }
+  if(btn){ btn.innerHTML='⏳ Loading...'; btn.disabled=true; }
   if(S.currentStandard){
     startTopicPractice(S.currentStandard).then(()=>{
-      if(btn){ btn.textContent='🔄'; btn.disabled=false; }
-    }).catch(()=>{ if(btn){ btn.textContent='🔄'; btn.disabled=false; } });
+      if(btn){ btn.innerHTML='🔄 Refresh'; btn.disabled=false; }
+    }).catch(()=>{ if(btn){ btn.innerHTML='🔄 Refresh'; btn.disabled=false; } });
   } else {
     startSession().then(()=>{
-      if(btn){ btn.textContent='🔄'; btn.disabled=false; }
-    }).catch(()=>{ if(btn){ btn.textContent='🔄'; btn.disabled=false; } });
+      if(btn){ btn.innerHTML='🔄 Refresh'; btn.disabled=false; }
+    }).catch(()=>{ if(btn){ btn.innerHTML='🔄 Refresh'; btn.disabled=false; } });
   }
 }
 
@@ -8255,6 +8289,7 @@ function saveState(){
       totalQ:S.totalQ,totalCorrect:S.totalCorrect,hearts:S.hearts,
       gender:S.gender,mode:S.mode,darkMode:S.darkMode,
       completedTopics:S.completedTopics||{},
+      topicProgress:S.topicProgress||{},
       dailyQCount:S.dailyQCount||0,
       dailyQDate:S.dailyQDate||'',
       onboardingDone:S.onboardingDone||false,
@@ -11380,6 +11415,12 @@ body.guest-mode #profile-logout-btn { display: none !important; }
 
 /* Hide AI limit counter for pro users */
 body.plan-pro .ai-limit, body.plan-elite .ai-limit { display: none !important; }
+
+/* Path progress bars */
+.path-progress-wrap { margin-top:5px; }
+.path-progress-label { display:flex;justify-content:space-between;font-size:9px;color:var(--steel);margin-bottom:2px; }
+.path-progress-bar { height:5px;background:#E2E8F0;border-radius:3px;overflow:hidden; }
+.path-progress-fill { height:100%;border-radius:3px;transition:width .3s; }
 </style>
 
 <!-- ══ MULTIPLAYER CHALLENGE SCREEN ══ -->
@@ -13431,26 +13472,6 @@ showChallengeSection = function(section){
 (function(){
   const _baseShow = showScreen;
   showScreen = function(id){
-    if(window._gameActive && id !== 'challenge'){
-      const overlay = document.createElement('div');
-      overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(10,31,110,.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
-      overlay.innerHTML = '<div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:300px;width:90%;text-align:center;">' +
-        '<div style="font-size:36px;margin-bottom:12px;">⚠️</div>' +
-        '<div style="font-size:17px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Leave Game?</div>' +
-        '<div style="font-size:13px;color:#64748B;margin-bottom:24px;line-height:1.5;">Your progress in this game will be lost.</div>' +
-        '<button id="exit-yes-btn" style="width:100%;padding:12px;border-radius:12px;background:#DC2626;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;font-family:var(--font-body);">Yes, Leave</button>' +
-        '<button id="exit-no-btn" style="width:100%;padding:10px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);">Keep Playing</button>' +
-        '</div>';
-      document.body.appendChild(overlay);
-      document.getElementById('exit-no-btn').onclick = function(){ overlay.remove(); };
-      document.getElementById('exit-yes-btn').onclick = function(){
-        overlay.remove(); window._gameActive = null;
-        if(typeof taTimer !== 'undefined') clearInterval(taTimer);
-        if(typeof bossTimer !== 'undefined') clearInterval(bossTimer);
-        _baseShow(id);
-      };
-      return;
-    }
     if(id !== 'challenge'){
       if(typeof taTimer !== 'undefined' && taTimer){ clearInterval(taTimer); taTimer=null; taTime=0; }
       if(typeof bossTimer !== 'undefined' && bossTimer){ clearInterval(bossTimer); bossTimer=null; }
