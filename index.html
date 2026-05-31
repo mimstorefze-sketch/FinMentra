@@ -4313,15 +4313,18 @@ function answerQ(idx,btn,q){
     if(!S.topicProgress[S.currentStandard]) S.topicProgress[S.currentStandard] = {answered:0, correct:0};
     S.topicProgress[S.currentStandard].answered++;
     if(idx === q.correct) S.topicProgress[S.currentStandard].correct++;
-    // Check if topic is now complete (50%+ correct with at least 10 answered)
+    // Check if topic is now complete (50%+ correct with at least 20 answered)
     const tp = S.topicProgress[S.currentStandard];
-    const pct = tp.answered >= 10 ? Math.round(tp.correct / tp.answered * 100) : 0;
-    if(pct >= 50 && tp.answered >= 10){
+    const pct = tp.answered >= 20 ? Math.round(tp.correct / tp.answered * 100) : 0;
+    if(pct >= 50 && tp.answered >= 20){
       if(!S.completedTopics) S.completedTopics = {};
       if(!S.completedTopics[S.currentStandard]){
         S.completedTopics[S.currentStandard] = true;
         saveState();
-        toast('✅ '+S.currentStandard+' completed! Next topic unlocked →');
+        // Find what the NEXT topic is and tell user
+        var _nextStd = '';
+        PATH_WORLDS.forEach(function(w){ w.topics.forEach(function(t,ti){ if(t.std===S.currentStandard && w.topics[ti+1]) _nextStd=w.topics[ti+1].std; }); });
+        toast('✅ '+S.currentStandard+' completed! '+(_nextStd?_nextStd+' unlocked →':''));
         setTimeout(buildLearningPath, 400);
       }
     }
@@ -7665,26 +7668,32 @@ function isTopicUnlocked(world, topicIndex){
   if(isElite()) return true;
 
   const ct = S.completedTopics || {};
-  const worldIdx = PATH_WORLDS.indexOf(world);
 
-  // Check if world is accessible
+  // World 1 topic 0 (IAS 1) is always open for everyone
+  if(topicIndex === 0) return true;
+
+  // For every other topic: only unlocked if the PREVIOUS topic is completed
+  // This is a strict sequential chain: complete topic N → unlocks topic N+1
+  const prevStd = world.topics[topicIndex - 1].std;
+  const prevCompleted = !!ct[prevStd];
+
+  if(!prevCompleted) return false;
+
+  // Also check world gate: world 2+ requires at least one completion in previous world
+  const worldIdx = PATH_WORLDS.indexOf(world);
   if(worldIdx > 0){
     const prevWorld = PATH_WORLDS[worldIdx - 1];
-    const prevWorldHasCompletion = prevWorld.topics.some(t => ct[t.std]);
-    if(!prevWorldHasCompletion) return false;
+    const prevWorldDone = prevWorld.topics.some(t => ct[t.std]);
+    if(!prevWorldDone) return false;
   }
 
-  // Free users — only first 3 topics in World 1
+  // Free users: only World 1, first 4 topics accessible
   if(isFree()){
-    if(worldIdx > 0) return false; // only World 1 for free
-    return topicIndex < 3;
+    if(worldIdx > 0) return false;
+    if(topicIndex >= 4) return false;
   }
 
-  // Pro users — first 3 open, then progressive unlock
-  if(topicIndex < 3) return true;
-  // Each additional topic unlocks when previous is completed
-  const prevStd = world.topics[topicIndex - 1].std;
-  return !!ct[prevStd];
+  return true;
 }
 
 function getTopicStage(std, world, topicIndex){
@@ -7767,7 +7776,7 @@ function buildLearningPath(){
                        : '<span style="font-size:9px;background:#EEF2FF;color:#6366F1;padding:2px 7px;border-radius:999px;font-weight:700;margin-left:6px;">OPEN</span>';
       // Get progress for this topic
       const tp = (S.topicProgress && S.topicProgress[topic.std]) || {answered:0, correct:0};
-      const UNLOCK_MIN = 10; // min questions to attempt
+      const UNLOCK_MIN = 20; // min questions to attempt
       const progressPct = Math.min(100, Math.round((tp.answered / UNLOCK_MIN) * 100));
       const pctCorrect  = tp.answered >= UNLOCK_MIN ? Math.round(tp.correct / tp.answered * 100) : 0;
       const isComplete  = tp.answered >= UNLOCK_MIN && pctCorrect >= 50;
@@ -7784,7 +7793,7 @@ function buildLearningPath(){
           <div style="height:4px;background:#FEF3C7;border-radius:3px;overflow:hidden;margin-top:2px;">
             <div style="height:100%;width:${Math.min(100,pctCorrect*2)}%;background:${pctCorrect>=50?'#10B981':'#F59E0B'};border-radius:3px;transition:width .3s;"></div>
           </div>
-          <div style="font-size:9px;color:var(--steel);margin-top:2px;">${isComplete?'✅ Complete! Next topic unlocked':'Need '+UNLOCK_MIN+' answered + 50% correct to unlock next'}</div>
+          <div style="font-size:9px;color:var(--steel);margin-top:2px;">${isComplete?'✅ Complete! Next topic unlocked':'Answer '+UNLOCK_MIN+' questions with 50%+ correct to unlock next'}</div>
         </div>` : '';
       labelDiv.innerHTML = '<div style="font-size:12px;font-weight:700;color:'+labelColor+';">'+topic.std+badge+'</div>'
         + '<div style="font-size:10px;color:'+subColor+';margin-top:1px;">'+topic.name+'</div>'
@@ -8225,7 +8234,7 @@ loadState();
     var changed = false;
     Object.keys(S.topicProgress).forEach(function(std){
       var tp = S.topicProgress[std];
-      if(!tp || tp.answered < 10) return;
+      if(!tp || tp.answered < 20) return;
       var pct = Math.round(tp.correct / tp.answered * 100);
       if(pct >= 50 && !S.completedTopics[std]){
         S.completedTopics[std] = true;
