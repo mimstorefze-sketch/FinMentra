@@ -11757,6 +11757,85 @@ async function doLogout(){
 }
 
 // ── CHECK IF ALREADY LOGGED IN (returning user) ──
+
+// ── OFFLINE DETECTION ──
+function showOfflineScreen(){
+  var os = document.getElementById('offline-screen');
+  var sl = document.getElementById('session-loader');
+  if(os) os.style.display = 'flex';
+  if(sl){ sl.style.display = 'none'; sl.classList.add('hidden'); }
+}
+
+function hideOfflineScreen(){
+  var os = document.getElementById('offline-screen');
+  if(os) os.style.display = 'none';
+}
+
+function showOfflineBanner(){
+  var ob = document.getElementById('offline-banner');
+  if(ob) ob.style.display = 'block';
+}
+
+function hideOfflineBanner(){
+  var ob = document.getElementById('offline-banner');
+  if(ob) ob.style.display = 'none';
+}
+
+function retryConnection(){
+  if(navigator.onLine){
+    hideOfflineScreen();
+    // Retry loading
+    var sl = document.getElementById('session-loader');
+    if(sl){ sl.style.display = 'flex'; sl.classList.remove('hidden'); }
+    // Re-run session check
+    if(typeof _supa !== 'undefined'){
+      _supa.auth.getSession().then(function(res){
+        if(res.data && res.data.session){
+          window.location.reload();
+        } else {
+          var ae = document.getElementById('auth-screen');
+          if(ae){ ae.classList.add('show'); }
+          var sl2 = document.getElementById('session-loader');
+          if(sl2){ sl2.style.display = 'none'; }
+          document.body.classList.add('app-ready');
+        }
+      }).catch(function(){ showOfflineScreen(); });
+    }
+  } else {
+    // Still offline - shake button
+    var btn = document.querySelector('#offline-screen button');
+    if(btn){
+      btn.textContent = '❌ Still offline...';
+      setTimeout(function(){ btn.textContent = '🔄 Try Again'; }, 2000);
+    }
+  }
+}
+
+// Listen for online/offline events
+window.addEventListener('offline', function(){
+  if(document.body.classList.contains('app-ready')){
+    showOfflineBanner();
+  } else {
+    showOfflineScreen();
+  }
+});
+
+window.addEventListener('online', function(){
+  hideOfflineBanner();
+  hideOfflineScreen();
+  // If was showing offline screen, reload to get fresh session
+  if(document.getElementById('offline-screen').style.display === 'flex'){
+    window.location.reload();
+  }
+});
+
+// Check on load
+if(!navigator.onLine){
+  document.addEventListener('DOMContentLoaded', function(){
+    showOfflineScreen();
+  });
+}
+
 (async function checkSession() {
   // Handle token in URL hash (Supabase OAuth redirect)
   if(window.location.hash && window.location.hash.includes('access_token')){
@@ -11779,7 +11858,16 @@ async function doLogout(){
     }
   }
 
-  const { data } = await _supa.auth.getSession();
+  let data;
+  try {
+    const result = await _supa.auth.getSession();
+    data = result.data;
+  } catch(err){
+    // Network error - show offline screen
+    showOfflineScreen();
+    return;
+  }
+  if(!navigator.onLine){ showOfflineScreen(); return; }
   // Hide the session loader
   const loader = document.getElementById('session-loader');
   if(loader) loader.classList.add('hidden');
