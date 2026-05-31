@@ -2395,11 +2395,10 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <span style="font-size:20px;">🤖</span>
       <div>
         <div id="ai-chat-name" style="font-weight:700;font-size:13px;">Mr. Ledger AI</div>
-      <div style="font-size:9px;color:var(--blue-l);margin-top:1px;" id="ai-plan-label">Free · 5 AI/day</div>
+      <div style="font-size:9px;color:var(--blue-l);margin-top:1px;" id="ai-plan-label">Free Plan</div>
         <div style="font-size:10px;color:var(--blue-l);opacity:.85;">IFRS · IAS · ISA specialist</div>
       </div>
       <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
-        <span style="font-size:10px;color:var(--gold);font-family:var(--font-mono);font-weight:700;" class="ai-limit">3/3 left today</span>
         <span style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;animation:livePulse 1.5s infinite;"></span>
       </div>
     </div>
@@ -2427,9 +2426,14 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
         <div class="msg-actions"><button onclick="copyMsg(this)" title="Copy">📋</button><button onclick="reactMsg(this,'👍')">👍</button><button onclick="reactMsg(this,'👎')">👎</button><button onclick="saveToVault(this)" style="font-size:10px;color:var(--navy);font-weight:700;">Save 🗄️</button></div>
       </div>
     </div>
-    <div class="chat-input-row" style="background:var(--surface);border-top:1px solid var(--border2);">
-      <input class="chat-input" id="chat-input" placeholder="Ask about any standard, ratio or concept..." onkeydown="if(event.key==='Enter') sendChat()" style="flex:1;">
-      <button class="chat-send" onclick="sendChat()" style="border-radius:10px;padding:8px 16px;">Send ✈️</button>
+    <div class="chat-input-row" style="background:var(--surface);border-top:1px solid var(--border2);align-items:flex-end;">
+      <textarea class="chat-input" id="chat-input" placeholder="Ask about any standard, ratio or concept..." rows="1"
+        style="flex:1;resize:none;overflow:hidden;min-height:38px;max-height:120px;line-height:1.5;padding:10px 12px;border-radius:12px;font-family:var(--font-body);font-size:13px;border:1.5px solid var(--border);background:var(--bg);outline:none;transition:border-color .2s;box-sizing:border-box;"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"
+        oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px';"
+        onfocus="this.style.borderColor='var(--blue)';"
+        onblur="this.style.borderColor='var(--border)';"></textarea>
+      <button class="chat-send" onclick="sendChat()" style="border-radius:10px;padding:9px 16px;flex-shrink:0;">Send ✈️</button>
     </div>
   </div>
 </div>
@@ -4303,6 +4307,25 @@ function answerQ(idx,btn,q){
   incrementDailyQ(); // track daily usage for free users
   // Track today's questions for missions
   S.todayQ = (S.todayQ||0) + 1;
+  // ── TRACK TOPIC PROGRESS (cumulative across sessions) ──
+  if(S.currentStandard){
+    if(!S.topicProgress) S.topicProgress = {};
+    if(!S.topicProgress[S.currentStandard]) S.topicProgress[S.currentStandard] = {answered:0, correct:0};
+    S.topicProgress[S.currentStandard].answered++;
+    if(idx === q.correct) S.topicProgress[S.currentStandard].correct++;
+    // Check if topic is now complete (50%+ correct with at least 10 answered)
+    const tp = S.topicProgress[S.currentStandard];
+    const pct = tp.answered >= 10 ? Math.round(tp.correct / tp.answered * 100) : 0;
+    if(pct >= 50 && tp.answered >= 10){
+      if(!S.completedTopics) S.completedTopics = {};
+      if(!S.completedTopics[S.currentStandard]){
+        S.completedTopics[S.currentStandard] = true;
+        saveState();
+        toast('✅ '+S.currentStandard+' completed! Next topic unlocked →');
+        setTimeout(buildLearningPath, 400);
+      }
+    }
+  }
   // Add wrong answers to vault
   if(idx !== q.correct){
     if(!S.mistakeVault) S.mistakeVault = [];
@@ -4369,6 +4392,8 @@ function nextQuestion(){
   // Full session done — show continue popup
   const acc = S.sessionQ>0 ? Math.round(S.sessionCorrect/S.sessionQ*100) : 0;
   const std = S.currentStandard||S.domain;
+  // Note: topic completion is now checked per-answer via topicProgress tracking.
+  // This block is a safety net for any edge cases not caught per-answer.
   if(S.currentStandard && acc >= 50){
     if(!S.completedTopics) S.completedTopics = {};
     if(!S.completedTopics[S.currentStandard]){
@@ -4968,26 +4993,29 @@ function showAuthPopup(){
 
 function updateAIBanner(){
   const banner = document.getElementById('ai-usage-banner');
+  const planLabel = document.getElementById('ai-plan-label');
   if(!banner) return;
   const pro = isPro();
-  const loggedIn = !!(typeof _currentUser !== 'undefined' && _currentUser);
   if(pro){
-    // Pro user — show green pro banner, no upgrade needed
+    // Pro user — show clean green banner
     banner.style.background = 'var(--green-l, #DCFCE7)';
     banner.style.borderColor = '#22c55e';
-    const aiLeft = S.aiUsedMonth != null ? Math.max(0, 50 - (S.aiUsedMonth||0)) : 50;
-    banner.innerHTML = '<span style="font-size:16px;">✅</span><div style="flex:1;font-size:12px;color:#166534;"><strong>Pro Plan:</strong> Unlimited questions · '+aiLeft+' AI questions left this month.</div>';
+    banner.innerHTML = '<span style="font-size:16px;">✅</span><div style="flex:1;font-size:12px;color:#166534;"><strong>Pro Plan</strong> — Unlimited questions · Full AI access.</div>';
+    if(planLabel) planLabel.textContent = 'Pro Plan';
+    if(planLabel) planLabel.style.color = '#6EE7B7';
   } else {
-    // Free user — show upgrade + signup/login buttons
-    const showAuth = !loggedIn;
+    // Free user — clean banner, no q counts cluttering header
     banner.style.background = 'var(--gold-l)';
     banner.style.borderColor = 'var(--gold)';
+    const loggedIn = !!(typeof _currentUser !== 'undefined' && _currentUser);
     banner.innerHTML = '<span style="font-size:16px;">🔒</span>'+
-      '<div style="flex:1;font-size:12px;color:#92400E;"><strong>Free Plan:</strong> 15 questions/day · 5 AI questions/day.</div>'+
+      '<div style="flex:1;font-size:12px;color:#92400E;"><strong>Free Plan</strong> — Upgrade to unlock unlimited access.</div>'+
       '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">'+
         '<button class="btn btn-primary" style="padding:5px 12px;font-size:11px;" onclick="startProTrial()">Upgrade Pro</button>'+
-        (showAuth ? '<button class="btn" style="padding:5px 12px;font-size:11px;background:var(--surface);color:var(--navy);border:1px solid var(--border);" onclick="showAuthPopup()">Sign Up / Login</button>' : '')+
+        (!loggedIn ? '<button class="btn" style="padding:5px 12px;font-size:11px;background:var(--surface);color:var(--navy);border:1px solid var(--border);" onclick="showAuthPopup()">Sign Up / Login</button>' : '')+
       '</div>';
+    if(planLabel) planLabel.textContent = 'Free Plan';
+    if(planLabel) planLabel.style.color = 'var(--blue-l)';
   }
 }
 
@@ -5199,7 +5227,7 @@ function sendChat(){
   const msg=input?input.value.trim():'';
   if(!msg) return;
   addChatMsg('user',msg);
-  if(input) input.value='';
+  if(input){ input.value=''; input.style.height='auto'; }
   // Typing indicator
   const msgs=document.getElementById('chat-messages');
   if(!msgs) return;
@@ -5222,15 +5250,19 @@ function sendChat(){
         addChatMsg('ai', res.data.answer + '<br><span style="font-size:10px;color:var(--muted);">⚡ Instant answer</span>', true);
         return;
       }
-      // Not cached — call API
-      fetch('/api/ai',{
+      // Not cached — call Anthropic API directly
+      fetch('https://api.anthropic.com/v1/messages',{
         method:'POST',
-        headers:{'Content-Type':'application/json'},
+        headers:{
+          'Content-Type':'application/json',
+          'anthropic-version':'2023-06-01',
+          'anthropic-dangerous-direct-browser-access':'true'
+        },
         body:JSON.stringify({
-          prompt: msg,
-          question: '',
-          standard: S.currentStandard||S.domain||'General Finance',
-          correctAnswer: ''
+          model:'claude-sonnet-4-20250514',
+          max_tokens:1000,
+          system:'You are Mr. Ledger AI, an expert finance and accounting tutor for FinMentra. Answer ANY finance, accounting, IFRS, IAS, ISA, Tax, Costing, or FM question. Give concise exam-focused answers under 200 words. Bold key terms with **text**. Reference specific standard paragraphs where relevant. End with one practical exam tip.',
+          messages:[{role:'user',content:msg}]
         })
       }).then(function(r){ return r.json(); }).then(function(data){
         typing.remove();
@@ -5252,10 +5284,19 @@ function sendChat(){
       });
     }).catch(function(){
       // Cache check failed — go straight to API
-      fetch('/api/ai',{
+      fetch('https://api.anthropic.com/v1/messages',{
         method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ prompt: msg, question: '', standard: S.currentStandard||S.domain||'General Finance', correctAnswer: '' })
+        headers:{
+          'Content-Type':'application/json',
+          'anthropic-version':'2023-06-01',
+          'anthropic-dangerous-direct-browser-access':'true'
+        },
+        body:JSON.stringify({
+          model:'claude-sonnet-4-20250514',
+          max_tokens:1000,
+          system:'You are Mr. Ledger AI, an expert finance and accounting tutor for FinMentra. Answer ANY finance, accounting, IFRS, IAS, ISA, Tax, Costing, or FM question. Give concise exam-focused answers under 200 words. Bold key terms. Reference standard paragraphs where relevant.',
+          messages:[{role:'user',content:msg}]
+        })
       }).then(function(r){ return r.json(); }).then(function(data){
         typing.remove();
         var text = data.content&&data.content[0]&&data.content[0].text ? data.content[0].text : 'Sorry, I could not get a response.';
@@ -6537,15 +6578,24 @@ function sendFollowUp(){
   var aiPrompt = 'Standard: ' + std + ' | Question: ' + questionText + ' | Correct answer: ' + correctAns + ' | Student asks: ' + q;
   var aiSystem = 'You are Mr. Ledger AI, an expert finance and accounting tutor for FinMentra. Answer ANY finance, accounting, IFRS, IAS, ISA, Tax, Costing, or FM question the student asks. Use the provided question context only as background — focus on what the student actually asked. Give concise exam-focused answers under 150 words. Bold key terms with **text**. Reference specific standard paragraphs where relevant. End with one practical exam tip.';
   function doAICall() {
-    fetch('/api/ai', {
+    fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: q, question: questionText, standard: std, correctAnswer: correctAns })
+      headers: {
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: aiSystem,
+        messages: [{ role: 'user', content: aiPrompt }]
+      })
     }).then(function(r){
       return r.json();
     }).then(function(data){
       var text = data.content && data.content[0] ? data.content[0].text : null;
-      if(!text && data.error) text = 'Error: ' + data.error;
+      if(!text && data.error) text = 'Error: ' + (data.error.message || data.error);
       if(!text) text = 'Sorry, could not get a response.';
       var html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
       ansDiv.innerHTML = '<div style="font-size:13px;line-height:1.6;color:var(--navy);">' + html + '</div>';
@@ -6553,7 +6603,7 @@ function sendFollowUp(){
       _supa.from('ai_explanations').upsert({ cache_key: qKey, question: questionText.substring(0,200), student_query: q.substring(0,100), answer: html, standard: std, created_at: new Date().toISOString() }, { onConflict: 'cache_key' }).then(function(){}).catch(function(){});
     }).catch(function(err){
       console.error('AI fetch error:', err);
-      ansDiv.innerHTML = '<div style="color:var(--red);font-size:12px;">AI error: ' + err.message + '</div>';
+      ansDiv.innerHTML = '<div style="color:var(--red);font-size:12px;">AI unavailable. Please try again.</div>';
     });
   }
   // Check cache first
@@ -7717,22 +7767,24 @@ function buildLearningPath(){
                        : '<span style="font-size:9px;background:#EEF2FF;color:#6366F1;padding:2px 7px;border-radius:999px;font-weight:700;margin-left:6px;">OPEN</span>';
       // Get progress for this topic
       const tp = (S.topicProgress && S.topicProgress[topic.std]) || {answered:0, correct:0};
-      const progressPct = Math.min(100, Math.round((tp.answered / 40) * 100));
-      const correctPct  = Math.min(100, Math.round((tp.correct / 20) * 100));
+      const UNLOCK_MIN = 10; // min questions to attempt
+      const progressPct = Math.min(100, Math.round((tp.answered / UNLOCK_MIN) * 100));
+      const pctCorrect  = tp.answered >= UNLOCK_MIN ? Math.round(tp.correct / tp.answered * 100) : 0;
+      const isComplete  = tp.answered >= UNLOCK_MIN && pctCorrect >= 50;
       const showProgress = stage !== 'locked' && stage !== 'mastered';
       const progressBar = showProgress ? `
         <div style="margin-top:5px;">
           <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--steel);margin-bottom:2px;">
-            <span>${tp.answered}/40 answered</span>
-            <span>${tp.correct}/20 correct</span>
+            <span>${tp.answered}/${UNLOCK_MIN} answered</span>
+            <span>${pctCorrect}% correct</span>
           </div>
           <div style="height:5px;background:#E2E8F0;border-radius:3px;overflow:hidden;">
             <div style="height:100%;width:${progressPct}%;background:${progressPct>=100?'#10B981':'#6366F1'};border-radius:3px;transition:width .3s;"></div>
           </div>
           <div style="height:4px;background:#FEF3C7;border-radius:3px;overflow:hidden;margin-top:2px;">
-            <div style="height:100%;width:${correctPct}%;background:${correctPct>=100?'#10B981':'#F59E0B'};border-radius:3px;transition:width .3s;"></div>
+            <div style="height:100%;width:${Math.min(100,pctCorrect*2)}%;background:${pctCorrect>=50?'#10B981':'#F59E0B'};border-radius:3px;transition:width .3s;"></div>
           </div>
-          <div style="font-size:9px;color:var(--steel);margin-top:2px;">${tp.correct>=20&&tp.answered>=40?'✅ Complete! Next topic unlocked':'Need 40 answered + 20 correct to unlock next'}</div>
+          <div style="font-size:9px;color:var(--steel);margin-top:2px;">${isComplete?'✅ Complete! Next topic unlocked':'Need '+UNLOCK_MIN+' answered + 50% correct to unlock next'}</div>
         </div>` : '';
       labelDiv.innerHTML = '<div style="font-size:12px;font-weight:700;color:'+labelColor+';">'+topic.std+badge+'</div>'
         + '<div style="font-size:10px;color:'+subColor+';margin-top:1px;">'+topic.name+'</div>'
@@ -8164,6 +8216,25 @@ function loadState(){
 }
 // Auto-save every 30s and on answer
 loadState();
+// ── MIGRATE: re-check topicProgress against completedTopics on load ──
+// In case user had answered enough questions before the fix, re-evaluate completion.
+(function migrateTopicCompletion(){
+  try {
+    if(!S.topicProgress) return;
+    if(!S.completedTopics) S.completedTopics = {};
+    var changed = false;
+    Object.keys(S.topicProgress).forEach(function(std){
+      var tp = S.topicProgress[std];
+      if(!tp || tp.answered < 10) return;
+      var pct = Math.round(tp.correct / tp.answered * 100);
+      if(pct >= 50 && !S.completedTopics[std]){
+        S.completedTopics[std] = true;
+        changed = true;
+      }
+    });
+    if(changed) saveState();
+  } catch(e){}
+})();
 initPrevRankIdx();
 S.plan = S.plan || 'free'; // free, pro, elite
 // Always start on home screen — never restore challenge/multiplayer
