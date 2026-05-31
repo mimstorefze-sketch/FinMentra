@@ -2022,7 +2022,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div class="prog-wrap">
     <div class="prog-dots" id="prog-dots"></div>
     <div class="prog-meta" id="prog-meta">1 / 8</div>
-    <button id="arena-refresh-btn" onclick="arenaRefresh()" title="Refresh questions" style="width:30px;height:30px;border-radius:50%;background:var(--blue-ll);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;flex-shrink:0;margin-left:4px;" title="Reload questions">🔄</button>
+    <button id="arena-refresh-btn" onclick="arenaRefresh()" style="padding:6px 14px;border-radius:20px;background:var(--blue-ll);border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;color:var(--navy);display:flex;align-items:center;gap:4px;">🔄 Refresh</button>
   </div>
   <!-- Near miss -->
   <div class="near-miss" id="near-miss"><span id="near-miss-text">🏅 Almost there!</span></div>
@@ -3378,7 +3378,7 @@ const S = {
 };
 
 const RANKS=[
-  {min:0,    title:'Initiate',     emblem:'🌱',xpNext:1500},
+  {min:0,    title:'Initiate',     emblem:'🌱',xpNext:500},
   {min:500,  title:'Analyst',      emblem:'📊',xpNext:1500},
   {min:1500, title:'Associate',    emblem:'📈',xpNext:3000},
   {min:3000, title:'Qualified',    emblem:'🎓',xpNext:6000},
@@ -4769,6 +4769,19 @@ function updatePlanUI(){
     proCard.appendChild(cancelLink);
   }
   container.appendChild(proCard);
+  // Add body class for CSS-based pro hiding
+  if(pro){
+    document.body.classList.add('plan-pro');
+    // Hide AI limit counter for pro
+    document.querySelectorAll('.ai-limit').forEach(function(el){
+      el.style.display = 'none';
+    });
+  } else {
+    document.body.classList.remove('plan-pro');
+    document.querySelectorAll('.ai-limit').forEach(function(el){
+      el.style.display = '';
+    });
+  }
 }
 function showCancelConfirm(){
   const popup = document.createElement('div');
@@ -5444,7 +5457,7 @@ function showBossBattle(){
     content.innerHTML=`<div class="boss-battle-header"><div class="bb-icon">👹</div><div class="bb-title">Boss Battle</div><div class="bb-sub">10 questions · 8 minutes</div><div class="bb-timer" id="bb-timer">8:00</div><div class="timer-bar"><div class="timer-fill" id="bb-timer-bar" style="width:100%"></div></div></div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:12px;"><div class="vault-stat"><div class="vault-stat-val" id="bb-score" style="color:var(--gold);">0</div><div class="vault-stat-lbl">Correct</div></div><div class="vault-stat"><div class="vault-stat-val" id="bb-qnum">1/10</div><div class="vault-stat-lbl">Question</div></div><div class="vault-stat"><div class="vault-stat-val" id="bb-acc">—</div><div class="vault-stat-lbl">Accuracy</div></div></div>
     <div class="qcard-q"><div class="qtext" id="bb-q-text">Loading...</div><div class="opts" id="bb-options"></div></div>
-    <button class="btn btn-secondary btn-block" style="margin-top:8px;" onclick="clearInterval(bossTimer);bossTimer=null;if(window._challengeScreenHTML){var cs=document.getElementById('screen-challenge');if(cs)cs.innerHTML=window._challengeScreenHTML;}showScreen('home');">← Retreat</button>`;
+    <button class="btn btn-secondary btn-block" style="margin-top:8px;" onclick="confirmBossRetreat()">← Retreat</button>`;
     bossTime=480;bossQ=0;bossScore=0;loadBossQuestion();
     bossTimer=setInterval(tickBossTimer,1000);
   },100);
@@ -5472,6 +5485,37 @@ function showResultPopup(title, result, xp, goTo){
     '<button onclick="document.getElementById(\'result-popup-overlay\').remove();showScreen(\''+goTo+'\')" style="width:100%;padding:13px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);">Continue</button>' +
     '</div>';
   document.body.appendChild(overlay);
+}
+
+function confirmBossRetreat(){
+  var d = document.createElement('div');
+  d.className = 'fm-limit-overlay';
+  d.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(10,31,110,0.95);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+  var box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:24px;padding:28px 24px;max-width:320px;width:100%;text-align:center;';
+  box.innerHTML = '<div style="font-size:48px;margin-bottom:12px;">👹</div>'
+    + '<div style="font-size:18px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Retreat from Battle?</div>'
+    + '<div style="font-size:13px;color:#64748B;margin-bottom:20px;">Your progress in this battle will be lost.</div>';
+  var yesBtn = document.createElement('button');
+  yesBtn.style.cssText = 'width:100%;padding:13px;border-radius:14px;background:#EF4444;color:#fff;font-size:14px;font-weight:800;border:none;cursor:pointer;font-family:inherit;margin-bottom:8px;';
+  yesBtn.textContent = 'Yes, Retreat';
+  yesBtn.addEventListener('click', function(){
+    clearInterval(bossTimer); bossTimer = null;
+    if(window._challengeScreenHTML){
+      var cs = document.getElementById('screen-challenge');
+      if(cs) cs.innerHTML = window._challengeScreenHTML;
+    }
+    d.remove();
+    showScreen('home');
+  });
+  var noBtn = document.createElement('button');
+  noBtn.style.cssText = 'width:100%;padding:12px;border-radius:14px;background:#EEF2FF;color:#0A1F6E;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
+  noBtn.textContent = 'Keep Fighting! 💪';
+  noBtn.addEventListener('click', function(){ d.remove(); });
+  box.appendChild(yesBtn);
+  box.appendChild(noBtn);
+  d.appendChild(box);
+  document.body.appendChild(d);
 }
 
 function endBossMode(){
@@ -5503,7 +5547,7 @@ function showTimeAttack(){
     const content=document.getElementById('screen-challenge');if(!content) return;
     content.innerHTML=`<div class="time-attack-header"><div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:3px;">⚡ TIME ATTACK</div><div class="ta-timer" id="ta-timer">3:00</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;" id="ta-score">0 correct · 0 answered</div><div style="height:5px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden;margin-top:9px;"><div id="ta-bar" style="height:100%;background:white;border-radius:3px;width:100%;transition:width .1s;"></div></div></div>
     <div class="qcard-q"><div class="qtext" id="ta-q-text">Loading...</div><div class="opts" id="ta-options"></div></div>
-    <button class="btn btn-secondary btn-block" style="margin-top:8px;" onclick="endTimeAttack()">← Stop</button>`;
+    <button class="btn btn-secondary btn-block" style="margin-top:8px;" onclick="confirmTAStop()">← Stop</button>`;
     taTime=180;taScore=0;taTotal=0;
     clearInterval(taTimer); // clear any existing timer first
     loadTAQuestion();
@@ -5547,6 +5591,35 @@ function loadTAQuestion(){
     });
   }
 }
+function confirmTAStop(){
+  // Pause timer while confirming
+  clearInterval(taTimer);
+  var d = document.createElement('div');
+  d.className = 'fm-limit-overlay';
+  d.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(10,31,110,0.95);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+  var box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:24px;padding:28px 24px;max-width:320px;width:100%;text-align:center;';
+  box.innerHTML = '<div style="font-size:48px;margin-bottom:12px;">⚡</div>'
+    + '<div style="font-size:18px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Stop Time Attack?</div>'
+    + '<div style="font-size:13px;color:#64748B;margin-bottom:20px;">Your current score will be saved.</div>';
+  var yesBtn = document.createElement('button');
+  yesBtn.style.cssText = 'width:100%;padding:13px;border-radius:14px;background:#EF4444;color:#fff;font-size:14px;font-weight:800;border:none;cursor:pointer;font-family:inherit;margin-bottom:8px;';
+  yesBtn.textContent = 'Yes, Stop';
+  yesBtn.addEventListener('click', function(){ d.remove(); endTimeAttack(); });
+  var noBtn = document.createElement('button');
+  noBtn.style.cssText = 'width:100%;padding:12px;border-radius:14px;background:#EEF2FF;color:#0A1F6E;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
+  noBtn.textContent = 'Keep Going! ⚡';
+  noBtn.addEventListener('click', function(){
+    d.remove();
+    // Resume timer
+    taTimer = setInterval(tickTA, 1000);
+  });
+  box.appendChild(yesBtn);
+  box.appendChild(noBtn);
+  d.appendChild(box);
+  document.body.appendChild(d);
+}
+
 function endTimeAttack(){
   clearInterval(taTimer);
   taTimer = null;
@@ -11296,6 +11369,17 @@ body:not(.app-ready) .nav {
 
 /* Hide logout for guests */
 body.guest-mode #profile-logout-btn { display: none !important; }
+
+/* AI input text wrapping */
+#ai-input, .ai-input, textarea.ai-input {
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: pre-wrap;
+  resize: none;
+}
+
+/* Hide AI limit counter for pro users */
+body.plan-pro .ai-limit, body.plan-elite .ai-limit { display: none !important; }
 </style>
 
 <!-- ══ MULTIPLAYER CHALLENGE SCREEN ══ -->
@@ -11516,6 +11600,13 @@ async function handleAuth() {
   const errEl = document.getElementById('auth-err');
   const loadEl = document.getElementById('auth-loading');
   if(!email || !password){ errEl.textContent='Please enter email and password.'; errEl.style.display='block'; return; }
+  // Demo account hint
+  if(email === 'demo@finmentra.com' && password !== 'FinMentra@Demo2026'){
+    errEl.textContent = 'Demo password: FinMentra@Demo2026';
+    errEl.style.display = 'block';
+    errEl.style.color = '#F59E0B';
+    return;
+  }
   if(password.length < 8){ errEl.textContent='Password must be at least 8 characters.'; errEl.style.display='block'; return; }
   if(isSignup && !email.includes('@')){ errEl.textContent='Please enter a valid email address.'; errEl.style.display='block'; return; }
   errEl.style.display='none'; loadEl.style.display='block';
