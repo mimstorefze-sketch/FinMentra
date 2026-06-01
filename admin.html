@@ -980,7 +980,7 @@ async function toggleRow(table, id, current, reloader){
 
 async function deleteRow(table, id, reloader){
   if(!confirm('Delete this item? This cannot be undone.')) return;
-  const {error} = await _supa.from(table).delete().eq('id', id);
+  const {error} = await _supa.from(table).eq('id', id).delete();
   if(error){ toast('Error: '+error.message,'error'); return; }
   toast('🗑️ Deleted successfully');
   if(reloader) reloader();
