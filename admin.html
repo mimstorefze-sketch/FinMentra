@@ -12,156 +12,182 @@
   --navy:#0A1F6E;--navy2:#1E3A8A;--blue:#4A6CF7;
   --bg:#F4F7FF;--surface:#fff;--text:#0B1430;
   --muted:#64748B;--border:#E2E8F0;--border2:#C8D8FF;
-  --green:#0A6E3A;--red:#DC2626;--gold:#F59E0B;
+  --green:#0A6E3A;--green-l:#DCFCE7;--red:#DC2626;--red-l:#FEE2E2;
+  --gold:#F59E0B;--gold-l:#FEF3C7;--teal:#0891B2;--purple:#7C3AED;
   --font-display:'Cormorant Garamond',serif;
   --font-body:'Plus Jakarta Sans',sans-serif;
   --font-mono:'DM Mono',monospace;
 }
 body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;}
 
-/* ── LOGIN ── */
-#login-screen{
-  position:fixed;inset:0;background:var(--navy);
-  display:flex;align-items:center;justify-content:center;z-index:1000;
-}
-.login-box{
-  background:#fff;border-radius:24px;padding:40px 32px;
-  max-width:380px;width:92%;text-align:center;
-  box-shadow:0 24px 64px rgba(0,0,0,.4);
-}
+/* LOGIN */
+#login-screen{position:fixed;inset:0;background:var(--navy);display:flex;align-items:center;justify-content:center;z-index:1000;}
+.login-box{background:#fff;border-radius:24px;padding:40px 32px;max-width:380px;width:92%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.4);}
 .login-logo{font-family:var(--font-display);font-size:32px;font-weight:600;color:var(--navy);margin-bottom:4px;}
 .login-logo em{font-style:italic;color:var(--blue);}
 .login-sub{font-size:12px;color:var(--muted);margin-bottom:8px;}
-.admin-badge{display:inline-block;background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;margin-bottom:24px;}
+.admin-badge{display:inline-block;background:var(--gold-l);color:#92400E;font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;margin-bottom:24px;}
 .login-input{width:100%;padding:12px 16px;border:1.5px solid var(--border2);border-radius:12px;font-size:14px;font-family:var(--font-body);outline:none;margin-bottom:12px;color:var(--text);}
 .login-input:focus{border-color:var(--blue);}
 .login-btn{width:100%;padding:14px;border-radius:12px;background:var(--navy);color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);}
 .login-btn:hover{background:var(--navy2);}
 .login-err{font-size:12px;color:var(--red);margin-top:8px;display:none;}
 
-/* ── LAYOUT ── */
+/* LAYOUT */
 #admin-app{display:none;}
 .admin-layout{display:flex;min-height:100vh;}
 
-/* ── SIDEBAR ── */
-.sidebar{
-  width:260px;background:var(--navy);color:#fff;
-  display:flex;flex-direction:column;
-  position:fixed;top:0;left:0;bottom:0;overflow-y:auto;
-  z-index:100;
-}
-.sidebar-logo{padding:24px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.1);}
+/* SIDEBAR */
+.sidebar{width:260px;background:var(--navy);color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:100;}
+.sidebar-logo{padding:24px 20px 16px;border-bottom:1px solid rgba(255,255,255,.1);}
 .sidebar-logo-text{font-family:var(--font-display);font-size:24px;font-weight:600;}
 .sidebar-logo-text em{font-style:italic;color:#C7D7FF;}
-.sidebar-logo-sub{font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;letter-spacing:1px;text-transform:uppercase;}
-.sidebar-section{padding:16px 12px 8px;font-size:9px;font-weight:700;color:rgba(255,255,255,0.3);letter-spacing:2px;text-transform:uppercase;}
-.nav-item{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 16px;margin:2px 8px;border-radius:10px;
-  font-size:13px;font-weight:600;color:rgba(255,255,255,0.7);
-  cursor:pointer;transition:all .2s;border:none;background:none;width:calc(100% - 16px);text-align:left;
-}
-.nav-item:hover{background:rgba(255,255,255,0.08);color:#fff;}
-.nav-item.active{background:rgba(255,255,255,0.15);color:#fff;}
+.sidebar-logo-sub{font-size:10px;color:rgba(255,255,255,.4);margin-top:2px;letter-spacing:1px;text-transform:uppercase;}
+.sidebar-section{padding:16px 12px 8px;font-size:9px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:2px;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;margin:2px 8px;border-radius:10px;font-size:13px;font-weight:600;color:rgba(255,255,255,.7);cursor:pointer;transition:all .2s;border:none;background:none;width:calc(100% - 16px);text-align:left;}
+.nav-item:hover{background:rgba(255,255,255,.08);color:#fff;}
+.nav-item.active{background:rgba(255,255,255,.15);color:#fff;}
 .nav-item .nav-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
-.nav-item .nav-count{margin-left:auto;background:rgba(255,255,255,0.15);border-radius:999px;padding:2px 8px;font-size:10px;}
-.sidebar-footer{margin-top:auto;padding:16px;border-top:1px solid rgba(255,255,255,0.1);}
-.logout-btn{width:100%;padding:10px;border-radius:10px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);font-size:13px;font-weight:600;border:none;cursor:pointer;font-family:var(--font-body);}
+.nav-item .nav-count{margin-left:auto;background:rgba(255,255,255,.15);border-radius:999px;padding:2px 8px;font-size:10px;}
+.sidebar-footer{margin-top:auto;padding:16px;border-top:1px solid rgba(255,255,255,.1);}
+.logout-btn{width:100%;padding:10px;border-radius:10px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);font-size:13px;font-weight:600;border:none;cursor:pointer;font-family:var(--font-body);}
 
-/* ── MAIN ── */
+/* MAIN */
 .main{margin-left:260px;padding:24px;min-height:100vh;}
 .page{display:none;}
 .page.active{display:block;}
 
-/* ── TOP BAR ── */
+/* TOPBAR */
 .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
 .page-title{font-family:var(--font-display);font-size:28px;font-weight:600;color:var(--navy);}
 .page-subtitle{font-size:13px;color:var(--muted);margin-top:2px;}
 
-/* ── STATS ROW ── */
+/* STATS */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
 .stat-card{background:var(--surface);border-radius:16px;padding:20px;border:1px solid var(--border);}
 .stat-num{font-family:var(--font-mono);font-size:28px;font-weight:500;color:var(--navy);}
 .stat-label{font-size:12px;color:var(--muted);margin-top:4px;}
 .stat-icon{font-size:24px;margin-bottom:8px;}
 
-/* ── CARD ── */
+/* CARD */
 .card{background:var(--surface);border-radius:16px;border:1px solid var(--border);overflow:hidden;margin-bottom:20px;}
-.card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 .card-title{font-size:15px;font-weight:700;color:var(--navy);}
 .card-body{padding:20px;}
 
-/* ── FORM ── */
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.form-grid.full{grid-template-columns:1fr;}
+/* SEARCH BAR */
+.search-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.search-input{flex:1;min-width:200px;padding:9px 14px;border:1.5px solid var(--border2);border-radius:10px;font-size:13px;font-family:var(--font-body);outline:none;color:var(--text);}
+.search-input:focus{border-color:var(--blue);}
+
+/* FORM */
 .form-group{margin-bottom:12px;}
 .form-label{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px;display:block;}
-.form-input, .form-select, .form-textarea{
-  width:100%;padding:10px 14px;border:1.5px solid var(--border2);border-radius:10px;
-  font-size:13px;font-family:var(--font-body);outline:none;color:var(--text);background:#fff;
-}
+.form-input,.form-select,.form-textarea{width:100%;padding:10px 14px;border:1.5px solid var(--border2);border-radius:10px;font-size:13px;font-family:var(--font-body);outline:none;color:var(--text);background:#fff;}
 .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--blue);}
 .form-textarea{resize:vertical;min-height:80px;line-height:1.6;}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .form-row.three{grid-template-columns:1fr 1fr 1fr;}
+.form-row.four{grid-template-columns:1fr 1fr 1fr 1fr;}
 
-/* ── BUTTONS ── */
-.btn{padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);transition:all .2s;}
+/* BUTTONS */
+.btn{padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
 .btn-primary{background:var(--navy);color:#fff;}
 .btn-primary:hover{background:var(--navy2);}
-.btn-success{background:#0A6E3A;color:#fff;}
+.btn-success{background:var(--green);color:#fff;}
+.btn-success:hover{opacity:.9;}
 .btn-danger{background:var(--red);color:#fff;}
+.btn-danger:hover{opacity:.9;}
+.btn-warning{background:var(--gold);color:#0A1F6E;}
 .btn-secondary{background:var(--bg);color:var(--navy);border:1px solid var(--border2);}
-.btn-sm{padding:6px 12px;font-size:12px;}
-.btn-group{display:flex;gap:8px;margin-top:16px;}
+.btn-teal{background:var(--teal);color:#fff;}
+.btn-sm{padding:6px 12px;font-size:11px;border-radius:8px;}
+.btn-group{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
 
-/* ── TABLE ── */
+/* TABLE */
 .data-table{width:100%;border-collapse:collapse;}
-.data-table th{text-align:left;font-size:11px;font-weight:700;color:var(--muted);padding:10px 12px;border-bottom:2px solid var(--border);text-transform:uppercase;letter-spacing:0.5px;}
-.data-table td{padding:12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:top;}
+.data-table th{text-align:left;font-size:11px;font-weight:700;color:var(--muted);padding:10px 12px;border-bottom:2px solid var(--border);text-transform:uppercase;letter-spacing:.5px;}
+.data-table td{padding:11px 12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
 .data-table tr:last-child td{border-bottom:none;}
 .data-table tr:hover td{background:var(--bg);}
-.table-actions{display:flex;gap:6px;}
+.table-wrap{overflow-x:auto;}
+.table-actions{display:flex;gap:5px;flex-wrap:wrap;}
 
-/* ── BADGES ── */
+/* BADGES */
 .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
-.badge-ifrs{background:#EEF2FF;color:#3730A3;}
-.badge-ias{background:#F0FDF4;color:#166534;}
-.badge-isa{background:#FFF7ED;color:#9A3412;}
-.badge-foundation{background:#F0FDF4;color:#166534;}
-.badge-intermediate{background:#FFF7ED;color:#9A3412;}
-.badge-advanced{background:#FEF2F2;color:#991B1B;}
-.badge-active{background:#DCFCE7;color:#166534;}
-.badge-inactive{background:#FEE2E2;color:#991B1B;}
+.badge-green{background:var(--green-l);color:#166534;}
+.badge-red{background:var(--red-l);color:#991B1B;}
+.badge-blue{background:#EEF2FF;color:#3730A3;}
+.badge-gold{background:var(--gold-l);color:#92400E;}
+.badge-teal{background:#E0F2FE;color:#075985;}
+.badge-purple{background:#F5F3FF;color:#5B21B6;}
+.badge-active{background:var(--green-l);color:#166534;}
+.badge-inactive{background:var(--red-l);color:#991B1B;}
+.badge-easy{background:var(--green-l);color:#166534;}
+.badge-medium{background:var(--gold-l);color:#92400E;}
+.badge-hard{background:var(--red-l);color:#991B1B;}
+.badge-general{background:#EEF2FF;color:#3730A3;}
+.badge-retail{background:#FDF4FF;color:#7E22CE;}
+.badge-banking{background:#E0F2FE;color:#075985;}
+.badge-manufacturing{background:var(--gold-l);color:#92400E;}
+.badge-services{background:var(--green-l);color:#166534;}
 
-/* ── TABS ── */
+/* TABS */
 .tab-bar{display:flex;gap:4px;background:var(--bg);border-radius:12px;padding:4px;margin-bottom:20px;}
 .tab-btn{flex:1;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;border:none;background:none;font-family:var(--font-body);}
 .tab-btn.active{background:var(--navy);color:#fff;}
 
-/* ── TOAST ── */
-#toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;display:none;box-shadow:0 8px 24px rgba(0,0,0,.2);}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,31,110,.6);z-index:5000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);}
+.modal-overlay.show{display:flex;}
+.modal-box{background:var(--surface);border-radius:20px;padding:28px;max-width:680px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.3);}
+.modal-title{font-size:18px;font-weight:800;color:var(--navy);margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;}
+.modal-close{background:var(--bg);border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:16px;color:var(--muted);}
 
-/* ── LOADING ── */
+/* ANALYTICS */
+.analytics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;}
+.analytics-card{background:var(--surface);border-radius:14px;padding:18px;border:1px solid var(--border);}
+.analytics-num{font-family:var(--font-mono);font-size:32px;font-weight:700;color:var(--navy);}
+.analytics-label{font-size:12px;color:var(--muted);margin-top:4px;}
+.analytics-sub{font-size:11px;color:var(--blue);margin-top:2px;font-weight:600;}
+.progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:8px;}
+.progress-fill{height:100%;border-radius:3px;background:var(--blue);}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;display:none;box-shadow:0 8px 24px rgba(0,0,0,.2);max-width:320px;}
+
+/* LOADING / EMPTY */
 .loading{text-align:center;padding:40px;color:var(--muted);font-size:14px;}
-
-/* ── EMPTY STATE ── */
 .empty-state{text-align:center;padding:48px 24px;}
-.empty-state-icon{font-size:48px;margin-bottom:12px;}
-.empty-state-title{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:6px;}
-.empty-state-sub{font-size:13px;color:var(--muted);}
+.empty-icon{font-size:48px;margin-bottom:12px;}
+.empty-title{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:6px;}
+.empty-sub{font-size:13px;color:var(--muted);}
 
-@media(max-width:768px){
-  .sidebar{width:100%;position:relative;height:auto;}
-  .main{margin-left:0;}
+/* PAGINATION */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--border);}
+.pagination-info{font-size:12px;color:var(--muted);}
+.pagination-btns{display:flex;gap:6px;}
+
+/* KEY WARNING */
+.key-warning{background:#FEF3C7;border:1.5px solid #F59E0B;border-radius:12px;padding:12px 16px;margin-bottom:20px;font-size:12px;color:#92400E;display:flex;gap:10px;align-items:flex-start;}
+
+@media(max-width:900px){
+  .sidebar{width:220px;}
+  .main{margin-left:220px;}
   .stats-row{grid-template-columns:1fr 1fr;}
-  .form-row{grid-template-columns:1fr;}
+  .analytics-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:640px){
+  .sidebar{display:none;}
+  .main{margin-left:0;}
+  .stats-row,.analytics-grid{grid-template-columns:1fr;}
+  .form-row,.form-row.three,.form-row.four{grid-template-columns:1fr;}
 }
 </style>
 </head>
 <body>
 
-<!-- ══ LOGIN ══ -->
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-box">
     <div class="login-logo">Fin<em>Mentra</em></div>
@@ -173,7 +199,22 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
   </div>
 </div>
 
-<!-- ══ ADMIN APP ══ -->
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal-box">
+    <div class="modal-title">
+      <span id="edit-modal-title">Edit Row</span>
+      <button class="modal-close" onclick="closeEditModal()">✕</button>
+    </div>
+    <div id="edit-modal-body"></div>
+    <div class="btn-group">
+      <button class="btn btn-success" onclick="submitEdit()">💾 Save Changes</button>
+      <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
 <div id="admin-app">
 <div class="admin-layout">
 
@@ -181,618 +222,380 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
   <div class="sidebar">
     <div class="sidebar-logo">
       <div class="sidebar-logo-text">Fin<em>Mentra</em></div>
-      <div class="sidebar-logo-sub">Admin Panel</div>
+      <div class="sidebar-logo-sub">Admin Panel v2</div>
     </div>
 
     <div class="sidebar-section">Overview</div>
-    <button class="nav-item active" onclick="showPage('dashboard',this)">
-      <span class="nav-icon">📊</span> Dashboard
-    </button>
+    <button class="nav-item active" onclick="showPage('dashboard',this)"><span class="nav-icon">📊</span>Dashboard</button>
+    <button class="nav-item" onclick="showPage('analytics',this)"><span class="nav-icon">📈</span>Analytics<span class="nav-count" style="background:rgba(245,158,11,.3);color:#FCD34D;">NEW</span></button>
+
+    <div class="sidebar-section">Dr / Cr Drill</div>
+    <button class="nav-item" onclick="showPage('drcr-questions',this)"><span class="nav-icon">⚖️</span>Dr/Cr Questions<span class="nav-count" id="count-drcr-questions">0</span></button>
+    <button class="nav-item" onclick="showPage('drcr-answers',this)"><span class="nav-icon">📝</span>Dr/Cr Answers<span class="nav-count" id="count-drcr-answers">0</span></button>
 
     <div class="sidebar-section">Student Content</div>
-    <button class="nav-item" onclick="showPage('questions',this)">
-      <span class="nav-icon">❓</span> Questions
-      <span class="nav-count" id="count-questions">0</span>
-    </button>
-    <button class="nav-item" onclick="showPage('summaries',this)">
-      <span class="nav-icon">📋</span> Standard Summaries
-      <span class="nav-count" id="count-summaries">0</span>
-    </button>
-    <button class="nav-item" onclick="showPage('traps',this)">
-      <span class="nav-icon">⚠️</span> Exam Traps
-      <span class="nav-count" id="count-traps">0</span>
-    </button>
-    <button class="nav-item" onclick="showPage('formulas',this)">
-      <span class="nav-icon">📐</span> Formulas
-      <span class="nav-count" id="count-formulas">0</span>
-    </button>
-    <button class="nav-item" onclick="showPage('topics',this)">
-      <span class="nav-icon">📚</span> Topics
-      <span class="nav-count" id="count-topics">0</span>
-    </button>
-    <button class="nav-item" onclick="showPage('journal',this)">
-      <span class="nav-icon">📒</span> Journal Entries
-      <span class="nav-count" id="count-journal">0</span>
-    </button>
-    <button class="nav-item" onclick="showPage('disclosures',this)">
-      <span class="nav-icon">✅</span> Disclosure Checklist
-      <span class="nav-count" id="count-disclosures">0</span>
-    </button>
+    <button class="nav-item" onclick="showPage('questions',this)"><span class="nav-icon">❓</span>Questions<span class="nav-count" id="count-questions">0</span></button>
+    <button class="nav-item" onclick="showPage('summaries',this)"><span class="nav-icon">📋</span>Summaries<span class="nav-count" id="count-summaries">0</span></button>
+    <button class="nav-item" onclick="showPage('traps',this)"><span class="nav-icon">⚠️</span>Exam Traps<span class="nav-count" id="count-traps">0</span></button>
+    <button class="nav-item" onclick="showPage('formulas',this)"><span class="nav-icon">📐</span>Formulas<span class="nav-count" id="count-formulas">0</span></button>
+    <button class="nav-item" onclick="showPage('topics',this)"><span class="nav-icon">📚</span>Topics<span class="nav-count" id="count-topics">0</span></button>
+    <button class="nav-item" onclick="showPage('journal',this)"><span class="nav-icon">📒</span>Journal Entries<span class="nav-count" id="count-journal">0</span></button>
+    <button class="nav-item" onclick="showPage('disclosures',this)"><span class="nav-icon">✅</span>Disclosures<span class="nav-count" id="count-disclosures">0</span></button>
 
     <div class="sidebar-section">Professional Content</div>
-    <button class="nav-item" onclick="showPage('scenarios',this)">
-      <span class="nav-icon">💼</span> Client Scenarios
-      <span class="nav-count" id="count-scenarios">0</span>
-    </button>
-    <button class="nav-item" onclick="showPage('audit',this)">
-      <span class="nav-icon">🔍</span> Audit Files
-      <span class="nav-count" id="count-audit">0</span>
-    </button>
-    <button class="nav-item" onclick="showPage('ethics',this)">
-      <span class="nav-icon">⚖️</span> Ethics Cases
-      <span class="nav-count" id="count-ethics">0</span>
-    </button>
-    <button class="nav-item" onclick="showPage('excel',this)">
-      <span class="nav-icon">📊</span> Excel Templates
-      <span class="nav-count" id="count-excel">0</span>
-    </button>
-    <button class="nav-item" onclick="showPage('updates',this)">
-      <span class="nav-icon">🔔</span> IFRS Updates
-      <span class="nav-count" id="count-updates">0</span>
-    </button>
-    <button class="nav-item" onclick="showPage('memos',this)">
-      <span class="nav-icon">📝</span> Technical Memos
-      <span class="nav-count" id="count-memos">0</span>
-    </button>
-    <button class="nav-item" onclick="showPage('ratios',this)">
-      <span class="nav-icon">📈</span> Ratio Benchmarks
-      <span class="nav-count" id="count-ratios">0</span>
-    </button>
+    <button class="nav-item" onclick="showPage('scenarios',this)"><span class="nav-icon">💼</span>Client Scenarios<span class="nav-count" id="count-scenarios">0</span></button>
+    <button class="nav-item" onclick="showPage('audit',this)"><span class="nav-icon">🔍</span>Audit Files<span class="nav-count" id="count-audit">0</span></button>
+    <button class="nav-item" onclick="showPage('ethics',this)"><span class="nav-icon">⚖️</span>Ethics Cases<span class="nav-count" id="count-ethics">0</span></button>
+    <button class="nav-item" onclick="showPage('excel',this)"><span class="nav-icon">📊</span>Excel Templates<span class="nav-count" id="count-excel">0</span></button>
+    <button class="nav-item" onclick="showPage('updates',this)"><span class="nav-icon">🔔</span>IFRS Updates<span class="nav-count" id="count-updates">0</span></button>
+    <button class="nav-item" onclick="showPage('memos',this)"><span class="nav-icon">📝</span>Tech Memos<span class="nav-count" id="count-memos">0</span></button>
+    <button class="nav-item" onclick="showPage('ratios',this)"><span class="nav-icon">📈</span>Ratio Benchmarks<span class="nav-count" id="count-ratios">0</span></button>
 
     <div class="sidebar-footer">
       <button class="logout-btn" onclick="doLogout()">🚪 Logout</button>
     </div>
   </div>
 
-  <!-- MAIN CONTENT -->
+  <!-- MAIN -->
   <div class="main">
 
-    <!-- DASHBOARD -->
+    <!-- ══ DASHBOARD ══ -->
     <div class="page active" id="page-dashboard">
       <div class="topbar">
-        <div>
-          <div class="page-title">Dashboard</div>
-          <div class="page-subtitle">FinMentra Content Overview</div>
-        </div>
+        <div><div class="page-title">Dashboard</div><div class="page-subtitle">FinMentra Content Overview</div></div>
+        <button class="btn btn-secondary btn-sm" onclick="loadAllCounts()">🔄 Refresh</button>
       </div>
-      <div class="stats-row" id="dashboard-stats">
-        <div class="stat-card"><div class="stat-icon">❓</div><div class="stat-num" id="dash-questions">0</div><div class="stat-label">Questions</div></div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-icon">⚖️</div><div class="stat-num" id="dash-drcr">0</div><div class="stat-label">Dr/Cr Questions</div></div>
+        <div class="stat-card"><div class="stat-icon">❓</div><div class="stat-num" id="dash-questions">0</div><div class="stat-label">MCQ Questions</div></div>
         <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-num" id="dash-summaries">0</div><div class="stat-label">Summaries</div></div>
         <div class="stat-card"><div class="stat-icon">⚠️</div><div class="stat-num" id="dash-traps">0</div><div class="stat-label">Exam Traps</div></div>
         <div class="stat-card"><div class="stat-icon">📐</div><div class="stat-num" id="dash-formulas">0</div><div class="stat-label">Formulas</div></div>
         <div class="stat-card"><div class="stat-icon">📚</div><div class="stat-num" id="dash-topics">0</div><div class="stat-label">Topics</div></div>
-        <div class="stat-card"><div class="stat-icon">📒</div><div class="stat-num" id="dash-journal">0</div><div class="stat-label">Journal Entries</div></div>
-        <div class="stat-card"><div class="stat-icon">💼</div><div class="stat-num" id="dash-scenarios">0</div><div class="stat-label">Client Scenarios</div></div>
+        <div class="stat-card"><div class="stat-icon">💼</div><div class="stat-num" id="dash-scenarios">0</div><div class="stat-label">Scenarios</div></div>
         <div class="stat-card"><div class="stat-icon">⚖️</div><div class="stat-num" id="dash-ethics">0</div><div class="stat-label">Ethics Cases</div></div>
+        <div class="stat-card"><div class="stat-icon">📒</div><div class="stat-num" id="dash-journal">0</div><div class="stat-label">Journal Entries</div></div>
+        <div class="stat-card"><div class="stat-icon">🔔</div><div class="stat-num" id="dash-updates">0</div><div class="stat-label">IFRS Updates</div></div>
+        <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-num" id="dash-answers">0</div><div class="stat-label">User Dr/Cr Attempts</div></div>
+        <div class="stat-card"><div class="stat-icon">🔍</div><div class="stat-num" id="dash-audit">0</div><div class="stat-label">Audit Files</div></div>
       </div>
       <div class="card">
         <div class="card-header"><div class="card-title">🚀 Quick Actions</div></div>
         <div class="card-body" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
-          <button class="btn btn-primary" onclick="showPage('questions',null);setTimeout(()=>document.getElementById('add-question-form').scrollIntoView(),300)">+ Add Question</button>
-          <button class="btn btn-primary" onclick="showPage('summaries',null)">+ Add Summary</button>
-          <button class="btn btn-primary" onclick="showPage('traps',null)">+ Add Exam Trap</button>
-          <button class="btn btn-primary" onclick="showPage('formulas',null)">+ Add Formula</button>
+          <button class="btn btn-primary" onclick="showPage('drcr-questions',null)">+ Dr/Cr Question</button>
+          <button class="btn btn-primary" onclick="showPage('questions',null)">+ MCQ Question</button>
+          <button class="btn btn-primary" onclick="showPage('summaries',null)">+ Summary</button>
+          <button class="btn btn-primary" onclick="showPage('traps',null)">+ Exam Trap</button>
+          <button class="btn btn-primary" onclick="showPage('formulas',null)">+ Formula</button>
+          <button class="btn btn-primary" onclick="showPage('journal',null)">+ Journal Entry</button>
+          <button class="btn btn-primary" onclick="showPage('scenarios',null)">+ Scenario</button>
+          <button class="btn btn-teal" onclick="showPage('analytics',null)">📈 View Analytics</button>
         </div>
       </div>
     </div>
 
-    <!-- QUESTIONS PAGE -->
-    <div class="page" id="page-questions">
-      <div class="topbar">
-        <div><div class="page-title">Questions</div><div class="page-subtitle">Manage all practice questions</div></div>
+    <!-- ══ ANALYTICS ══ -->
+    <div class="page" id="page-analytics">
+      <div class="topbar"><div><div class="page-title">Analytics</div><div class="page-subtitle">User activity and content performance</div></div>
+        <button class="btn btn-secondary btn-sm" onclick="loadAnalytics()">🔄 Refresh</button>
+      </div>
+      <div class="analytics-grid" id="analytics-top">
+        <div class="analytics-card"><div class="analytics-num" id="an-total-attempts">-</div><div class="analytics-label">Total Dr/Cr Attempts</div></div>
+        <div class="analytics-card"><div class="analytics-num" id="an-accuracy">-</div><div class="analytics-label">Overall Accuracy</div><div class="analytics-sub">across all industries</div></div>
+        <div class="analytics-card"><div class="analytics-num" id="an-ai-asks">-</div><div class="analytics-label">AI Explanations Requested</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">📊 Accuracy by Industry</div></div>
+        <div class="card-body" id="analytics-by-industry"><div class="loading">Loading...</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">📊 Accuracy by Difficulty</div></div>
+        <div class="card-body" id="analytics-by-difficulty"><div class="loading">Loading...</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">🎯 Hardest Questions (Lowest Accuracy)</div></div>
+        <div class="card-body" style="padding:0;">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Question</th><th>Industry</th><th>Standard</th><th>Attempts</th><th>Accuracy</th></tr></thead>
+              <tbody id="analytics-hardest"><tr><td colspan="5"><div class="loading">Loading...</div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ DR/CR QUESTIONS ══ -->
+    <div class="page" id="page-drcr-questions">
+      <div class="topbar"><div><div class="page-title">⚖️ Dr/Cr Questions</div><div class="page-subtitle">Manage Debit & Credit drill questions</div></div></div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">➕ Add New Dr/Cr Question</div></div>
+        <div class="card-body">
+          <div class="form-row four">
+            <div class="form-group"><label class="form-label">Industry *</label>
+              <select class="form-select" id="dq-industry">
+                <option value="general">🌍 General</option>
+                <option value="retail">🛍️ Retail</option>
+                <option value="banking">🏦 Banking</option>
+                <option value="manufacturing">🏭 Manufacturing</option>
+                <option value="services">💼 Services</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Standard *</label><input class="form-input" id="dq-standard" placeholder="e.g. IAS 16"/></div>
+            <div class="form-group"><label class="form-label">Difficulty *</label>
+              <select class="form-select" id="dq-difficulty">
+                <option value="Easy">Easy</option><option value="Medium">Medium</option><option value="Hard">Hard</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Amount</label><input class="form-input" id="dq-amount" placeholder="e.g. $50,000"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Scenario Text * (max 120 chars)</label>
+            <input class="form-input" id="dq-scenario" placeholder="Company purchases equipment for $50,000 cash." maxlength="150" oninput="document.getElementById('dq-char-count').textContent=this.value.length+'/120'"/>
+            <span id="dq-char-count" style="font-size:11px;color:var(--muted);">0/120</span>
+          </div>
+          <div class="form-group"><label class="form-label">Hint</label><input class="form-input" id="dq-hint" placeholder="One-line clue e.g. Asset in, asset out"/></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Correct Debit Account *</label><input class="form-input" id="dq-debit" placeholder="e.g. PPE / Equipment"/></div>
+            <div class="form-group"><label class="form-label">Correct Credit Account *</label><input class="form-input" id="dq-credit" placeholder="e.g. Cash"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">5 Answer Chips * (correct debit + correct credit + 3 wrong — comma separated)</label>
+            <input class="form-input" id="dq-chips" placeholder="PPE / Equipment, Cash, Accounts Payable, Depreciation Expense, Retained Earnings"/>
+            <span style="font-size:11px;color:var(--muted);">Must have exactly 5 items. Include both correct accounts.</span>
+          </div>
+          <div class="form-group"><label class="form-label">Explanation (no apostrophes)</label><textarea class="form-textarea" id="dq-explanation" placeholder="PPE increases (asset up = Debit). Cash decreases (asset down = Credit)."></textarea></div>
+          <div class="form-group"><label class="form-label">Paragraph Reference</label><input class="form-input" id="dq-para" placeholder="e.g. IAS 16 Para 7"/></div>
+          <div class="btn-group">
+            <button class="btn btn-success" onclick="addDrcrQuestion()">✅ Save Question</button>
+            <button class="btn btn-secondary" onclick="clearDrcrForm()">Clear</button>
+          </div>
+        </div>
       </div>
 
-      <!-- Add Question Form -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">All Dr/Cr Questions</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input class="search-input" id="drcr-search" placeholder="🔍 Search questions..." oninput="searchDrcr(this.value)" style="width:200px;margin:0;"/>
+            <select class="form-select" style="width:auto;" onchange="filterDrcr('industry',this.value)">
+              <option value="all">All Industries</option>
+              <option value="general">General</option><option value="retail">Retail</option>
+              <option value="banking">Banking</option><option value="manufacturing">Manufacturing</option>
+              <option value="services">Services</option>
+            </select>
+            <select class="form-select" style="width:auto;" onchange="filterDrcr('difficulty',this.value)">
+              <option value="all">All Difficulties</option>
+              <option value="Easy">Easy</option><option value="Medium">Medium</option><option value="Hard">Hard</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" onclick="exportCSV('drcr_questions',drcrAllRows,'drcr_questions')">⬇️ CSV</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Industry</th><th>Standard</th><th>Difficulty</th><th>Scenario</th><th>Dr</th><th>Cr</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="drcr-table-body"><tr><td colspan="8"><div class="loading">Loading...</div></td></tr></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="drcr-pagination"></div>
+      </div>
+    </div>
+
+    <!-- ══ DR/CR ANSWERS ══ -->
+    <div class="page" id="page-drcr-answers">
+      <div class="topbar"><div><div class="page-title">📝 Dr/Cr Answers</div><div class="page-subtitle">User attempt history</div></div></div>
+      <div class="analytics-grid">
+        <div class="analytics-card"><div class="analytics-num" id="da-total">0</div><div class="analytics-label">Total Attempts</div></div>
+        <div class="analytics-card"><div class="analytics-num" id="da-correct">0</div><div class="analytics-label">Correct</div></div>
+        <div class="analytics-card"><div class="analytics-num" id="da-accuracy">0%</div><div class="analytics-label">Accuracy Rate</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Answer Log</div>
+          <div style="display:flex;gap:8px;">
+            <select class="form-select" style="width:auto;" onchange="filterAnswers('industry',this.value)">
+              <option value="all">All Industries</option>
+              <option value="general">General</option><option value="retail">Retail</option>
+              <option value="banking">Banking</option><option value="manufacturing">Manufacturing</option>
+              <option value="services">Services</option>
+            </select>
+            <select class="form-select" style="width:auto;" onchange="filterAnswers('is_correct',this.value)">
+              <option value="all">All</option><option value="true">Correct only</option><option value="false">Wrong only</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>User</th><th>Industry</th><th>Mode</th><th>Difficulty</th><th>Dr Given</th><th>Cr Given</th><th>Result</th><th>XP</th><th>Asked AI</th><th>When</th></tr></thead>
+            <tbody id="answers-table-body"><tr><td colspan="10"><div class="loading">Loading...</div></td></tr></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="answers-pagination"></div>
+      </div>
+    </div>
+
+    <!-- ══ QUESTIONS ══ -->
+    <div class="page" id="page-questions">
+      <div class="topbar"><div><div class="page-title">Questions</div><div class="page-subtitle">Manage all MCQ practice questions</div></div></div>
       <div class="card" id="add-question-form">
         <div class="card-header"><div class="card-title">➕ Add New Question</div></div>
         <div class="card-body">
           <div class="form-row three">
-            <div class="form-group">
-              <label class="form-label">Standard *</label>
-              <input class="form-input" id="q-standard" placeholder="e.g. IFRS 15"/>
+            <div class="form-group"><label class="form-label">Standard *</label><input class="form-input" id="q-standard" placeholder="e.g. IFRS 15"/></div>
+            <div class="form-group"><label class="form-label">Category *</label>
+              <select class="form-select" id="q-category"><option>IFRS</option><option>IAS</option><option>ISA</option><option>Costing</option><option>Tax</option><option>FM</option></select>
             </div>
-            <div class="form-group">
-              <label class="form-label">Category *</label>
-              <select class="form-select" id="q-category">
-                <option>IFRS</option><option>IAS</option><option>ISA</option>
-                <option>Costing</option><option>Tax</option><option>FM</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Difficulty *</label>
-              <select class="form-select" id="q-difficulty">
-                <option>Foundation</option><option>Intermediate</option><option>Advanced</option>
-              </select>
+            <div class="form-group"><label class="form-label">Difficulty *</label>
+              <select class="form-select" id="q-difficulty"><option>Foundation</option><option>Intermediate</option><option>Advanced</option></select>
             </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">Question *</label>
-            <textarea class="form-textarea" id="q-question" placeholder="Enter the question..."></textarea>
-          </div>
+          <div class="form-group"><label class="form-label">Question *</label><textarea class="form-textarea" id="q-question" placeholder="Enter the question..."></textarea></div>
+          <div class="form-row"><div class="form-group"><label class="form-label">Option A *</label><input class="form-input" id="q-a" placeholder="Option A"/></div><div class="form-group"><label class="form-label">Option B *</label><input class="form-input" id="q-b" placeholder="Option B"/></div></div>
+          <div class="form-row"><div class="form-group"><label class="form-label">Option C *</label><input class="form-input" id="q-c" placeholder="Option C"/></div><div class="form-group"><label class="form-label">Option D *</label><input class="form-input" id="q-d" placeholder="Option D"/></div></div>
           <div class="form-row">
-            <div class="form-group"><label class="form-label">Option A *</label><input class="form-input" id="q-a" placeholder="Option A"/></div>
-            <div class="form-group"><label class="form-label">Option B *</label><input class="form-input" id="q-b" placeholder="Option B"/></div>
+            <div class="form-group"><label class="form-label">Correct Answer *</label><select class="form-select" id="q-answer"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select></div>
           </div>
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Option C *</label><input class="form-input" id="q-c" placeholder="Option C"/></div>
-            <div class="form-group"><label class="form-label">Option D *</label><input class="form-input" id="q-d" placeholder="Option D"/></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Correct Answer *</label>
-              <select class="form-select" id="q-answer">
-                <option value="A">A</option><option value="B">B</option>
-                <option value="C">C</option><option value="D">D</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Explanation</label>
-            <textarea class="form-textarea" id="q-explanation" placeholder="Why is this the correct answer?"></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Exam Trap</label>
-            <input class="form-input" id="q-trap" placeholder="Common mistake students make..."/>
-          </div>
-          <div class="btn-group">
-            <button class="btn btn-success" onclick="addQuestion()">✅ Save Question</button>
-            <button class="btn btn-secondary" onclick="clearQuestionForm()">Clear</button>
-          </div>
+          <div class="form-group"><label class="form-label">Explanation</label><textarea class="form-textarea" id="q-explanation" placeholder="Why is this the correct answer?"></textarea></div>
+          <div class="form-group"><label class="form-label">Exam Trap</label><input class="form-input" id="q-trap" placeholder="Common mistake students make..."/></div>
+          <div class="btn-group"><button class="btn btn-success" onclick="addQuestion()">✅ Save Question</button><button class="btn btn-secondary" onclick="clearQuestionForm()">Clear</button></div>
         </div>
       </div>
-
-      <!-- Questions List -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">All Questions</div>
-          <select class="form-select" style="width:auto;" onchange="filterQuestions(this.value)">
-            <option value="all">All Categories</option>
-            <option>IFRS</option><option>IAS</option><option>ISA</option>
-            <option>Costing</option><option>Tax</option><option>FM</option>
-          </select>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input class="search-input" id="q-search" placeholder="🔍 Search..." oninput="searchQuestions(this.value)" style="width:180px;margin:0;"/>
+            <select class="form-select" style="width:auto;" onchange="filterQuestions('category',this.value)">
+              <option value="all">All Categories</option><option>IFRS</option><option>IAS</option><option>ISA</option><option>Costing</option><option>Tax</option><option>FM</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" onclick="exportCSV('questions',questionsAllRows,'questions')">⬇️ CSV</button>
+          </div>
         </div>
-        <div class="card-body" style="padding:0;overflow-x:auto;">
+        <div class="table-wrap">
           <table class="data-table">
-            <thead><tr>
-              <th>Standard</th><th>Category</th><th>Difficulty</th>
-              <th>Question</th><th>Answer</th><th>Status</th><th>Actions</th>
-            </tr></thead>
-            <tbody id="questions-table-body">
-              <tr><td colspan="7"><div class="loading">Loading questions...</div></td></tr>
-            </tbody>
+            <thead><tr><th>Standard</th><th>Category</th><th>Difficulty</th><th>Question</th><th>Answer</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="questions-table-body"><tr><td colspan="7"><div class="loading">Loading...</div></td></tr></tbody>
           </table>
         </div>
+        <div class="pagination" id="questions-pagination"></div>
       </div>
     </div>
 
-    <!-- STANDARD SUMMARIES PAGE -->
+    <!-- SUMMARIES -->
     <div class="page" id="page-summaries">
       <div class="topbar"><div><div class="page-title">Standard Summaries</div><div class="page-subtitle">IFRS/IAS quick reference cards</div></div></div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">➕ Add Summary</div></div>
+      <div class="card"><div class="card-header"><div class="card-title">➕ Add Summary</div></div>
         <div class="card-body">
           <div class="form-row three">
             <div class="form-group"><label class="form-label">Standard *</label><input class="form-input" id="s-standard" placeholder="e.g. IFRS 15"/></div>
             <div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="s-title" placeholder="e.g. Revenue from Contracts"/></div>
-            <div class="form-group"><label class="form-label">Category *</label>
-              <select class="form-select" id="s-category"><option>IFRS</option><option>IAS</option><option>ISA</option></select>
-            </div>
+            <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="s-category"><option>IFRS</option><option>IAS</option><option>ISA</option></select></div>
           </div>
-          <div class="form-group"><label class="form-label">Core Principle *</label><textarea class="form-textarea" id="s-principle" placeholder="Main principle of this standard..."></textarea></div>
-          <div class="form-group"><label class="form-label">Key Points (one per line)</label><textarea class="form-textarea" id="s-points" placeholder="Key point 1&#10;Key point 2&#10;Key point 3" style="min-height:100px;"></textarea></div>
+          <div class="form-group"><label class="form-label">Core Principle *</label><textarea class="form-textarea" id="s-principle" placeholder="Main principle..."></textarea></div>
+          <div class="form-group"><label class="form-label">Key Points (one per line)</label><textarea class="form-textarea" id="s-points" placeholder="Key point 1&#10;Key point 2" style="min-height:80px;"></textarea></div>
           <div class="form-row">
-            <div class="form-group"><label class="form-label">Journal Entry — Debit</label><input class="form-input" id="s-dr" placeholder="Dr Account Name"/></div>
-            <div class="form-group"><label class="form-label">Journal Entry — Credit</label><input class="form-input" id="s-cr" placeholder="Cr Account Name"/></div>
+            <div class="form-group"><label class="form-label">Dr Account</label><input class="form-input" id="s-dr" placeholder="Dr Account Name"/></div>
+            <div class="form-group"><label class="form-label">Cr Account</label><input class="form-input" id="s-cr" placeholder="Cr Account Name"/></div>
           </div>
-          <div class="form-group"><label class="form-label">Exam Trap</label><input class="form-input" id="s-trap" placeholder="Most common exam mistake for this standard..."/></div>
-          <div class="btn-group"><button class="btn btn-success" onclick="addSummary()">✅ Save Summary</button><button class="btn btn-secondary" onclick="clearSummaryForm()">Clear</button></div>
+          <div class="form-group"><label class="form-label">Exam Trap</label><input class="form-input" id="s-trap" placeholder="Most common exam mistake..."/></div>
+          <div class="btn-group"><button class="btn btn-success" onclick="addSummary()">✅ Save</button><button class="btn btn-secondary" onclick="clearForm(['s-standard','s-title','s-principle','s-points','s-dr','s-cr','s-trap'])">Clear</button></div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">All Summaries</div></div>
-        <div class="card-body" style="padding:0;overflow-x:auto;">
-          <table class="data-table">
-            <thead><tr><th>Standard</th><th>Title</th><th>Category</th><th>Core Principle</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="summaries-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody>
-          </table>
-        </div>
+      <div class="card"><div class="card-header"><div class="card-title">All Summaries</div></div>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>Standard</th><th>Title</th><th>Category</th><th>Core Principle</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="summaries-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody></table></div>
       </div>
     </div>
 
-    <!-- EXAM TRAPS PAGE -->
+    <!-- EXAM TRAPS -->
     <div class="page" id="page-traps">
-      <div class="topbar"><div><div class="page-title">Exam Traps</div><div class="page-subtitle">Common mistakes students make</div></div></div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">➕ Add Exam Trap</div></div>
+      <div class="topbar"><div><div class="page-title">Exam Traps</div></div></div>
+      <div class="card"><div class="card-header"><div class="card-title">➕ Add Exam Trap</div></div>
         <div class="card-body">
           <div class="form-row three">
             <div class="form-group"><label class="form-label">Standard *</label><input class="form-input" id="t-standard" placeholder="e.g. IAS 16"/></div>
             <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="t-category"><option>IFRS</option><option>IAS</option><option>ISA</option><option>Costing</option><option>Tax</option><option>FM</option></select></div>
             <div class="form-group"><label class="form-label">Difficulty</label><select class="form-select" id="t-difficulty"><option>Foundation</option><option>Intermediate</option><option>Advanced</option></select></div>
           </div>
-          <div class="form-group"><label class="form-label">Trap Title *</label><input class="form-input" id="t-title" placeholder="Short title of the trap..."/></div>
-          <div class="form-group"><label class="form-label">Trap Description *</label><textarea class="form-textarea" id="t-description" placeholder="Full description of the common mistake..."></textarea></div>
+          <div class="form-group"><label class="form-label">Trap Title *</label><input class="form-input" id="t-title" placeholder="Short title..."/></div>
+          <div class="form-group"><label class="form-label">Description *</label><textarea class="form-textarea" id="t-description" placeholder="Full description..."></textarea></div>
           <div class="form-group"><label class="form-label">Correct Approach</label><textarea class="form-textarea" id="t-correct" placeholder="What should students do instead?"></textarea></div>
-          <div class="btn-group"><button class="btn btn-success" onclick="addTrap()">✅ Save Trap</button><button class="btn btn-secondary" onclick="clearTrapForm()">Clear</button></div>
+          <div class="btn-group"><button class="btn btn-success" onclick="addTrap()">✅ Save</button><button class="btn btn-secondary" onclick="clearForm(['t-standard','t-title','t-description','t-correct'])">Clear</button></div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">All Exam Traps</div></div>
-        <div class="card-body" style="padding:0;overflow-x:auto;">
-          <table class="data-table">
-            <thead><tr><th>Standard</th><th>Category</th><th>Title</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="traps-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody>
-          </table>
-        </div>
+      <div class="card"><div class="card-header"><div class="card-title">All Exam Traps</div></div>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>Standard</th><th>Category</th><th>Title</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="traps-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody></table></div>
       </div>
     </div>
 
-    <!-- FORMULAS PAGE -->
+    <!-- FORMULAS -->
     <div class="page" id="page-formulas">
-      <div class="topbar"><div><div class="page-title">Formulas</div><div class="page-subtitle">Accounting and finance formulas</div></div></div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">➕ Add Formula</div></div>
+      <div class="topbar"><div><div class="page-title">Formulas</div></div></div>
+      <div class="card"><div class="card-header"><div class="card-title">➕ Add Formula</div></div>
         <div class="card-body">
           <div class="form-row">
-            <div class="form-group"><label class="form-label">Category *</label>
-              <select class="form-select" id="f-category"><option>valuation</option><option>ratios</option><option>leases</option><option>ecl</option><option>depreciation</option><option>tax</option><option>costing</option><option>other</option></select>
-            </div>
+            <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="f-category"><option>valuation</option><option>ratios</option><option>leases</option><option>ecl</option><option>depreciation</option><option>tax</option><option>costing</option><option>other</option></select></div>
             <div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="f-title" placeholder="e.g. WACC Formula"/></div>
           </div>
-          <div class="form-group"><label class="form-label">Formula *</label><input class="form-input" id="f-formula" placeholder="e.g. WACC = Ke × E/(D+E) + Kd × (1−t) × D/(D+E)" style="font-family:var(--font-mono);"/></div>
-          <div class="form-group"><label class="form-label">Explanation</label><textarea class="form-textarea" id="f-explanation" placeholder="What does each variable mean?"></textarea></div>
+          <div class="form-group"><label class="form-label">Formula *</label><input class="form-input" id="f-formula" placeholder="e.g. WACC = Ke × E/(D+E) + Kd × (1-t) × D/(D+E)" style="font-family:var(--font-mono);"/></div>
+          <div class="form-group"><label class="form-label">Explanation</label><textarea class="form-textarea" id="f-explanation" placeholder="What each variable means..."></textarea></div>
           <div class="form-group"><label class="form-label">Example</label><textarea class="form-textarea" id="f-example" placeholder="Worked example..."></textarea></div>
-          <div class="btn-group"><button class="btn btn-success" onclick="addFormula()">✅ Save Formula</button><button class="btn btn-secondary" onclick="clearFormulaForm()">Clear</button></div>
+          <div class="btn-group"><button class="btn btn-success" onclick="addFormula()">✅ Save</button><button class="btn btn-secondary" onclick="clearForm(['f-title','f-formula','f-explanation','f-example'])">Clear</button></div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">All Formulas</div></div>
-        <div class="card-body" style="padding:0;overflow-x:auto;">
-          <table class="data-table">
-            <thead><tr><th>Category</th><th>Title</th><th>Formula</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="formulas-table-body"><tr><td colspan="5"><div class="loading">Loading...</div></td></tr></tbody>
-          </table>
-        </div>
+      <div class="card"><div class="card-header"><div class="card-title">All Formulas</div></div>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>Category</th><th>Title</th><th>Formula</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="formulas-table-body"><tr><td colspan="5"><div class="loading">Loading...</div></td></tr></tbody></table></div>
       </div>
     </div>
 
-    <!-- TOPICS PAGE -->
-    <div class="page" id="page-topics">
-      <div class="topbar"><div><div class="page-title">Topics</div><div class="page-subtitle">Manage topic list</div></div></div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">➕ Add Topic</div></div>
-        <div class="card-body">
-          <div class="form-row three">
-            <div class="form-group"><label class="form-label">Standard *</label><input class="form-input" id="top-standard" placeholder="e.g. IFRS 15"/></div>
-            <div class="form-group"><label class="form-label">Name *</label><input class="form-input" id="top-name" placeholder="e.g. Revenue from Contracts"/></div>
-            <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="top-category"><option>IFRS</option><option>IAS</option><option>ISA</option><option>Costing</option><option>Tax</option><option>FM</option></select></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Subtitle</label><input class="form-input" id="top-subtitle" placeholder="Short description..."/></div>
-            <div class="form-group"><label class="form-label">Sort Order</label><input class="form-input" id="top-order" type="number" placeholder="0"/></div>
-          </div>
-          <div class="btn-group"><button class="btn btn-success" onclick="addTopic()">✅ Save Topic</button><button class="btn btn-secondary" onclick="clearTopicForm()">Clear</button></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">All Topics</div></div>
-        <div class="card-body" style="padding:0;overflow-x:auto;">
-          <table class="data-table">
-            <thead><tr><th>Standard</th><th>Name</th><th>Category</th><th>Subtitle</th><th>Order</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="topics-table-body"><tr><td colspan="7"><div class="loading">Loading...</div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <!-- TOPICS, JOURNAL, DISCLOSURES, SCENARIOS, AUDIT, ETHICS, EXCEL, UPDATES, MEMOS, RATIOS - simplified pages -->
+    <div class="page" id="page-topics"><div class="topbar"><div><div class="page-title">Topics</div></div></div><div class="card"><div class="card-header"><div class="card-title">➕ Add Topic</div></div><div class="card-body"><div class="form-row three"><div class="form-group"><label class="form-label">Standard *</label><input class="form-input" id="top-standard" placeholder="e.g. IFRS 15"/></div><div class="form-group"><label class="form-label">Name *</label><input class="form-input" id="top-name" placeholder="e.g. Revenue from Contracts"/></div><div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="top-category"><option>IFRS</option><option>IAS</option><option>ISA</option><option>Costing</option><option>Tax</option><option>FM</option></select></div></div><div class="form-row"><div class="form-group"><label class="form-label">Subtitle</label><input class="form-input" id="top-subtitle"/></div><div class="form-group"><label class="form-label">Sort Order</label><input class="form-input" id="top-order" type="number" placeholder="0"/></div></div><div class="btn-group"><button class="btn btn-success" onclick="addTopic()">✅ Save</button><button class="btn btn-secondary" onclick="clearForm(['top-standard','top-name','top-subtitle','top-order'])">Clear</button></div></div></div><div class="card"><div class="card-header"><div class="card-title">All Topics</div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Standard</th><th>Name</th><th>Category</th><th>Order</th><th>Status</th><th>Actions</th></tr></thead><tbody id="topics-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody></table></div></div></div>
 
-    <!-- JOURNAL ENTRIES PAGE -->
-    <div class="page" id="page-journal">
-      <div class="topbar"><div><div class="page-title">Journal Entries</div><div class="page-subtitle">DR/CR templates per standard</div></div></div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">➕ Add Journal Entry</div></div>
-        <div class="card-body">
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Standard *</label><input class="form-input" id="j-standard" placeholder="e.g. IFRS 16"/></div>
-            <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="j-category"><option>IFRS</option><option>IAS</option><option>ISA</option><option>Costing</option><option>Tax</option><option>FM</option></select></div>
-          </div>
-          <div class="form-group"><label class="form-label">Scenario *</label><input class="form-input" id="j-scenario" placeholder="e.g. Initial recognition of lease"/></div>
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Debit Account *</label><input class="form-input" id="j-dr" placeholder="Dr Right-of-Use Asset"/></div>
-            <div class="form-group"><label class="form-label">Debit Amount</label><input class="form-input" id="j-dr-amount" placeholder="X"/></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Credit Account *</label><input class="form-input" id="j-cr" placeholder="Cr Lease Liability"/></div>
-            <div class="form-group"><label class="form-label">Credit Amount</label><input class="form-input" id="j-cr-amount" placeholder="X"/></div>
-          </div>
-          <div class="form-group"><label class="form-label">Narrative</label><textarea class="form-textarea" id="j-narrative" placeholder="Explanation of this journal entry..."></textarea></div>
-          <div class="btn-group"><button class="btn btn-success" onclick="addJournal()">✅ Save Entry</button><button class="btn btn-secondary" onclick="clearJournalForm()">Clear</button></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">All Journal Entries</div></div>
-        <div class="card-body" style="padding:0;overflow-x:auto;">
-          <table class="data-table">
-            <thead><tr><th>Standard</th><th>Scenario</th><th>Debit</th><th>Credit</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="journal-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <div class="page" id="page-journal"><div class="topbar"><div><div class="page-title">Journal Entries</div></div></div><div class="card"><div class="card-header"><div class="card-title">➕ Add Journal Entry</div></div><div class="card-body"><div class="form-row"><div class="form-group"><label class="form-label">Standard *</label><input class="form-input" id="j-standard" placeholder="e.g. IFRS 16"/></div><div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="j-category"><option>IFRS</option><option>IAS</option><option>ISA</option><option>Costing</option><option>Tax</option><option>FM</option></select></div></div><div class="form-group"><label class="form-label">Scenario *</label><input class="form-input" id="j-scenario" placeholder="e.g. Initial recognition of lease"/></div><div class="form-row"><div class="form-group"><label class="form-label">Debit Account *</label><input class="form-input" id="j-dr"/></div><div class="form-group"><label class="form-label">Debit Amount</label><input class="form-input" id="j-dr-amount" placeholder="X"/></div></div><div class="form-row"><div class="form-group"><label class="form-label">Credit Account *</label><input class="form-input" id="j-cr"/></div><div class="form-group"><label class="form-label">Credit Amount</label><input class="form-input" id="j-cr-amount" placeholder="X"/></div></div><div class="form-group"><label class="form-label">Narrative</label><textarea class="form-textarea" id="j-narrative"></textarea></div><div class="btn-group"><button class="btn btn-success" onclick="addJournal()">✅ Save</button><button class="btn btn-secondary" onclick="clearForm(['j-standard','j-scenario','j-dr','j-dr-amount','j-cr','j-cr-amount','j-narrative'])">Clear</button></div></div></div><div class="card"><div class="card-header"><div class="card-title">All Journal Entries</div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Standard</th><th>Scenario</th><th>Debit</th><th>Credit</th><th>Status</th><th>Actions</th></tr></thead><tbody id="journal-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody></table></div></div></div>
 
-    <!-- DISCLOSURES PAGE -->
-    <div class="page" id="page-disclosures">
-      <div class="topbar"><div><div class="page-title">Disclosure Checklist</div><div class="page-subtitle">Disclosure requirements per standard</div></div></div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">➕ Add Disclosure Item</div></div>
-        <div class="card-body">
-          <div class="form-row three">
-            <div class="form-group"><label class="form-label">Standard *</label><input class="form-input" id="d-standard" placeholder="e.g. IFRS 16"/></div>
-            <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="d-category"><option>IFRS</option><option>IAS</option><option>ISA</option></select></div>
-            <div class="form-group"><label class="form-label">Mode</label><select class="form-select" id="d-mode"><option value="both">Both</option><option value="student">Student</option><option value="professional">Professional</option></select></div>
-          </div>
-          <div class="form-group"><label class="form-label">Disclosure Item *</label><textarea class="form-textarea" id="d-item" placeholder="e.g. Maturity analysis of lease liabilities showing undiscounted cash flows..."></textarea></div>
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Mandatory?</label><select class="form-select" id="d-mandatory"><option value="true">Yes — Mandatory</option><option value="false">No — Encouraged</option></select></div>
-            <div class="form-group"><label class="form-label">Notes</label><input class="form-input" id="d-notes" placeholder="Additional notes..."/></div>
-          </div>
-          <div class="btn-group"><button class="btn btn-success" onclick="addDisclosure()">✅ Save Item</button><button class="btn btn-secondary" onclick="clearDisclosureForm()">Clear</button></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">All Disclosure Items</div></div>
-        <div class="card-body" style="padding:0;overflow-x:auto;">
-          <table class="data-table">
-            <thead><tr><th>Standard</th><th>Category</th><th>Item</th><th>Mandatory</th><th>Mode</th><th>Actions</th></tr></thead>
-            <tbody id="disclosures-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <div class="page" id="page-disclosures"><div class="topbar"><div><div class="page-title">Disclosure Checklist</div></div></div><div class="card"><div class="card-header"><div class="card-title">➕ Add Disclosure</div></div><div class="card-body"><div class="form-row three"><div class="form-group"><label class="form-label">Standard *</label><input class="form-input" id="d-standard"/></div><div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="d-category"><option>IFRS</option><option>IAS</option><option>ISA</option></select></div><div class="form-group"><label class="form-label">Mode</label><select class="form-select" id="d-mode"><option value="both">Both</option><option value="student">Student</option><option value="professional">Professional</option></select></div></div><div class="form-group"><label class="form-label">Disclosure Item *</label><textarea class="form-textarea" id="d-item"></textarea></div><div class="form-row"><div class="form-group"><label class="form-label">Mandatory?</label><select class="form-select" id="d-mandatory"><option value="true">Yes</option><option value="false">No</option></select></div><div class="form-group"><label class="form-label">Notes</label><input class="form-input" id="d-notes"/></div></div><div class="btn-group"><button class="btn btn-success" onclick="addDisclosure()">✅ Save</button><button class="btn btn-secondary" onclick="clearForm(['d-standard','d-item','d-notes'])">Clear</button></div></div></div><div class="card"><div class="card-header"><div class="card-title">All Disclosures</div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Standard</th><th>Category</th><th>Item</th><th>Mandatory</th><th>Actions</th></tr></thead><tbody id="disclosures-table-body"><tr><td colspan="5"><div class="loading">Loading...</div></td></tr></tbody></table></div></div></div>
 
-    <!-- CLIENT SCENARIOS PAGE -->
-    <div class="page" id="page-scenarios">
-      <div class="topbar"><div><div class="page-title">Client Scenarios</div><div class="page-subtitle">Real-world professional scenarios</div></div></div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">➕ Add Scenario</div></div>
-        <div class="card-body">
-          <div class="form-row three">
-            <div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="sc-title" placeholder="Scenario title..."/></div>
-            <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="sc-category"><option>IFRS</option><option>IAS</option><option>Audit</option><option>Tax</option><option>Advisory</option></select></div>
-            <div class="form-group"><label class="form-label">Difficulty</label><select class="form-select" id="sc-difficulty"><option>Foundation</option><option>Intermediate</option><option>Advanced</option></select></div>
-          </div>
-          <div class="form-group"><label class="form-label">Scenario Text *</label><textarea class="form-textarea" id="sc-text" placeholder="Your client approaches you with the following situation..." style="min-height:120px;"></textarea></div>
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Option A *</label><input class="form-input" id="sc-a" placeholder="Option A"/></div>
-            <div class="form-group"><label class="form-label">Option B *</label><input class="form-input" id="sc-b" placeholder="Option B"/></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Option C *</label><input class="form-input" id="sc-c" placeholder="Option C"/></div>
-            <div class="form-group"><label class="form-label">Option D *</label><input class="form-input" id="sc-d" placeholder="Option D"/></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Correct Answer *</label><select class="form-select" id="sc-answer"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
-            <div class="form-group"><label class="form-label">Standard Reference</label><input class="form-input" id="sc-ref" placeholder="e.g. IFRS 15.31"/></div>
-          </div>
-          <div class="form-group"><label class="form-label">Explanation *</label><textarea class="form-textarea" id="sc-explanation" placeholder="Why is this the correct approach?"></textarea></div>
-          <div class="btn-group"><button class="btn btn-success" onclick="addScenario()">✅ Save Scenario</button><button class="btn btn-secondary" onclick="clearScenarioForm()">Clear</button></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">All Scenarios</div></div>
-        <div class="card-body" style="padding:0;overflow-x:auto;">
-          <table class="data-table">
-            <thead><tr><th>Title</th><th>Category</th><th>Difficulty</th><th>Answer</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="scenarios-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <div class="page" id="page-scenarios"><div class="topbar"><div><div class="page-title">Client Scenarios</div></div></div><div class="card"><div class="card-header"><div class="card-title">➕ Add Scenario</div></div><div class="card-body"><div class="form-row three"><div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="sc-title"/></div><div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="sc-category"><option>IFRS</option><option>IAS</option><option>Audit</option><option>Tax</option><option>Advisory</option></select></div><div class="form-group"><label class="form-label">Difficulty</label><select class="form-select" id="sc-difficulty"><option>Foundation</option><option>Intermediate</option><option>Advanced</option></select></div></div><div class="form-group"><label class="form-label">Scenario Text *</label><textarea class="form-textarea" id="sc-text" style="min-height:100px;"></textarea></div><div class="form-row"><div class="form-group"><label class="form-label">Option A *</label><input class="form-input" id="sc-a"/></div><div class="form-group"><label class="form-label">Option B *</label><input class="form-input" id="sc-b"/></div></div><div class="form-row"><div class="form-group"><label class="form-label">Option C *</label><input class="form-input" id="sc-c"/></div><div class="form-group"><label class="form-label">Option D *</label><input class="form-input" id="sc-d"/></div></div><div class="form-row"><div class="form-group"><label class="form-label">Correct Answer *</label><select class="form-select" id="sc-answer"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div><div class="form-group"><label class="form-label">Standard Reference</label><input class="form-input" id="sc-ref"/></div></div><div class="form-group"><label class="form-label">Explanation *</label><textarea class="form-textarea" id="sc-explanation"></textarea></div><div class="btn-group"><button class="btn btn-success" onclick="addScenario()">✅ Save</button><button class="btn btn-secondary" onclick="clearForm(['sc-title','sc-text','sc-a','sc-b','sc-c','sc-d','sc-ref','sc-explanation'])">Clear</button></div></div></div><div class="card"><div class="card-header"><div class="card-title">All Scenarios</div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Title</th><th>Category</th><th>Difficulty</th><th>Answer</th><th>Status</th><th>Actions</th></tr></thead><tbody id="scenarios-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody></table></div></div></div>
 
-    <!-- AUDIT FILES PAGE -->
-    <div class="page" id="page-audit">
-      <div class="topbar"><div><div class="page-title">Audit Files</div><div class="page-subtitle">Audit working paper templates</div></div></div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">➕ Add Audit File</div></div>
-        <div class="card-body">
-          <div class="form-row three">
-            <div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="a-title" placeholder="e.g. Planning Materiality Memo"/></div>
-            <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="a-category"><option>Planning</option><option>Risk Assessment</option><option>Testing</option><option>Completion</option><option>Reporting</option></select></div>
-            <div class="form-group"><label class="form-label">ISA Reference</label><input class="form-input" id="a-isa" placeholder="e.g. ISA 320"/></div>
-          </div>
-          <div class="form-group"><label class="form-label">File Type *</label><select class="form-select" id="a-type"><option>Working Paper</option><option>Checklist</option><option>Template</option><option>Example</option></select></div>
-          <div class="form-group"><label class="form-label">Content *</label><textarea class="form-textarea" id="a-content" placeholder="Full content of the audit working paper..." style="min-height:160px;"></textarea></div>
-          <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="a-notes" placeholder="Additional guidance notes..."></textarea></div>
-          <div class="btn-group"><button class="btn btn-success" onclick="addAudit()">✅ Save File</button><button class="btn btn-secondary" onclick="clearAuditForm()">Clear</button></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">All Audit Files</div></div>
-        <div class="card-body" style="padding:0;overflow-x:auto;">
-          <table class="data-table">
-            <thead><tr><th>Title</th><th>Category</th><th>Type</th><th>ISA Ref</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="audit-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <div class="page" id="page-audit"><div class="topbar"><div><div class="page-title">Audit Files</div></div></div><div class="card"><div class="card-header"><div class="card-title">➕ Add Audit File</div></div><div class="card-body"><div class="form-row three"><div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="a-title"/></div><div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="a-category"><option>Planning</option><option>Risk Assessment</option><option>Testing</option><option>Completion</option><option>Reporting</option></select></div><div class="form-group"><label class="form-label">ISA Reference</label><input class="form-input" id="a-isa" placeholder="e.g. ISA 320"/></div></div><div class="form-group"><label class="form-label">File Type</label><select class="form-select" id="a-type"><option>Working Paper</option><option>Checklist</option><option>Template</option><option>Example</option></select></div><div class="form-group"><label class="form-label">Content *</label><textarea class="form-textarea" id="a-content" style="min-height:120px;"></textarea></div><div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="a-notes"></textarea></div><div class="btn-group"><button class="btn btn-success" onclick="addAudit()">✅ Save</button><button class="btn btn-secondary" onclick="clearForm(['a-title','a-isa','a-content','a-notes'])">Clear</button></div></div></div><div class="card"><div class="card-header"><div class="card-title">All Audit Files</div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Title</th><th>Category</th><th>Type</th><th>ISA Ref</th><th>Status</th><th>Actions</th></tr></thead><tbody id="audit-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody></table></div></div></div>
 
-    <!-- ETHICS CASES PAGE -->
-    <div class="page" id="page-ethics">
-      <div class="topbar"><div><div class="page-title">Ethics Cases</div><div class="page-subtitle">IESBA ethics case studies</div></div></div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">➕ Add Ethics Case</div></div>
-        <div class="card-body">
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="e-title" placeholder="e.g. Conflict of Interest — Advisory"/></div>
-            <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="e-category"><option>Independence</option><option>Confidentiality</option><option>Conflict of Interest</option><option>Professional Competence</option><option>Integrity</option></select></div>
-          </div>
-          <div class="form-group"><label class="form-label">Case Text *</label><textarea class="form-textarea" id="e-case" placeholder="Describe the ethical situation..." style="min-height:120px;"></textarea></div>
-          <div class="form-group"><label class="form-label">Ethical Issue *</label><input class="form-input" id="e-issue" placeholder="What is the main ethical issue here?"/></div>
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Option A *</label><input class="form-input" id="e-a" placeholder="Option A"/></div>
-            <div class="form-group"><label class="form-label">Option B *</label><input class="form-input" id="e-b" placeholder="Option B"/></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Option C *</label><input class="form-input" id="e-c" placeholder="Option C"/></div>
-            <div class="form-group"><label class="form-label">Option D *</label><input class="form-input" id="e-d" placeholder="Option D"/></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Correct Answer *</label><select class="form-select" id="e-answer"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
-            <div class="form-group"><label class="form-label">IESBA Reference</label><input class="form-input" id="e-ref" placeholder="e.g. IESBA Code Section 220"/></div>
-          </div>
-          <div class="form-group"><label class="form-label">Explanation *</label><textarea class="form-textarea" id="e-explanation" placeholder="Why is this the correct ethical approach?"></textarea></div>
-          <div class="btn-group"><button class="btn btn-success" onclick="addEthics()">✅ Save Case</button><button class="btn btn-secondary" onclick="clearEthicsForm()">Clear</button></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">All Ethics Cases</div></div>
-        <div class="card-body" style="padding:0;overflow-x:auto;">
-          <table class="data-table">
-            <thead><tr><th>Title</th><th>Category</th><th>Ethical Issue</th><th>Answer</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="ethics-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <div class="page" id="page-ethics"><div class="topbar"><div><div class="page-title">Ethics Cases</div></div></div><div class="card"><div class="card-header"><div class="card-title">➕ Add Ethics Case</div></div><div class="card-body"><div class="form-row"><div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="e-title"/></div><div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="e-category"><option>Independence</option><option>Confidentiality</option><option>Conflict of Interest</option><option>Professional Competence</option><option>Integrity</option></select></div></div><div class="form-group"><label class="form-label">Case Text *</label><textarea class="form-textarea" id="e-case" style="min-height:100px;"></textarea></div><div class="form-group"><label class="form-label">Ethical Issue *</label><input class="form-input" id="e-issue"/></div><div class="form-row"><div class="form-group"><label class="form-label">Option A *</label><input class="form-input" id="e-a"/></div><div class="form-group"><label class="form-label">Option B *</label><input class="form-input" id="e-b"/></div></div><div class="form-row"><div class="form-group"><label class="form-label">Option C *</label><input class="form-input" id="e-c"/></div><div class="form-group"><label class="form-label">Option D *</label><input class="form-input" id="e-d"/></div></div><div class="form-row"><div class="form-group"><label class="form-label">Correct Answer *</label><select class="form-select" id="e-answer"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div><div class="form-group"><label class="form-label">IESBA Reference</label><input class="form-input" id="e-ref"/></div></div><div class="form-group"><label class="form-label">Explanation *</label><textarea class="form-textarea" id="e-explanation"></textarea></div><div class="btn-group"><button class="btn btn-success" onclick="addEthics()">✅ Save</button><button class="btn btn-secondary" onclick="clearForm(['e-title','e-case','e-issue','e-a','e-b','e-c','e-d','e-ref','e-explanation'])">Clear</button></div></div></div><div class="card"><div class="card-header"><div class="card-title">All Ethics Cases</div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Title</th><th>Category</th><th>Issue</th><th>Answer</th><th>Status</th><th>Actions</th></tr></thead><tbody id="ethics-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody></table></div></div></div>
 
-    <!-- EXCEL TEMPLATES PAGE -->
-    <div class="page" id="page-excel">
-      <div class="topbar"><div><div class="page-title">Excel Templates</div><div class="page-subtitle">Finance spreadsheet templates</div></div></div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">➕ Add Excel Template</div></div>
-        <div class="card-body">
-          <div class="form-row three">
-            <div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="ex-title" placeholder="e.g. DCF Valuation Model"/></div>
-            <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="ex-category"><option>Valuation</option><option>Financial Statements</option><option>Budgeting</option><option>Audit</option><option>Tax</option><option>Costing</option></select></div>
-            <div class="form-group"><label class="form-label">Difficulty</label><select class="form-select" id="ex-difficulty"><option>Foundation</option><option>Intermediate</option><option>Advanced</option></select></div>
-          </div>
-          <div class="form-group"><label class="form-label">Description *</label><textarea class="form-textarea" id="ex-description" placeholder="What does this template do?"></textarea></div>
-          <div class="form-group"><label class="form-label">Template Content / Instructions</label><textarea class="form-textarea" id="ex-content" placeholder="Step by step instructions or template structure..." style="min-height:120px;"></textarea></div>
-          <div class="btn-group"><button class="btn btn-success" onclick="addExcel()">✅ Save Template</button><button class="btn btn-secondary" onclick="clearExcelForm()">Clear</button></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">All Templates</div></div>
-        <div class="card-body" style="padding:0;overflow-x:auto;">
-          <table class="data-table">
-            <thead><tr><th>Title</th><th>Category</th><th>Difficulty</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="excel-table-body"><tr><td colspan="5"><div class="loading">Loading...</div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <div class="page" id="page-excel"><div class="topbar"><div><div class="page-title">Excel Templates</div></div></div><div class="card"><div class="card-header"><div class="card-title">➕ Add Template</div></div><div class="card-body"><div class="form-row three"><div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="ex-title"/></div><div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="ex-category"><option>Valuation</option><option>Financial Statements</option><option>Budgeting</option><option>Audit</option><option>Tax</option><option>Costing</option></select></div><div class="form-group"><label class="form-label">Difficulty</label><select class="form-select" id="ex-difficulty"><option>Foundation</option><option>Intermediate</option><option>Advanced</option></select></div></div><div class="form-group"><label class="form-label">Description *</label><textarea class="form-textarea" id="ex-description"></textarea></div><div class="form-group"><label class="form-label">Instructions</label><textarea class="form-textarea" id="ex-content" style="min-height:100px;"></textarea></div><div class="btn-group"><button class="btn btn-success" onclick="addExcel()">✅ Save</button><button class="btn btn-secondary" onclick="clearForm(['ex-title','ex-description','ex-content'])">Clear</button></div></div></div><div class="card"><div class="card-header"><div class="card-title">All Templates</div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Title</th><th>Category</th><th>Difficulty</th><th>Status</th><th>Actions</th></tr></thead><tbody id="excel-table-body"><tr><td colspan="5"><div class="loading">Loading...</div></td></tr></tbody></table></div></div></div>
 
-    <!-- IFRS UPDATES PAGE -->
-    <div class="page" id="page-updates">
-      <div class="topbar"><div><div class="page-title">IFRS Updates</div><div class="page-subtitle">New standards and amendments</div></div></div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">➕ Add Update</div></div>
-        <div class="card-body">
-          <div class="form-row three">
-            <div class="form-group"><label class="form-label">Standard *</label><input class="form-input" id="u-standard" placeholder="e.g. IFRS 18"/></div>
-            <div class="form-group"><label class="form-label">Update Type *</label><select class="form-select" id="u-type"><option>New Standard</option><option>Amendment</option><option>Interpretation</option><option>Exposure Draft</option></select></div>
-            <div class="form-group"><label class="form-label">Effective Date</label><input class="form-input" id="u-date" placeholder="e.g. 1 January 2027"/></div>
-          </div>
-          <div class="form-group"><label class="form-label">Update Title *</label><input class="form-input" id="u-title" placeholder="e.g. Presentation and Disclosure in Financial Statements"/></div>
-          <div class="form-group"><label class="form-label">Summary *</label><textarea class="form-textarea" id="u-summary" placeholder="What changed and why?"></textarea></div>
-          <div class="form-group"><label class="form-label">Impact</label><textarea class="form-textarea" id="u-impact" placeholder="How does this affect students and professionals?"></textarea></div>
-          <div class="btn-group"><button class="btn btn-success" onclick="addUpdate()">✅ Save Update</button><button class="btn btn-secondary" onclick="clearUpdateForm()">Clear</button></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">All Updates</div></div>
-        <div class="card-body" style="padding:0;overflow-x:auto;">
-          <table class="data-table">
-            <thead><tr><th>Standard</th><th>Title</th><th>Type</th><th>Effective Date</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="updates-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <div class="page" id="page-updates"><div class="topbar"><div><div class="page-title">IFRS Updates</div></div></div><div class="card"><div class="card-header"><div class="card-title">➕ Add Update</div></div><div class="card-body"><div class="form-row three"><div class="form-group"><label class="form-label">Standard *</label><input class="form-input" id="u-standard" placeholder="e.g. IFRS 18"/></div><div class="form-group"><label class="form-label">Update Type *</label><select class="form-select" id="u-type"><option>New Standard</option><option>Amendment</option><option>Interpretation</option><option>Exposure Draft</option></select></div><div class="form-group"><label class="form-label">Effective Date</label><input class="form-input" id="u-date" placeholder="e.g. 1 January 2027"/></div></div><div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="u-title"/></div><div class="form-group"><label class="form-label">Summary *</label><textarea class="form-textarea" id="u-summary"></textarea></div><div class="form-group"><label class="form-label">Impact</label><textarea class="form-textarea" id="u-impact"></textarea></div><div class="btn-group"><button class="btn btn-success" onclick="addUpdate()">✅ Save</button><button class="btn btn-secondary" onclick="clearForm(['u-standard','u-title','u-date','u-summary','u-impact'])">Clear</button></div></div></div><div class="card"><div class="card-header"><div class="card-title">All Updates</div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Standard</th><th>Title</th><th>Type</th><th>Effective Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="updates-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody></table></div></div></div>
 
-    <!-- TECHNICAL MEMOS PAGE -->
-    <div class="page" id="page-memos">
-      <div class="topbar"><div><div class="page-title">Technical Memos</div><div class="page-subtitle">Client advice templates</div></div></div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">➕ Add Technical Memo</div></div>
-        <div class="card-body">
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="m-title" placeholder="e.g. Lease Classification Analysis"/></div>
-            <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="m-category"><option>IFRS</option><option>IAS</option><option>Audit</option><option>Tax</option><option>Advisory</option></select></div>
-          </div>
-          <div class="form-group"><label class="form-label">Standard Reference</label><input class="form-input" id="m-standard" placeholder="e.g. IFRS 16"/></div>
-          <div class="form-group"><label class="form-label">Memo Content *</label><textarea class="form-textarea" id="m-content" placeholder="Full technical memo content..." style="min-height:160px;"></textarea></div>
-          <div class="form-group"><label class="form-label">Conclusion *</label><textarea class="form-textarea" id="m-conclusion" placeholder="Technical conclusion and recommendation..."></textarea></div>
-          <div class="btn-group"><button class="btn btn-success" onclick="addMemo()">✅ Save Memo</button><button class="btn btn-secondary" onclick="clearMemoForm()">Clear</button></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">All Memos</div></div>
-        <div class="card-body" style="padding:0;overflow-x:auto;">
-          <table class="data-table">
-            <thead><tr><th>Title</th><th>Category</th><th>Standard</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="memos-table-body"><tr><td colspan="5"><div class="loading">Loading...</div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <div class="page" id="page-memos"><div class="topbar"><div><div class="page-title">Technical Memos</div></div></div><div class="card"><div class="card-header"><div class="card-title">➕ Add Memo</div></div><div class="card-body"><div class="form-row"><div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="m-title"/></div><div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="m-category"><option>IFRS</option><option>IAS</option><option>Audit</option><option>Tax</option><option>Advisory</option></select></div></div><div class="form-group"><label class="form-label">Standard Reference</label><input class="form-input" id="m-standard"/></div><div class="form-group"><label class="form-label">Content *</label><textarea class="form-textarea" id="m-content" style="min-height:120px;"></textarea></div><div class="form-group"><label class="form-label">Conclusion *</label><textarea class="form-textarea" id="m-conclusion"></textarea></div><div class="btn-group"><button class="btn btn-success" onclick="addMemo()">✅ Save</button><button class="btn btn-secondary" onclick="clearForm(['m-title','m-standard','m-content','m-conclusion'])">Clear</button></div></div></div><div class="card"><div class="card-header"><div class="card-title">All Memos</div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Title</th><th>Category</th><th>Standard</th><th>Status</th><th>Actions</th></tr></thead><tbody id="memos-table-body"><tr><td colspan="5"><div class="loading">Loading...</div></td></tr></tbody></table></div></div></div>
 
-    <!-- RATIO BENCHMARKS PAGE -->
-    <div class="page" id="page-ratios">
-      <div class="topbar"><div><div class="page-title">Ratio Benchmarks</div><div class="page-subtitle">Industry financial ratio benchmarks</div></div></div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">➕ Add Ratio Benchmark</div></div>
-        <div class="card-body">
-          <div class="form-row three">
-            <div class="form-group"><label class="form-label">Ratio Name *</label><input class="form-input" id="r-name" placeholder="e.g. Current Ratio"/></div>
-            <div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="r-category"><option>Liquidity</option><option>Profitability</option><option>Efficiency</option><option>Leverage</option><option>Valuation</option></select></div>
-            <div class="form-group"><label class="form-label">Industry *</label><input class="form-input" id="r-industry" placeholder="e.g. Manufacturing"/></div>
-          </div>
-          <div class="form-group"><label class="form-label">Formula *</label><input class="form-input" id="r-formula" placeholder="e.g. Current Assets / Current Liabilities" style="font-family:var(--font-mono);"/></div>
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Benchmark Low</label><input class="form-input" id="r-low" type="number" step="0.01" placeholder="e.g. 1.5"/></div>
-            <div class="form-group"><label class="form-label">Benchmark High</label><input class="form-input" id="r-high" type="number" step="0.01" placeholder="e.g. 2.5"/></div>
-          </div>
-          <div class="form-group"><label class="form-label">Interpretation</label><textarea class="form-textarea" id="r-interpretation" placeholder="How to interpret this ratio..."></textarea></div>
-          <div class="btn-group"><button class="btn btn-success" onclick="addRatio()">✅ Save Ratio</button><button class="btn btn-secondary" onclick="clearRatioForm()">Clear</button></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">All Ratio Benchmarks</div></div>
-        <div class="card-body" style="padding:0;overflow-x:auto;">
-          <table class="data-table">
-            <thead><tr><th>Ratio</th><th>Category</th><th>Industry</th><th>Formula</th><th>Range</th><th>Actions</th></tr></thead>
-            <tbody id="ratios-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <div class="page" id="page-ratios"><div class="topbar"><div><div class="page-title">Ratio Benchmarks</div></div></div><div class="card"><div class="card-header"><div class="card-title">➕ Add Ratio</div></div><div class="card-body"><div class="form-row three"><div class="form-group"><label class="form-label">Ratio Name *</label><input class="form-input" id="r-name"/></div><div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="r-category"><option>Liquidity</option><option>Profitability</option><option>Efficiency</option><option>Leverage</option><option>Valuation</option></select></div><div class="form-group"><label class="form-label">Industry *</label><input class="form-input" id="r-industry" placeholder="e.g. Manufacturing"/></div></div><div class="form-group"><label class="form-label">Formula *</label><input class="form-input" id="r-formula" style="font-family:var(--font-mono);"/></div><div class="form-row"><div class="form-group"><label class="form-label">Benchmark Low</label><input class="form-input" id="r-low" type="number" step="0.01"/></div><div class="form-group"><label class="form-label">Benchmark High</label><input class="form-input" id="r-high" type="number" step="0.01"/></div></div><div class="form-group"><label class="form-label">Interpretation</label><textarea class="form-textarea" id="r-interpretation"></textarea></div><div class="btn-group"><button class="btn btn-success" onclick="addRatio()">✅ Save</button><button class="btn btn-secondary" onclick="clearForm(['r-name','r-industry','r-formula','r-low','r-high','r-interpretation'])">Clear</button></div></div></div><div class="card"><div class="card-header"><div class="card-title">All Ratios</div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Ratio</th><th>Category</th><th>Industry</th><th>Formula</th><th>Range</th><th>Actions</th></tr></thead><tbody id="ratios-table-body"><tr><td colspan="6"><div class="loading">Loading...</div></td></tr></tbody></table></div></div></div>
 
   </div><!-- end main -->
-</div><!-- end admin-layout -->
-</div><!-- end admin-app -->
+</div>
+</div>
 
-<!-- TOAST -->
 <div id="toast"></div>
 
 <script>
 // ══ CONFIG ══
 const SUPA_URL = 'https://vofxhqnipoywbbkmlxcp.supabase.co';
-const SUPA_KEY = 'sb_publishable_Msgu7dGioeUfmnH88XtXlA_-WFeJoQh';
-const _supa = supabase.createClient(SUPA_URL, SUPA_KEY);
-
-// ══ SET YOUR ADMIN PASSWORD HERE ══
+// ⚠️ USE SERVICE ROLE KEY — allows all writes/deletes bypassing RLS
+const SUPA_KEY = 'YOUR_SERVICE_ROLE_KEY_HERE'; // Replace with service_role key from Supabase Settings > API
+const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
+  auth: { autoRefreshToken: false, persistSession: false }
+});
 const ADMIN_PASSWORD = 'ZCv924870@.,.0900';
+
+// ══ PAGINATION CONFIG ══
+const PAGE_SIZE = 50;
+
+// ══ STATE ══
+var drcrAllRows = [], questionsAllRows = [], answersAllRows = [];
+var drcrPage = 0, questionsPage = 0, answersPage = 0;
+var drcrFilter = {industry:'all', difficulty:'all', search:''};
+var qFilter = {category:'all', search:''};
+var answerFilter = {industry:'all', is_correct:'all'};
+var editState = {table:'', id:'', fields:{}, reload:null};
 
 // ══ LOGIN ══
 function doLogin(){
@@ -801,60 +604,61 @@ function doLogin(){
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('admin-app').style.display = 'block';
     loadAllCounts();
-    loadPage('questions');
+    loadPage('dashboard');
   } else {
     document.getElementById('login-err').style.display = 'block';
   }
 }
-
 function doLogout(){
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('admin-app').style.display = 'none';
   document.getElementById('admin-password').value = '';
 }
+document.getElementById('admin-password').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 
 // ══ NAVIGATION ══
 function showPage(page, btn){
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
+  const pageEl = document.getElementById('page-' + page);
+  if(pageEl) pageEl.classList.add('active');
   if(btn) btn.classList.add('active');
   loadPage(page);
 }
-
 function loadPage(page){
-  const loaders = {
-    dashboard: loadDashboard,
-    questions: loadQuestions,
-    summaries: loadSummaries,
-    traps: loadTraps,
-    formulas: loadFormulas,
-    topics: loadTopics,
-    journal: loadJournal,
-    disclosures: loadDisclosures,
-    scenarios: loadScenarios,
-    audit: loadAudit,
-    ethics: loadEthics,
-    excel: loadExcel,
-    updates: loadUpdates,
-    memos: loadMemos,
-    ratios: loadRatios,
+  const map = {
+    dashboard: loadDashboard, analytics: loadAnalytics,
+    'drcr-questions': loadDrcrQuestions, 'drcr-answers': loadDrcrAnswers,
+    questions: loadQuestions, summaries: loadSummaries, traps: loadTraps,
+    formulas: loadFormulas, topics: loadTopics, journal: loadJournal,
+    disclosures: loadDisclosures, scenarios: loadScenarios, audit: loadAudit,
+    ethics: loadEthics, excel: loadExcel, updates: loadUpdates, memos: loadMemos, ratios: loadRatios
   };
-  if(loaders[page]) loaders[page]();
+  if(map[page]) map[page]();
 }
 
 // ══ TOAST ══
 function toast(msg, type='success'){
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.style.background = type === 'error' ? '#DC2626' : '#0A1F6E';
+  t.style.background = type === 'error' ? '#DC2626' : type === 'warning' ? '#F59E0B' : '#0A1F6E';
   t.style.display = 'block';
   setTimeout(() => t.style.display = 'none', 3000);
 }
 
-// ══ LOAD ALL COUNTS ══
+// ══ HELPERS ══
+function truncate(str, n){ return str && str.length > n ? str.substring(0,n) + '…' : (str||''); }
+function badge(text, cls){ return '<span class="badge badge-'+cls+'">'+text+'</span>'; }
+function emptyState(msg){ return '<tr><td colspan="99"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">No content yet</div><div class="empty-sub">'+msg+'</div></div></td></tr>'; }
+function clearForm(ids){ ids.forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; }); }
+function g(id){ return document.getElementById(id); }
+function gv(id){ const el = g(id); return el ? el.value.trim() : ''; }
+
+// ══ COUNTS ══
 async function loadAllCounts(){
   const tables = [
+    ['drcr_questions','count-drcr-questions','dash-drcr'],
+    ['drcr_answers','count-drcr-answers','dash-answers'],
     ['questions','count-questions','dash-questions'],
     ['standard_summaries','count-summaries','dash-summaries'],
     ['exam_traps','count-traps','dash-traps'],
@@ -863,563 +667,650 @@ async function loadAllCounts(){
     ['journal_entries','count-journal','dash-journal'],
     ['disclosure_checklist','count-disclosures',null],
     ['client_scenarios','count-scenarios','dash-scenarios'],
-    ['audit_files','count-audit',null],
+    ['audit_files','count-audit','dash-audit'],
     ['ethics_cases','count-ethics','dash-ethics'],
     ['excel_templates','count-excel',null],
-    ['ifrs_updates','count-updates',null],
+    ['ifrs_updates','count-updates','dash-updates'],
     ['technical_memos','count-memos',null],
     ['ratio_benchmarks','count-ratios',null],
   ];
-  for(const [table, sideEl, dashEl] of tables){
+  for(const [table, sideId, dashId] of tables){
     try{
-      const {count} = await _supa.from(table).select('*', {count:'exact',head:true});
+      const {count} = await _supa.from(table).select('*',{count:'exact',head:true});
       const n = count || 0;
-      const se = document.getElementById(sideEl);
-      if(se) se.textContent = n;
-      if(dashEl){const de=document.getElementById(dashEl);if(de) de.textContent=n;}
+      const se = g(sideId); if(se) se.textContent = n;
+      if(dashId){ const de = g(dashId); if(de) de.textContent = n; }
     }catch(e){}
   }
 }
 
-async function loadDashboard(){ loadAllCounts(); }
+async function loadDashboard(){ await loadAllCounts(); }
 
-// ══ HELPER: render empty state ══
-function emptyState(msg){ return '<tr><td colspan="99"><div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">No content yet</div><div class="empty-state-sub">' + msg + '</div></div></td></tr>'; }
+// ══ ANALYTICS ══
+async function loadAnalytics(){
+  try{
+    const {data: allAnswers} = await _supa.from('drcr_answers').select('*');
+    if(!allAnswers || !allAnswers.length){
+      g('an-total-attempts').textContent = '0';
+      g('an-accuracy').textContent = '0%';
+      g('an-ai-asks').textContent = '0';
+      g('analytics-by-industry').innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-title">No data yet</div><div class="empty-sub">Data appears as users answer Dr/Cr questions</div></div>';
+      g('analytics-by-difficulty').innerHTML = '';
+      g('analytics-hardest').innerHTML = emptyState('No attempts yet');
+      return;
+    }
+    const total = allAnswers.length;
+    const correct = allAnswers.filter(a => a.is_correct).length;
+    const aiAsks = allAnswers.filter(a => a.asked_ai).length;
+    g('an-total-attempts').textContent = total.toLocaleString();
+    g('an-accuracy').textContent = total > 0 ? Math.round(correct/total*100) + '%' : '0%';
+    g('an-ai-asks').textContent = aiAsks.toLocaleString();
+    g('da-total').textContent = total.toLocaleString();
+    g('da-correct').textContent = correct.toLocaleString();
+    g('da-accuracy').textContent = total > 0 ? Math.round(correct/total*100)+'%' : '0%';
 
-// ══ HELPER: toggle active ══
-async function toggleActive(table, id, current){
-  await _supa.from(table).update({is_active: !current}).eq('id', id);
-  toast(current ? 'Deactivated' : 'Activated');
-  loadAllCounts();
+    // By industry
+    const industries = ['general','retail','banking','manufacturing','services'];
+    const byInd = {};
+    industries.forEach(i => byInd[i] = {total:0, correct:0});
+    allAnswers.forEach(a => { if(byInd[a.industry]){ byInd[a.industry].total++; if(a.is_correct) byInd[a.industry].correct++; }});
+    g('analytics-by-industry').innerHTML = industries.map(ind => {
+      const d = byInd[ind];
+      const pct = d.total > 0 ? Math.round(d.correct/d.total*100) : 0;
+      const color = pct >= 70 ? '#10B981' : pct >= 50 ? '#F59E0B' : '#EF4444';
+      return '<div style="margin-bottom:14px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:13px;font-weight:700;color:var(--navy);">' +
+        ind.charAt(0).toUpperCase()+ind.slice(1) + '</span><span style="font-size:12px;color:var(--muted);">' + d.correct + '/' + d.total + ' correct (' + pct + '%)</span></div>' +
+        '<div class="progress-bar"><div class="progress-fill" style="width:'+pct+'%;background:'+color+';"></div></div></div>';
+    }).join('');
+
+    // By difficulty
+    const diffs = ['Easy','Medium','Hard'];
+    const byDiff = {};
+    diffs.forEach(d => byDiff[d] = {total:0, correct:0});
+    allAnswers.forEach(a => { if(a.difficulty && byDiff[a.difficulty]){ byDiff[a.difficulty].total++; if(a.is_correct) byDiff[a.difficulty].correct++; }});
+    g('analytics-by-difficulty').innerHTML = diffs.map(diff => {
+      const d = byDiff[diff];
+      const pct = d.total > 0 ? Math.round(d.correct/d.total*100) : 0;
+      const color = diff==='Easy'?'#10B981':diff==='Medium'?'#F59E0B':'#EF4444';
+      return '<div style="margin-bottom:14px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:13px;font-weight:700;color:'+color+';">'+diff+'</span><span style="font-size:12px;color:var(--muted);">'+d.correct+'/'+d.total+' ('+pct+'%)</span></div><div class="progress-bar"><div class="progress-fill" style="width:'+pct+'%;background:'+color+';"></div></div></div>';
+    }).join('');
+
+    // Hardest questions
+    const qStats = {};
+    allAnswers.forEach(a => {
+      if(!a.question_id) return;
+      if(!qStats[a.question_id]) qStats[a.question_id] = {total:0,correct:0,industry:a.industry};
+      qStats[a.question_id].total++;
+      if(a.is_correct) qStats[a.question_id].correct++;
+    });
+    const sorted = Object.keys(qStats).sort((a,b) => {
+      const pa = qStats[a].total > 0 ? qStats[a].correct/qStats[a].total : 1;
+      const pb = qStats[b].total > 0 ? qStats[b].correct/qStats[b].total : 1;
+      return pa - pb;
+    }).slice(0,10);
+    if(!sorted.length){ g('analytics-hardest').innerHTML = emptyState('No data yet'); return; }
+    const qIds = sorted.join(',');
+    const {data: qData} = await _supa.from('drcr_questions').select('id,scenario_text,standard,industry').in('id', sorted);
+    const qMap = {};
+    if(qData) qData.forEach(q => qMap[q.id] = q);
+    g('analytics-hardest').innerHTML = sorted.map(id => {
+      const q = qMap[id] || {};
+      const s = qStats[id];
+      const pct = s.total > 0 ? Math.round(s.correct/s.total*100) : 0;
+      const color = pct >= 70 ? '#10B981' : pct >= 50 ? '#F59E0B' : '#EF4444';
+      return '<tr><td>'+truncate(q.scenario_text||'Unknown',60)+'</td><td>'+badge(s.industry||'?','general')+'</td><td>'+(q.standard||'-')+'</td><td>'+s.total+'</td><td><strong style="color:'+color+'">'+pct+'%</strong></td></tr>';
+    }).join('');
+  }catch(e){ toast('Analytics error: '+e.message,'error'); }
 }
 
-// ══ HELPER: delete row ══
-async function deleteRow(table, id, reloader){
-  if(!confirm('Delete this item? This cannot be undone.')) return;
-  await _supa.from(table).delete().eq('id', id);
-  toast('Deleted successfully');
-  reloader();
-  loadAllCounts();
-}
-
-// ════════════════════════════════════════
-// QUESTIONS
-// ════════════════════════════════════════
-async function addQuestion(){
+// ══ DR/CR QUESTIONS ══
+async function addDrcrQuestion(){
+  const chipsRaw = gv('dq-chips');
+  const chips = chipsRaw.split(',').map(c => c.trim()).filter(c => c);
+  if(chips.length !== 5){ toast('Chips must have exactly 5 items (currently '+chips.length+')','error'); return; }
+  const debit = gv('dq-debit'), credit = gv('dq-credit');
+  if(!chips.includes(debit)){ toast('Chips must include the correct debit: "'+debit+'"','error'); return; }
+  if(!chips.includes(credit)){ toast('Chips must include the correct credit: "'+credit+'"','error'); return; }
   const data = {
-    standard: document.getElementById('q-standard').value.trim(),
-    category: document.getElementById('q-category').value,
-    difficulty: document.getElementById('q-difficulty').value,
-    question: document.getElementById('q-question').value.trim(),
-    option_a: document.getElementById('q-a').value.trim(),
-    option_b: document.getElementById('q-b').value.trim(),
-    option_c: document.getElementById('q-c').value.trim(),
-    option_d: document.getElementById('q-d').value.trim(),
-    correct_answer: document.getElementById('q-answer').value,
-    explanation: document.getElementById('q-explanation').value.trim(),
-    exam_trap: document.getElementById('q-trap').value.trim(),
+    industry: gv('dq-industry'), standard: gv('dq-standard'),
+    difficulty: gv('dq-difficulty'), scenario_text: gv('dq-scenario'),
+    hint: gv('dq-hint'), amount: gv('dq-amount'),
+    correct_debit: debit, correct_credit: credit,
+    chips: chips, explanation: gv('dq-explanation'), paragraph_ref: gv('dq-para'),
   };
-  if(!data.standard||!data.question||!data.option_a||!data.option_b||!data.option_c||!data.option_d){
-    toast('Please fill in all required fields','error'); return;
-  }
-  const {error} = await _supa.from('questions').insert(data);
-  if(error){ toast('Error: ' + error.message,'error'); return; }
-  toast('✅ Question saved!');
-  clearQuestionForm();
-  loadQuestions();
-  loadAllCounts();
+  if(!data.industry||!data.standard||!data.scenario_text||!data.correct_debit||!data.correct_credit){ toast('Fill all required fields','error'); return; }
+  const {error} = await _supa.from('drcr_questions').insert(data);
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast('✅ Dr/Cr question saved!');
+  clearDrcrForm(); loadDrcrQuestions(); loadAllCounts();
 }
 
-async function loadQuestions(cat='all'){
-  const tbody = document.getElementById('questions-table-body');
-  tbody.innerHTML = '<tr><td colspan="7"><div class="loading">Loading...</div></td></tr>';
-  let q = _supa.from('questions').select('*').order('created_at', {ascending:false});
-  if(cat !== 'all') q = q.eq('category', cat);
+function clearDrcrForm(){
+  clearForm(['dq-standard','dq-amount','dq-scenario','dq-hint','dq-debit','dq-credit','dq-chips','dq-explanation','dq-para']);
+  g('dq-char-count').textContent = '0/120';
+}
+
+async function loadDrcrQuestions(){
+  const tbody = g('drcr-table-body');
+  tbody.innerHTML = '<tr><td colspan="8"><div class="loading">Loading...</div></td></tr>';
+  let q = _supa.from('drcr_questions').select('*').order('industry').order('created_at',{ascending:false});
+  if(drcrFilter.industry !== 'all') q = q.eq('industry', drcrFilter.industry);
+  if(drcrFilter.difficulty !== 'all') q = q.eq('difficulty', drcrFilter.difficulty);
   const {data, error} = await q;
-  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first question using the form above'); return; }
-  tbody.innerHTML = data.map(r => `
+  if(error){ tbody.innerHTML = '<tr><td colspan="8" style="color:red;padding:20px;">Error: '+error.message+'</td></tr>'; return; }
+  drcrAllRows = data || [];
+  let rows = drcrAllRows;
+  if(drcrFilter.search) rows = rows.filter(r => (r.scenario_text||'').toLowerCase().includes(drcrFilter.search) || (r.standard||'').toLowerCase().includes(drcrFilter.search));
+  renderDrcrTable(rows);
+}
+
+function renderDrcrTable(rows){
+  const tbody = g('drcr-table-body');
+  if(!rows.length){ tbody.innerHTML = emptyState('Add your first Dr/Cr question using the form above'); g('drcr-pagination').innerHTML=''; return; }
+  const start = drcrPage * PAGE_SIZE, end = start + PAGE_SIZE;
+  const pageRows = rows.slice(start, end);
+  tbody.innerHTML = pageRows.map(r => `
     <tr>
-      <td><strong>${r.standard}</strong></td>
-      <td><span class="badge badge-${r.category.toLowerCase()}">${r.category}</span></td>
-      <td><span class="badge badge-${r.difficulty.toLowerCase()}">${r.difficulty}</span></td>
-      <td style="max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.question}</td>
-      <td><strong>${r.correct_answer}</strong></td>
-      <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+      <td>${badge(r.industry, r.industry)}</td>
+      <td><strong>${r.standard||'-'}</strong></td>
+      <td>${badge(r.difficulty, r.difficulty.toLowerCase())}</td>
+      <td style="max-width:220px;">${truncate(r.scenario_text,60)}</td>
+      <td style="font-size:11px;font-family:var(--font-mono);">Dr ${truncate(r.correct_debit,20)}</td>
+      <td style="font-size:11px;font-family:var(--font-mono);">Cr ${truncate(r.correct_credit,20)}</td>
+      <td>${badge(r.is_active?'Active':'Inactive', r.is_active?'active':'inactive')}</td>
       <td><div class="table-actions">
-        <button class="btn btn-sm btn-secondary" onclick="toggleActive('questions','${r.id}',${r.is_active});loadQuestions()">${r.is_active?'Deactivate':'Activate'}</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteRow('questions','${r.id}',loadQuestions)">Delete</button>
+        <button class="btn btn-sm btn-warning" onclick="editDrcrQuestion('${r.id}')">✏️ Edit</button>
+        <button class="btn btn-sm btn-secondary" onclick="toggleRow('drcr_questions','${r.id}',${r.is_active},loadDrcrQuestions)">${r.is_active?'Deactivate':'Activate'}</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteRow('drcr_questions','${r.id}',loadDrcrQuestions)">🗑️ Delete</button>
       </div></td>
     </tr>`).join('');
+  renderPagination('drcr-pagination', rows.length, drcrPage, PAGE_SIZE, p => { drcrPage=p; renderDrcrTable(rows); });
 }
 
-function filterQuestions(cat){ loadQuestions(cat); }
-function clearQuestionForm(){ ['q-standard','q-question','q-a','q-b','q-c','q-d','q-explanation','q-trap'].forEach(id => document.getElementById(id).value=''); }
+function searchDrcr(val){ drcrPage=0; drcrFilter.search=val.toLowerCase(); loadDrcrQuestions(); }
+function filterDrcr(key, val){ drcrPage=0; drcrFilter[key]=val; loadDrcrQuestions(); }
 
-// ════════════════════════════════════════
-// STANDARD SUMMARIES
-// ════════════════════════════════════════
-async function addSummary(){
-  const points = document.getElementById('s-points').value.trim().split('\n').filter(p=>p.trim());
-  const data = {
-    standard: document.getElementById('s-standard').value.trim(),
-    title: document.getElementById('s-title').value.trim(),
-    category: document.getElementById('s-category').value,
-    core_principle: document.getElementById('s-principle').value.trim(),
-    key_points: JSON.stringify(points),
-    journal_entry_dr: document.getElementById('s-dr').value.trim(),
-    journal_entry_cr: document.getElementById('s-cr').value.trim(),
-    exam_trap: document.getElementById('s-trap').value.trim(),
+async function editDrcrQuestion(id){
+  const row = drcrAllRows.find(r => r.id === id);
+  if(!row) return;
+  g('edit-modal-title').textContent = 'Edit Dr/Cr Question';
+  g('edit-modal-body').innerHTML = `
+    <div class="form-row four">
+      <div class="form-group"><label class="form-label">Industry</label><select class="form-select" id="em-industry">
+        ${['general','retail','banking','manufacturing','services'].map(i=>`<option value="${i}"${row.industry===i?' selected':''}>${i}</option>`).join('')}
+      </select></div>
+      <div class="form-group"><label class="form-label">Standard</label><input class="form-input" id="em-standard" value="${row.standard||''}"/></div>
+      <div class="form-group"><label class="form-label">Difficulty</label><select class="form-select" id="em-difficulty">
+        ${['Easy','Medium','Hard'].map(d=>`<option${row.difficulty===d?' selected':''}>${d}</option>`).join('')}
+      </select></div>
+      <div class="form-group"><label class="form-label">Amount</label><input class="form-input" id="em-amount" value="${row.amount||''}"/></div>
+    </div>
+    <div class="form-group"><label class="form-label">Scenario Text</label><input class="form-input" id="em-scenario" value="${(row.scenario_text||'').replace(/"/g,'&quot;')}"/></div>
+    <div class="form-group"><label class="form-label">Hint</label><input class="form-input" id="em-hint" value="${row.hint||''}"/></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Correct Debit</label><input class="form-input" id="em-debit" value="${row.correct_debit||''}"/></div>
+    <div class="form-group"><label class="form-label">Correct Credit</label><input class="form-input" id="em-credit" value="${row.correct_credit||''}"/></div></div>
+    <div class="form-group"><label class="form-label">Chips (comma separated, exactly 5)</label><input class="form-input" id="em-chips" value="${(row.chips||[]).join(', ')}"/></div>
+    <div class="form-group"><label class="form-label">Explanation</label><textarea class="form-textarea" id="em-explanation">${row.explanation||''}</textarea></div>
+    <div class="form-group"><label class="form-label">Paragraph Ref</label><input class="form-input" id="em-para" value="${row.paragraph_ref||''}"/></div>`;
+  editState = { table:'drcr_questions', id, reload: loadDrcrQuestions,
+    getFields: () => {
+      const chips = gv('em-chips').split(',').map(c=>c.trim()).filter(c=>c);
+      return { industry:gv('em-industry'), standard:gv('em-standard'), difficulty:gv('em-difficulty'),
+        amount:gv('em-amount'), scenario_text:gv('em-scenario'), hint:gv('em-hint'),
+        correct_debit:gv('em-debit'), correct_credit:gv('em-credit'),
+        chips, explanation:gv('em-explanation'), paragraph_ref:gv('em-para') };
+    }
   };
+  g('edit-modal').classList.add('show');
+}
+
+// ══ DR/CR ANSWERS ══
+async function loadDrcrAnswers(){
+  const tbody = g('answers-table-body');
+  tbody.innerHTML = '<tr><td colspan="10"><div class="loading">Loading...</div></td></tr>';
+  let q = _supa.from('drcr_answers').select('*').order('answered_at',{ascending:false}).limit(500);
+  if(answerFilter.industry !== 'all') q = q.eq('industry', answerFilter.industry);
+  if(answerFilter.is_correct !== 'all') q = q.eq('is_correct', answerFilter.is_correct === 'true');
+  const {data, error} = await q;
+  if(error){ tbody.innerHTML = '<tr><td colspan="10" style="color:red;padding:20px;">Error: '+error.message+'</td></tr>'; return; }
+  answersAllRows = data || [];
+  const total = answersAllRows.length;
+  const correct = answersAllRows.filter(a=>a.is_correct).length;
+  if(g('da-total')) g('da-total').textContent = total.toLocaleString();
+  if(g('da-correct')) g('da-correct').textContent = correct.toLocaleString();
+  if(g('da-accuracy')) g('da-accuracy').textContent = total>0 ? Math.round(correct/total*100)+'%' : '0%';
+  if(!answersAllRows.length){ tbody.innerHTML = emptyState('No answers recorded yet'); g('answers-pagination').innerHTML=''; return; }
+  renderAnswersTable(answersAllRows);
+}
+
+function renderAnswersTable(rows){
+  const tbody = g('answers-table-body');
+  const start = answersPage * PAGE_SIZE, end = start + PAGE_SIZE;
+  const pageRows = rows.slice(start, end);
+  tbody.innerHTML = pageRows.map(r => `<tr>
+    <td style="font-size:11px;font-family:var(--font-mono);">${(r.user_id||'guest').substring(0,8)}...</td>
+    <td>${badge(r.industry||'-', r.industry||'general')}</td>
+    <td style="font-size:11px;">${r.mode||'-'}</td>
+    <td>${r.difficulty ? badge(r.difficulty, r.difficulty.toLowerCase()) : '-'}</td>
+    <td style="font-size:11px;max-width:120px;">${truncate(r.user_debit,20)||'-'}</td>
+    <td style="font-size:11px;max-width:120px;">${truncate(r.user_credit,20)||'-'}</td>
+    <td>${r.is_correct === null ? '-' : r.is_correct ? badge('✅ Correct','active') : badge('❌ Wrong','inactive')}</td>
+    <td>${r.xp_earned||0} XP</td>
+    <td>${r.asked_ai ? badge('Yes','blue') : '-'}</td>
+    <td style="font-size:11px;">${r.answered_at ? new Date(r.answered_at).toLocaleDateString() : '-'}</td>
+  </tr>`).join('');
+  renderPagination('answers-pagination', rows.length, answersPage, PAGE_SIZE, p => { answersPage=p; renderAnswersTable(rows); });
+}
+
+function filterAnswers(key, val){ answersPage=0; answerFilter[key]=val; loadDrcrAnswers(); }
+
+// ══ EDIT MODAL ══
+async function submitEdit(){
+  if(!editState.id){ closeEditModal(); return; }
+  let fields;
+  if(editState.getFields) fields = editState.getFields();
+  else fields = editState.fields;
+  const {error} = await _supa.from(editState.table).update(fields).eq('id', editState.id);
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast('✅ Updated successfully!');
+  closeEditModal();
+  if(editState.reload) editState.reload();
+}
+function closeEditModal(){ g('edit-modal').classList.remove('show'); editState = {table:'',id:'',fields:{},reload:null}; }
+
+// ══ GENERIC HELPERS ══
+async function toggleRow(table, id, current, reloader){
+  const {error} = await _supa.from(table).update({is_active: !current}).eq('id', id);
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast(current ? 'Deactivated' : 'Activated');
+  if(reloader) reloader();
+  loadAllCounts();
+}
+
+async function deleteRow(table, id, reloader){
+  if(!confirm('Delete this item? This cannot be undone.')) return;
+  const {error} = await _supa.from(table).delete().eq('id', id);
+  if(error){ toast('Error: '+error.message+' (Check service_role key is set)','error'); return; }
+  toast('🗑️ Deleted successfully');
+  if(reloader) reloader();
+  loadAllCounts();
+}
+
+function renderPagination(containerId, total, currentPage, pageSize, onPageChange){
+  const container = g(containerId);
+  if(!container) return;
+  const totalPages = Math.ceil(total / pageSize);
+  if(totalPages <= 1){ container.innerHTML = ''; return; }
+  const start = currentPage * pageSize + 1;
+  const end = Math.min((currentPage+1)*pageSize, total);
+  container.innerHTML = `
+    <div class="pagination-info">Showing ${start}–${end} of ${total}</div>
+    <div class="pagination-btns">
+      <button class="btn btn-sm btn-secondary" ${currentPage===0?'disabled':''} onclick="(${onPageChange.toString()})(${currentPage-1})">← Prev</button>
+      <button class="btn btn-sm btn-secondary" ${currentPage>=totalPages-1?'disabled':''} onclick="(${onPageChange.toString()})(${currentPage+1})">Next →</button>
+    </div>`;
+}
+
+function exportCSV(name, rows, filename){
+  if(!rows || !rows.length){ toast('No data to export','warning'); return; }
+  const keys = Object.keys(rows[0]);
+  const csv = [keys.join(','), ...rows.map(r => keys.map(k => JSON.stringify(r[k]||'')).join(','))].join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = filename + '_' + new Date().toISOString().substring(0,10) + '.csv';
+  a.click();
+  toast('⬇️ CSV downloaded!');
+}
+
+// ══ QUESTIONS ══
+async function addQuestion(){
+  const data = {
+    standard: gv('q-standard'), category: gv('q-category'), difficulty: gv('q-difficulty'),
+    question: gv('q-question'),
+    option_a: gv('q-a'), option_b: gv('q-b'), option_c: gv('q-c'), option_d: gv('q-d'),
+    correct_answer: parseInt(gv('q-answer')),
+    explanation: gv('q-explanation'), exam_trap: gv('q-trap'),
+  };
+  if(!data.standard||!data.question||!data.option_a){ toast('Fill required fields','error'); return; }
+  const {error} = await _supa.from('questions').insert(data);
+  if(error){ toast('Error: '+error.message,'error'); return; }
+  toast('✅ Question saved!');
+  clearForm(['q-standard','q-question','q-a','q-b','q-c','q-d','q-explanation','q-trap']);
+  loadQuestions(); loadAllCounts();
+}
+
+async function loadQuestions(){
+  const tbody = g('questions-table-body');
+  tbody.innerHTML = '<tr><td colspan="7"><div class="loading">Loading...</div></td></tr>';
+  let q = _supa.from('questions').select('*').order('created_at',{ascending:false});
+  if(qFilter.category !== 'all') q = q.eq('category', qFilter.category);
+  const {data, error} = await q;
+  if(error){ tbody.innerHTML = '<tr><td colspan="7" style="color:red;padding:20px;">Error: '+error.message+'</td></tr>'; return; }
+  questionsAllRows = data || [];
+  let rows = questionsAllRows;
+  if(qFilter.search) rows = rows.filter(r => (r.question||'').toLowerCase().includes(qFilter.search) || (r.standard||'').toLowerCase().includes(qFilter.search));
+  if(!rows.length){ tbody.innerHTML = emptyState('Add your first question'); g('questions-pagination').innerHTML=''; return; }
+  const start = questionsPage*PAGE_SIZE, end = start+PAGE_SIZE;
+  const pageRows = rows.slice(start, end);
+  const letters = ['A','B','C','D'];
+  tbody.innerHTML = pageRows.map(r => `<tr>
+    <td><strong>${r.standard}</strong></td>
+    <td>${badge(r.category, r.category.toLowerCase())}</td>
+    <td>${badge(r.difficulty, r.difficulty.toLowerCase())}</td>
+    <td style="max-width:280px;">${truncate(r.question,70)}</td>
+    <td><strong>${letters[r.correct_answer]||r.correct_answer}</strong></td>
+    <td>${badge(r.is_active?'Active':'Inactive', r.is_active?'active':'inactive')}</td>
+    <td><div class="table-actions">
+      <button class="btn btn-sm btn-secondary" onclick="toggleRow('questions','${r.id}',${r.is_active},loadQuestions)">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('questions','${r.id}',loadQuestions)">🗑️ Delete</button>
+    </div></td></tr>`).join('');
+  renderPagination('questions-pagination', rows.length, questionsPage, PAGE_SIZE, p => { questionsPage=p; loadQuestions(); });
+}
+
+function searchQuestions(val){ questionsPage=0; qFilter.search=val.toLowerCase(); loadQuestions(); }
+function filterQuestions(key, val){ questionsPage=0; qFilter[key]=val; loadQuestions(); }
+function clearQuestionForm(){ clearForm(['q-standard','q-question','q-a','q-b','q-c','q-d','q-explanation','q-trap']); }
+
+// ══ SUMMARIES ══
+async function addSummary(){
+  const points = gv('s-points').split('\n').filter(p=>p.trim());
+  const data = { standard:gv('s-standard'), title:gv('s-title'), category:gv('s-category'),
+    core_principle:gv('s-principle'), key_points:JSON.stringify(points),
+    journal_entry_dr:gv('s-dr'), journal_entry_cr:gv('s-cr'), exam_trap:gv('s-trap') };
   if(!data.standard||!data.title||!data.core_principle){ toast('Fill required fields','error'); return; }
   const {error} = await _supa.from('standard_summaries').insert(data);
   if(error){ toast('Error: '+error.message,'error'); return; }
-  toast('✅ Summary saved!'); clearSummaryForm(); loadSummaries(); loadAllCounts();
+  toast('✅ Summary saved!'); clearForm(['s-standard','s-title','s-principle','s-points','s-dr','s-cr','s-trap']); loadSummaries(); loadAllCounts();
 }
-
 async function loadSummaries(){
-  const tbody = document.getElementById('summaries-table-body');
+  const tbody = g('summaries-table-body');
   tbody.innerHTML = '<tr><td colspan="6"><div class="loading">Loading...</div></td></tr>';
   const {data,error} = await _supa.from('standard_summaries').select('*').order('standard');
   if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first summary'); return; }
   tbody.innerHTML = data.map(r=>`<tr>
     <td><strong>${r.standard}</strong></td><td>${r.title}</td>
-    <td><span class="badge badge-${r.category.toLowerCase()}">${r.category}</span></td>
-    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.core_principle||''}</td>
-    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td>${badge(r.category,r.category.toLowerCase())}</td>
+    <td style="max-width:200px;">${truncate(r.core_principle,60)}</td>
+    <td>${badge(r.is_active?'Active':'Inactive',r.is_active?'active':'inactive')}</td>
     <td><div class="table-actions">
-      <button class="btn btn-sm btn-secondary" onclick="toggleActive('standard_summaries','${r.id}',${r.is_active});loadSummaries()">${r.is_active?'Deactivate':'Activate'}</button>
-      <button class="btn btn-sm btn-danger" onclick="deleteRow('standard_summaries','${r.id}',loadSummaries)">Delete</button>
+      <button class="btn btn-sm btn-secondary" onclick="toggleRow('standard_summaries','${r.id}',${r.is_active},loadSummaries)">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('standard_summaries','${r.id}',loadSummaries)">🗑️</button>
     </div></td></tr>`).join('');
 }
-function clearSummaryForm(){ ['s-standard','s-title','s-principle','s-points','s-dr','s-cr','s-trap'].forEach(id=>document.getElementById(id).value=''); }
 
-// ════════════════════════════════════════
-// EXAM TRAPS
-// ════════════════════════════════════════
+// ══ EXAM TRAPS ══
 async function addTrap(){
-  const data = {
-    standard: document.getElementById('t-standard').value.trim(),
-    category: document.getElementById('t-category').value,
-    difficulty: document.getElementById('t-difficulty').value,
-    trap_title: document.getElementById('t-title').value.trim(),
-    trap_description: document.getElementById('t-description').value.trim(),
-    correct_approach: document.getElementById('t-correct').value.trim(),
-  };
+  const data = { standard:gv('t-standard'), category:gv('t-category'), difficulty:gv('t-difficulty'),
+    trap_title:gv('t-title'), trap_description:gv('t-description'), correct_approach:gv('t-correct') };
   if(!data.standard||!data.trap_title||!data.trap_description){ toast('Fill required fields','error'); return; }
   const {error} = await _supa.from('exam_traps').insert(data);
   if(error){ toast('Error: '+error.message,'error'); return; }
-  toast('✅ Trap saved!'); clearTrapForm(); loadTraps(); loadAllCounts();
+  toast('✅ Trap saved!'); clearForm(['t-standard','t-title','t-description','t-correct']); loadTraps(); loadAllCounts();
 }
-
 async function loadTraps(){
-  const tbody = document.getElementById('traps-table-body');
+  const tbody = g('traps-table-body');
   tbody.innerHTML = '<tr><td colspan="6"><div class="loading">Loading...</div></td></tr>';
   const {data,error} = await _supa.from('exam_traps').select('*').order('standard');
   if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first exam trap'); return; }
   tbody.innerHTML = data.map(r=>`<tr>
-    <td><strong>${r.standard}</strong></td>
-    <td><span class="badge badge-${r.category.toLowerCase()}">${r.category}</span></td>
-    <td>${r.trap_title}</td>
-    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.trap_description}</td>
-    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td><strong>${r.standard}</strong></td><td>${badge(r.category,r.category.toLowerCase())}</td>
+    <td>${r.trap_title}</td><td style="max-width:200px;">${truncate(r.trap_description,50)}</td>
+    <td>${badge(r.is_active?'Active':'Inactive',r.is_active?'active':'inactive')}</td>
     <td><div class="table-actions">
-      <button class="btn btn-sm btn-secondary" onclick="toggleActive('exam_traps','${r.id}',${r.is_active});loadTraps()">${r.is_active?'Deactivate':'Activate'}</button>
-      <button class="btn btn-sm btn-danger" onclick="deleteRow('exam_traps','${r.id}',loadTraps)">Delete</button>
+      <button class="btn btn-sm btn-secondary" onclick="toggleRow('exam_traps','${r.id}',${r.is_active},loadTraps)">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('exam_traps','${r.id}',loadTraps)">🗑️</button>
     </div></td></tr>`).join('');
 }
-function clearTrapForm(){ ['t-standard','t-title','t-description','t-correct'].forEach(id=>document.getElementById(id).value=''); }
 
-// ════════════════════════════════════════
-// FORMULAS
-// ════════════════════════════════════════
+// ══ FORMULAS ══
 async function addFormula(){
-  const data = {
-    category: document.getElementById('f-category').value,
-    title: document.getElementById('f-title').value.trim(),
-    formula: document.getElementById('f-formula').value.trim(),
-    explanation: document.getElementById('f-explanation').value.trim(),
-    example: document.getElementById('f-example').value.trim(),
-  };
+  const data = { category:gv('f-category'), title:gv('f-title'), formula:gv('f-formula'), explanation:gv('f-explanation'), example:gv('f-example') };
   if(!data.title||!data.formula){ toast('Fill required fields','error'); return; }
   const {error} = await _supa.from('formulas').insert(data);
   if(error){ toast('Error: '+error.message,'error'); return; }
-  toast('✅ Formula saved!'); clearFormulaForm(); loadFormulas(); loadAllCounts();
+  toast('✅ Formula saved!'); clearForm(['f-title','f-formula','f-explanation','f-example']); loadFormulas(); loadAllCounts();
 }
-
 async function loadFormulas(){
-  const tbody = document.getElementById('formulas-table-body');
+  const tbody = g('formulas-table-body');
   tbody.innerHTML = '<tr><td colspan="5"><div class="loading">Loading...</div></td></tr>';
   const {data,error} = await _supa.from('formulas').select('*').order('category');
   if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first formula'); return; }
   tbody.innerHTML = data.map(r=>`<tr>
     <td>${r.category}</td><td><strong>${r.title}</strong></td>
-    <td style="font-family:var(--font-mono);font-size:12px;">${r.formula}</td>
-    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td style="font-family:var(--font-mono);font-size:12px;">${truncate(r.formula,50)}</td>
+    <td>${badge(r.is_active?'Active':'Inactive',r.is_active?'active':'inactive')}</td>
     <td><div class="table-actions">
-      <button class="btn btn-sm btn-secondary" onclick="toggleActive('formulas','${r.id}',${r.is_active});loadFormulas()">${r.is_active?'Deactivate':'Activate'}</button>
-      <button class="btn btn-sm btn-danger" onclick="deleteRow('formulas','${r.id}',loadFormulas)">Delete</button>
+      <button class="btn btn-sm btn-secondary" onclick="toggleRow('formulas','${r.id}',${r.is_active},loadFormulas)">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('formulas','${r.id}',loadFormulas)">🗑️</button>
     </div></td></tr>`).join('');
 }
-function clearFormulaForm(){ ['f-title','f-formula','f-explanation','f-example'].forEach(id=>document.getElementById(id).value=''); }
 
-// ════════════════════════════════════════
-// TOPICS
-// ════════════════════════════════════════
+// ══ TOPICS ══
 async function addTopic(){
-  const data = {
-    standard: document.getElementById('top-standard').value.trim(),
-    name: document.getElementById('top-name').value.trim(),
-    category: document.getElementById('top-category').value,
-    subtitle: document.getElementById('top-subtitle').value.trim(),
-    sort_order: parseInt(document.getElementById('top-order').value)||0,
-  };
+  const data = { standard:gv('top-standard'), name:gv('top-name'), category:gv('top-category'), subtitle:gv('top-subtitle'), sort_order:parseInt(gv('top-order'))||0 };
   if(!data.standard||!data.name){ toast('Fill required fields','error'); return; }
   const {error} = await _supa.from('topics').insert(data);
   if(error){ toast('Error: '+error.message,'error'); return; }
-  toast('✅ Topic saved!'); clearTopicForm(); loadTopics(); loadAllCounts();
+  toast('✅ Topic saved!'); clearForm(['top-standard','top-name','top-subtitle','top-order']); loadTopics(); loadAllCounts();
 }
-
 async function loadTopics(){
-  const tbody = document.getElementById('topics-table-body');
-  tbody.innerHTML = '<tr><td colspan="7"><div class="loading">Loading...</div></td></tr>';
+  const tbody = g('topics-table-body');
+  tbody.innerHTML = '<tr><td colspan="6"><div class="loading">Loading...</div></td></tr>';
   const {data,error} = await _supa.from('topics').select('*').order('sort_order');
   if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first topic'); return; }
   tbody.innerHTML = data.map(r=>`<tr>
     <td><strong>${r.standard}</strong></td><td>${r.name}</td>
-    <td><span class="badge badge-${r.category.toLowerCase()}">${r.category}</span></td>
-    <td>${r.subtitle||'-'}</td><td>${r.sort_order}</td>
-    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td>${badge(r.category,r.category.toLowerCase())}</td><td>${r.sort_order}</td>
+    <td>${badge(r.is_active?'Active':'Inactive',r.is_active?'active':'inactive')}</td>
     <td><div class="table-actions">
-      <button class="btn btn-sm btn-secondary" onclick="toggleActive('topics','${r.id}',${r.is_active});loadTopics()">${r.is_active?'Deactivate':'Activate'}</button>
-      <button class="btn btn-sm btn-danger" onclick="deleteRow('topics','${r.id}',loadTopics)">Delete</button>
+      <button class="btn btn-sm btn-secondary" onclick="toggleRow('topics','${r.id}',${r.is_active},loadTopics)">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('topics','${r.id}',loadTopics)">🗑️</button>
     </div></td></tr>`).join('');
 }
-function clearTopicForm(){ ['top-standard','top-name','top-subtitle','top-order'].forEach(id=>document.getElementById(id).value=''); }
 
-// ════════════════════════════════════════
-// JOURNAL ENTRIES
-// ════════════════════════════════════════
+// ══ JOURNAL ══
 async function addJournal(){
-  const data = {
-    standard: document.getElementById('j-standard').value.trim(),
-    category: document.getElementById('j-category').value,
-    scenario: document.getElementById('j-scenario').value.trim(),
-    debit_account: document.getElementById('j-dr').value.trim(),
-    debit_amount: document.getElementById('j-dr-amount').value.trim(),
-    credit_account: document.getElementById('j-cr').value.trim(),
-    credit_amount: document.getElementById('j-cr-amount').value.trim(),
-    narrative: document.getElementById('j-narrative').value.trim(),
-  };
+  const data = { standard:gv('j-standard'), category:gv('j-category'), scenario:gv('j-scenario'), debit_account:gv('j-dr'), debit_amount:gv('j-dr-amount'), credit_account:gv('j-cr'), credit_amount:gv('j-cr-amount'), narrative:gv('j-narrative') };
   if(!data.standard||!data.scenario||!data.debit_account||!data.credit_account){ toast('Fill required fields','error'); return; }
   const {error} = await _supa.from('journal_entries').insert(data);
   if(error){ toast('Error: '+error.message,'error'); return; }
-  toast('✅ Journal entry saved!'); clearJournalForm(); loadJournal(); loadAllCounts();
+  toast('✅ Journal entry saved!'); clearForm(['j-standard','j-scenario','j-dr','j-dr-amount','j-cr','j-cr-amount','j-narrative']); loadJournal(); loadAllCounts();
 }
-
 async function loadJournal(){
-  const tbody = document.getElementById('journal-table-body');
+  const tbody = g('journal-table-body');
   tbody.innerHTML = '<tr><td colspan="6"><div class="loading">Loading...</div></td></tr>';
   const {data,error} = await _supa.from('journal_entries').select('*').order('standard');
   if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first journal entry'); return; }
   tbody.innerHTML = data.map(r=>`<tr>
-    <td><strong>${r.standard}</strong></td>
-    <td>${r.scenario}</td>
+    <td><strong>${r.standard}</strong></td><td>${truncate(r.scenario,50)}</td>
     <td style="font-family:var(--font-mono);font-size:12px;">Dr ${r.debit_account}</td>
     <td style="font-family:var(--font-mono);font-size:12px;">Cr ${r.credit_account}</td>
-    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td>${badge(r.is_active?'Active':'Inactive',r.is_active?'active':'inactive')}</td>
     <td><div class="table-actions">
-      <button class="btn btn-sm btn-secondary" onclick="toggleActive('journal_entries','${r.id}',${r.is_active});loadJournal()">${r.is_active?'Deactivate':'Activate'}</button>
-      <button class="btn btn-sm btn-danger" onclick="deleteRow('journal_entries','${r.id}',loadJournal)">Delete</button>
+      <button class="btn btn-sm btn-secondary" onclick="toggleRow('journal_entries','${r.id}',${r.is_active},loadJournal)">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('journal_entries','${r.id}',loadJournal)">🗑️</button>
     </div></td></tr>`).join('');
 }
-function clearJournalForm(){ ['j-standard','j-scenario','j-dr','j-dr-amount','j-cr','j-cr-amount','j-narrative'].forEach(id=>document.getElementById(id).value=''); }
 
-// ════════════════════════════════════════
-// DISCLOSURES
-// ════════════════════════════════════════
+// ══ DISCLOSURES ══
 async function addDisclosure(){
-  const data = {
-    standard: document.getElementById('d-standard').value.trim(),
-    category: document.getElementById('d-category').value,
-    mode: document.getElementById('d-mode').value,
-    disclosure_item: document.getElementById('d-item').value.trim(),
-    is_mandatory: document.getElementById('d-mandatory').value === 'true',
-    notes: document.getElementById('d-notes').value.trim(),
-  };
+  const data = { standard:gv('d-standard'), category:gv('d-category'), mode:gv('d-mode'), disclosure_item:gv('d-item'), is_mandatory:gv('d-mandatory')==='true', notes:gv('d-notes') };
   if(!data.standard||!data.disclosure_item){ toast('Fill required fields','error'); return; }
   const {error} = await _supa.from('disclosure_checklist').insert(data);
   if(error){ toast('Error: '+error.message,'error'); return; }
-  toast('✅ Disclosure saved!'); clearDisclosureForm(); loadDisclosures(); loadAllCounts();
+  toast('✅ Disclosure saved!'); clearForm(['d-standard','d-item','d-notes']); loadDisclosures(); loadAllCounts();
 }
-
 async function loadDisclosures(){
-  const tbody = document.getElementById('disclosures-table-body');
-  tbody.innerHTML = '<tr><td colspan="6"><div class="loading">Loading...</div></td></tr>';
+  const tbody = g('disclosures-table-body');
+  tbody.innerHTML = '<tr><td colspan="5"><div class="loading">Loading...</div></td></tr>';
   const {data,error} = await _supa.from('disclosure_checklist').select('*').order('standard');
-  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first disclosure item'); return; }
+  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first disclosure'); return; }
   tbody.innerHTML = data.map(r=>`<tr>
-    <td><strong>${r.standard}</strong></td>
-    <td><span class="badge badge-${r.category.toLowerCase()}">${r.category}</span></td>
-    <td style="max-width:300px;">${r.disclosure_item}</td>
-    <td>${r.is_mandatory?'<span class="badge badge-active">Mandatory</span>':'<span class="badge badge-inactive">Optional</span>'}</td>
-    <td>${r.mode}</td>
-    <td><div class="table-actions">
-      <button class="btn btn-sm btn-danger" onclick="deleteRow('disclosure_checklist','${r.id}',loadDisclosures)">Delete</button>
-    </div></td></tr>`).join('');
+    <td><strong>${r.standard}</strong></td><td>${badge(r.category,r.category.toLowerCase())}</td>
+    <td style="max-width:300px;">${truncate(r.disclosure_item,80)}</td>
+    <td>${r.is_mandatory?badge('Mandatory','active'):badge('Optional','inactive')}</td>
+    <td><button class="btn btn-sm btn-danger" onclick="deleteRow('disclosure_checklist','${r.id}',loadDisclosures)">🗑️ Delete</button></td>
+  </tr>`).join('');
 }
-function clearDisclosureForm(){ ['d-standard','d-item','d-notes'].forEach(id=>document.getElementById(id).value=''); }
 
-// ════════════════════════════════════════
-// CLIENT SCENARIOS
-// ════════════════════════════════════════
+// ══ SCENARIOS ══
 async function addScenario(){
-  const data = {
-    title: document.getElementById('sc-title').value.trim(),
-    category: document.getElementById('sc-category').value,
-    difficulty: document.getElementById('sc-difficulty').value,
-    scenario_text: document.getElementById('sc-text').value.trim(),
-    option_a: document.getElementById('sc-a').value.trim(),
-    option_b: document.getElementById('sc-b').value.trim(),
-    option_c: document.getElementById('sc-c').value.trim(),
-    option_d: document.getElementById('sc-d').value.trim(),
-    correct_answer: document.getElementById('sc-answer').value,
-    standard_reference: document.getElementById('sc-ref').value.trim(),
-    explanation: document.getElementById('sc-explanation').value.trim(),
-  };
+  const data = { title:gv('sc-title'), category:gv('sc-category'), difficulty:gv('sc-difficulty'), scenario_text:gv('sc-text'), option_a:gv('sc-a'), option_b:gv('sc-b'), option_c:gv('sc-c'), option_d:gv('sc-d'), correct_answer:gv('sc-answer'), standard_reference:gv('sc-ref'), explanation:gv('sc-explanation') };
   if(!data.title||!data.scenario_text){ toast('Fill required fields','error'); return; }
   const {error} = await _supa.from('client_scenarios').insert(data);
   if(error){ toast('Error: '+error.message,'error'); return; }
-  toast('✅ Scenario saved!'); clearScenarioForm(); loadScenarios(); loadAllCounts();
+  toast('✅ Scenario saved!'); clearForm(['sc-title','sc-text','sc-a','sc-b','sc-c','sc-d','sc-ref','sc-explanation']); loadScenarios(); loadAllCounts();
 }
-
 async function loadScenarios(){
-  const tbody = document.getElementById('scenarios-table-body');
+  const tbody = g('scenarios-table-body');
   tbody.innerHTML = '<tr><td colspan="6"><div class="loading">Loading...</div></td></tr>';
   const {data,error} = await _supa.from('client_scenarios').select('*').order('created_at',{ascending:false});
-  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first client scenario'); return; }
+  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first scenario'); return; }
   tbody.innerHTML = data.map(r=>`<tr>
-    <td><strong>${r.title}</strong></td>
-    <td>${r.category}</td>
-    <td><span class="badge badge-${r.difficulty.toLowerCase()}">${r.difficulty}</span></td>
-    <td><strong>${r.correct_answer}</strong></td>
-    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td><strong>${r.title}</strong></td><td>${r.category}</td>
+    <td>${badge(r.difficulty,r.difficulty.toLowerCase())}</td><td><strong>${r.correct_answer}</strong></td>
+    <td>${badge(r.is_active?'Active':'Inactive',r.is_active?'active':'inactive')}</td>
     <td><div class="table-actions">
-      <button class="btn btn-sm btn-secondary" onclick="toggleActive('client_scenarios','${r.id}',${r.is_active});loadScenarios()">${r.is_active?'Deactivate':'Activate'}</button>
-      <button class="btn btn-sm btn-danger" onclick="deleteRow('client_scenarios','${r.id}',loadScenarios)">Delete</button>
+      <button class="btn btn-sm btn-secondary" onclick="toggleRow('client_scenarios','${r.id}',${r.is_active},loadScenarios)">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('client_scenarios','${r.id}',loadScenarios)">🗑️</button>
     </div></td></tr>`).join('');
 }
-function clearScenarioForm(){ ['sc-title','sc-text','sc-a','sc-b','sc-c','sc-d','sc-ref','sc-explanation'].forEach(id=>document.getElementById(id).value=''); }
 
-// ════════════════════════════════════════
-// AUDIT FILES
-// ════════════════════════════════════════
+// ══ AUDIT ══
 async function addAudit(){
-  const data = {
-    title: document.getElementById('a-title').value.trim(),
-    category: document.getElementById('a-category').value,
-    file_type: document.getElementById('a-type').value,
-    isa_reference: document.getElementById('a-isa').value.trim(),
-    content: document.getElementById('a-content').value.trim(),
-    notes: document.getElementById('a-notes').value.trim(),
-  };
+  const data = { title:gv('a-title'), category:gv('a-category'), file_type:gv('a-type'), isa_reference:gv('a-isa'), content:gv('a-content'), notes:gv('a-notes') };
   if(!data.title||!data.content){ toast('Fill required fields','error'); return; }
   const {error} = await _supa.from('audit_files').insert(data);
   if(error){ toast('Error: '+error.message,'error'); return; }
-  toast('✅ Audit file saved!'); clearAuditForm(); loadAudit(); loadAllCounts();
+  toast('✅ Audit file saved!'); clearForm(['a-title','a-isa','a-content','a-notes']); loadAudit(); loadAllCounts();
 }
-
 async function loadAudit(){
-  const tbody = document.getElementById('audit-table-body');
+  const tbody = g('audit-table-body');
   tbody.innerHTML = '<tr><td colspan="6"><div class="loading">Loading...</div></td></tr>';
   const {data,error} = await _supa.from('audit_files').select('*').order('category');
   if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first audit file'); return; }
   tbody.innerHTML = data.map(r=>`<tr>
-    <td><strong>${r.title}</strong></td><td>${r.category}</td><td>${r.file_type}</td>
-    <td>${r.isa_reference||'-'}</td>
-    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td><strong>${r.title}</strong></td><td>${r.category}</td><td>${r.file_type}</td><td>${r.isa_reference||'-'}</td>
+    <td>${badge(r.is_active?'Active':'Inactive',r.is_active?'active':'inactive')}</td>
     <td><div class="table-actions">
-      <button class="btn btn-sm btn-secondary" onclick="toggleActive('audit_files','${r.id}',${r.is_active});loadAudit()">${r.is_active?'Deactivate':'Activate'}</button>
-      <button class="btn btn-sm btn-danger" onclick="deleteRow('audit_files','${r.id}',loadAudit)">Delete</button>
+      <button class="btn btn-sm btn-secondary" onclick="toggleRow('audit_files','${r.id}',${r.is_active},loadAudit)">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('audit_files','${r.id}',loadAudit)">🗑️</button>
     </div></td></tr>`).join('');
 }
-function clearAuditForm(){ ['a-title','a-isa','a-content','a-notes'].forEach(id=>document.getElementById(id).value=''); }
 
-// ════════════════════════════════════════
-// ETHICS CASES
-// ════════════════════════════════════════
+// ══ ETHICS ══
 async function addEthics(){
-  const data = {
-    title: document.getElementById('e-title').value.trim(),
-    category: document.getElementById('e-category').value,
-    case_text: document.getElementById('e-case').value.trim(),
-    ethical_issue: document.getElementById('e-issue').value.trim(),
-    option_a: document.getElementById('e-a').value.trim(),
-    option_b: document.getElementById('e-b').value.trim(),
-    option_c: document.getElementById('e-c').value.trim(),
-    option_d: document.getElementById('e-d').value.trim(),
-    correct_answer: document.getElementById('e-answer').value,
-    iesba_reference: document.getElementById('e-ref').value.trim(),
-    explanation: document.getElementById('e-explanation').value.trim(),
-  };
+  const data = { title:gv('e-title'), category:gv('e-category'), case_text:gv('e-case'), ethical_issue:gv('e-issue'), option_a:gv('e-a'), option_b:gv('e-b'), option_c:gv('e-c'), option_d:gv('e-d'), correct_answer:gv('e-answer'), iesba_reference:gv('e-ref'), explanation:gv('e-explanation') };
   if(!data.title||!data.case_text){ toast('Fill required fields','error'); return; }
   const {error} = await _supa.from('ethics_cases').insert(data);
   if(error){ toast('Error: '+error.message,'error'); return; }
-  toast('✅ Ethics case saved!'); clearEthicsForm(); loadEthics(); loadAllCounts();
+  toast('✅ Ethics case saved!'); clearForm(['e-title','e-case','e-issue','e-a','e-b','e-c','e-d','e-ref','e-explanation']); loadEthics(); loadAllCounts();
 }
-
 async function loadEthics(){
-  const tbody = document.getElementById('ethics-table-body');
+  const tbody = g('ethics-table-body');
   tbody.innerHTML = '<tr><td colspan="6"><div class="loading">Loading...</div></td></tr>';
   const {data,error} = await _supa.from('ethics_cases').select('*').order('created_at',{ascending:false});
   if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first ethics case'); return; }
   tbody.innerHTML = data.map(r=>`<tr>
-    <td><strong>${r.title}</strong></td><td>${r.category}</td>
-    <td>${r.ethical_issue}</td><td><strong>${r.correct_answer}</strong></td>
-    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td><strong>${r.title}</strong></td><td>${r.category}</td><td>${r.ethical_issue}</td><td><strong>${r.correct_answer}</strong></td>
+    <td>${badge(r.is_active?'Active':'Inactive',r.is_active?'active':'inactive')}</td>
     <td><div class="table-actions">
-      <button class="btn btn-sm btn-secondary" onclick="toggleActive('ethics_cases','${r.id}',${r.is_active});loadEthics()">${r.is_active?'Deactivate':'Activate'}</button>
-      <button class="btn btn-sm btn-danger" onclick="deleteRow('ethics_cases','${r.id}',loadEthics)">Delete</button>
+      <button class="btn btn-sm btn-secondary" onclick="toggleRow('ethics_cases','${r.id}',${r.is_active},loadEthics)">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('ethics_cases','${r.id}',loadEthics)">🗑️</button>
     </div></td></tr>`).join('');
 }
-function clearEthicsForm(){ ['e-title','e-case','e-issue','e-a','e-b','e-c','e-d','e-ref','e-explanation'].forEach(id=>document.getElementById(id).value=''); }
 
-// ════════════════════════════════════════
-// EXCEL TEMPLATES
-// ════════════════════════════════════════
+// ══ EXCEL ══
 async function addExcel(){
-  const data = {
-    title: document.getElementById('ex-title').value.trim(),
-    category: document.getElementById('ex-category').value,
-    difficulty: document.getElementById('ex-difficulty').value,
-    description: document.getElementById('ex-description').value.trim(),
-    template_content: document.getElementById('ex-content').value.trim(),
-  };
+  const data = { title:gv('ex-title'), category:gv('ex-category'), difficulty:gv('ex-difficulty'), description:gv('ex-description'), template_content:gv('ex-content') };
   if(!data.title||!data.description){ toast('Fill required fields','error'); return; }
   const {error} = await _supa.from('excel_templates').insert(data);
   if(error){ toast('Error: '+error.message,'error'); return; }
-  toast('✅ Template saved!'); clearExcelForm(); loadExcel(); loadAllCounts();
+  toast('✅ Template saved!'); clearForm(['ex-title','ex-description','ex-content']); loadExcel(); loadAllCounts();
 }
-
 async function loadExcel(){
-  const tbody = document.getElementById('excel-table-body');
+  const tbody = g('excel-table-body');
   tbody.innerHTML = '<tr><td colspan="5"><div class="loading">Loading...</div></td></tr>';
   const {data,error} = await _supa.from('excel_templates').select('*').order('category');
-  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first Excel template'); return; }
+  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first template'); return; }
   tbody.innerHTML = data.map(r=>`<tr>
     <td><strong>${r.title}</strong></td><td>${r.category}</td>
-    <td><span class="badge badge-${r.difficulty.toLowerCase()}">${r.difficulty}</span></td>
-    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td>${badge(r.difficulty,r.difficulty.toLowerCase())}</td>
+    <td>${badge(r.is_active?'Active':'Inactive',r.is_active?'active':'inactive')}</td>
     <td><div class="table-actions">
-      <button class="btn btn-sm btn-secondary" onclick="toggleActive('excel_templates','${r.id}',${r.is_active});loadExcel()">${r.is_active?'Deactivate':'Activate'}</button>
-      <button class="btn btn-sm btn-danger" onclick="deleteRow('excel_templates','${r.id}',loadExcel)">Delete</button>
+      <button class="btn btn-sm btn-secondary" onclick="toggleRow('excel_templates','${r.id}',${r.is_active},loadExcel)">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('excel_templates','${r.id}',loadExcel)">🗑️</button>
     </div></td></tr>`).join('');
 }
-function clearExcelForm(){ ['ex-title','ex-description','ex-content'].forEach(id=>document.getElementById(id).value=''); }
 
-// ════════════════════════════════════════
-// IFRS UPDATES
-// ════════════════════════════════════════
+// ══ UPDATES ══
 async function addUpdate(){
-  const data = {
-    standard: document.getElementById('u-standard').value.trim(),
-    update_title: document.getElementById('u-title').value.trim(),
-    update_type: document.getElementById('u-type').value,
-    effective_date: document.getElementById('u-date').value.trim(),
-    summary: document.getElementById('u-summary').value.trim(),
-    impact: document.getElementById('u-impact').value.trim(),
-  };
+  const data = { standard:gv('u-standard'), update_title:gv('u-title'), update_type:gv('u-type'), effective_date:gv('u-date'), summary:gv('u-summary'), impact:gv('u-impact') };
   if(!data.standard||!data.update_title||!data.summary){ toast('Fill required fields','error'); return; }
   const {error} = await _supa.from('ifrs_updates').insert(data);
   if(error){ toast('Error: '+error.message,'error'); return; }
-  toast('✅ Update saved!'); clearUpdateForm(); loadUpdates(); loadAllCounts();
+  toast('✅ Update saved!'); clearForm(['u-standard','u-title','u-date','u-summary','u-impact']); loadUpdates(); loadAllCounts();
 }
-
 async function loadUpdates(){
-  const tbody = document.getElementById('updates-table-body');
+  const tbody = g('updates-table-body');
   tbody.innerHTML = '<tr><td colspan="6"><div class="loading">Loading...</div></td></tr>';
   const {data,error} = await _supa.from('ifrs_updates').select('*').order('created_at',{ascending:false});
-  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first IFRS update'); return; }
+  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first update'); return; }
   tbody.innerHTML = data.map(r=>`<tr>
-    <td><strong>${r.standard}</strong></td><td>${r.update_title}</td>
+    <td><strong>${r.standard}</strong></td><td>${truncate(r.update_title,50)}</td>
     <td>${r.update_type}</td><td>${r.effective_date||'-'}</td>
-    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td>${badge(r.is_active?'Active':'Inactive',r.is_active?'active':'inactive')}</td>
     <td><div class="table-actions">
-      <button class="btn btn-sm btn-secondary" onclick="toggleActive('ifrs_updates','${r.id}',${r.is_active});loadUpdates()">${r.is_active?'Deactivate':'Activate'}</button>
-      <button class="btn btn-sm btn-danger" onclick="deleteRow('ifrs_updates','${r.id}',loadUpdates)">Delete</button>
+      <button class="btn btn-sm btn-secondary" onclick="toggleRow('ifrs_updates','${r.id}',${r.is_active},loadUpdates)">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('ifrs_updates','${r.id}',loadUpdates)">🗑️</button>
     </div></td></tr>`).join('');
 }
-function clearUpdateForm(){ ['u-standard','u-title','u-date','u-summary','u-impact'].forEach(id=>document.getElementById(id).value=''); }
 
-// ════════════════════════════════════════
-// TECHNICAL MEMOS
-// ════════════════════════════════════════
+// ══ MEMOS ══
 async function addMemo(){
-  const data = {
-    title: document.getElementById('m-title').value.trim(),
-    category: document.getElementById('m-category').value,
-    standard: document.getElementById('m-standard').value.trim(),
-    memo_content: document.getElementById('m-content').value.trim(),
-    conclusion: document.getElementById('m-conclusion').value.trim(),
-  };
+  const data = { title:gv('m-title'), category:gv('m-category'), standard:gv('m-standard'), memo_content:gv('m-content'), conclusion:gv('m-conclusion') };
   if(!data.title||!data.memo_content){ toast('Fill required fields','error'); return; }
   const {error} = await _supa.from('technical_memos').insert(data);
   if(error){ toast('Error: '+error.message,'error'); return; }
-  toast('✅ Memo saved!'); clearMemoForm(); loadMemos(); loadAllCounts();
+  toast('✅ Memo saved!'); clearForm(['m-title','m-standard','m-content','m-conclusion']); loadMemos(); loadAllCounts();
 }
-
 async function loadMemos(){
-  const tbody = document.getElementById('memos-table-body');
+  const tbody = g('memos-table-body');
   tbody.innerHTML = '<tr><td colspan="5"><div class="loading">Loading...</div></td></tr>';
   const {data,error} = await _supa.from('technical_memos').select('*').order('category');
-  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first technical memo'); return; }
+  if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first memo'); return; }
   tbody.innerHTML = data.map(r=>`<tr>
-    <td><strong>${r.title}</strong></td><td>${r.category}</td>
-    <td>${r.standard||'-'}</td>
-    <td><span class="badge ${r.is_active?'badge-active':'badge-inactive'}">${r.is_active?'Active':'Inactive'}</span></td>
+    <td><strong>${r.title}</strong></td><td>${r.category}</td><td>${r.standard||'-'}</td>
+    <td>${badge(r.is_active?'Active':'Inactive',r.is_active?'active':'inactive')}</td>
     <td><div class="table-actions">
-      <button class="btn btn-sm btn-secondary" onclick="toggleActive('technical_memos','${r.id}',${r.is_active});loadMemos()">${r.is_active?'Deactivate':'Activate'}</button>
-      <button class="btn btn-sm btn-danger" onclick="deleteRow('technical_memos','${r.id}',loadMemos)">Delete</button>
+      <button class="btn btn-sm btn-secondary" onclick="toggleRow('technical_memos','${r.id}',${r.is_active},loadMemos)">${r.is_active?'Deactivate':'Activate'}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteRow('technical_memos','${r.id}',loadMemos)">🗑️</button>
     </div></td></tr>`).join('');
 }
-function clearMemoForm(){ ['m-title','m-standard','m-content','m-conclusion'].forEach(id=>document.getElementById(id).value=''); }
 
-// ════════════════════════════════════════
-// RATIO BENCHMARKS
-// ════════════════════════════════════════
+// ══ RATIOS ══
 async function addRatio(){
-  const data = {
-    ratio_name: document.getElementById('r-name').value.trim(),
-    category: document.getElementById('r-category').value,
-    industry: document.getElementById('r-industry').value.trim(),
-    formula: document.getElementById('r-formula').value.trim(),
-    benchmark_low: parseFloat(document.getElementById('r-low').value)||null,
-    benchmark_high: parseFloat(document.getElementById('r-high').value)||null,
-    interpretation: document.getElementById('r-interpretation').value.trim(),
-  };
+  const data = { ratio_name:gv('r-name'), category:gv('r-category'), industry:gv('r-industry'), formula:gv('r-formula'), benchmark_low:parseFloat(gv('r-low'))||null, benchmark_high:parseFloat(gv('r-high'))||null, interpretation:gv('r-interpretation') };
   if(!data.ratio_name||!data.formula){ toast('Fill required fields','error'); return; }
   const {error} = await _supa.from('ratio_benchmarks').insert(data);
   if(error){ toast('Error: '+error.message,'error'); return; }
-  toast('✅ Ratio saved!'); clearRatioForm(); loadRatios(); loadAllCounts();
+  toast('✅ Ratio saved!'); clearForm(['r-name','r-industry','r-formula','r-low','r-high','r-interpretation']); loadRatios(); loadAllCounts();
 }
-
 async function loadRatios(){
-  const tbody = document.getElementById('ratios-table-body');
+  const tbody = g('ratios-table-body');
   tbody.innerHTML = '<tr><td colspan="6"><div class="loading">Loading...</div></td></tr>';
   const {data,error} = await _supa.from('ratio_benchmarks').select('*').order('category');
   if(error||!data||!data.length){ tbody.innerHTML = emptyState('Add your first ratio benchmark'); return; }
   tbody.innerHTML = data.map(r=>`<tr>
-    <td><strong>${r.ratio_name}</strong></td><td>${r.category}</td>
-    <td>${r.industry}</td>
-    <td style="font-family:var(--font-mono);font-size:12px;">${r.formula}</td>
+    <td><strong>${r.ratio_name}</strong></td><td>${r.category}</td><td>${r.industry}</td>
+    <td style="font-family:var(--font-mono);font-size:12px;">${truncate(r.formula,40)}</td>
     <td>${r.benchmark_low||'-'} — ${r.benchmark_high||'-'}</td>
-    <td><div class="table-actions">
-      <button class="btn btn-sm btn-danger" onclick="deleteRow('ratio_benchmarks','${r.id}',loadRatios)">Delete</button>
-    </div></td></tr>`).join('');
+    <td><button class="btn btn-sm btn-danger" onclick="deleteRow('ratio_benchmarks','${r.id}',loadRatios)">🗑️ Delete</button></td>
+  </tr>`).join('');
 }
-function clearRatioForm(){ ['r-name','r-industry','r-formula','r-low','r-high','r-interpretation'].forEach(id=>document.getElementById(id).value=''); }
 
-// ══ ENTER KEY ON LOGIN ══
-document.getElementById('admin-password').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+// ══ CLOSE MODAL ON OVERLAY CLICK ══
+document.getElementById('edit-modal').addEventListener('click', function(e){ if(e.target === this) closeEditModal(); });
 </script>
 </body>
 </html>
