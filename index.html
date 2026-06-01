@@ -3806,6 +3806,26 @@ function renderBottomNav(){
 }
 
 function showScreen(id){
+  // ── GATES FIRST — before any screen activation ──
+  if(!isPro()){
+    if(id==='fsbuilder')   { _fmProGate('Financial Statement Builder','pro-home'); return; }
+    if(id==='cpd')         { _fmProGate('CPD Tracker','pro-home'); return; }
+    if(id==='ethics')      { _fmProGate('Ethics Module','pro-home'); return; }
+    if(id==='client-scenario'){ _fmProGate('Client Scenario Simulator','pro-home'); return; }
+    if(id==='excel')       { _fmProGate('Excel for Finance','pro-home'); return; }
+    if(id==='quickref'    && !_fmCanUse('fm_qref',5)) { _fmDailyGate('Quick Reference views','fm_qref',5,'home'); return; }
+    if(id==='comparisons' && !_fmCanUse('fm_cmp',2))  { _fmDailyGate('Standard Comparisons','fm_cmp',2,'home'); return; }
+    if(id==='formulas'    && !_fmCanUse('fm_fml',5))  { _fmDailyGate('Formula lookups','fm_fml',5,'home'); return; }
+    if(id==='jebuilder'   && !_fmCanUse('fm_je',3))   { _fmDailyGate('JE Builder scenarios','fm_je',3,'home'); return; }
+    if(id==='vault'       && !_fmCanUse('fm_vlt',5))  { _fmDailyGate('Mistake Vault retries','fm_vlt',5,'home'); return; }
+    if(id==='drcr'        && !drcrCheckLimit())        { drcrShowLimitPopup(drcrGetDailyUsed()>=10?'hard':'soft'); return; }
+    // Increment on entry
+    if(id==='quickref')    _fmIncrement('fm_qref');
+    if(id==='comparisons') _fmIncrement('fm_cmp');
+    if(id==='formulas')    _fmIncrement('fm_fml');
+    if(id==='jebuilder')   _fmIncrement('fm_je');
+    if(id==='vault')       _fmIncrement('fm_vlt');
+  }
   S.prevScreen=S.screen||'home';
   const current=document.querySelector('.screen.active');
   if(current) current.classList.remove('active');
@@ -3900,27 +3920,6 @@ function showScreen(id){
     }
   })();
 
-  // ── FREE USER SCREEN GATES ──
-  if(!isPro()){
-    // Full Pro-only screens
-    if(id==='fsbuilder')  { _fmProGate('Financial Statement Builder','pro-home'); return; }
-    if(id==='cpd')        { _fmProGate('CPD Tracker','pro-home'); return; }
-    if(id==='ethics')     { _fmProGate('Ethics Module','pro-home'); return; }
-    if(id==='client-scenario'){ _fmProGate('Client Scenario Simulator','pro-home'); return; }
-    if(id==='excel')      { _fmProGate('Excel for Finance','pro-home'); return; }
-    // Daily limited screens
-    if(id==='quickref' && !_fmCanUse('fm_qref',5)){ _fmDailyGate('Quick Reference views','fm_qref',5,'home'); return; }
-    if(id==='comparisons'&& !_fmCanUse('fm_cmp',2)) { _fmDailyGate('Standard Comparisons','fm_cmp',2,'home'); return; }
-    if(id==='formulas'   && !_fmCanUse('fm_fml',5)) { _fmDailyGate('Formula lookups','fm_fml',5,'home'); return; }
-    if(id==='jebuilder'  && !_fmCanUse('fm_je',3))  { _fmDailyGate('JE Builder scenarios','fm_je',3,'home'); return; }
-    if(id==='vault'      && !_fmCanUse('fm_vlt',5)) { _fmDailyGate('Mistake Vault retries','fm_vlt',5,'home'); return; }
-    // Increment usage count on entry
-    if(id==='quickref')   _fmIncrement('fm_qref');
-    if(id==='comparisons')_fmIncrement('fm_cmp');
-    if(id==='formulas')   _fmIncrement('fm_fml');
-    if(id==='jebuilder')  _fmIncrement('fm_je');
-    if(id==='vault')      _fmIncrement('fm_vlt');
-  }
 }
 
 function switchMode(mode){
@@ -4991,7 +4990,7 @@ const AI_LIMITS={
 };
 // ── AI SUBSCRIPTION PLANS ──
 const AI_PLANS = {
-  free:  { daily:5, monthlyMax:30, monthly:null, label:'Free',  aed:0,  cost_aed:0   },
+  free:  { daily:3, monthlyMax:30, monthly:null, label:'Free',  aed:0,  cost_aed:0   },
   pro:   { daily:null, monthlyMax:null, monthly:50,  label:'Pro',   aed:18, cost_aed:5   },
 };
 // AI usage tracking
@@ -5448,7 +5447,7 @@ function checkAILimit(){
   const plan = getAIPlan();
   // Free: 5/day AND 30/month cap
   if(isFree()){
-    if(S.aiUsedToday >= 5) return {blocked:true, daily:true};
+    if(S.aiUsedToday >= 3) return {blocked:true, daily:true};
     if((S.aiUsedMonth||0) >= 30) return {blocked:true, daily:false, monthlyFree:true};
     return {blocked:false};
   }
@@ -5464,9 +5463,9 @@ function recordAIUse(){
 }
 function getAILimitText(){
   if(isFree()){
-    const dayLeft = Math.max(0, 5 - (S.aiUsedToday||0));
+    const dayLeft = Math.max(0, 3 - (S.aiUsedToday||0));
     const monLeft = Math.max(0, 30 - (S.aiUsedMonth||0));
-    return dayLeft + '/5 daily · ' + monLeft + '/30 monthly left';
+    return dayLeft + '/3 daily · ' + monLeft + '/30 monthly left';
   }
   const plan=getAIPlan();
   if(plan.daily) return (plan.daily - S.aiUsedToday) + '/' + plan.daily + ' daily questions left';
@@ -5493,7 +5492,7 @@ function sendChat(){
     const isDaily=check.daily;
     const isMonthlyFree=check.monthlyFree;
     let msg='';
-    if(isDaily) msg='Free plan: 5 AI questions/day. Upgrade to Pro for 50/month.';
+    if(isDaily) msg='Free plan: 3 AI questions/day. Upgrade to Pro for 50/month.';
     else if(isMonthlyFree) msg='Free plan: 30 AI questions/month limit reached. Upgrade to Pro for 50/month.';
     else msg='Pro plan: 50 AI questions/month used. Your limit resets next month.';
     addChatMsg('ai','<div style="background:var(--gold-l);border-radius:8px;padding:10px;"><div style="font-weight:700;color:#92400E;">🔒 AI limit reached</div><div style="font-size:11px;color:var(--steel);margin-top:4px;">'+msg+'</div>'+(isFree()?'<div style="display:flex;gap:6px;margin-top:8px;"><button onclick="startProTrial()" style="flex:1;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font-body);">Upgrade Pro</button>'+(!window._currentUser?'<button onclick="showAuthPopup()" style="flex:1;background:#4A6CF7;color:#fff;border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font-body);">Sign Up</button>':'')+'</div>':'')+'</div>');
