@@ -4614,6 +4614,23 @@ function answerQ(idx,btn,q){
   const sb2=document.getElementById('skip-btn');if(sb2) sb2.style.display='none';
   // Check if guest needs to register
   if(typeof checkGuestPrompt==='function') checkGuestPrompt();
+  // ── IMMEDIATE limit check after every answer ──
+  if(!isPro()){
+    var _nowUsed = getDailyQUsed();
+    var _bonusK = getDailyQKey()+'_bonus';
+    var _bonusSet = localStorage.getItem(_bonusK)==='1';
+    if(_nowUsed >= 15){
+      // Disable next button - hard blocked
+      var _nb2=document.getElementById('next-btn');
+      if(_nb2){ _nb2.disabled=true; _nb2.textContent='Daily limit reached'; }
+      setTimeout(function(){ showLimitPopup('hard'); }, 400);
+    } else if(_nowUsed >= 10 && !_bonusSet){
+      // Disable next button - soft blocked
+      var _nb3=document.getElementById('next-btn');
+      if(_nb3){ _nb3.disabled=true; _nb3.textContent='Get 5 more →'; }
+      setTimeout(function(){ showLimitPopup('soft'); }, 400);
+    }
+  }
 }
 function checkNearMiss(){
   const nm=document.getElementById('near-miss');const nmt=document.getElementById('near-miss-text');if(!nm||!nmt) return;
@@ -6557,7 +6574,22 @@ function drcrShowFeedback(ok,title,body,para){
   var ft=document.getElementById('drcr-fb-title'); if(ft) ft.textContent=title;
   var fb2=document.getElementById('drcr-fb-body'); if(fb2) fb2.textContent=body;
   var fp=document.getElementById('drcr-fb-para'); if(fp) fp.textContent='📖 '+para;
-  var nb=document.getElementById('drcr-btn-next'); if(nb) nb.className='drcr-btn-next show';
+  // Check DRCR limit after every answer
+  var _du = drcrGetDailyUsed();
+  var _bonusOk = drcrBonusUsed();
+  var _limitHit = _du >= 10 || (_du >= 7 && !_bonusOk);
+  var nb=document.getElementById('drcr-btn-next');
+  if(nb){
+    if(_limitHit){
+      nb.className='drcr-btn-next show';
+      nb.textContent='See why →';
+      nb.onclick=function(){ drcrShowLimitPopup(_du>=10?'hard':'soft'); };
+    } else {
+      nb.className='drcr-btn-next show';
+      nb.textContent='Next question →';
+      nb.onclick=drcrNext;
+    }
+  }
 }
 
 function drcrAskAI(){
@@ -9218,7 +9250,13 @@ function showLimitPopup(type){
       _guestBonusUsed = true;
       try{ localStorage.setItem(getDailyQKey()+'_bonus','1'); }catch(e){}
       overlay.remove();
-      if(typeof startSession==='function') startSession();
+      // Re-enable next button so user can continue from where they were
+      var _nb=document.getElementById('next-btn');
+      if(_nb){ _nb.disabled=false; _nb.textContent='Next \u203A'; }
+      // If no active question session, start one
+      if(!S.sessionQs || S.sessionQs.length===0){
+        if(typeof startSession==='function') startSession();
+      }
     }));
   }
 
