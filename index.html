@@ -4121,6 +4121,12 @@ function setTopicFilter(el,cat){
   el.classList.add('active');S.topicFilter=cat;renderTopics();
 }
 async function startTopicPractice(num){
+  // ── GATE: check daily limit before loading ANY topic ──
+  if(!isPro() && getDailyQRemaining() <= 0){ showLimitPopup('hard'); return; }
+  if(!isPro() && getDailyQUsed() >= 10){
+    const _bk = getDailyQKey()+'_bonus';
+    if(localStorage.getItem(_bk) !== '1'){ showLimitPopup('soft'); return; }
+  }
   S.currentStandard = num;
   const t = TOPICS.find(x=>x.num===num);
   if(t) S.domain = t.cat;
@@ -4236,10 +4242,13 @@ function shuffleOptions(q){
 
 // ── PRACTICE ──
 function selectDomain(el,d){
-  // Check daily limit before switching domain
-  if(isFree() && !checkDailyQLimit()){
-    showDailyLimitPopup();
-    return;
+  // Check daily limit before switching domain — hard AND soft block
+  if(!isPro()){
+    if(getDailyQRemaining() <= 0){ showLimitPopup('hard'); return; }
+    if(getDailyQUsed() >= 10){
+      const _bk = getDailyQKey()+'_bonus';
+      if(localStorage.getItem(_bk) !== '1'){ showLimitPopup('soft'); return; }
+    }
   }
   document.querySelectorAll('.dom-tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
@@ -4429,7 +4438,13 @@ function buildProgressDots(){
   }
 }
 function loadQuestion(){
-  if((isFree()||_isGuest) && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
+  // Block at hard limit (15)
+  if(!isPro() && getDailyQRemaining() <= 0){ showLimitPopup('hard'); return; }
+  // Block at soft limit (10) if bonus not granted
+  if(!isPro() && getDailyQUsed() >= 10){
+    const _bk = getDailyQKey()+'_bonus';
+    if(localStorage.getItem(_bk) !== '1'){ showLimitPopup('soft'); return; }
+  }
   S.answered=false;
   S.currentBookmarked=false;
   buildProgressDots();
@@ -4608,13 +4623,13 @@ function checkNearMiss(){
   else nm.classList.remove('show');
 }
 function skipQuestion(){
-  if(S.answered) return; // Already answered
-  // Count skip as a miss (no XP, no penalty)
+  if(S.answered) return;
+  // Check limit before allowing skip
+  if(!isPro() && getDailyQRemaining() <= 0){ showLimitPopup('hard'); return; }
   S.sessionQ++;
-  incrementDailyQ(); // track daily usage
+  incrementDailyQ();
   updateSessionBar();
   toast('Question skipped — it will return later');
-  // Move on
   S.qIndex++;
   if(S.qIndex>=S.sessionQs.length) showScreen('progress');
   else loadQuestion();
@@ -6449,6 +6464,12 @@ function drcrGetDailyKey(){
 function drcrGetDailyUsed(){
   return parseInt(localStorage.getItem(drcrGetDailyKey())||'0');
 }
+function drcrGetBonusKey(){
+  return drcrGetDailyKey()+'_bonus';
+}
+function drcrBonusUsed(){
+  return localStorage.getItem(drcrGetBonusKey())==='1';
+}
 function drcrIncrementDaily(){
   if(isPro()) return;
   var key=drcrGetDailyKey();
@@ -6458,33 +6479,54 @@ function drcrIncrementDaily(){
 function drcrCheckLimit(){
   if(isPro()) return true;
   try{ var lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return true; }catch(e){}
-  return drcrGetDailyUsed() < 10;
+  var used=drcrGetDailyUsed();
+  if(used >= 10) return false;   // hard block at 10
+  if(used >= 7 && !drcrBonusUsed()) return false; // soft block at 7
+  return true;
 }
-function drcrShowLimitPopup(){
-  if(typeof showLimitPopup==='function'){
-    // Customise the hard block message for DRCR context
-    var overlay=document.createElement('div');
-    overlay.className='fm-limit-overlay';
-    overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(10,31,110,0.95);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;backdrop-filter:blur(8px);';
-    var box=document.createElement('div');
-    box.style.cssText='background:#fff;border-radius:24px;padding:28px 22px;max-width:340px;width:100%;text-align:center;box-sizing:border-box;';
-    box.innerHTML='<div style="font-size:48px;margin-bottom:10px;">⚖️</div>'
-      +'<div style="font-size:20px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Daily Dr/Cr Limit Reached</div>'
-      +'<div style="font-size:12px;color:#64748B;margin-bottom:16px;line-height:1.6;">You\'ve used your <strong>10 free Debit &amp; Credit</strong> questions for today.<br><small style="color:#94A3B8;">Resets at midnight · Upgrade for unlimited</small></div>'
-      +'<div style="background:#EEF2FF;border-radius:12px;padding:8px;font-size:12px;font-weight:700;color:#0A1F6E;margin-bottom:14px;">⚡ '+drcrState.xp+' XP earned this session</div>';
-    var upBtn=document.createElement('button');
-    upBtn.style.cssText='width:100%;padding:13px;border-radius:14px;background:linear-gradient(135deg,#0A1F6E,#1E3A8A);color:#fff;font-size:13px;font-weight:800;border:none;cursor:pointer;margin-bottom:8px;';
-    upBtn.textContent='⚡ Upgrade to Pro — Unlimited';
-    upBtn.onclick=function(){ overlay.remove(); if(typeof startProTrial==='function') startProTrial(); };
-    var closeBtn=document.createElement('button');
-    closeBtn.style.cssText='width:100%;padding:11px;border-radius:14px;background:#F1F5F9;color:#64748B;font-size:13px;font-weight:700;border:none;cursor:pointer;';
-    closeBtn.textContent='Back to Home';
-    closeBtn.onclick=function(){ overlay.remove(); if(typeof showScreen==='function') showScreen('home'); };
-    box.appendChild(upBtn);
-    box.appendChild(closeBtn);
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
+function drcrShowLimitPopup(type){
+  // type: 'soft' (at 7) or 'hard' (at 10)
+  var isSoft = (type === 'soft');
+  document.querySelectorAll('.fm-limit-overlay').forEach(function(e){e.remove();});
+  var overlay=document.createElement('div');
+  overlay.className='fm-limit-overlay';
+  overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(10,31,110,0.95);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;backdrop-filter:blur(8px);';
+  var box=document.createElement('div');
+  box.style.cssText='background:#fff;border-radius:24px;padding:28px 22px;max-width:340px;width:100%;text-align:center;box-sizing:border-box;';
+  box.innerHTML='<div style="font-size:48px;margin-bottom:10px;">'+(isSoft?'🎉':'⚖️')+'</div>'
+    +'<div style="font-size:20px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">'+(isSoft?'Great session!':'Daily Dr/Cr Limit Reached')+'</div>'
+    +'<div style="font-size:12px;color:#64748B;margin-bottom:16px;line-height:1.6;">'
+    +(isSoft
+      ? 'You used <strong>7 free Dr/Cr questions</strong> today. Upgrade for unlimited or continue with 3 more.'
+      : 'You used all <strong>10 free Dr/Cr questions</strong> for today.<br><small style="color:#94A3B8;">Resets at midnight · Upgrade for unlimited</small>')
+    +'</div>'
+    +'<div style="background:#EEF2FF;border-radius:12px;padding:8px;font-size:12px;font-weight:700;color:#0A1F6E;margin-bottom:14px;">⚡ '+drcrState.xp+' XP earned this session</div>';
+  // Upgrade button
+  var upBtn=document.createElement('button');
+  upBtn.style.cssText='width:100%;padding:13px;border-radius:14px;background:linear-gradient(135deg,#0A1F6E,#1E3A8A);color:#fff;font-size:13px;font-weight:800;border:none;cursor:pointer;margin-bottom:8px;';
+  upBtn.textContent='⚡ Upgrade to Pro — Unlimited';
+  upBtn.onclick=function(){ overlay.remove(); if(typeof startProTrial==='function') startProTrial(); };
+  box.appendChild(upBtn);
+  // 3 more free (soft only)
+  if(isSoft && !drcrBonusUsed()){
+    var contBtn=document.createElement('button');
+    contBtn.style.cssText='width:100%;padding:11px;border-radius:14px;background:#EEF2FF;color:#0A1F6E;font-size:13px;font-weight:700;border:none;cursor:pointer;margin-bottom:8px;';
+    contBtn.textContent='Continue with 3 more free →';
+    contBtn.onclick=function(){
+      try{ localStorage.setItem(drcrGetBonusKey(),'1'); }catch(e){}
+      overlay.remove();
+      drcrLoadQ();
+    };
+    box.appendChild(contBtn);
   }
+  // Back button
+  var closeBtn=document.createElement('button');
+  closeBtn.style.cssText='width:100%;padding:11px;border-radius:14px;background:#F1F5F9;color:#64748B;font-size:13px;font-weight:700;border:none;cursor:pointer;';
+  closeBtn.textContent='Back to Home';
+  closeBtn.onclick=function(){ overlay.remove(); if(typeof showScreen==='function') showScreen('home'); };
+  box.appendChild(closeBtn);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
 }
 
 function drcrScoreCorrect(){
@@ -6584,11 +6626,15 @@ function drcrUpdateCombo(){
 function drcrSkip(){
   if(drcrState.answered) return;
   drcrIncrementDaily();
-  if(!drcrCheckLimit()){ drcrShowLimitPopup(); return; }
+  if(!drcrCheckLimit()){
+    drcrShowLimitPopup(drcrGetDailyUsed()>=10?'hard':'soft'); return;
+  }
   drcrState.wrong++; drcrState.streak=0; drcrState.combo=0; drcrUpdateStats(); drcrUpdateCombo(); drcrState.cur++; drcrLoadQ();
 }
 function drcrNext(){
-  if(!drcrCheckLimit()){ drcrShowLimitPopup(); return; }
+  if(!drcrCheckLimit()){
+    drcrShowLimitPopup(drcrGetDailyUsed()>=10?'hard':'soft'); return;
+  }
   drcrState.cur++; drcrLoadQ();
 }
 
@@ -6601,7 +6647,9 @@ window.addEventListener('load',function(){
         _prevDrcr(id);
         if(id==='drcr'){
           setTimeout(function(){
-            if(!drcrCheckLimit()){ drcrShowLimitPopup(); return; }
+            if(!drcrCheckLimit()){
+              drcrShowLimitPopup(drcrGetDailyUsed()>=10?'hard':'soft'); return;
+            }
             if(!drcrState.shuffled||!drcrState.shuffled.length){
               drcrShuffleQ().then(function(){ drcrLoadQ(); });
             } else {
@@ -8951,7 +8999,10 @@ function showContinuePopup(std, remaining){
     const used = getDailyQUsed();
     if(used >= 15){ showLimitPopup('hard'); return; }
     if(used >= 10){ showLimitPopup('soft'); return; }
-    return; // under 10 - let them continue freely
+    // Under 10 — just show a simple continue without a popup
+    if(std) startTopicPractice(std);
+    else startSession();
+    return;
   }
   const overlay = document.createElement('div');
   overlay.id = 'continue-popup-overlay';
