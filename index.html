@@ -4121,10 +4121,14 @@ function setTopicFilter(el,cat){
 }
 async function startTopicPractice(num){
   // ── GATE: check daily limit before loading ANY topic ──
-  if(!isPro() && getDailyQRemaining() <= 0){ showLimitPopup('hard'); return; }
-  if(!isPro() && getDailyQUsed() >= 10){
-    const _bk = getDailyQKey()+'_bonus';
-    if(localStorage.getItem(_bk) !== '1'){ showLimitPopup('soft'); return; }
+  if(!isPro()){
+    var _used = getDailyQUsed();
+    if(_used >= 15){ showLimitPopup('hard'); return; }
+    if(getDailyQRemaining() <= 0){ showLimitPopup('hard'); return; }
+    if(_used >= 10){
+      var _bk = getDailyQKey()+'_bonus';
+      if(localStorage.getItem(_bk) !== '1'){ showLimitPopup('soft'); return; }
+    }
   }
   S.currentStandard = num;
   const t = TOPICS.find(x=>x.num===num);
@@ -4293,7 +4297,7 @@ async function fetchQuestionsFromSupabase(category, count){
 
     SQ_CACHE['Mixed'] = allConverted;
 
-    // Filter client-side by category
+    // Filter client-side by category — strict, no fallback to other domains
     let filtered = allConverted;
     if(category && category!=='Mixed'){
       filtered = allConverted.filter(q=>{
@@ -4306,11 +4310,11 @@ async function fetchQuestionsFromSupabase(category, count){
         if(category==='Tax') return std.toLowerCase().includes('tax')||std.startsWith('TX');
         return true;
       });
-      if(filtered.length===0) filtered = allConverted;
+      // If no matching questions in DB — return null (use local QB, don't mix domains)
+      if(filtered.length===0) return null;
     }
 
     SQ_CACHE[cacheKey] = filtered;
-    const stds=[...new Set(filtered.map(q=>q.standard))];
     return [...filtered].sort(()=>Math.random()-.5).slice(0,count);
   }catch(e){
     return null;
@@ -4673,10 +4677,16 @@ function nextQuestion(){
   S.qIndex++;
   // More questions left — load next immediately (fixes going to Path after 1Q)
   if(S.qIndex < S.sessionQs.length){ loadQuestion(); return; }
-  // Too few questions loaded — reload silently
+  // Too few questions loaded — reload same domain (never auto-switch domain)
   if(S.sessionQs.length < 3){
+    // Check limit first
+    if(!isPro() && getDailyQRemaining() <= 0){ showLimitPopup('hard'); return; }
+    if(!isPro() && getDailyQUsed() >= 10){
+      const _bk2 = getDailyQKey()+'_bonus';
+      if(localStorage.getItem(_bk2) !== '1'){ showLimitPopup('soft'); return; }
+    }
     if(S.currentStandard) startTopicPractice(S.currentStandard);
-    else startSession();
+    else startSession(); // startSession uses S.domain — stays in same domain
     return;
   }
   // Full session done — show continue popup
@@ -6547,6 +6557,10 @@ function drcrShowLimitPopup(type){
 
 function drcrScoreCorrect(){
   drcrIncrementDaily();
+  // Check limit immediately after incrementing
+  var _du=drcrGetDailyUsed();
+  if(!isPro()&&_du>=10){ setTimeout(function(){drcrShowLimitPopup('hard');},600); }
+  else if(!isPro()&&_du>=7&&!drcrBonusUsed()){ setTimeout(function(){drcrShowLimitPopup('soft');},600); }
   drcrState.correct++; drcrState.streak++; drcrState.combo=Math.min(drcrState.combo+1,5);
   var xpGain=50+(drcrState.combo>=5?100:drcrState.combo>=3?50:drcrState.combo>=2?25:0);
   drcrState.xp+=xpGain;
@@ -6561,6 +6575,10 @@ function drcrScoreCorrect(){
 
 function drcrScoreWrong(){
   drcrIncrementDaily();
+  // Check limit immediately after incrementing
+  var _du2=drcrGetDailyUsed();
+  if(!isPro()&&_du2>=10){ setTimeout(function(){drcrShowLimitPopup('hard');},600); }
+  else if(!isPro()&&_du2>=7&&!drcrBonusUsed()){ setTimeout(function(){drcrShowLimitPopup('soft');},600); }
   drcrState.wrong++; drcrState.streak=0; drcrState.combo=0;
   var sp=document.getElementById('drcr-streak-pill'); if(sp) sp.textContent='🔥 0 streak';
   drcrUpdateStats(); drcrUpdateCombo();
@@ -9030,8 +9048,9 @@ function showContinuePopup(std, remaining){
     const used = getDailyQUsed();
     if(used >= 15){ showLimitPopup('hard'); return; }
     if(used >= 10){ showLimitPopup('soft'); return; }
-    // Under 10 — just show a simple continue without a popup
+    // Under limit — continue same domain/standard
     if(std) startTopicPractice(std);
+    else if(S.domain) startSession(); // stays in S.domain
     else startSession();
     return;
   }
