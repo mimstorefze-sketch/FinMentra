@@ -2375,6 +2375,9 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   .drcr-mode-row::-webkit-scrollbar{display:none;}
   .drcr-mode-btn{flex:0 0 auto;padding:5px 10px;border-radius:999px;border:1.5px solid var(--border);background:var(--surface);font-size:9px;font-weight:700;color:var(--steel);cursor:pointer;white-space:nowrap;}
   .drcr-mode-btn.active{background:#0A1F6E;border-color:#0A1F6E;color:#fff;}
+  .drcr-diff-row{display:flex;gap:4px;margin-bottom:6px;}
+  .drcr-diff-filter-btn{flex:1;padding:5px 4px;border-radius:999px;border:1.5px solid var(--border);background:var(--surface);font-size:9px;font-weight:700;color:var(--steel);cursor:pointer;text-align:center;}
+  .drcr-diff-filter-btn.active{border-color:#0A1F6E;background:#EEF2FF;color:#0A1F6E;}
   .drcr-scenario{background:#0A1F6E;border-radius:12px;padding:10px 12px;margin-bottom:6px;}
   .drcr-sc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px;}
   .drcr-sc-std{background:rgba(255,255,255,.15);border-radius:999px;padding:2px 8px;font-size:8px;font-weight:700;color:#93C5FD;}
@@ -2464,7 +2467,14 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div class="drcr-mode-row">
     <button class="drcr-mode-btn active" id="drcr-m0" onclick="drcrSetMode(0)">🃏 Tap Cards</button>
     <button class="drcr-mode-btn" id="drcr-m1" onclick="drcrSetMode(1)">🎯 Error Hunt</button>
-    <button class="drcr-mode-btn" id="drcr-m2" onclick="drcrSetMode(2)">📝 Type It</button>
+  </div>
+
+  <!-- Difficulty Filter -->
+  <div class="drcr-diff-row">
+    <button class="drcr-diff-filter-btn active" id="drcr-df-all" onclick="drcrSetDiff('all')">🟤 All</button>
+    <button class="drcr-diff-filter-btn" id="drcr-df-easy" onclick="drcrSetDiff('Easy')">🟢 Easy</button>
+    <button class="drcr-diff-filter-btn" id="drcr-df-medium" onclick="drcrSetDiff('Medium')">🟡 Medium</button>
+    <button class="drcr-diff-filter-btn" id="drcr-df-hard" onclick="drcrSetDiff('Hard')">🔴 Hard</button>
   </div>
 
   <div class="drcr-scenario" id="drcr-scenario">
@@ -2511,15 +2521,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div id="drcr-error-entries"></div>
   </div>
 
-  <!-- Type It mode -->
-  <div id="drcr-type-mode" style="display:none;">
-    <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:6px;">Dr (Debit account):</div>
-    <input class="drcr-type-input" id="drcr-type-dr" placeholder="e.g. PPE / Equipment" oninput="drcrTypeSuggest('dr',this.value)">
-    <div id="drcr-suggest-dr" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden;box-shadow:var(--shadow2);"></div>
-    <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:6px;">Cr (Credit account):</div>
-    <input class="drcr-type-input" id="drcr-type-cr" placeholder="e.g. Cash / Bank" oninput="drcrTypeSuggest('cr',this.value)">
-    <div id="drcr-suggest-cr" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden;box-shadow:var(--shadow2);"></div>
-  </div>
+
 
   <div class="drcr-xp-pop" id="drcr-xp-pop"></div>
 
@@ -6230,7 +6232,7 @@ var DRCR_INDUSTRIES = {
 
 var DRCR_ALL_ACCOUNTS=['PPE / Equipment','PPE / Building','PPE / Machinery','Cash','Accounts Payable','Accounts Receivable','Revenue','Cost of Sales','Inventory','Work in Progress (WIP)','Revaluation Surplus (OCI)','Retained Earnings','P&L — Gain on Revaluation','Depreciation Expense (P&L)','Accumulated Depreciation','Deferred Tax Liability','Deferred Tax Asset','Tax Expense (P&L)','Current Tax Payable','Tax Receivable','Loss Allowance (contra-asset)','Loan Receivable (USD)','Loan Receivable','Impairment Loss (P&L)','Service Cost (P&L)','Defined Benefit Obligation','Plan Assets','OCI — Remeasurement','Legal Expense (P&L)','Provision for Legal Claim','Contingent Liability Note','Right-of-Use Asset','Lease Liability','Rent Expense','Finance Cost (P&L)','Finance Costs Capitalised','Contract Liability / Deferred Revenue','Deferred Revenue','Accrued Revenue','Contract Asset','Accrued Interest Receivable','Interest Income','Fee Income','Write-off Expense','FX Loss (P&L)','FX Gain','OCI — Translation Reserve','Capital WIP (Asset)','Bank Loan','Goodwill','Accumulated Amortisation','Intangible Asset — Software','R&D Expense (P&L)','Warranty Expense (P&L)','Warranty Provision','Manufacturing Overhead Applied','Overhead Expense (P&L)','Cost of Sales / Inventory Write-down','Loss on Disposal (P&L)','Gain on Disposal'];
 
-var drcrState={industry:0,mode:0,debitVal:'',creditVal:'',streak:0,xp:0,correct:0,wrong:0,combo:0,answered:false,shuffled:[],cur:0,currentQ:null};
+var drcrState={industry:0,mode:0,diff:'all',debitVal:'',creditVal:'',streak:0,xp:0,correct:0,wrong:0,combo:0,answered:false,shuffled:[],cur:0,currentQ:null};
 var DRCR_IND_KEYS=['general','retail','banking','manufacturing','services'];
 var drcrCache={}; // cache fetched questions per industry to avoid repeated DB calls
 
@@ -6279,7 +6281,14 @@ async function drcrShuffleQ(){
   var key=DRCR_IND_KEYS[drcrState.industry]||'general';
   drcrSetLoading(true);
   var questions = await drcrFetchIndustry(key);
-  drcrState.shuffled = questions.slice().sort(function(){return Math.random()-.5;});
+  // Filter by difficulty if set
+  var filtered = questions;
+  if(drcrState.diff && drcrState.diff !== 'all'){
+    filtered = questions.filter(function(q){ return q.diff === drcrState.diff; });
+    // If no questions match this difficulty, fall back to all
+    if(filtered.length === 0) filtered = questions;
+  }
+  drcrState.shuffled = filtered.slice().sort(function(){return Math.random()-.5;});
   drcrState.cur=0;
   drcrSetLoading(false);
 }
@@ -6298,14 +6307,23 @@ async function drcrSetIndustry(i){
   drcrLoadQ();
 }
 
+function drcrSetDiff(d){
+  drcrState.diff=d;
+  drcrState.cur=0;
+  ['all','Easy','Medium','Hard'].forEach(function(v){
+    var btn=document.getElementById('drcr-df-'+v.toLowerCase());
+    if(btn) btn.className='drcr-diff-filter-btn'+(v===d||('all'===d&&v==='all')?' active':'');
+  });
+  // Re-shuffle with new difficulty filter
+  drcrShuffleQ().then(function(){ drcrLoadQ(); });
+}
+
 function drcrSetMode(m){
   drcrState.mode=m;
-  for(var j=0;j<3;j++){var b=document.getElementById('drcr-m'+j);if(b) b.className='drcr-mode-btn'+(j===m?' active':'');}
+  for(var j=0;j<2;j++){var b=document.getElementById('drcr-m'+j);if(b) b.className='drcr-mode-btn'+(j===m?' active':'');}
   var chipMode=document.getElementById('drcr-chip-mode');
-  var typeMode=document.getElementById('drcr-type-mode');
   var errorMode=document.getElementById('drcr-error-mode');
   if(chipMode) chipMode.style.display=m===0?'block':'none';
-  if(typeMode) typeMode.style.display=m===2?'block':'none';
   if(errorMode) errorMode.style.display=m===1?'block':'none';
   drcrLoadQ();
 }
@@ -6336,9 +6354,7 @@ function drcrLoadQ(){
   if(g('drcr-ai-answer')){g('drcr-ai-answer').className='drcr-ai-answer';g('drcr-ai-answer').style.display='none';}
   if(g('drcr-ai-btn')) g('drcr-ai-btn').style.display='flex';
 
-  if(drcrState.mode===2){
-    drcrBuildTypeMode(q);
-  } else if(drcrState.mode===1){
+  if(drcrState.mode===1){
     drcrBuildErrorMode(q);
   } else {
     var wrap=g('drcr-chips');
@@ -6458,10 +6474,7 @@ function drcrCheck(){
   var q=drcrState.currentQ;
   if(!q) return;
   var dv=drcrState.debitVal, cv=drcrState.creditVal;
-  if(drcrState.mode===2){
-    dv=(document.getElementById('drcr-type-dr')||{}).value||'';
-    cv=(document.getElementById('drcr-type-cr')||{}).value||'';
-  }
+
   if(!dv||!cv){if(typeof toast==='function') toast('Select both Debit and Credit first'); return;}
   drcrState.answered=true;
   var isOk=(dv.toLowerCase()===q.debit.toLowerCase()&&cv.toLowerCase()===q.credit.toLowerCase());
@@ -6473,10 +6486,6 @@ function drcrCheck(){
       if(chip.textContent===q.debit||chip.textContent===q.credit) chip.className='drcr-chip correct-chip';
       else if(chip.classList.contains('used')) chip.className='drcr-chip wrong-chip';
     });
-  }
-  if(drcrState.mode===2){
-    var di=document.getElementById('drcr-type-dr'); if(di) di.style.borderColor=isOk?'#16a34a':'#DC2626';
-    var ci=document.getElementById('drcr-type-cr'); if(ci) ci.style.borderColor=isOk?'#16a34a':'#DC2626';
   }
   if(typeof playSound==='function') playSound(isOk?'correct':'wrong');
   if(isOk){drcrScoreCorrect(); drcrShowFeedback(true,'✅ Correct!',q.explain,q.para);}
@@ -6644,7 +6653,7 @@ function drcrSaveAnswer(isCorrect, xpEarned, askedAI){
     user_id:     _currentUser.id,
     question_id: q.id || null,  // null if using hardcoded fallback
     industry:    DRCR_IND_KEYS[drcrState.industry] || 'general',
-    mode:        ['tap_cards','error_hunt','type_it'][drcrState.mode] || 'tap_cards',
+    mode:        ['tap_cards','error_hunt'][drcrState.mode] || 'tap_cards',
     difficulty:  q.diff,
     is_correct:  isCorrect === null ? null : !!isCorrect,
     user_debit:  drcrState.debitVal || null,
