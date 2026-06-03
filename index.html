@@ -1904,7 +1904,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     </div>
     <div class="pro-tool-card" data-e="👔" style="background:#F7AC2A;" onclick="fmCardTap(this,'client-scenario')">
       <div class="pro-tool-emoji">👔</div>
-      <div class="pro-tool-title">Client Scenarios</div>
+      <div class="pro-tool-title">Case Studies</div>
       <div class="pro-tool-sub">Real-world cases</div>
     </div>
     <div class="pro-tool-card" data-e="⚖️" style="background:#F26B6B;" onclick="fmCardTap(this,'ethics')">
@@ -3360,7 +3360,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 
 <!-- ══ PRO: CLIENT SCENARIO SIMULATOR ══ -->
 <div class="screen" id="screen-client-scenario">
-  <div class="mode-banner"><div class="mode-banner-icon">🏢</div><div><div class="mode-banner-title">Client Scenario Simulator</div><div class="mode-banner-sub">Practice real-world accounting decisions</div></div></div>
+  <div class="mode-banner"><div class="mode-banner-icon">🏢</div><div><div class="mode-banner-title">Case Studies</div><div class="mode-banner-sub">Exam-style case study questions</div></div></div>
   <div class="chips">
     <button class="chip active" onclick="setScenarioCat(this,'all')">All</button>
     <button class="chip" onclick="setScenarioCat(this,'revenue')">Revenue</button>
@@ -3813,7 +3813,7 @@ function showScreen(id){
     if(id==='fsbuilder')   { _fmProGate('Financial Statement Builder','pro-home'); return; }
     if(id==='cpd')         { _fmProGate('CPD Tracker','pro-home'); return; }
     if(id==='ethics')      { _fmProGate('Ethics Module','pro-home'); return; }
-    if(id==='client-scenario'){ _fmProGate('Client Scenario Simulator','pro-home'); return; }
+    if(id==='client-scenario'){ _fmProGate('Case Studies','pro-home'); return; }
     if(id==='excel')       { _fmProGate('Excel for Finance','pro-home'); return; }
     if(id==='quickref'    && !_fmCanUse('fm_qref',5)) { _fmDailyGate('Quick Reference views','fm_qref',5,'home'); return; }
     if(id==='comparisons' && !_fmCanUse('fm_cmp',2))  { _fmDailyGate('Standard Comparisons','fm_cmp',2,'home'); return; }
@@ -7940,7 +7940,7 @@ const SCREEN_LABELS={
   settings:'Settings', bookmarks:'Bookmarks', notes:'Notes',
   coinshop:'Shop', formulas:'Formulas', comparisons:'Comparisons',
   traps:'Exam Traps', timeline:'Timeline', search:'Search',
-  diagnostic:'Diagnostic', 'client-scenario':'Scenarios',
+  diagnostic:'Diagnostic', 'client-scenario':'Case Studies',
   'audit-file':'Audit File', ethics:'Ethics', excel:'Excel', 'worked-examples':'Examples'
 };
 
