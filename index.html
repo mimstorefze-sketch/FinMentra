@@ -4195,7 +4195,7 @@ async function startTopicPractice(num){
     return;
   }
 
-  pool = pool.sort(()=>Math.random()-.5);
+  pool = fyShuffle(pool);
   S.sessionQs = pool.slice(0, Math.min(limit, pool.length));
   loadQuestion();
 }
@@ -4204,7 +4204,7 @@ async function startTopicPractice(num){
 async function fetchQuestionsForStandard(standard){
   const cacheKey = 'std_'+standard;
   if(SQ_CACHE[cacheKey] && SQ_CACHE[cacheKey].length >= 1){
-    return [...SQ_CACHE[cacheKey]].sort(()=>Math.random()-.5);
+    return fyShuffle(SQ_CACHE[cacheKey]);
   }
   try{
     const url = SUPA_URL + '/rest/v1/questions?select=*&limit=100&standard=eq.' + encodeURIComponent(standard);
@@ -4267,10 +4267,20 @@ function selectDomain(el,d){
 // ── SUPABASE QUESTION CACHE ──
 const SQ_CACHE = {};
 
+// ── Proper Fisher-Yates shuffle — truly random every call ──
+function fyShuffle(arr){
+  var a = arr.slice(); // copy
+  for(var i=a.length-1; i>0; i--){
+    var j = Math.floor(Math.random()*(i+1));
+    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+
 async function fetchQuestionsFromSupabase(category, count){
   const cacheKey = category||'Mixed';
   if(SQ_CACHE[cacheKey] && SQ_CACHE[cacheKey].length >= count){
-    return [...SQ_CACHE[cacheKey]].sort(()=>Math.random()-.5).slice(0,count);
+    return fyShuffle(SQ_CACHE[cacheKey]).slice(0,count);
   }
   try{
     const url = SUPA_URL + '/rest/v1/questions?select=*&limit=1000';
@@ -4317,7 +4327,7 @@ async function fetchQuestionsFromSupabase(category, count){
     }
 
     SQ_CACHE[cacheKey] = filtered;
-    return [...filtered].sort(()=>Math.random()-.5).slice(0,count);
+    return fyShuffle(filtered).slice(0,count);
   }catch(e){
     return null;
   }
@@ -4328,6 +4338,11 @@ async function startSession(){
   const dailyRemaining = getDailyQRemaining();
   // Block if daily limit reached - no loopholes for topic switching
   if(!isPro() && dailyRemaining <= 0){ showDailyLimitPopup(); return; }
+  // Clear cache for current domain so questions reshuffle every session
+  const _clearDomain = S.domain || 'IFRS';
+  delete SQ_CACHE[_clearDomain];
+  delete SQ_CACHE[_clearDomain+'_100'];
+  delete SQ_CACHE['Mixed'];
   let pool = [];
   const qt=document.getElementById('q-text');
   const opts=document.getElementById('options');
@@ -4346,7 +4361,7 @@ async function startSession(){
     // Cap to remaining daily questions for free users
     const limit = isPro() ? 20 : Math.min(10, getDailyQRemaining()); // Pro=20, Free=min(10,remaining)
     if(isFree() && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
-    pool = fresh.sort(()=>Math.random()-.5).slice(0, Math.max(1, limit));
+    pool = fyShuffle(fresh).slice(0, Math.max(1, limit));
     // Track recently seen
     S.recentQs = pool.map(q=>q.q.substring(0,30));
   } else {
@@ -4361,8 +4376,8 @@ async function startSession(){
     if(isFree() && localRemaining <= 0){ showDailyLimitPopup(); return; }
     const localLimit = Math.min(20, Math.max(1, localRemaining));
     pool = allLocal.length > 0
-      ? allLocal.sort(()=>Math.random()-.5).slice(0, localLimit)
-      : [...(QB_BY_DOMAIN[category]||QB_BY_DOMAIN['IFRS']||[])].sort(()=>Math.random()-.5).slice(0, localLimit);
+      ? fyShuffle(allLocal).slice(0, localLimit)
+      : fyShuffle(QB_BY_DOMAIN[category]||QB_BY_DOMAIN['IFRS']||[]).slice(0, localLimit);
   }
 
   if(pool.length === 0){
@@ -4390,7 +4405,7 @@ async function getChallengeQuestionsAsync(category, count){
           var opts = [correct];
           for(var i=0;i<chips.length-1&&opts.length<4;i++) opts.push('Dr '+chips[i]+' / Cr '+chips[i+1]);
           while(opts.length<4) opts.push('Dr '+chips[0]+' / Cr '+row.correct_credit);
-          opts = opts.sort(function(){return Math.random()-.5;});
+          opts = fyShuffle(opts);
           return { q:'⚖️ '+row.scenario_text, opts:opts, correct:opts.indexOf(correct), explanation:row.explanation+' ('+row.paragraph_ref+')', standard:row.standard, domain:'DrCr' };
         });
       }
@@ -4404,12 +4419,12 @@ async function getChallengeQuestionsAsync(category, count){
           var opts = [correct];
           for(var i=0;i<wrongs.length-1&&opts.length<4;i++) opts.push('Dr '+wrongs[i]+' / Cr '+wrongs[i+1]);
           while(opts.length<4) opts.push('Dr '+wrongs[0]+' / Cr '+q.credit);
-          opts = opts.sort(function(){return Math.random()-.5;});
+          opts = fyShuffle(opts);
           drcrPool.push({ q:'⚖️ '+q.text, opts:opts, correct:opts.indexOf(correct), explanation:q.explain+' ('+q.para+')', standard:q.std, domain:'DrCr' });
         });
       });
     }
-    return drcrPool.sort(function(){return Math.random()-.5;}).slice(0,count);
+    return fyShuffle(drcrPool).slice(0,count);
   }
   let supaQs = [];
   if(category === 'Mixed' || !category){
@@ -4423,7 +4438,7 @@ async function getChallengeQuestionsAsync(category, count){
     supaQs = await fetchQuestionsFromSupabase(category, count*2) || [];
   }
   if(supaQs.length >= 3){
-    return supaQs.sort(()=>Math.random()-.5).slice(0,count);
+    return fyShuffle(supaQs).slice(0,count);
   }
   console.warn('⚠️ Falling back to local QB - supaQs too few:', supaQs.length);
   return getChallengeQuestions(category, count);
@@ -6288,7 +6303,7 @@ async function drcrShuffleQ(){
     // If no questions match this difficulty, fall back to all
     if(filtered.length === 0) filtered = questions;
   }
-  drcrState.shuffled = filtered.slice().sort(function(){return Math.random()-.5;});
+  drcrState.shuffled = fyShuffle(filtered);
   drcrState.cur=0;
   drcrSetLoading(false);
 }
@@ -6302,6 +6317,14 @@ function drcrSetLoading(on){
 
 async function drcrSetIndustry(i){
   drcrState.industry=i;
+  drcrState.cur=0;
+  // Clear cache for this industry so we get a fresh shuffle from DB
+  var key=DRCR_IND_KEYS[i]||'general';
+  delete drcrCache[key];
+  delete drcrCache[key+'_all'];
+  delete drcrCache[key+'_Easy'];
+  delete drcrCache[key+'_Medium'];
+  delete drcrCache[key+'_Hard'];
   for(var j=0;j<5;j++){var b=document.getElementById('drcr-i'+j);if(b) b.className='drcr-ind-btn'+(j===i?' active':'');}
   await drcrShuffleQ();
   drcrLoadQ();
@@ -6314,7 +6337,9 @@ function drcrSetDiff(d){
     var btn=document.getElementById('drcr-df-'+v.toLowerCase());
     if(btn) btn.className='drcr-diff-filter-btn'+(v===d||('all'===d&&v==='all')?' active':'');
   });
-  // Re-shuffle with new difficulty filter
+  // Clear cache so re-shuffle pulls fresh random order from DB
+  var key=DRCR_IND_KEYS[drcrState.industry]||'general';
+  delete drcrCache[key];
   drcrShuffleQ().then(function(){ drcrLoadQ(); });
 }
 
@@ -6360,7 +6385,7 @@ function drcrLoadQ(){
     var wrap=g('drcr-chips');
     if(wrap){
       wrap.innerHTML='';
-      var chips=q.chips.slice().sort(function(){return Math.random()-.5;});
+      var chips=fyShuffle(q.chips);
       chips.forEach(function(c){
         var btn=document.createElement('button');
         btn.className='drcr-chip';
@@ -7222,7 +7247,7 @@ function startDiagnostic() {
   S.currentStandard = null;
   S.domain = 'IFRS';
   const allQ = [...QB_BY_DOMAIN.IFRS, ...QB_BY_DOMAIN.IAS, ...QB_BY_DOMAIN.ISA, ...QB_BY_DOMAIN.Costing, ...QB_BY_DOMAIN.FM, ...QB_BY_DOMAIN.Tax];
-  S.sessionQs = allQ.sort(() => Math.random() - 0.5).slice(0, 20);
+  S.sessionQs = fyShuffle(allQ).slice(0, 20);
   S.qIndex = 0; S.answered = false;
   showScreen('practice');
   loadQuestion();
@@ -7613,7 +7638,7 @@ function startDailyChallenge(){
   S.currentStandard='IFRS 15';
   S.domain='IFRS';
   const pool=QB['IFRS 15']||QB_BY_DOMAIN['IFRS'];
-  S.sessionQs=pool.sort(()=>Math.random()-.5).slice(0,5);
+  S.sessionQs=fyShuffle(pool).slice(0,5);
   S.qIndex=0;S.answered=false;S.sessionQ=0;S.sessionCorrect=0;
   showScreen('practice');
   loadQuestion();
@@ -9069,9 +9094,9 @@ function showContinuePopup(std, remaining){
     if(S.currentStandard){
       const supaQs = await fetchQuestionsForStandard(S.currentStandard);
       if(supaQs && supaQs.length >= 1){
-        pool = supaQs.sort(()=>Math.random()-.5);
+        pool = fyShuffle(supaQs);
       } else {
-        pool = (QB[S.currentStandard]||[]).slice().sort(()=>Math.random()-.5);
+        pool = fyShuffle(QB[S.currentStandard]||[]);
       }
     }
     const lim = isPro() ? 20 : isFree() ? Math.min(8, getDailyQRemaining()) : 8;
@@ -13270,7 +13295,7 @@ function getChallengeQuestions(category, count){
     Object.values(QB).forEach(qs=>{ if(Array.isArray(qs)) pool.push(...qs); });
   }
   // Shuffle
-  pool = pool.sort(()=>Math.random()-.5);
+  pool = fyShuffle(pool);
   // Slice and make serializable plain objects
   const result = [];
   for(let i=0; i<pool.length && result.length<parseInt(count||10); i++){
@@ -14877,7 +14902,7 @@ function chlGetQuestions(category, count){
       {q:'Under IAS 2, inventory is measured at:',opts:['Cost','NRV','Lower of cost and NRV','Higher of cost and NRV'],correct:2,explain:'IAS 2: Inventory = LOWER of cost and NRV.'},
     ];
   }
-  return pool.sort(()=>Math.random()-.5).slice(0, parseInt(count)||10).map(q=>({
+  return fyShuffle(pool).slice(0, parseInt(count)||10).map(q=>({
     q: q.q || q.question || '',
     opts: q.opts || q.options || [],
     correct: typeof q.correct === 'number' ? q.correct : 0,
@@ -15954,7 +15979,7 @@ function achGetQuestions(category, count){
     pool = QB[category] || QB_BY_DOMAIN?.[category] || [];
     if(!pool.length) Object.values(QB).forEach(arr => pool.push(...arr));
   }
-  return pool.sort(()=>Math.random()-.5).slice(0, count);
+  return fyShuffle(pool).slice(0, count);
 }
 
 function achLoadBattleQuestion(){
