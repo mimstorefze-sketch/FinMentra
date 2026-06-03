@@ -6372,12 +6372,7 @@ function drcrLoadQ(){
   }
 }
 
-function drcrBuildTypeMode(q){
-  var di=document.getElementById('drcr-type-dr'); if(di){di.value='';di.style.borderColor='var(--border)';}
-  var ci=document.getElementById('drcr-type-cr'); if(ci){ci.value='';ci.style.borderColor='var(--border)';}
-  var sd=document.getElementById('drcr-suggest-dr'); if(sd) sd.style.display='none';
-  var sc=document.getElementById('drcr-suggest-cr'); if(sc) sc.style.display='none';
-}
+
 
 function drcrBuildErrorMode(q){
   var container=document.getElementById('drcr-error-entries');
@@ -6446,28 +6441,7 @@ function drcrRemoveSlot(side){
   }
 }
 
-function drcrTypeSuggest(side,val){
-  var sugId='drcr-suggest-'+side;
-  var sug=document.getElementById(sugId);
-  if(!sug) return;
-  var q=val.toLowerCase();
-  if(!q){sug.style.display='none';return;}
-  var matches=DRCR_ALL_ACCOUNTS.filter(function(a){return a.toLowerCase().includes(q);}).slice(0,6);
-  if(!matches.length){sug.style.display='none';return;}
-  sug.innerHTML=matches.map(function(a){
-    return '<div onclick="drcrPickType(\''+side+'\',\''+a.replace(/'/g,"\\'")+'\')" style="padding:9px 12px;font-size:12px;font-weight:600;color:var(--navy);border-bottom:1px solid var(--border2);cursor:pointer;" onmouseover="this.style.background=\'var(--blue-ll)\'" onmouseout="this.style.background=\'\'">'+a+'</div>';
-  }).join('');
-  sug.style.display='block';
-}
 
-function drcrPickType(side,val){
-  var inp=document.getElementById('drcr-type-'+side);
-  var sug=document.getElementById('drcr-suggest-'+side);
-  if(inp) inp.value=val;
-  if(sug) sug.style.display='none';
-  if(side==='d') drcrState.debitVal=val;
-  else drcrState.creditVal=val;
-}
 
 function drcrCheck(){
   if(drcrState.answered) return;
