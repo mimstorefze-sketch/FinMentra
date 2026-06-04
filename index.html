@@ -3359,33 +3359,31 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 </div>
 
 
-<!-- ══ PRO: CLIENT SCENARIO SIMULATOR ══ -->
+<!-- ══ PRO: CASE STUDIES ══ -->
 <div class="screen" id="screen-client-scenario">
   <div class="mode-banner"><div class="mode-banner-icon">🏢</div><div><div class="mode-banner-title">Case Studies</div><div class="mode-banner-sub">Exam-style case study questions</div></div></div>
-  <div class="chips">
+  <div class="chips" id="scenario-cat-chips">
     <button class="chip active" onclick="setScenarioCat(this,'all')">All</button>
-    <button class="chip" onclick="setScenarioCat(this,'revenue')">Revenue</button>
-    <button class="chip" onclick="setScenarioCat(this,'leases')">Leases</button>
-    <button class="chip" onclick="setScenarioCat(this,'impairment')">Impairment</button>
+    <button class="chip" onclick="setScenarioCat(this,'IFRS')">IFRS</button>
+    <button class="chip" onclick="setScenarioCat(this,'IAS')">IAS</button>
+    <button class="chip" onclick="setScenarioCat(this,'Audit')">Audit</button>
+    <button class="chip" onclick="setScenarioCat(this,'Tax')">Tax</button>
+    <button class="chip" onclick="setScenarioCat(this,'Advisory')">Advisory</button>
   </div>
   <div class="card accent" id="scenario-card">
-    <div class="card-h"><div class="card-title">Scenario 1 of 5</div><span class="pill pill-red">IFRS 15</span></div>
-    <div style="font-size:13px;line-height:1.7;margin-bottom:14px;color:var(--text);">
-      <strong>Client:</strong> TechSoft Ltd, a SaaS company.<br><br>
-      TechSoft signs a 3-year contract for $360,000 paid upfront on 1 Jan. The contract includes software access ($240,000) and annual support ($120,000). The software is delivered on day 1. How should TechSoft recognise revenue?
+    <div class="card-h">
+      <div class="card-title" id="scenario-counter">Loading...</div>
+      <span class="pill pill-red" id="scenario-std-pill"></span>
     </div>
-    <div style="display:flex;flex-direction:column;gap:8px;" id="scenario-opts">
-      <button class="opt" onclick="answerScenario(this,false)"><span class="opt-key">A</span><span>Recognise $360,000 immediately on day 1</span></button>
-      <button class="opt" onclick="answerScenario(this,true)"><span class="opt-key">B</span><span>$240,000 on day 1 (software) + $40,000/year for support</span></button>
-      <button class="opt" onclick="answerScenario(this,false)"><span class="opt-key">C</span><span>$120,000 per year over 3 years</span></button>
-      <button class="opt" onclick="answerScenario(this,false)"><span class="opt-key">D</span><span>Defer all revenue until contract completion</span></button>
-    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px;" id="scenario-difficulty-badge"></div>
+    <div style="font-size:13px;line-height:1.7;margin-bottom:14px;color:var(--text);" id="scenario-text">Loading case study...</div>
+    <div style="display:flex;flex-direction:column;gap:8px;" id="scenario-opts"></div>
     <div id="scenario-feedback" style="display:none;margin-top:12px;padding:12px;background:var(--green-l);border-radius:10px;border-left:3px solid var(--green);">
-      <div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:4px;">✅ CORRECT — IFRS 15 Para 84-86</div>
-      <div style="font-size:12px;color:var(--text);line-height:1.6;">Separate performance obligations: (1) Software licence — transferred at a point in time → $240k on day 1. (2) Annual support — performance over time → $40k/year.</div>
+      <div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:4px;" id="scenario-fb-title">✅ CORRECT</div>
+      <div style="font-size:12px;color:var(--text);line-height:1.6;" id="scenario-fb-body"></div>
     </div>
   </div>
-  <button class="btn btn-primary btn-block" onclick="nextScenario()">Next Scenario →</button>
+  <button class="btn btn-primary btn-block" onclick="nextScenario()">Next Case Study →</button>
 </div>
 
 <!-- ══ PRO: AUDIT FILE SIMULATOR ══ -->
@@ -3895,6 +3893,7 @@ function showScreen(id){
   }
   // Fix: update AI banner on entering askai screen
   if(id==='askai'){ if(typeof updateAIBanner==='function') updateAIBanner(); }
+  if(id==='client-scenario'){ if(typeof loadScenarios==='function') loadScenarios(); }
   // Update usage counters in limit banners
   (function(){
     if(typeof _fmGetUsed==='undefined') return;
@@ -9034,17 +9033,116 @@ function buildConfidenceSlider(){
 }
 
 // ── SCENE SIMULATOR JS ──
-function answerScenario(btn,correct){
-  document.querySelectorAll('#scenario-opts .opt').forEach(o=>o.classList.add('disabled'));
-  if(correct){btn.classList.add('correct');document.getElementById('scenario-feedback').style.display='block';spawnXP(75);toast('Correct! Great analysis.');}
-  else{btn.classList.add('wrong');toast('Not quite — review the feedback.');}
+// ── CASE STUDIES ENGINE ──
+var _scenarioPool = [];
+var _scenarioCurIdx = 0;
+var _scenarioCat = 'all';
+
+async function loadScenarios(){
+  try{
+    var q = _supa.from('client_scenarios').select('*').eq('is_active', true).order('created_at');
+    if(_scenarioCat !== 'all') q = q.eq('category', _scenarioCat);
+    var result = await q;
+    var data = result.data || [];
+    if(!data.length){ _scenarioPool = []; renderScenarioEmpty(); return; }
+    _scenarioPool = fyShuffle(data);
+    _scenarioCurIdx = 0;
+    renderScenario();
+  }catch(e){
+    console.warn('Case studies fetch failed:', e);
+    renderScenarioEmpty();
+  }
 }
+
+function renderScenario(){
+  var q = _scenarioPool[_scenarioCurIdx];
+  if(!q){ renderScenarioEmpty(); return; }
+  var total = _scenarioPool.length;
+  var idx = _scenarioCurIdx + 1;
+  // Counter
+  var counter = document.getElementById('scenario-counter');
+  if(counter) counter.textContent = 'Case Study ' + idx + ' of ' + total;
+  // Standard pill
+  var pill = document.getElementById('scenario-std-pill');
+  if(pill) pill.textContent = q.standard_reference || q.category;
+  // Difficulty badge
+  var diff = document.getElementById('scenario-difficulty-badge');
+  if(diff){
+    var col = q.difficulty==='Advanced'?'var(--red)':q.difficulty==='Intermediate'?'var(--gold)':'var(--green)';
+    diff.innerHTML = '<span style="background:'+col+'20;color:'+col+';border-radius:999px;padding:2px 10px;font-size:10px;font-weight:700;">'+q.difficulty+'</span>';
+  }
+  // Scenario text
+  var txt = document.getElementById('scenario-text');
+  if(txt) txt.textContent = q.scenario_text;
+  // Options
+  var opts = document.getElementById('scenario-opts');
+  if(opts){
+    var letters = ['A','B','C','D'];
+    var answers = [q.option_a, q.option_b, q.option_c, q.option_d];
+    opts.innerHTML = answers.map(function(ans, i){
+      var letter = letters[i];
+      var isCorrect = letter === q.correct_answer;
+      return '<button class="opt" onclick="answerScenario(this,'+isCorrect+')"><span class="opt-key">'+letter+'</span><span>'+ans+'</span></button>';
+    }).join('');
+  }
+  // Hide feedback
+  var fb = document.getElementById('scenario-feedback');
+  if(fb) fb.style.display='none';
+}
+
+function renderScenarioEmpty(){
+  var counter = document.getElementById('scenario-counter');
+  if(counter) counter.textContent = 'No case studies yet';
+  var txt = document.getElementById('scenario-text');
+  if(txt) txt.textContent = 'Case studies are being added. Check back soon!';
+  var opts = document.getElementById('scenario-opts');
+  if(opts) opts.innerHTML = '';
+}
+
+function answerScenario(btn, correct){
+  var q = _scenarioPool[_scenarioCurIdx];
+  document.querySelectorAll('#scenario-opts .opt').forEach(function(o){ o.classList.add('disabled'); });
+  if(correct){
+    btn.classList.add('correct');
+    var fb = document.getElementById('scenario-feedback');
+    var fbTitle = document.getElementById('scenario-fb-title');
+    var fbBody = document.getElementById('scenario-fb-body');
+    if(fb) fb.style.display='block';
+    if(fb) fb.style.background='var(--green-l)';
+    if(fb) fb.style.borderLeft='3px solid var(--green)';
+    if(fbTitle){ fbTitle.style.color='var(--green)'; fbTitle.textContent='✅ Correct! — '+(q&&q.standard_reference?q.standard_reference:''); }
+    if(fbBody) fbBody.textContent = q&&q.explanation ? q.explanation : '';
+    if(typeof spawnXP==='function') spawnXP(75);
+    toast('Correct! Great analysis.');
+  } else {
+    btn.classList.add('wrong');
+    var fb2 = document.getElementById('scenario-feedback');
+    var fbTitle2 = document.getElementById('scenario-fb-title');
+    var fbBody2 = document.getElementById('scenario-fb-body');
+    if(fb2) fb2.style.display='block';
+    if(fb2) fb2.style.background='var(--red-l)';
+    if(fb2) fb2.style.borderLeft='3px solid var(--red)';
+    if(fbTitle2){ fbTitle2.style.color='var(--red)'; fbTitle2.textContent='❌ Not quite — '+(q&&q.standard_reference?q.standard_reference:''); }
+    if(fbBody2) fbBody2.textContent = q&&q.explanation ? q.explanation : '';
+    toast('Not quite — review the explanation below.');
+  }
+}
+
 function nextScenario(){
-  const card=document.getElementById('scenario-card');
-  if(card){const title=card.querySelector('.card-title');if(title) title.textContent='Scenario 2 of 5';}
-  document.querySelectorAll('#scenario-opts .opt').forEach(o=>{o.classList.remove('disabled','correct','wrong');});
-  document.getElementById('scenario-feedback').style.display='none';
-  toast('Next scenario loaded!');
+  _scenarioCurIdx++;
+  if(_scenarioCurIdx >= _scenarioPool.length){
+    _scenarioPool = fyShuffle(_scenarioPool);
+    _scenarioCurIdx = 0;
+    toast('All case studies done! Reshuffling...');
+  }
+  renderScenario();
+}
+
+function setScenarioCat(el, cat){
+  el.parentElement.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('active'); });
+  el.classList.add('active');
+  _scenarioCat = cat;
+  loadScenarios();
 }
 
 // ── ETHICS JS ──
