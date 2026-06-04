@@ -2815,7 +2815,8 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     </div>
     <input id="je-search" type="text" placeholder="🔍 Search journal entries..." 
       style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:12px;font-family:var(--font-body);font-size:13px;margin-bottom:6px;box-sizing:border-box;outline:none;background:var(--surface);color:var(--text);"
-      oninput="filterJEEntries(this.value)" autocomplete="off"/>
+      oninput="filterJEEntries(this.value)" autocomplete="off"
+      onblur="setTimeout(function(){var s=document.getElementById('je-suggestions');if(s)s.style.display='none';},200)"/>
     <div id="je-suggestions" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden;box-shadow:var(--shadow2);"></div>
     <div style="display:flex;gap:6px;margin-bottom:10px;" id="je-cat-row">
       <button class="chip active" onclick="setJECat(this,'all')">All</button>
@@ -6147,7 +6148,7 @@ function filterJEEntries(query){
   if(sug){
     if(matches.length>0){
       sug.innerHTML=matches.slice(0,6).map(function(o){
-        return '<div onmousedown="drPickJE(\''+o.value.replace(/'/g,"\\'")+'\')" style="padding:9px 12px;font-size:12px;font-weight:600;color:var(--navy);border-bottom:1px solid var(--border2);cursor:pointer;background:var(--surface);" onmouseover="this.style.background=\'var(--blue-ll)\'" onmouseout="this.style.background=\'var(--surface)\'">'+o.textContent+'</div>';
+        return '<div onmousedown="drPickJE(\''+o.value.replace(/'/g,"\\'")+'\')" ontouchstart="drPickJE(\''+o.value.replace(/'/g,"\\'")+'\')" style="padding:9px 12px;font-size:12px;font-weight:600;color:var(--navy);border-bottom:1px solid var(--border2);cursor:pointer;background:var(--surface);" onmouseover="this.style.background=\'var(--blue-ll)\'" onmouseout="this.style.background=\'var(--surface)\'">'+o.textContent+'</div>';
       }).join('');
       sug.style.display='block';
     } else {
