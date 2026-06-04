@@ -5385,7 +5385,7 @@ function checkDailyQLimit(){
   const used = getDailyQUsed();
   if(used >= 15) return false;
   if(used >= 10){
-    const bonusKey = 'fm_bonus_used_' + new Date().toDateString().replace(/ /g,'_');
+    const bonusKey = getDailyQKey() + '_bonus';
     const bonusUsed = localStorage.getItem(bonusKey);
     if(!bonusUsed) return false;
   }
@@ -6147,7 +6147,7 @@ function filterJEEntries(query){
   if(sug){
     if(matches.length>0){
       sug.innerHTML=matches.slice(0,6).map(function(o){
-        return '<div onclick="drPickJE(\''+o.value.replace(/'/g,"\\'")+'\')" style="padding:9px 12px;font-size:12px;font-weight:600;color:var(--navy);border-bottom:1px solid var(--border2);cursor:pointer;background:var(--surface);" onmouseover="this.style.background=\'var(--blue-ll)\'" onmouseout="this.style.background=\'var(--surface)\'">'+o.textContent+'</div>';
+        return '<div onmousedown="drPickJE(\''+o.value.replace(/'/g,"\\'")+'\')" style="padding:9px 12px;font-size:12px;font-weight:600;color:var(--navy);border-bottom:1px solid var(--border2);cursor:pointer;background:var(--surface);" onmouseover="this.style.background=\'var(--blue-ll)\'" onmouseout="this.style.background=\'var(--surface)\'">'+o.textContent+'</div>';
       }).join('');
       sug.style.display='block';
     } else {
