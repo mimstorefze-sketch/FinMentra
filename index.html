@@ -3362,6 +3362,8 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 <!-- ══ PRO: CASE STUDIES ══ -->
 <div class="screen" id="screen-client-scenario">
   <div class="mode-banner"><div class="mode-banner-icon">🏢</div><div><div class="mode-banner-title">Case Studies</div><div class="mode-banner-sub">Exam-style case study questions</div></div></div>
+
+  <!-- Category filter -->
   <div class="chips" id="scenario-cat-chips">
     <button class="chip active" onclick="setScenarioCat(this,'all')">All</button>
     <button class="chip" onclick="setScenarioCat(this,'IFRS')">IFRS</button>
@@ -3370,17 +3372,29 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <button class="chip" onclick="setScenarioCat(this,'Tax')">Tax</button>
     <button class="chip" onclick="setScenarioCat(this,'Advisory')">Advisory</button>
   </div>
+
+  <!-- Difficulty filter -->
+  <div style="display:flex;gap:6px;margin-bottom:10px;" id="scenario-diff-chips">
+    <button class="chip active" onclick="setScenarioDiff(this,'all')" style="flex:1;text-align:center;">All</button>
+    <button class="chip" onclick="setScenarioDiff(this,'Foundation')" style="flex:1;text-align:center;">🟢 Foundation</button>
+    <button class="chip" onclick="setScenarioDiff(this,'Intermediate')" style="flex:1;text-align:center;">🟡 Intermediate</button>
+    <button class="chip" onclick="setScenarioDiff(this,'Advanced')" style="flex:1;text-align:center;">🔴 Advanced</button>
+  </div>
+
+  <!-- Progress -->
+  <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:8px;">
+    <div id="scenario-difficulty-badge"></div>
+  </div>
+
   <div class="card accent" id="scenario-card">
     <div class="card-h">
-      <div class="card-title" id="scenario-counter">Loading...</div>
       <span class="pill pill-red" id="scenario-std-pill"></span>
     </div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:8px;" id="scenario-difficulty-badge"></div>
     <div style="font-size:13px;line-height:1.7;margin-bottom:14px;color:var(--text);" id="scenario-text">Loading case study...</div>
     <div style="display:flex;flex-direction:column;gap:8px;" id="scenario-opts"></div>
-    <div id="scenario-feedback" style="display:none;margin-top:12px;padding:12px;background:var(--green-l);border-radius:10px;border-left:3px solid var(--green);">
-      <div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:4px;" id="scenario-fb-title">✅ CORRECT</div>
-      <div style="font-size:12px;color:var(--text);line-height:1.6;" id="scenario-fb-body"></div>
+    <div id="scenario-feedback" style="display:none;margin-top:12px;padding:12px;border-radius:10px;border-left:3px solid var(--green);">
+      <div style="font-size:11px;font-weight:700;margin-bottom:4px;" id="scenario-fb-title">✅ CORRECT</div>
+      <div style="font-size:12px;line-height:1.6;" id="scenario-fb-body"></div>
     </div>
   </div>
   <button class="btn btn-primary btn-block" onclick="nextScenario()">Next Case Study →</button>
@@ -9037,11 +9051,13 @@ function buildConfidenceSlider(){
 var _scenarioPool = [];
 var _scenarioCurIdx = 0;
 var _scenarioCat = 'all';
+var _scenarioDiff = 'all';
 
 async function loadScenarios(){
   try{
     var q = _supa.from('client_scenarios').select('*').eq('is_active', true).order('created_at');
     if(_scenarioCat !== 'all') q = q.eq('category', _scenarioCat);
+    if(_scenarioDiff !== 'all') q = q.eq('difficulty', _scenarioDiff);
     var result = await q;
     var data = result.data || [];
     if(!data.length){ _scenarioPool = []; renderScenarioEmpty(); return; }
@@ -9059,9 +9075,6 @@ function renderScenario(){
   if(!q){ renderScenarioEmpty(); return; }
   var total = _scenarioPool.length;
   var idx = _scenarioCurIdx + 1;
-  // Counter
-  var counter = document.getElementById('scenario-counter');
-  if(counter) counter.textContent = 'Case Study ' + idx + ' of ' + total;
   // Standard pill
   var pill = document.getElementById('scenario-std-pill');
   if(pill) pill.textContent = q.standard_reference || q.category;
@@ -9091,12 +9104,12 @@ function renderScenario(){
 }
 
 function renderScenarioEmpty(){
-  var counter = document.getElementById('scenario-counter');
-  if(counter) counter.textContent = 'No case studies yet';
   var txt = document.getElementById('scenario-text');
-  if(txt) txt.textContent = 'Case studies are being added. Check back soon!';
+  if(txt) txt.textContent = 'No case studies found. Try a different filter.';
   var opts = document.getElementById('scenario-opts');
   if(opts) opts.innerHTML = '';
+  var fb = document.getElementById('scenario-feedback');
+  if(fb) fb.style.display='none';
 }
 
 function answerScenario(btn, correct){
@@ -9142,6 +9155,13 @@ function setScenarioCat(el, cat){
   el.parentElement.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('active'); });
   el.classList.add('active');
   _scenarioCat = cat;
+  loadScenarios();
+}
+
+function setScenarioDiff(el, diff){
+  el.parentElement.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('active'); });
+  el.classList.add('active');
+  _scenarioDiff = diff;
   loadScenarios();
 }
 
