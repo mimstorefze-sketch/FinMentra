@@ -6148,7 +6148,8 @@ function filterJEEntries(query){
   if(sug){
     if(matches.length>0){
       sug.innerHTML=matches.slice(0,6).map(function(o){
-        return '<div onmousedown="drPickJE(\''+o.value.replace(/'/g,"\\'")+'\')" ontouchstart="drPickJE(\''+o.value.replace(/'/g,"\\'")+'\')" style="padding:9px 12px;font-size:12px;font-weight:600;color:var(--navy);border-bottom:1px solid var(--border2);cursor:pointer;background:var(--surface);" onmouseover="this.style.background=\'var(--blue-ll)\'" onmouseout="this.style.background=\'var(--surface)\'">'+o.textContent+'</div>';
+        var idx=Array.from(document.getElementById('je-scenario').querySelectorAll('option')).indexOf(o);
+        return '<div onmousedown="drPickJEByIndex('+idx+')" ontouchstart="drPickJEByIndex('+idx+')" style="padding:9px 12px;font-size:12px;font-weight:600;color:var(--navy);border-bottom:1px solid var(--border2);cursor:pointer;background:var(--surface);" onmouseover="this.style.background=\'var(--blue-ll)\'" onmouseout="this.style.background=\'var(--surface)\'">'+o.textContent+'</div>';
       }).join('');
       sug.style.display='block';
     } else {
@@ -6160,9 +6161,32 @@ function filterJEEntries(query){
 function drPickJE(val){
   var sel=document.getElementById('je-scenario');
   var sug=document.getElementById('je-suggestions');
-  if(sel){sel.value=val;loadJEScenario();}
-  if(sug) sug.style.display='none';
   var inp=document.getElementById('je-search');
+  if(sel){
+    var opts=Array.from(sel.querySelectorAll('option'));
+    var found=opts.find(function(o){return o.value===val;});
+    if(found){ sel.value=found.value; }
+    else {
+      var byText=opts.find(function(o){return o.textContent.trim()===val.trim();});
+      if(byText) sel.value=byText.value;
+    }
+    loadJEScenario();
+  }
+  if(sug) sug.style.display='none';
+  if(inp) inp.value='';
+}
+function drPickJEByIndex(idx){
+  var sel=document.getElementById('je-scenario');
+  var sug=document.getElementById('je-suggestions');
+  var inp=document.getElementById('je-search');
+  if(sel){
+    var opts=Array.from(sel.querySelectorAll('option'));
+    if(opts[idx]){
+      sel.value=opts[idx].value;
+      loadJEScenario();
+    }
+  }
+  if(sug) sug.style.display='none';
   if(inp) inp.value='';
 }
 function filterFormulas(query){
