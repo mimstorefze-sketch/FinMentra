@@ -13164,34 +13164,32 @@ var _offlineCheckInterval = null;
 
 async function checkRealConnection(){
   try{
-    // Ping Supabase health endpoint — fast, lightweight
+    var controller = new AbortController();
+    var timeout = setTimeout(function(){ controller.abort(); }, 5000); // 5 second timeout
     var res = await fetch('https://vofxhqnipoywbbkmlxcp.supabase.co/rest/v1/', {
       method: 'HEAD',
       cache: 'no-cache',
+      signal: controller.signal,
       headers: { 'apikey': SUPA_KEY }
     });
-    if(res.ok || res.status === 200 || res.status === 400){
-      // Connected
-      if(_isOffline){
-        _isOffline = false;
-        hideOfflineScreen();
-        hideOfflineBanner();
-      }
-      return true;
-    }
+    clearTimeout(timeout);
+    // Any response means we reached the server = online
+    _isOffline = false;
+    hideOfflineScreen();
+    hideOfflineBanner();
+    return true;
   } catch(e){
-    // Fetch failed = no connection
-  }
-  // Offline
-  if(!_isOffline){
-    _isOffline = true;
-    if(document.body.classList.contains('app-ready')){
-      showOfflineBanner();
-    } else {
-      showOfflineScreen();
+    // Only show offline if we were already offline or this is a real failure
+    if(!_isOffline){
+      _isOffline = true;
+      if(document.body.classList.contains('app-ready')){
+        showOfflineBanner();
+      } else {
+        showOfflineScreen();
+      }
     }
+    return false;
   }
-  return false;
 }
 
 function showOfflineScreen(){
@@ -13221,7 +13219,6 @@ function retryConnection(){
   if(btn) btn.textContent = '⏳ Checking...';
   checkRealConnection().then(function(online){
     if(online){
-      // Connection restored — reload to get fresh session
       window.location.reload();
     } else {
       if(btn){
@@ -13232,14 +13229,31 @@ function retryConnection(){
   });
 }
 
-// Also keep native events as backup
-window.addEventListener('offline', function(){ checkRealConnection(); });
-window.addEventListener('online',  function(){ checkRealConnection(); });
+// Native events as primary trigger
+window.addEventListener('offline', function(){
+  _isOffline = true;
+  if(document.body.classList.contains('app-ready')){
+    showOfflineBanner();
+  } else {
+    showOfflineScreen();
+  }
+});
 
-// Check on load
-checkRealConnection();
+window.addEventListener('online', function(){
+  _isOffline = false;
+  hideOfflineBanner();
+  hideOfflineScreen();
+});
 
-// Re-check every 30 seconds while app is open
+// Only ping if native events say we are offline — don't ping on load
+if(!navigator.onLine){
+  _isOffline = true;
+  document.addEventListener('DOMContentLoaded', function(){
+    showOfflineScreen();
+  });
+}
+
+// Check every 30 seconds ONLY when already offline
 _offlineCheckInterval = setInterval(function(){
   if(_isOffline) checkRealConnection();
 }, 30000);
