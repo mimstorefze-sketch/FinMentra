@@ -3537,6 +3537,19 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 
 </div><!-- end shell -->
 
+<!-- ══ OFFLINE BANNER (shows when user loses connection mid-session) ══ -->
+<div id="offline-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:99998;background:#EF4444;color:#fff;text-align:center;padding:10px 16px;font-size:13px;font-weight:700;font-family:var(--font-body);">
+  📡 No internet connection — some features may not work
+</div>
+
+<!-- ══ OFFLINE SCREEN (shows when app loads without connection) ══ -->
+<div id="offline-screen" style="display:none;position:fixed;inset:0;z-index:99999;background:var(--navy);flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;">
+  <div style="font-size:64px;margin-bottom:16px;">📡</div>
+  <div style="font-family:var(--font-display);font-size:28px;font-weight:600;color:#fff;margin-bottom:8px;">No Internet</div>
+  <div style="font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:32px;line-height:1.6;">Please check your connection<br>and try again</div>
+  <button onclick="retryConnection()" style="background:#fff;color:var(--navy);border:none;border-radius:14px;padding:14px 32px;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font-body);">🔄 Try Again</button>
+</div>
+
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav" id="bottom-nav"></nav>
 
@@ -9173,13 +9186,6 @@ function ethicsAnswer(btn,correct){
   if(fb) fb.style.display='block';
 }
 
-// ── SCENARIO CATEGORY ──
-function setScenarioCat(el,cat){
-  el.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');
-  toast('Category: '+cat);
-}
-
 // ── ENHANCE LOAD QUESTION with timer + confidence ──
 const _origLoadQ=loadQuestion;
 loadQuestion=function(){
@@ -13152,7 +13158,42 @@ async function doLogout(){
 
 // ── CHECK IF ALREADY LOGGED IN (returning user) ──
 
-// ── OFFLINE DETECTION ──
+// ── OFFLINE DETECTION — Real ping based (navigator.onLine unreliable on Android) ──
+var _isOffline = false;
+var _offlineCheckInterval = null;
+
+async function checkRealConnection(){
+  try{
+    // Ping Supabase health endpoint — fast, lightweight
+    var res = await fetch('https://vofxhqnipoywbbkmlxcp.supabase.co/rest/v1/', {
+      method: 'HEAD',
+      cache: 'no-cache',
+      headers: { 'apikey': SUPA_KEY }
+    });
+    if(res.ok || res.status === 200 || res.status === 400){
+      // Connected
+      if(_isOffline){
+        _isOffline = false;
+        hideOfflineScreen();
+        hideOfflineBanner();
+      }
+      return true;
+    }
+  } catch(e){
+    // Fetch failed = no connection
+  }
+  // Offline
+  if(!_isOffline){
+    _isOffline = true;
+    if(document.body.classList.contains('app-ready')){
+      showOfflineBanner();
+    } else {
+      showOfflineScreen();
+    }
+  }
+  return false;
+}
+
 function showOfflineScreen(){
   var os = document.getElementById('offline-screen');
   var sl = document.getElementById('session-loader');
@@ -13167,7 +13208,7 @@ function hideOfflineScreen(){
 
 function showOfflineBanner(){
   var ob = document.getElementById('offline-banner');
-  if(ob) ob.style.display = 'block';
+  if(ob){ ob.style.display = 'block'; }
 }
 
 function hideOfflineBanner(){
@@ -13176,59 +13217,33 @@ function hideOfflineBanner(){
 }
 
 function retryConnection(){
-  if(navigator.onLine){
-    hideOfflineScreen();
-    // Retry loading
-    var sl = document.getElementById('session-loader');
-    if(sl){ sl.style.display = 'flex'; sl.classList.remove('hidden'); }
-    // Re-run session check
-    if(typeof _supa !== 'undefined'){
-      _supa.auth.getSession().then(function(res){
-        if(res.data && res.data.session){
-          window.location.reload();
-        } else {
-          var ae = document.getElementById('auth-screen');
-          if(ae){ ae.classList.add('show'); }
-          var sl2 = document.getElementById('session-loader');
-          if(sl2){ sl2.style.display = 'none'; }
-          document.body.classList.add('app-ready');
-        }
-      }).catch(function(){ showOfflineScreen(); });
+  var btn = document.querySelector('#offline-screen button');
+  if(btn) btn.textContent = '⏳ Checking...';
+  checkRealConnection().then(function(online){
+    if(online){
+      // Connection restored — reload to get fresh session
+      window.location.reload();
+    } else {
+      if(btn){
+        btn.textContent = '❌ Still offline...';
+        setTimeout(function(){ btn.textContent = '🔄 Try Again'; }, 2000);
+      }
     }
-  } else {
-    // Still offline - shake button
-    var btn = document.querySelector('#offline-screen button');
-    if(btn){
-      btn.textContent = '❌ Still offline...';
-      setTimeout(function(){ btn.textContent = '🔄 Try Again'; }, 2000);
-    }
-  }
-}
-
-// Listen for online/offline events
-window.addEventListener('offline', function(){
-  if(document.body.classList.contains('app-ready')){
-    showOfflineBanner();
-  } else {
-    showOfflineScreen();
-  }
-});
-
-window.addEventListener('online', function(){
-  hideOfflineBanner();
-  hideOfflineScreen();
-  // If was showing offline screen, reload to get fresh session
-  if(document.getElementById('offline-screen').style.display === 'flex'){
-    window.location.reload();
-  }
-});
-
-// Check on load
-if(!navigator.onLine){
-  document.addEventListener('DOMContentLoaded', function(){
-    showOfflineScreen();
   });
 }
+
+// Also keep native events as backup
+window.addEventListener('offline', function(){ checkRealConnection(); });
+window.addEventListener('online',  function(){ checkRealConnection(); });
+
+// Check on load
+checkRealConnection();
+
+// Re-check every 30 seconds while app is open
+_offlineCheckInterval = setInterval(function(){
+  if(_isOffline) checkRealConnection();
+}, 30000);
+
 
 (async function checkSession() {
   // Handle token in URL hash (Supabase OAuth redirect)
@@ -13261,7 +13276,7 @@ if(!navigator.onLine){
     showOfflineScreen();
     return;
   }
-  if(!navigator.onLine){ showOfflineScreen(); return; }
+  if(!_isOffline && !navigator.onLine){ showOfflineScreen(); return; }
   // Hide the session loader
   const loader = document.getElementById('session-loader');
   if(loader) loader.classList.add('hidden');
