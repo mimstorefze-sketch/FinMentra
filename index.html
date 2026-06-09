@@ -15358,8 +15358,10 @@ async function chlJoinChallenge(){
   try{
     const {data: challenge, error} = await _supa.from('challenges').select('*').eq('code', code).eq('status','waiting').single();
     if(error || !challenge){ toast('Challenge not found or already started'); return; }
+    // FIX 2: Don't write started_at here — host will set it after detecting guest joined
+    // Writing it now causes race condition where guest sees past time and starts immediately
     await _supa.from('challenges').update({
-      guest_id: CHL.myId, guest_name: CHL.myName, status: 'active', started_at: new Date().toISOString()
+      guest_id: CHL.myId, guest_name: CHL.myName, status: 'active'
     }).eq('id', challenge.id);
     CHL.challengeId = challenge.id; CHL.code = code; CHL.role = 'guest';
     CHL.oppName = challenge.host_name || 'Opponent';
@@ -15374,14 +15376,15 @@ async function chlJoinChallenge(){
       attempts++;
       try{
         const {data: ch} = await _supa.from('challenges').select('started_at,host_name').eq('id', challenge.id).single();
-        if(ch && ch.started_at && ch.started_at !== challenge.started_at){
+        // FIX 3: Wait for host to write started_at (it will be null until host sees guest joined)
+        if(ch && ch.started_at){
           clearInterval(waitStart);
           CHL.battleStartsAt = ch.started_at;
           CHL.oppName = ch.host_name || 'Opponent';
           chlStartCountdown();
         }
       }catch(e){}
-      if(attempts >= 20){ clearInterval(waitStart); CHL.battleStartsAt = new Date(Date.now()+2000).toISOString(); chlStartCountdown(); }
+      if(attempts >= 30){ clearInterval(waitStart); CHL.battleStartsAt = new Date(Date.now()+3000).toISOString(); chlStartCountdown(); }
     }, 500);
   }catch(e){ toast('Error joining challenge'); }
 }
@@ -15421,10 +15424,7 @@ function chlSubscribeToChallenge(challengeId){
           chlSaveStats();
           chlShowResults('win', CHL.myScore, 0, 150, 20);
         }
-        if(upd.status === 'finished' && !CHL.myFinished){
-          chlEndGame(upd);
-        }
-        if(upd.status === 'finished' && CHL.myFinished){
+        if(upd.status === 'finished'){
           chlEndGame(upd);
         }
       }
@@ -15456,8 +15456,14 @@ function chlStartCountdown(){
   if(vsEl) vsEl.textContent = 'You vs ' + (CHL.oppName || 'Opponent');
   if(tipEl) tipEl.textContent = CHL_TIPS[Math.floor(Math.random()*CHL_TIPS.length)];
 
-  let battleTime = CHL.battleStartsAt ? new Date(CHL.battleStartsAt).getTime() : Date.now() + 4000;
-  if(battleTime < Date.now() + 1000) battleTime = Date.now() + 2000;
+  // FIX 1: Use server battleStartsAt — ensure minimum 3s buffer for both devices
+  var battleTime;
+  if(CHL.battleStartsAt){
+    battleTime = new Date(CHL.battleStartsAt).getTime();
+    if(battleTime < Date.now() + 3000) battleTime = Date.now() + 3000;
+  } else {
+    battleTime = Date.now() + 4000;
+  }
 
   const numEl = document.getElementById('chl-cd-num');
   const countDown = setInterval(()=>{
@@ -15612,7 +15618,7 @@ async function chlAnswer(answerIdx){
       }catch(e){
         chlEndGame({ host_score: CHL.role==='host'?CHL.myScore:0, guest_score: CHL.role==='guest'?CHL.myScore:0 });
       }
-    }, 3500);
+    }, 6000); // FIX 4: 6s wait — gives both devices time to write final score to DB
   } else {
     setTimeout(()=>{ CHL.currentQ++; chlLoadBattleQuestion(); }, 1800);
   }
@@ -15662,8 +15668,14 @@ function chlEndGame(challengeData){
   clearInterval(CHL.timerInterval);
   if(CHL.sub){ try{ CHL.sub.unsubscribe(); }catch(e){} CHL.sub = null; }
 
-  const myScore = CHL.role==='host' ? (challengeData.host_score||CHL.myScore) : (challengeData.guest_score||CHL.myScore);
-  const oppScore = CHL.role==='host' ? (challengeData.guest_score||CHL.oppScore) : (challengeData.host_score||CHL.oppScore);
+  // FIX 5: DB is single source of truth — both devices show same scores
+  // Use local score only if DB score is null (shouldn't happen after 6s wait)
+  const myScore = CHL.role==='host'
+    ? (challengeData.host_score != null ? challengeData.host_score : CHL.myScore)
+    : (challengeData.guest_score != null ? challengeData.guest_score : CHL.myScore);
+  const oppScore = CHL.role==='host'
+    ? (challengeData.guest_score != null ? challengeData.guest_score : CHL.oppScore)
+    : (challengeData.host_score != null ? challengeData.host_score : CHL.oppScore);
   const result = myScore > oppScore ? 'win' : myScore < oppScore ? 'loss' : 'draw';
 
   if(result==='win'){ CHL.wins++; CHL.winStreak++; }
