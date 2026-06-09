@@ -15180,6 +15180,17 @@ function chlReset(){
   CHL.battleStartsAt = null; CHL.battleStarted = false;
   CHL.myFinished = false; CHL.endCalled = false;
   CHL.timerSecs = 20;
+  // Reset ALL score display elements so old scores never show on new match
+  var els = ['chl-b-my-score','chl-b-opp-score','chl-r-my-score','chl-r-opp-score'];
+  els.forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent='0'; });
+  // Reset battle timer display
+  var timerEl = document.getElementById('chl-b-timer');
+  if(timerEl) timerEl.textContent = '20';
+  var fillEl = document.getElementById('chl-b-timer-fill');
+  if(fillEl) fillEl.style.width = '100%';
+  // Hide explanation
+  var explainEl = document.getElementById('chl-b-explain');
+  if(explainEl){ explainEl.style.display='none'; explainEl.innerHTML=''; }
 }
 
 // ══════════════════════════════════════════════════
