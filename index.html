@@ -15119,12 +15119,20 @@ function chlGetQuestions(category, count){
       {q:'Under IAS 2, inventory is measured at:',opts:['Cost','NRV','Lower of cost and NRV','Higher of cost and NRV'],correct:2,explain:'IAS 2: Inventory = LOWER of cost and NRV.'},
     ];
   }
-  return fyShuffle(pool).slice(0, parseInt(count)||10).map(q=>({
-    q: q.q || q.question || '',
-    opts: q.opts || q.options || [],
-    correct: typeof q.correct === 'number' ? q.correct : 0,
-    explain: q.explain || q.explanation || '',
-  }));
+  return fyShuffle(pool).slice(0, parseInt(count)||10).map(q=>{
+    var opts = q.opts || q.options || [];
+    var correct = typeof q.correct === 'number' ? q.correct : 0;
+    // Shuffle options so correct answer is not always in same position
+    var indexed = opts.map(function(o,i){ return {text:o, isCorrect: i===correct}; });
+    var shuffled = fyShuffle(indexed);
+    var newCorrect = shuffled.findIndex(function(o){ return o.isCorrect; });
+    return {
+      q: q.q || q.question || '',
+      opts: shuffled.map(function(o){ return o.text; }),
+      correct: newCorrect,
+      explain: q.explain || q.explanation || '',
+    };
+  });
 }
 
 // ── GENERATE CODE ──
@@ -15571,7 +15579,11 @@ async function chlAnswer(answerIdx){
   // Show explanation
   if(q.explain){
     const explainEl = document.getElementById('chl-b-explain');
-    if(explainEl){ explainEl.innerHTML = (isCorrect?'✅ ':'❌ ') + q.explain; explainEl.style.display='block'; }
+    if(explainEl){
+      var prefix = timedOut ? '⏰ Time up! ' : (isCorrect ? '✅ ' : '❌ ');
+      explainEl.innerHTML = prefix + q.explain;
+      explainEl.style.display = 'block';
+    }
   }
 
   // Speed points — 0 if timed out, never award points for no answer
@@ -15661,7 +15673,17 @@ function chlForfeit(){
     }
     CHL.losses++; CHL.winStreak = 0; chlSaveStats();
     if(CHL.isOnline) await chlUpdateElo('loss', CHL.oppRating);
-    chlShowResults('loss', CHL.myScore, CHL.oppScore+3, 25, -15);
+    // Fetch real scores from DB so both devices show same result
+    var forfeitMyScore = CHL.myScore;
+    var forfeitOppScore = CHL.oppScore;
+    try{
+      var {data: fd} = await _supa.from('challenges').select('host_score,guest_score').eq('id', CHL.challengeId).single();
+      if(fd){
+        forfeitMyScore = CHL.role==='host' ? (fd.host_score||CHL.myScore) : (fd.guest_score||CHL.myScore);
+        forfeitOppScore = CHL.role==='host' ? (fd.guest_score||CHL.oppScore) : (fd.host_score||CHL.oppScore);
+      }
+    }catch(e){}
+    chlShowResults('loss', forfeitMyScore, forfeitOppScore, 25, -15);
   };
   document.getElementById('chl-forfeit-no').onclick = function(){ popup.remove(); };
 }
