@@ -15098,18 +15098,36 @@ async function chlLoadRankings(){
 
 // ── QUESTIONS ──
 function chlGetQuestions(category, count){
+  // Pull from the same large pool Arena uses — much more variety
   let pool = [];
   if(typeof QB_BY_DOMAIN !== 'undefined'){
     if(!category || category === 'Mixed'){
+      // Mixed: pull from all domains for variety
       Object.values(QB_BY_DOMAIN).forEach(qs=>{ if(Array.isArray(qs)) pool.push(...qs); });
+      // Also add from full QB
+      if(typeof QB !== 'undefined'){
+        Object.values(QB).forEach(qs=>{ if(Array.isArray(qs)) pool.push(...qs); });
+      }
     } else if(QB_BY_DOMAIN[category]){
       pool = [...QB_BY_DOMAIN[category]];
+      // Supplement with full QB if pool is small
+      if(pool.length < 20 && typeof QB !== 'undefined'){
+        Object.values(QB).forEach(qs=>{ if(Array.isArray(qs)) pool.push(...qs); });
+      }
     }
   }
   if(!pool.length && typeof QB !== 'undefined'){
     Object.values(QB).forEach(qs=>{ if(Array.isArray(qs)) pool.push(...qs); });
   }
-  // Hardcoded fallback
+  // Deduplicate by question text
+  var seen = {};
+  pool = pool.filter(function(q){
+    var key = (q.q||q.question||'').substring(0,40);
+    if(seen[key]) return false;
+    seen[key] = true;
+    return true;
+  });
+  // Minimal fallback only if QB completely empty
   if(!pool.length){
     pool = [
       {q:'Under IFRS 15, revenue is recognised when:',opts:['Cash is received','Control transfers','Invoice is issued','Contract is signed'],correct:1,explain:'IFRS 15: Revenue recognised when control transfers to customer.'},
@@ -15122,13 +15140,13 @@ function chlGetQuestions(category, count){
   return fyShuffle(pool).slice(0, parseInt(count)||10).map(q=>{
     var opts = q.opts || q.options || [];
     var correct = typeof q.correct === 'number' ? q.correct : 0;
-    // Shuffle options so correct answer is not always in same position
+    // Shuffle options so correct answer position varies every match
     var indexed = opts.map(function(o,i){ return {text:o, isCorrect: i===correct}; });
-    var shuffled = fyShuffle(indexed);
-    var newCorrect = shuffled.findIndex(function(o){ return o.isCorrect; });
+    var shuffledOpts = fyShuffle(indexed);
+    var newCorrect = shuffledOpts.findIndex(function(o){ return o.isCorrect; });
     return {
       q: q.q || q.question || '',
-      opts: shuffled.map(function(o){ return o.text; }),
+      opts: shuffledOpts.map(function(o){ return o.text; }),
       correct: newCorrect,
       explain: q.explain || q.explanation || '',
     };
@@ -15439,7 +15457,7 @@ function chlSubscribeToChallenge(challengeId){
           chlSaveStats();
           chlShowResults('win', CHL.myScore, 0, 150, 20);
         }
-        if(upd.status === 'finished'){
+        if(upd.status === 'finished' || upd.status === 'forfeited'){
           chlEndGame(upd);
         }
       }
@@ -15723,23 +15741,38 @@ function chlEndGame(challengeData){
 }
 
 function chlShowResultsFinal(myScore, oppScore, challengeData){
-  const result = myScore > oppScore ? 'win' : myScore < oppScore ? 'loss' : 'draw';
+  // If opponent forfeited — we automatically win regardless of scores
+  if(challengeData.status === 'forfeited'){
+    var forfeitWinner = challengeData.winner; // 'host' or 'guest'
+    var iWon = (forfeitWinner === CHL.role);
+    var result = iWon ? 'win' : 'loss';
+    if(result==='win'){ CHL.wins++; CHL.winStreak++; }
+    else { CHL.losses++; CHL.winStreak=0; }
+    chlSaveStats();
+    var xpReward = iWon ? 150 : 25;
+    S.xp += xpReward; S.coins += iWon ? 30 : 10;
+    updateHUD(); saveState();
+    if(CHL.isOnline) chlUpdateElo(result, CHL.oppRating);
+    chlShowResults(result, myScore, oppScore, xpReward, 0);
+    return;
+  }
+  const finalResult = myScore > oppScore ? 'win' : myScore < oppScore ? 'loss' : 'draw';
 
-  if(result==='win'){ CHL.wins++; CHL.winStreak++; }
-  else if(result==='loss'){ CHL.losses++; CHL.winStreak=0; }
+  if(finalResult==='win'){ CHL.wins++; CHL.winStreak++; }
+  else if(finalResult==='loss'){ CHL.losses++; CHL.winStreak=0; }
   else { CHL.draws++; }
   chlSaveStats();
 
-  const xpReward = result==='win'?150:result==='draw'?75:50;
-  S.xp += xpReward; S.coins += result==='win'?30:10;
+  var xpReward = finalResult==='win'?150:finalResult==='draw'?75:50;
+  S.xp += xpReward; S.coins += finalResult==='win'?30:10;
   updateHUD(); saveState();
 
   let ratingChange = 0;
   if(CHL.isOnline){
-    chlUpdateElo(result, CHL.oppRating).then(change=>{ ratingChange = change; });
+    chlUpdateElo(finalResult, CHL.oppRating).then(change=>{ ratingChange = change; });
   }
 
-  chlShowResults(result, myScore, oppScore, xpReward, ratingChange);
+  chlShowResults(finalResult, myScore, oppScore, xpReward, ratingChange);
 }
 // end chlShowResultsFinal
 
