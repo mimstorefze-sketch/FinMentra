@@ -2375,6 +2375,13 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     </div>
   </div>
 
+  <!-- ── RESULTS LOADING ── -->
+  <div id="chl-results-loading" style="display:none;text-align:center;padding:60px 20px;">
+    <div style="font-size:48px;margin-bottom:16px;">⏳</div>
+    <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:8px;">Calculating Results...</div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.7);">Syncing scores with opponent</div>
+  </div>
+
   <!-- ── RESULTS ── -->
   <div id="chl-results" style="display:none;">
     <div class="ch-result-hero" id="chl-r-hero">
@@ -14950,7 +14957,7 @@ function chlGetTier(rating){
 
 // ── SECTION SWITCHER (no fixed positioning, no shell overrides) ──
 function chlShowSection(section){
-  ['lobby','waiting','matchmaking','countdown','battle','results'].forEach(s=>{
+  ['lobby','waiting','matchmaking','countdown','battle','results','results-loading'].forEach(s=>{
     const el = document.getElementById('chl-'+s);
     if(el) el.style.display = s === section ? 'block' : 'none';
   });
@@ -15546,7 +15553,9 @@ async function chlAnswer(answerIdx){
   clearInterval(CHL.timerInterval);
 
   const q = CHL.questions[CHL.currentQ];
-  const isCorrect = answerIdx === q.correct;
+  // answerIdx === -1 means timer expired — no score, show correct answer then move on
+  const timedOut = answerIdx === -1;
+  const isCorrect = !timedOut && (answerIdx === q.correct);
   const timeTaken = Date.now() - CHL.qStartTime;
 
   // Visual feedback
@@ -15554,8 +15563,8 @@ async function chlAnswer(answerIdx){
     const btn = document.getElementById('chl-opt-'+i);
     if(btn){
       btn.classList.add('ch-opt-disabled');
-      if(i === q.correct) btn.classList.add('ch-opt-correct');
-      else if(i === answerIdx && !isCorrect) btn.classList.add('ch-opt-wrong');
+      if(i === q.correct) btn.classList.add('ch-opt-correct'); // always show correct answer
+      else if(!timedOut && i === answerIdx && !isCorrect) btn.classList.add('ch-opt-wrong'); // only show wrong if user actually answered
     }
   }
 
@@ -15565,8 +15574,8 @@ async function chlAnswer(answerIdx){
     if(explainEl){ explainEl.innerHTML = (isCorrect?'✅ ':'❌ ') + q.explain; explainEl.style.display='block'; }
   }
 
-  // Speed points
-  const speedPts = CHL.timerSecs >= 13 ? 3 : CHL.timerSecs >= 6 ? 2 : 1;
+  // Speed points — 0 if timed out, never award points for no answer
+  const speedPts = timedOut ? 0 : (CHL.timerSecs >= 13 ? 3 : CHL.timerSecs >= 6 ? 2 : 1);
   if(isCorrect){
     CHL.myScore += speedPts;
     playSound('correct');
@@ -15664,18 +15673,34 @@ let chlEndCalled = false;
 function chlEndGame(challengeData){
   if(chlEndCalled) return;
   chlEndCalled = true;
-  setTimeout(()=>{ chlEndCalled = false; }, 5000);
+  setTimeout(()=>{ chlEndCalled = false; }, 10000);
   clearInterval(CHL.timerInterval);
   if(CHL.sub){ try{ CHL.sub.unsubscribe(); }catch(e){} CHL.sub = null; }
 
-  // FIX 5: DB is single source of truth — both devices show same scores
-  // Use local score only if DB score is null (shouldn't happen after 6s wait)
-  const myScore = CHL.role==='host'
-    ? (challengeData.host_score != null ? challengeData.host_score : CHL.myScore)
-    : (challengeData.guest_score != null ? challengeData.guest_score : CHL.myScore);
-  const oppScore = CHL.role==='host'
-    ? (challengeData.guest_score != null ? challengeData.guest_score : CHL.oppScore)
-    : (challengeData.host_score != null ? challengeData.host_score : CHL.oppScore);
+  // Re-fetch from DB after 3 seconds to ensure both players have written final scores
+  setTimeout(async function(){
+    try{
+      const {data: freshData} = await _supa.from('challenges').select('host_score,guest_score').eq('id', CHL.challengeId).single();
+      if(freshData){
+        challengeData.host_score = freshData.host_score;
+        challengeData.guest_score = freshData.guest_score;
+      }
+    }catch(e){}
+    // Now use DB scores — both devices read same values
+    const myScore = CHL.role==='host'
+      ? (challengeData.host_score != null ? challengeData.host_score : CHL.myScore)
+      : (challengeData.guest_score != null ? challengeData.guest_score : CHL.myScore);
+    const oppScore = CHL.role==='host'
+      ? (challengeData.guest_score != null ? challengeData.guest_score : CHL.oppScore)
+      : (challengeData.host_score != null ? challengeData.host_score : CHL.oppScore);
+    chlShowResultsFinal(myScore, oppScore, challengeData);
+  }, 3000);
+  // Show loading state while waiting
+  chlShowSection('results-loading');
+  return; // rest of function moved to chlShowResultsFinal
+}
+
+function chlShowResultsFinal(myScore, oppScore, challengeData){
   const result = myScore > oppScore ? 'win' : myScore < oppScore ? 'loss' : 'draw';
 
   if(result==='win'){ CHL.wins++; CHL.winStreak++; }
@@ -15694,6 +15719,7 @@ function chlEndGame(challengeData){
 
   chlShowResults(result, myScore, oppScore, xpReward, ratingChange);
 }
+// end chlShowResultsFinal
 
 function chlShowResults(result, myScore, oppScore, xpReward, ratingChange){
   const heroEl = document.getElementById('chl-r-hero');
@@ -15780,6 +15806,15 @@ async function chlUpdateElo(result, oppRating){
 // ── PLAY AGAIN ──
 function chlPlayAgain(){
   chlEndCalled = false;
+  // Reset scoreboard display so next match starts clean
+  var myScEl = document.getElementById('chl-res-my-score');
+  var opScEl = document.getElementById('chl-res-opp-score');
+  var myBEl = document.getElementById('chl-b-my-score');
+  var opBEl = document.getElementById('chl-b-opp-score');
+  if(myScEl) myScEl.textContent = '0';
+  if(opScEl) opScEl.textContent = '0';
+  if(myBEl) myBEl.textContent = '0';
+  if(opBEl) opBEl.textContent = '0';
   chlReset();
   chlLoadStats();
   chlLoadRating();
