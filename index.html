@@ -2081,6 +2081,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   </div>
   <!-- Domain tabs — normal flow, sits at top of practice screen -->
   <div class="dom-tabs" id="domain-tabs" style="margin-bottom:8px;">
+    <button class="dom-tab" onclick="selectDomain(this,'Mixed')">📚 All</button>
     <button class="dom-tab active" onclick="selectDomain(this,'IFRS')">IFRS</button>
     <button class="dom-tab" onclick="selectDomain(this,'IAS')">IAS</button>
     <button class="dom-tab" onclick="selectDomain(this,'Costing')">Costing</button>
