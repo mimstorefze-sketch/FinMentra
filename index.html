@@ -3370,6 +3370,11 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 <div class="screen" id="screen-traps">
   <div class="alert" style="background:var(--red-l);border-left-color:var(--red);color:var(--red);">⚠️ The most commonly missed exam points. Master these to gain easy marks.</div>
 
+  <!-- Search -->
+  <input type="text" id="traps-search" placeholder="🔍 Search standard or keyword..."
+    style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:12px;font-family:var(--font-body);font-size:13px;margin-bottom:8px;box-sizing:border-box;outline:none;background:var(--surface);color:var(--text);"
+    oninput="filterTraps(this.value)"/>
+
   <!-- Category filter -->
   <div class="chips" id="traps-cat-chips" style="margin-bottom:6px;">
     <button class="chip active" onclick="setTrapCat(this,'all')">All</button>
@@ -9225,48 +9230,73 @@ function setScenarioDiff(el, diff){
 // ── EXAM TRAPS ──
 var _trapsCat = 'all';
 var _trapsDiff = 'all';
+var _trapsData = []; // cached for search
 
 async function loadTraps(){
   var list = document.getElementById('traps-list');
   if(!list) return;
   list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--muted);">⏳ Loading...</div>';
+  // Clear search box
+  var srch = document.getElementById('traps-search');
+  if(srch) srch.value = '';
   try{
     var q = _supa.from('exam_traps').select('*').eq('is_active', true).order('standard');
     if(_trapsCat !== 'all') q = q.eq('category', _trapsCat);
     if(_trapsDiff !== 'all') q = q.eq('difficulty', _trapsDiff);
     var result = await q;
-    var data = result.data || [];
-    if(!data.length){
-      list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--muted);">No exam traps found for this filter.</div>';
-      return;
-    }
-    // Group by standard
-    var grouped = {};
-    data.forEach(function(t){
-      if(!grouped[t.standard]) grouped[t.standard] = [];
-      grouped[t.standard].push(t);
-    });
-    var html = '';
-    Object.keys(grouped).forEach(function(std){
-      var traps = grouped[std];
-      html += '<div class="card" style="border-left:4px solid var(--red);margin-bottom:10px;">';
-      html += '<div style="font-size:9px;font-weight:700;color:var(--red);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;">' + std + '</div>';
-      html += '<div style="display:flex;flex-direction:column;gap:7px;">';
-      traps.forEach(function(t){
-        var diffCol = t.difficulty==='Hard'?'var(--red)':t.difficulty==='Medium'?'var(--gold)':'var(--green)';
-        html += '<div style="padding:8px;background:var(--red-l);border-radius:8px;font-size:12px;">';
-        if(t.difficulty) html += '<span style="font-size:9px;font-weight:700;color:'+diffCol+';background:'+diffCol+'20;border-radius:999px;padding:1px 8px;margin-bottom:4px;display:inline-block;">'+t.difficulty+'</span><br>';
-        html += '<b>❌</b> ' + t.wrong_belief + '<br>';
-        html += '<b style="color:var(--green);">✅</b> ' + t.correct_answer;
-        if(t.paragraph_ref) html += '<br><span style="font-size:10px;color:var(--muted);">📖 ' + t.paragraph_ref + '</span>';
-        html += '</div>';
-      });
-      html += '</div></div>';
-    });
-    list.innerHTML = html;
+    _trapsData = result.data || [];
+    renderTraps(_trapsData);
   }catch(e){
     list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--muted);">Could not load traps. Check your connection.</div>';
   }
+}
+
+function filterTraps(query){
+  if(!query || !query.trim()){
+    renderTraps(_trapsData);
+    return;
+  }
+  var q = query.toLowerCase();
+  var filtered = _trapsData.filter(function(t){
+    return (t.standard||'').toLowerCase().includes(q) ||
+           (t.wrong_belief||'').toLowerCase().includes(q) ||
+           (t.correct_answer||'').toLowerCase().includes(q) ||
+           (t.paragraph_ref||'').toLowerCase().includes(q);
+  });
+  renderTraps(filtered);
+}
+
+function renderTraps(data){
+  var list = document.getElementById('traps-list');
+  if(!list) return;
+  if(!data.length){
+    list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--muted);">No exam traps found.</div>';
+    return;
+  }
+  // Group by standard
+  var grouped = {};
+  data.forEach(function(t){
+    if(!grouped[t.standard]) grouped[t.standard] = [];
+    grouped[t.standard].push(t);
+  });
+  var html = '';
+  Object.keys(grouped).forEach(function(std){
+    var traps = grouped[std];
+    html += '<div class="card" style="border-left:4px solid var(--red);margin-bottom:10px;">';
+    html += '<div style="font-size:9px;font-weight:700;color:var(--red);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;">' + std + '</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:7px;">';
+    traps.forEach(function(t){
+      var diffCol = t.difficulty==='Hard'?'var(--red)':t.difficulty==='Medium'?'var(--gold)':'var(--green)';
+      html += '<div style="padding:8px;background:var(--red-l);border-radius:8px;font-size:12px;">';
+      if(t.difficulty) html += '<span style="font-size:9px;font-weight:700;color:'+diffCol+';background:'+diffCol+'20;border-radius:999px;padding:1px 8px;margin-bottom:4px;display:inline-block;">'+t.difficulty+'</span><br>';
+      html += '<b>❌</b> ' + t.wrong_belief + '<br>';
+      html += '<b style="color:var(--green);">✅</b> ' + t.correct_answer;
+      if(t.paragraph_ref) html += '<br><span style="font-size:10px;color:var(--muted);">📖 ' + t.paragraph_ref + '</span>';
+      html += '</div>';
+    });
+    html += '</div></div>';
+  });
+  list.innerHTML = html;
 }
 
 function setTrapCat(el, cat){
