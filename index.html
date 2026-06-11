@@ -9259,8 +9259,8 @@ function filterTraps(query){
   var q = query.toLowerCase();
   var filtered = _trapsData.filter(function(t){
     return (t.standard||'').toLowerCase().includes(q) ||
-           (t.wrong_belief||'').toLowerCase().includes(q) ||
-           (t.correct_answer||'').toLowerCase().includes(q) ||
+           (t.trap_description||'').toLowerCase().includes(q) ||
+           (t.correct_approach||'').toLowerCase().includes(q) ||
            (t.paragraph_ref||'').toLowerCase().includes(q);
   });
   renderTraps(filtered);
@@ -9289,8 +9289,8 @@ function renderTraps(data){
       var diffCol = t.difficulty==='Hard'?'var(--red)':t.difficulty==='Medium'?'var(--gold)':'var(--green)';
       html += '<div style="padding:8px;background:var(--red-l);border-radius:8px;font-size:12px;">';
       if(t.difficulty) html += '<span style="font-size:9px;font-weight:700;color:'+diffCol+';background:'+diffCol+'20;border-radius:999px;padding:1px 8px;margin-bottom:4px;display:inline-block;">'+t.difficulty+'</span><br>';
-      html += '<b>❌</b> ' + t.wrong_belief + '<br>';
-      html += '<b style="color:var(--green);">✅</b> ' + t.correct_answer;
+      html += '<b>❌</b> ' + t.trap_description + '<br>';
+      html += '<b style="color:var(--green);">✅</b> ' + t.correct_approach;
       if(t.paragraph_ref) html += '<br><span style="font-size:10px;color:var(--muted);">📖 ' + t.paragraph_ref + '</span>';
       html += '</div>';
     });
