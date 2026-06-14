@@ -861,8 +861,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;op
 [data-theme="dark"] body::before{opacity:.06;}
 
 /* ── FLOATING FORMULA BUTTON ── */
-#float-formula-btn{position:fixed;bottom:90px;right:16px;z-index:300;width:44px;height:44px;border-radius:50%;background:var(--navy);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(10,31,110,.3);cursor:pointer;border:none;transition:transform .2s,box-shadow .2s;}
-#float-formula-btn:hover{transform:scale(1.1);box-shadow:0 6px 24px rgba(10,31,110,.4);}
+
 
 /* ── COMBO MULTIPLIER ── */
 .combo-display{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,var(--gold),#FCD34D);color:var(--navy);padding:3px 10px;border-radius:999px;font-family:var(--font-mono);font-size:12px;font-weight:800;animation:comboPulse .3s ease;}
@@ -9046,21 +9045,6 @@ function calcDep(){
   if(yl) yl.textContent=yr;
 }
 calcDep();
-
-// ── FLOATING FORMULA BUTTON ──
-(function(){
-  const btn=document.createElement('button');
-  btn.id='float-formula-btn';
-  btn.innerHTML='📐';
-  btn.title='Formula Sheet';
-  btn.onclick=()=>showScreen('formulas');
-  document.body.appendChild(btn);
-  // Show/hide based on screen
-  document.addEventListener('click',()=>{
-    const practice=['practice','askai','progress'];
-    btn.style.display=practice.includes(S.screen)?'flex':'none';
-  });
-})();
 
 // ── PULL TO REFRESH ──
 (function(){
