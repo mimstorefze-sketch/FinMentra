@@ -228,6 +228,89 @@ const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
 [data-theme="dark"] .fs-input { background:#0F172A; border-color:#1A2E5A; color:var(--text); }
 [data-theme="dark"] .topic-search, [data-theme="dark"] .chat-input { background:#141E35; border-color:#1A2E5A; color:var(--text); }
 [data-theme="dark"] .q-card { background:#141E35; border-color:#1A2E5A; }
+[data-theme="dark"] .opt.correct { color: #6EE7A8 !important; }
+[data-theme="dark"] .opt.correct span { color: #6EE7A8 !important; }
+[data-theme="dark"] .opt.wrong { color: #FCA5A5 !important; }
+[data-theme="dark"] .opt.wrong span { color: #FCA5A5 !important; }
+[data-theme="dark"] .opt.correct .opt-key { color: #fff !important; }
+[data-theme="dark"] .opt.wrong .opt-key { color: #fff !important; }
+
+[data-theme="dark"] .alert.info,
+[data-theme="dark"] .arena-battle-opt-letter,
+[data-theme="dark"] .arena-btn-secondary,
+[data-theme="dark"] .arena-card-title,
+[data-theme="dark"] .arena-code-big,
+[data-theme="dark"] .arena-countdown-num,
+[data-theme="dark"] .arena-elo-rating,
+[data-theme="dark"] .arena-lb-rating,
+[data-theme="dark"] .arena-player-name,
+[data-theme="dark"] .arena-score-num,
+[data-theme="dark"] .arena-spinner,
+[data-theme="dark"] .arena-waiting-title,
+[data-theme="dark"] .bn-item.active .bn-label,
+[data-theme="dark"] .btn-back,
+[data-theme="dark"] .calc-field,
+[data-theme="dark"] .calc-formula,
+[data-theme="dark"] .calc-table th,
+[data-theme="dark"] .calc-table tr:last-child td,
+[data-theme="dark"] .ch-btn-secondary,
+[data-theme="dark"] .ch-card-title,
+[data-theme="dark"] .ch-lb-rank,
+[data-theme="dark"] .ch-mm-timer,
+[data-theme="dark"] .ch-opt-letter,
+[data-theme="dark"] .ch-score-big,
+[data-theme="dark"] .ch-step-txt strong,
+[data-theme="dark"] .ch-vs,
+[data-theme="dark"] .drcr-ai-answer,
+[data-theme="dark"] .drcr-chip,
+[data-theme="dark"] .drcr-slot.filled,
+[data-theme="dark"] .drcr-stat-val,
+[data-theme="dark"] .empty-state-title,
+[data-theme="dark"] .explain-label,
+[data-theme="dark"] .fab-item-label,
+[data-theme="dark"] .fb-ai, [data-theme="dark"] .explain,
+[data-theme="dark"] .fm-xp-pill,
+[data-theme="dark"] .fm-xp-val,
+[data-theme="dark"] .fs-subtotal-row,
+[data-theme="dark"] .fs-total-row, [data-theme="dark"] .fs-total,
+[data-theme="dark"] .je-dr,
+[data-theme="dark"] .lb-rank,
+[data-theme="dark"] .lb-xp,
+[data-theme="dark"] .mastery-name,
+[data-theme="dark"] .mastery-pct,
+[data-theme="dark"] .mission-title,
+[data-theme="dark"] .ob-g-btn.active, [data-theme="dark"] .choice-card.sel,
+[data-theme="dark"] .ob-mode-btn.active,
+[data-theme="dark"] .ob-text strong,
+[data-theme="dark"] .ob-title,
+[data-theme="dark"] .pill-navy,
+[data-theme="dark"] .plan .price, [data-theme="dark"] .plan-price,
+[data-theme="dark"] .post-author,
+[data-theme="dark"] .pro-card-title,
+[data-theme="dark"] .profile-item-label,
+[data-theme="dark"] .profile-stat-num,
+[data-theme="dark"] .q-standard,
+[data-theme="dark"] .qcard b, [data-theme="dark"] .qa-title,
+[data-theme="dark"] .qref-section-title,
+[data-theme="dark"] .rank-name,
+[data-theme="dark"] .ratio-val,
+[data-theme="dark"] .referral-code,
+[data-theme="dark"] .rival-name,
+[data-theme="dark"] .streak-toast,
+[data-theme="dark"] .sugg-chip, [data-theme="dark"] .sq-btn,
+[data-theme="dark"] .timer-ring-text,
+[data-theme="dark"] .trophy-name,
+[data-theme="dark"] .update-title,
+[data-theme="dark"] .vault-stat-val,
+[data-theme="dark"] .fm-sec-label,
+[data-theme="dark"] .ch-countdown-num,
+[data-theme="dark"] .combo-display,
+[data-theme="dark"] .ch-opp-status,
+[data-theme="dark"] .opt-letter,
+[data-theme="dark"] .ch-rating-change,
+[data-theme="dark"] .fm-speech-bubble {
+  color: var(--text) !important;
+}
 
 /* ── RESET ── */
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -1532,11 +1615,11 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 <div id="login-reward">
   <div class="lr-box">
     <div style="font-size:40px;line-height:1;margin-bottom:8px;">🎁</div>
-    <div id="lr-day-title" style="font-family:var(--font-display);font-size:24px;color:var(--navy);font-weight:600;margin-bottom:4px;">Day 1 Reward!</div>
+    <div id="lr-day-title" style="font-family:var(--font-display);font-size:24px;color:var(--text);font-weight:600;margin-bottom:4px;">Day 1 Reward!</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:20px;">Daily bonus — claim it!</div>
     <div class="lr-streak-row" id="lr-streak-row"></div>
     <div style="background:var(--gold-l);border-radius:12px;padding:14px;margin:12px 0;text-align:center;">
-      <div id="lr-coins-text" style="font-family:var(--font-mono);font-size:28px;font-weight:700;color:var(--navy);">+10 Coins</div>
+      <div id="lr-coins-text" style="font-family:var(--font-mono);font-size:28px;font-weight:700;color:var(--text);">+10 Coins</div>
       <div id="lr-xp-text" style="font-size:12px;color:var(--muted);margin-top:2px;">+10 XP bonus</div>
     </div>
     <button class="ob-btn" onclick="closeLoginReward()">Claim Reward →</button>
@@ -1562,9 +1645,9 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
         <button class="ob-g-btn" id="ob-female" onclick="selectMentor('female')">👩 Ms. Ledger</button>
       </div>
       <div style="width:100%;margin-top:8px;">
-        <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:6px;text-align:left;">What should we call you?</div>
+        <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;text-align:left;">What should we call you?</div>
         <input id="ob2-name-input" type="text" placeholder="Your first name" maxlength="30"
-          style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--font-body);outline:none;color:var(--navy);box-sizing:border-box;"
+          style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--font-body);outline:none;color:var(--text);box-sizing:border-box;"
           onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"/>
       </div>
       <div class="ob-dots"><div class="ob-dot"></div><div class="ob-dot active"></div><div class="ob-dot"></div><div class="ob-dot"></div></div>
@@ -1586,29 +1669,29 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;margin:4px 0;">
         <div style="background:var(--gold-l);border-radius:12px;padding:12px;text-align:center;">
           <div id="ob-coin-icon" style="margin-bottom:4px;display:flex;justify-content:center;"></div>
-          <div style="font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--navy);">240</div>
+          <div style="font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--text);">240</div>
           <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;">Coins</div>
         </div>
         <div style="background:var(--blue-ll);border-radius:12px;padding:12px;text-align:center;">
           <div style="font-size:28px;margin-bottom:4px;">⚡</div>
-          <div style="font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--navy);">0 XP</div>
+          <div style="font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--text);">0 XP</div>
           <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;">Experience</div>
         </div>
         <div style="background:var(--red-l);border-radius:12px;padding:12px;text-align:center;">
           <div style="font-size:28px;margin-bottom:4px;">🔥</div>
-          <div style="font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--navy);">0</div>
+          <div style="font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--text);">0</div>
           <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;">Streak</div>
         </div>
         <div style="background:var(--green-l);border-radius:12px;padding:12px;text-align:center;">
           <div style="font-size:28px;margin-bottom:4px;">❤️</div>
-          <div style="font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--navy);">3</div>
+          <div style="font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--text);">3</div>
           <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;">Lives</div>
         </div>
       </div>
       <div style="width:100%;background:var(--bg);border-radius:10px;padding:10px;display:flex;align-items:center;gap:8px;">
         <span style="font-size:16px;">🌱</span>
         <div style="flex:1;">
-          <div style="font-size:11px;font-weight:700;color:var(--navy);">Initiate → Partner</div>
+          <div style="font-size:11px;font-weight:700;color:var(--text);">Initiate → Partner</div>
           <div style="height:5px;background:var(--border);border-radius:3px;margin-top:4px;overflow:hidden;">
             <div style="height:100%;width:5%;background:linear-gradient(90deg,var(--blue),var(--gold));border-radius:3px;"></div>
           </div>
@@ -1616,9 +1699,9 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
         <span style="font-size:16px;">👑</span>
       </div>
       <div style="width:100%;margin-top:8px;margin-bottom:4px;">
-        <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:6px;">What should we call you?</div>
+        <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;">What should we call you?</div>
         <input id="ob-name-input" type="text" placeholder="Enter your name" maxlength="30"
-          style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--font-body);outline:none;color:var(--navy);box-sizing:border-box;"
+          style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--font-body);outline:none;color:var(--text);box-sizing:border-box;"
           onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"/>
       </div>
       <button class="ob-btn" style="width:100%;margin-top:4px;" onclick="closeOnboarding()">Start learning! 🏛️</button>
@@ -1825,7 +1908,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <!-- ── STREAK HEATMAP ── -->
   <div class="fm-card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-      <div style="font-size:12px;font-weight:800;color:var(--navy);">🔥 <span id="streak-heatmap-label">0-day streak</span></div>
+      <div style="font-size:12px;font-weight:800;color:var(--text);">🔥 <span id="streak-heatmap-label">0-day streak</span></div>
       <div style="font-size:10px;color:var(--muted);">Last 7 days</div>
     </div>
     <div style="display:flex;gap:5px;align-items:flex-end;height:56px;" id="streak-heatmap"></div>
@@ -1835,7 +1918,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div class="fm-sec-label">Daily Missions</div>
   <div class="fm-card" style="padding:14px;">
     <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
-      <span style="font-size:12px;font-weight:800;color:var(--navy);">Today's missions</span>
+      <span style="font-size:12px;font-weight:800;color:var(--text);">Today's missions</span>
       <span style="font-size:10px;color:var(--muted);font-family:var(--font-mono);">Resets in 14h</span>
     </div>
     <div class="mission-card"><div class="mission-icon">🏛️</div><div class="mission-info"><div class="mission-title">Answer 10 questions</div><div class="mission-sub" id="mission-q-sub">0 / 10 completed</div><div class="bar"><span id="mission-q-bar" style="width:0%;"></span></div></div><div class="mission-reward"><div class="mission-xp">+50 XP</div></div></div>
@@ -2016,12 +2099,12 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div class="fm-card" id="pro-recent-card">
     <div onclick="showScreen('topics');setTimeout(()=>startTopicPractice&&startTopicPractice('IFRS 16'),300)" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;cursor:pointer;transition:background .15s;border-bottom:1px solid var(--border2);" onmouseover="this.style.background='var(--blue-ll)'" onmouseout="this.style.background=''">
       <div style="width:38px;height:38px;border-radius:12px;background:var(--blue-ll);display:flex;align-items:center;justify-content:center;font-size:18px;">📌</div>
-      <div><div style="font-size:13px;font-weight:800;color:var(--navy);">IFRS 16 — Leases</div><div style="font-size:10px;color:var(--muted);">Last studied · Continue where you left off</div></div>
+      <div><div style="font-size:13px;font-weight:800;color:var(--text);">IFRS 16 — Leases</div><div style="font-size:10px;color:var(--muted);">Last studied · Continue where you left off</div></div>
       <div style="margin-left:auto;font-size:20px;color:var(--muted);">›</div>
     </div>
     <div onclick="showScreen('quickref')" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='var(--blue-ll)'" onmouseout="this.style.background=''">
       <div style="width:38px;height:38px;border-radius:12px;background:#D1FAE5;display:flex;align-items:center;justify-content:center;font-size:18px;">🗂️</div>
-      <div><div style="font-size:13px;font-weight:800;color:var(--navy);">Quick Reference</div><div style="font-size:10px;color:var(--muted);">Standards at a glance</div></div>
+      <div><div style="font-size:13px;font-weight:800;color:var(--text);">Quick Reference</div><div style="font-size:10px;color:var(--muted);">Standards at a glance</div></div>
       <div style="margin-left:auto;font-size:20px;color:var(--muted);">›</div>
     </div>
   </div>
@@ -2057,10 +2140,10 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 <div class="screen" id="screen-practice">
   <!-- Top bar: Back + Standard label + Lives -->
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-    <button onclick="exitPractice()" style="display:flex;align-items:center;gap:5px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:7px 12px;font-size:12px;font-weight:700;color:var(--navy);cursor:pointer;font-family:var(--font-body);">‹ Exit</button>
+    <button onclick="exitPractice()" style="display:flex;align-items:center;gap:5px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:7px 12px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;font-family:var(--font-body);">‹ Exit</button>
     <div style="flex:1;text-align:center;">
       <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;" id="practice-domain-label">IFRS</div>
-      <div style="font-size:13px;font-weight:800;color:var(--navy);" id="practice-standard-label">Practice Arena</div>
+      <div style="font-size:13px;font-weight:800;color:var(--text);" id="practice-standard-label">Practice Arena</div>
     </div>
     <div class="hearts-bar" style="padding:6px 10px;border-radius:10px;background:var(--surface);border:1px solid var(--border2);">
       <span class="heart-life" id="hl1">❤️</span><span class="heart-life" id="hl2">❤️</span><span class="heart-life" id="hl3">❤️</span>
@@ -2084,7 +2167,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div class="prog-wrap">
     <div class="prog-dots" id="prog-dots"></div>
     <div class="prog-meta" id="prog-meta">1 / 8</div>
-    <button id="arena-refresh-btn" onclick="arenaRefresh()" style="padding:6px 14px;border-radius:20px;background:var(--blue-ll);border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;color:var(--navy);display:flex;align-items:center;gap:4px;">🔄 Refresh</button>
+    <button id="arena-refresh-btn" onclick="arenaRefresh()" style="padding:6px 14px;border-radius:20px;background:var(--blue-ll);border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;color:var(--text);display:flex;align-items:center;gap:4px;">🔄 Refresh</button>
   </div>
   <!-- Near miss -->
   <div class="near-miss" id="near-miss"><span id="near-miss-text">🏅 Almost there!</span></div>
@@ -2120,14 +2203,14 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
       <div style="width:28px;height:28px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🤖</div>
       <div>
-        <div style="font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.08em;">FinMentra AI Explanation</div>
+        <div style="font-size:10px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.08em;">FinMentra AI Explanation</div>
         <div style="font-size:10px;color:var(--muted);">Tap the standard pill to see the paragraph reference</div>
       </div>
     </div>
     <div id="explain-text" style="font-size:13px;line-height:1.7;color:var(--text);"></div>
     <!-- Inline AI Follow-up (gated by subscription) -->
     <div id="ai-followup-panel" style="margin-top:12px;border-top:1px solid var(--border2);padding-top:10px;">
-      <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:6px;">Ask a follow-up question:</div>
+      <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;">Ask a follow-up question:</div>
       <div id="followup-quick-btns" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;"></div>
       <div style="display:flex;gap:6px;">
         <input id="followup-input" style="flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:12px;font-family:var(--font-body);background:var(--surface);color:var(--text);outline:none;" placeholder="Ask about this topic...">
@@ -2248,7 +2331,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
           <div class="ch-card-title">Global Rankings</div>
           <div class="ch-card-sub">Top players worldwide</div>
         </div>
-        <button onclick="chlLoadRankings()" style="margin-left:auto;background:var(--blue-ll);border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;color:var(--navy);cursor:pointer;font-family:var(--font-body);">Refresh</button>
+        <button onclick="chlLoadRankings()" style="margin-left:auto;background:var(--blue-ll);border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;color:var(--text);cursor:pointer;font-family:var(--font-body);">Refresh</button>
       </div>
       <div id="chl-rankings"><div style="text-align:center;padding:16px;color:var(--muted);font-size:12px;">Loading rankings...</div></div>
     </div>
@@ -2275,9 +2358,9 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     </div>
     <div class="ch-card" style="text-align:center;padding:28px;">
       <div class="ch-spinner"></div>
-      <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:6px;">Waiting for opponent...</div>
+      <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;">Waiting for opponent...</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:20px;">Share the code above with a friend</div>
-      <div style="background:var(--bg);border-radius:10px;padding:10px;font-size:12px;color:var(--navy);margin-bottom:16px;">
+      <div style="background:var(--bg);border-radius:10px;padding:10px;font-size:12px;color:var(--text);margin-bottom:16px;">
         Category: <strong id="chl-wait-cat">Mixed</strong> · <strong id="chl-wait-count">10</strong> Questions
       </div>
       <button class="ch-btn-danger" onclick="chlCancelWaiting()">✕ Cancel</button>
@@ -2288,7 +2371,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div id="chl-matchmaking" style="display:none;">
     <div style="text-align:center;padding:28px 16px 16px;">
       <div class="ch-mm-pulse">🌍</div>
-      <div style="font-size:16px;font-weight:800;color:var(--navy);margin-bottom:4px;" id="chl-mm-title">Finding your opponent...</div>
+      <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px;" id="chl-mm-title">Finding your opponent...</div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:8px;" id="chl-mm-sub">Searching worldwide</div>
       <div class="ch-mm-timer" id="chl-mm-timer">0:00</div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:20px;" id="chl-mm-hint">More players online on weekday evenings 🌙</div>
@@ -2297,7 +2380,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <div class="ch-player-card" style="margin-bottom:8px;">
         <div class="ch-player-avatar">🎓</div>
         <div style="flex:1;">
-          <div style="font-size:13px;font-weight:700;color:var(--navy);" id="chl-my-name">You</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);" id="chl-my-name">You</div>
           <div style="font-size:11px;color:var(--muted);">Rating: <span id="chl-my-rating" style="font-family:var(--font-mono);color:var(--gold);font-weight:700;">1000</span></div>
         </div>
         <div style="font-size:18px;">✅</div>
@@ -2312,17 +2395,17 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
         <div style="font-size:18px;" id="chl-opp-status">⏳</div>
       </div>
     </div>
-    <div style="text-align:center;padding:16px;font-size:12px;font-weight:700;color:var(--navy);background:var(--bg);border-radius:10px;margin:12px 4px;" id="chl-mm-topic">Topic: Mixed</div>
+    <div style="text-align:center;padding:16px;font-size:12px;font-weight:700;color:var(--text);background:var(--bg);border-radius:10px;margin:12px 4px;" id="chl-mm-topic">Topic: Mixed</div>
     <button class="ch-btn-secondary" onclick="chlCancelMatchmaking()">Cancel Search</button>
   </div>
 
   <!-- ── COUNTDOWN ── -->
   <div id="chl-countdown" style="display:none;">
     <div style="text-align:center;padding:40px 24px;">
-      <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:16px;" id="chl-cd-vs">You vs Opponent</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px;" id="chl-cd-vs">You vs Opponent</div>
       <div class="ch-countdown-num" id="chl-cd-num">3</div>
       <div style="margin-top:24px;padding:16px;background:var(--bg);border-radius:14px;">
-        <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px;">💡 Battle Tip</div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px;">💡 Battle Tip</div>
         <div style="font-size:11px;color:var(--muted);line-height:1.6;" id="chl-cd-tip">Answer fast — faster correct answers earn more points!</div>
       </div>
     </div>
@@ -2359,7 +2442,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div class="ch-card" style="padding:16px;">
       <div style="font-size:16px;font-weight:600;line-height:1.5;color:var(--text);margin-bottom:16px;" id="chl-b-question">Loading question...</div>
       <div id="chl-b-options"></div>
-      <div id="chl-b-explain" style="display:none;margin-top:12px;padding:12px;background:var(--blue-ll);border-radius:10px;font-size:12px;line-height:1.6;color:var(--navy);"></div>
+      <div id="chl-b-explain" style="display:none;margin-top:12px;padding:12px;background:var(--blue-ll);border-radius:10px;font-size:12px;line-height:1.6;color:var(--text);"></div>
     </div>
   </div>
 
@@ -2585,7 +2668,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 
   <!-- Error Hunt mode -->
   <div id="drcr-error-mode" style="display:none;">
-    <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:7px;">👇 One entry is wrong — tap it:</div>
+    <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:7px;">👇 One entry is wrong — tap it:</div>
     <div id="drcr-error-entries"></div>
   </div>
 
@@ -2606,7 +2689,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div class="drcr-para" id="drcr-fb-para"></div>
     <button class="drcr-btn-ai" id="drcr-ai-btn" onclick="drcrAskAI()">🤖 Ask Mr. Ledger AI — Why?</button>
     <div class="drcr-ai-answer" id="drcr-ai-answer">
-      <div style="font-size:9px;font-weight:700;color:var(--navy);margin-bottom:3px;">🤖 Mr. Ledger AI</div>
+      <div style="font-size:9px;font-weight:700;color:var(--text);margin-bottom:3px;">🤖 Mr. Ledger AI</div>
       <div id="drcr-ai-text"><div style="display:flex;gap:4px;"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>
     </div>
   </div>
@@ -2639,7 +2722,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div style="flex:1;font-size:12px;color:#92400E;"><strong>Free Plan:</strong> 15 questions/day · 5 AI questions/day.</div>
     <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
       <button class="btn btn-primary" style="padding:5px 12px;font-size:11px;" onclick="startProTrial()">Upgrade Pro</button>
-      <button class="btn" style="padding:5px 12px;font-size:11px;background:var(--surface);color:var(--navy);border:1px solid var(--border);" onclick="showAuthPopup()">Sign Up / Login</button>
+      <button class="btn" style="padding:5px 12px;font-size:11px;background:var(--surface);color:var(--text);border:1px solid var(--border);" onclick="showAuthPopup()">Sign Up / Login</button>
     </div>
   </div>
   <!-- Suggestion chips -->
@@ -2676,7 +2759,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       </div>
       <div class="chat-msg ai">
         <div class="msg-bubble"><strong>IFRS 15 — The 5-Step Revenue Model</strong><br><br>
-          <span style="display:inline-block;background:var(--blue-ll);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;color:var(--navy);margin-bottom:6px;">Para 9, 22, 31, 47, 73, 105</span><br>
+          <span style="display:inline-block;background:var(--blue-ll);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;">Para 9, 22, 31, 47, 73, 105</span><br>
           <strong>Step 1:</strong> Identify the contract with a customer<br>
           <strong>Step 2:</strong> Identify performance obligations<br>
           <strong>Step 3:</strong> Determine the transaction price<br>
@@ -2684,7 +2767,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
           <strong>Step 5:</strong> Recognise revenue when each obligation is satisfied<br><br>
           <em>Key test:</em> Revenue = when CONTROL transfers, not when cash is received or invoice issued.
         </div>
-        <div class="msg-actions"><button onclick="copyMsg(this)" title="Copy">📋</button><button onclick="reactMsg(this,'👍')">👍</button><button onclick="reactMsg(this,'👎')">👎</button><button onclick="saveToVault(this)" style="font-size:10px;color:var(--navy);font-weight:700;">Save 🗄️</button></div>
+        <div class="msg-actions"><button onclick="copyMsg(this)" title="Copy">📋</button><button onclick="reactMsg(this,'👍')">👍</button><button onclick="reactMsg(this,'👎')">👎</button><button onclick="saveToVault(this)" style="font-size:10px;color:var(--text);font-weight:700;">Save 🗄️</button></div>
       </div>
     </div>
     <div class="chat-input-row" style="background:var(--surface);border-top:1px solid var(--border2);align-items:flex-end;">
@@ -2713,7 +2796,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div class="gradient-border-inner" style="display:flex;align-items:center;gap:12px;">
       <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--purple),#A78BFA);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">👥</div>
       <div style="flex:1;">
-        <div style="font-size:13px;font-weight:700;color:var(--navy);">Study Buddy Matching</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);">Study Buddy Matching</div>
         <div style="font-size:11px;color:var(--muted);">Get matched with a learner at your level. Study together, compete, motivate.</div>
       </div>
       <button onclick="matchStudyBuddy()" style="background:var(--purple);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;">Match Me</button>
@@ -2784,7 +2867,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div class="card" style="text-align:center;padding:14px;">
       <canvas id="study-donut" width="80" height="80" style="display:block;margin:0 auto 8px;"></canvas>
       <div style="font-size:11px;color:var(--muted);">Study time</div>
-      <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--navy);" id="study-hours-count">0h</div>
+      <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--text);" id="study-hours-count">0h</div>
     </div>
     <div class="card" style="padding:14px;">
       <div style="font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Stats</div>
@@ -2792,7 +2875,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
         <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:var(--steel);">Questions</span><span style="font-family:var(--font-mono);font-weight:700;" id="stat-count-q">0</span></div>
         <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:var(--steel);">Accuracy</span><span style="font-family:var(--font-mono);font-weight:700;color:var(--green);" id="stat-count-acc">—</span></div>
         <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:var(--steel);">Best streak</span><span style="font-family:var(--font-mono);font-weight:700;color:var(--gold);" id="stat-count-streak">0</span></div>
-        <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:var(--steel);">Rank</span><span style="font-family:var(--font-mono);font-weight:700;color:var(--navy);" id="stat-count-rank">Initiate</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:var(--steel);">Rank</span><span style="font-family:var(--font-mono);font-weight:700;color:var(--text);" id="stat-count-rank">Initiate</span></div>
       </div>
     </div>
   </div>
@@ -2808,8 +2891,8 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div class="card-h"><div class="card-title">🏆 Achievement Timeline</div></div>
     <div id="achievement-timeline" style="position:relative;padding-left:20px;">
       <div style="position:absolute;left:8px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--gold),var(--blue));"></div>
-      <div style="margin-bottom:12px;"><div style="position:absolute;left:3px;width:12px;height:12px;border-radius:50%;background:var(--gold);"></div><div style="font-size:12px;font-weight:700;color:var(--navy);">First Question Answered</div><div style="font-size:10px;color:var(--muted);">Your learning journey begins</div></div>
-      <div style="margin-bottom:12px;"><div style="font-size:12px;font-weight:600;color:var(--navy);" id="timeline-rank">Initiate rank unlocked</div><div style="font-size:10px;color:var(--muted);">0 XP achieved</div></div>
+      <div style="margin-bottom:12px;"><div style="position:absolute;left:3px;width:12px;height:12px;border-radius:50%;background:var(--gold);"></div><div style="font-size:12px;font-weight:700;color:var(--text);">First Question Answered</div><div style="font-size:10px;color:var(--muted);">Your learning journey begins</div></div>
+      <div style="margin-bottom:12px;"><div style="font-size:12px;font-weight:600;color:var(--text);" id="timeline-rank">Initiate rank unlocked</div><div style="font-size:10px;color:var(--muted);">0 XP achieved</div></div>
       <div id="timeline-milestones"></div>
     </div>
   </div>
@@ -2824,11 +2907,11 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
       <div style="font-size:28px;">💎</div>
       <div>
-        <div style="font-family:var(--font-display);font-size:20px;font-weight:600;color:var(--purple);">Elite <span style="font-size:11px;font-weight:700;background:var(--purple);color:#fff;padding:2px 8px;border-radius:999px;vertical-align:middle;">COMING SOON</span></div>
-        <div style="font-size:11px;color:var(--purple);margin-top:2px;font-weight:600;">Priority AI · Team accounts · Advanced analytics</div>
+        <div style="font-family:var(--font-display);font-size:20px;font-weight:600;color:var(--text);">Elite <span style="font-size:11px;font-weight:700;background:var(--purple);color:#fff;padding:2px 8px;border-radius:999px;vertical-align:middle;">COMING SOON</span></div>
+        <div style="font-size:11px;color:var(--text);margin-top:2px;font-weight:600;">Priority AI · Team accounts · Advanced analytics</div>
       </div>
     </div>
-    <ul style="list-style:none;font-size:12px;display:flex;flex-direction:column;gap:5px;margin-bottom:14px;color:var(--purple);opacity:.85;">
+    <ul style="list-style:none;font-size:12px;display:flex;flex-direction:column;gap:5px;margin-bottom:14px;color:var(--text);opacity:.85;">
       <li>✓ Everything in Pro</li>
       <li>✓ Unlimited AI questions</li>
       <li>✓ Team / group accounts</li>
@@ -2896,7 +2979,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div id="je-output" style="display:none;">
     <div class="card accent">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;"><span class="pill pill-navy" id="je-std-pill">IFRS 15</span><span style="font-size:11px;color:var(--muted);" id="je-para">Para —</span></div>
-      <div style="font-family:var(--font-display);font-size:16px;font-weight:600;color:var(--navy);margin-bottom:10px;" id="je-title">—</div>
+      <div style="font-family:var(--font-display);font-size:16px;font-weight:600;color:var(--text);margin-bottom:10px;" id="je-title">—</div>
       <div class="qref-je" id="je-entries"></div>
       <div style="margin-top:10px;font-size:12px;color:var(--text);line-height:1.6;" id="je-note"></div>
       <div id="je-trap-box" style="display:none;margin-top:8px;background:var(--red-l);border-radius:7px;padding:8px 10px;"><div style="font-size:9px;font-weight:700;color:var(--red);margin-bottom:2px;">⚠️ EXAM TRAP</div><div style="font-size:11px;color:#7F1D1D;line-height:1.6;" id="je-trap"></div></div>
@@ -2921,7 +3004,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <option value="manufacturing">🏭 Manufacturing company</option>
       <option value="retail">🛍️ Retail business</option>
     </select>
-    <button onclick="undoLastFSRow()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface);font-family:var(--font-body);font-size:12px;font-weight:700;color:var(--navy);cursor:pointer;" title="Undo last added row">↩ Undo</button>
+    <button onclick="undoLastFSRow()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface);font-family:var(--font-body);font-size:12px;font-weight:700;color:var(--text);cursor:pointer;" title="Undo last added row">↩ Undo</button>
     <button onclick="exportFSToPDF()" style="padding:7px 12px;border:none;border-radius:8px;background:var(--navy);color:#fff;font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;">⬇ PDF</button>
   </div>
 
@@ -3085,7 +3168,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   </div>
   <div class="card">
     <div class="card-h"><div class="card-title">📅 Study</div></div>
-    <div class="profile-item"><div class="profile-item-icon">📅</div><div class="profile-item-label">Exam Date</div><input type="date" id="exam-date" style="border:none;background:none;font-family:var(--font-mono);font-size:12px;color:var(--navy);outline:none;" onchange="S.examDate=this.value;toast('Exam date saved!')"></div>
+    <div class="profile-item"><div class="profile-item-icon">📅</div><div class="profile-item-label">Exam Date</div><input type="date" id="exam-date" style="border:none;background:none;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none;" onchange="S.examDate=this.value;toast('Exam date saved!')"></div>
     <div class="profile-item"><div class="profile-item-icon">♿</div><div class="profile-item-label">Reduce Motion</div><button class="toggle" data-setting="motion" onclick="toggleReduceMotion(this)"></button></div>
     <div class="profile-item" style="border-bottom:none;"><div class="profile-item-icon">🤚</div><div class="profile-item-label">Left-handed Mode</div><button class="toggle" data-setting="lefthanded" onclick="toggleLeftHand(this)"></button></div>
   </div>
@@ -3099,8 +3182,8 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 
   <!-- Legal links -->
   <div style="display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border2);">
-    <a href="https://www.finmentra.com/privacy" target="_blank" style="flex:1;display:block;text-align:center;padding:10px;background:var(--bg);border:1px solid var(--border2);border-radius:10px;font-size:12px;font-weight:700;color:var(--navy);text-decoration:none;">🔒 Privacy Policy</a>
-    <a href="mailto:support@finmentra.com" style="flex:1;display:block;text-align:center;padding:10px;background:var(--bg);border:1px solid var(--border2);border-radius:10px;font-size:12px;font-weight:700;color:var(--navy);text-decoration:none;">✉️ Contact Us</a>
+    <a href="https://www.finmentra.com/privacy.html" target="_blank" style="flex:1;display:block;text-align:center;padding:10px;background:var(--bg);border:1px solid var(--border2);border-radius:10px;font-size:12px;font-weight:700;color:var(--text);text-decoration:none;">🔒 Privacy Policy</a>
+    <a href="mailto:support@finmentra.com" style="flex:1;display:block;text-align:center;padding:10px;background:var(--bg);border:1px solid var(--border2);border-radius:10px;font-size:12px;font-weight:700;color:var(--text);text-decoration:none;">✉️ Contact Us</a>
   </div>
 
   <button class="btn btn-block" style="background:var(--navy);color:#fff;margin-top:8px;" onclick="logoutUser()" id="profile-logout-btn">🚪 Logout</button>
@@ -3120,7 +3203,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 <div class="screen" id="screen-notes">
   <div class="card">
     <div class="card-h"><div class="card-title">📝 My Notes</div><button class="btn btn-primary" style="padding:5px 12px;font-size:11px;" onclick="toast('Note saved!')">Save</button></div>
-    <input id="note-title" style="width:100%;border:none;border-bottom:1px solid var(--border);padding:8px 0;font-size:14px;font-weight:700;color:var(--navy);outline:none;background:transparent;margin-bottom:10px;" placeholder="Note title...">
+    <input id="note-title" style="width:100%;border:none;border-bottom:1px solid var(--border);padding:8px 0;font-size:14px;font-weight:700;color:var(--text);outline:none;background:transparent;margin-bottom:10px;" placeholder="Note title...">
     <textarea style="width:100%;border:none;outline:none;font-size:13px;line-height:1.7;background:transparent;resize:vertical;min-height:160px;font-family:var(--font-body);" placeholder="Key formulas, mnemonics, principles..."></textarea>
   </div>
   <div class="sec-label">Saved Notes</div>
@@ -3372,13 +3455,13 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div style="position:relative;padding-left:26px;">
     <div style="position:absolute;left:10px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--green),var(--navy));"></div>
     <div style="position:absolute;left:4px;top:8px;width:14px;height:14px;border-radius:50%;background:var(--green);border:2px solid var(--surface);"></div>
-    <div class="card" style="margin-bottom:10px;"><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);">2025</div><div style="font-weight:700;color:var(--navy);margin-top:2px;">IFRS 18 — Presentation & Disclosure</div><div style="font-size:11px;color:var(--steel);margin-top:4px;">Replaces IAS 1. Categorised P&L: operating / investing / financing. Effective 2027.</div></div>
+    <div class="card" style="margin-bottom:10px;"><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);">2025</div><div style="font-weight:700;color:var(--text);margin-top:2px;">IFRS 18 — Presentation & Disclosure</div><div style="font-size:11px;color:var(--steel);margin-top:4px;">Replaces IAS 1. Categorised P&L: operating / investing / financing. Effective 2027.</div></div>
     <div style="position:absolute;left:4px;top:calc(8px + 110px);width:14px;height:14px;border-radius:50%;background:var(--blue);border:2px solid var(--surface);"></div>
-    <div class="card" style="margin-bottom:10px;"><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);">2021</div><div style="font-weight:700;color:var(--navy);margin-top:2px;">IFRS 17 — Insurance Contracts</div><div style="font-size:11px;color:var(--steel);margin-top:4px;">Replaced IFRS 4. GMM, PAA and VFA measurement models. Effective 2023.</div></div>
-    <div class="card" style="margin-bottom:10px;"><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);">2016</div><div style="font-weight:700;color:var(--navy);margin-top:2px;">IFRS 16 — Leases</div><div style="font-size:11px;color:var(--steel);margin-top:4px;">Replaced IAS 17. Effective 2019. Added ~$3 trillion to global balance sheets.</div></div>
-    <div class="card" style="margin-bottom:10px;"><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);">2014</div><div style="font-weight:700;color:var(--navy);margin-top:2px;">IFRS 15 — Revenue from Contracts</div><div style="font-size:11px;color:var(--steel);margin-top:4px;">Replaced IAS 18 & IAS 11. Universal 5-step model. Effective 2018.</div></div>
-    <div class="card" style="margin-bottom:10px;"><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);">2014</div><div style="font-weight:700;color:var(--navy);margin-top:2px;">IFRS 9 — Financial Instruments</div><div style="font-size:11px;color:var(--steel);margin-top:4px;">Replaced IAS 39. Forward-looking ECL model. Effective 2018.</div></div>
-    <div class="card"><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);">2005 &amp; earlier</div><div style="font-weight:700;color:var(--navy);margin-top:2px;">IAS Foundation Standards</div><div style="font-size:11px;color:var(--steel);margin-top:4px;">IAS 1, 2, 7, 8, 10, 12, 16, 19, 36, 37, 38, 40 — the core accounting rulebook.</div></div>
+    <div class="card" style="margin-bottom:10px;"><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);">2021</div><div style="font-weight:700;color:var(--text);margin-top:2px;">IFRS 17 — Insurance Contracts</div><div style="font-size:11px;color:var(--steel);margin-top:4px;">Replaced IFRS 4. GMM, PAA and VFA measurement models. Effective 2023.</div></div>
+    <div class="card" style="margin-bottom:10px;"><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);">2016</div><div style="font-weight:700;color:var(--text);margin-top:2px;">IFRS 16 — Leases</div><div style="font-size:11px;color:var(--steel);margin-top:4px;">Replaced IAS 17. Effective 2019. Added ~$3 trillion to global balance sheets.</div></div>
+    <div class="card" style="margin-bottom:10px;"><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);">2014</div><div style="font-weight:700;color:var(--text);margin-top:2px;">IFRS 15 — Revenue from Contracts</div><div style="font-size:11px;color:var(--steel);margin-top:4px;">Replaced IAS 18 & IAS 11. Universal 5-step model. Effective 2018.</div></div>
+    <div class="card" style="margin-bottom:10px;"><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);">2014</div><div style="font-weight:700;color:var(--text);margin-top:2px;">IFRS 9 — Financial Instruments</div><div style="font-size:11px;color:var(--steel);margin-top:4px;">Replaced IAS 39. Forward-looking ECL model. Effective 2018.</div></div>
+    <div class="card"><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);">2005 &amp; earlier</div><div style="font-weight:700;color:var(--text);margin-top:2px;">IAS Foundation Standards</div><div style="font-size:11px;color:var(--steel);margin-top:4px;">IAS 1, 2, 7, 8, 10, 12, 16, 19, 36, 37, 38, 40 — the core accounting rulebook.</div></div>
   </div>
 </div>
 
@@ -3397,7 +3480,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   </div>
   <div class="card" style="text-align:center;padding:24px;">
     <div style="font-size:48px;margin-bottom:12px;">🧪</div>
-    <div style="font-family:var(--font-display);font-size:20px;font-weight:600;color:var(--navy);margin-bottom:8px;">First-time Setup</div>
+    <div style="font-family:var(--font-display);font-size:20px;font-weight:600;color:var(--text);margin-bottom:8px;">First-time Setup</div>
     <div style="font-size:13px;color:var(--steel);margin-bottom:16px;line-height:1.7;">Answer 20 questions to identify your weak spots. Takes ~8 minutes.</div>
     <div class="statgrid" style="margin-bottom:16px;">
       <div class="card" style="padding:10px;text-align:center;"><b style="font-family:var(--font-mono);font-size:18px;">20</b><span style="font-size:10px;color:var(--steel);">Questions</span></div>
@@ -3535,12 +3618,12 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div class="card excel-section" data-cat="shortcuts">
     <div class="card-h"><div class="card-title">Power User Shortcuts</div></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;">
-      <div style="background:var(--bg);border-radius:7px;padding:7px 9px;"><div style="font-family:var(--font-mono);font-weight:700;color:var(--navy);">Ctrl+Shift+L</div><div style="color:var(--muted);margin-top:1px;">Toggle AutoFilter</div></div>
-      <div style="background:var(--bg);border-radius:7px;padding:7px 9px;"><div style="font-family:var(--font-mono);font-weight:700;color:var(--navy);">Alt+H+O+I</div><div style="color:var(--muted);margin-top:1px;">AutoFit column width</div></div>
-      <div style="background:var(--bg);border-radius:7px;padding:7px 9px;"><div style="font-family:var(--font-mono);font-weight:700;color:var(--navy);">F4</div><div style="color:var(--muted);margin-top:1px;">Toggle $absolute refs</div></div>
-      <div style="background:var(--bg);border-radius:7px;padding:7px 9px;"><div style="font-family:var(--font-mono);font-weight:700;color:var(--navy);">Ctrl+T</div><div style="color:var(--muted);margin-top:1px;">Create Table</div></div>
-      <div style="background:var(--bg);border-radius:7px;padding:7px 9px;"><div style="font-family:var(--font-mono);font-weight:700;color:var(--navy);">Ctrl+Alt+V</div><div style="color:var(--muted);margin-top:1px;">Paste Special</div></div>
-      <div style="background:var(--bg);border-radius:7px;padding:7px 9px;"><div style="font-family:var(--font-mono);font-weight:700;color:var(--navy);">Ctrl+`</div><div style="color:var(--muted);margin-top:1px;">Show all formulas</div></div>
+      <div style="background:var(--bg);border-radius:7px;padding:7px 9px;"><div style="font-family:var(--font-mono);font-weight:700;color:var(--text);">Ctrl+Shift+L</div><div style="color:var(--muted);margin-top:1px;">Toggle AutoFilter</div></div>
+      <div style="background:var(--bg);border-radius:7px;padding:7px 9px;"><div style="font-family:var(--font-mono);font-weight:700;color:var(--text);">Alt+H+O+I</div><div style="color:var(--muted);margin-top:1px;">AutoFit column width</div></div>
+      <div style="background:var(--bg);border-radius:7px;padding:7px 9px;"><div style="font-family:var(--font-mono);font-weight:700;color:var(--text);">F4</div><div style="color:var(--muted);margin-top:1px;">Toggle $absolute refs</div></div>
+      <div style="background:var(--bg);border-radius:7px;padding:7px 9px;"><div style="font-family:var(--font-mono);font-weight:700;color:var(--text);">Ctrl+T</div><div style="color:var(--muted);margin-top:1px;">Create Table</div></div>
+      <div style="background:var(--bg);border-radius:7px;padding:7px 9px;"><div style="font-family:var(--font-mono);font-weight:700;color:var(--text);">Ctrl+Alt+V</div><div style="color:var(--muted);margin-top:1px;">Paste Special</div></div>
+      <div style="background:var(--bg);border-radius:7px;padding:7px 9px;"><div style="font-family:var(--font-mono);font-weight:700;color:var(--text);">Ctrl+`</div><div style="color:var(--muted);margin-top:1px;">Show all formulas</div></div>
     </div>
   </div>
   <div class="card excel-section" data-cat="errors">
@@ -3548,7 +3631,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div style="display:flex;flex-direction:column;gap:7px;font-size:12px;">
       <div style="display:flex;gap:10px;align-items:flex-start;padding:8px;background:var(--red-l);border-radius:8px;"><div style="font-family:var(--font-mono);font-weight:700;color:var(--red);min-width:60px;">#REF!</div><div>Referenced cell was deleted. Trace dependents (Ctrl+]) to find.</div></div>
       <div style="display:flex;gap:10px;align-items:flex-start;padding:8px;background:var(--gold-l);border-radius:8px;"><div style="font-family:var(--font-mono);font-weight:700;color:#92400E;min-width:60px;">#VALUE!</div><div>Wrong data type in formula. Check for text in numeric cells.</div></div>
-      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px;background:var(--blue-ll);border-radius:8px;"><div style="font-family:var(--font-mono);font-weight:700;color:var(--navy);min-width:60px;">#DIV/0!</div><div>Division by zero. Use =IFERROR(A1/B1,"—") to handle.</div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px;background:var(--blue-ll);border-radius:8px;"><div style="font-family:var(--font-mono);font-weight:700;color:var(--text);min-width:60px;">#DIV/0!</div><div>Division by zero. Use =IFERROR(A1/B1,"—") to handle.</div></div>
       <div style="display:flex;gap:10px;align-items:flex-start;padding:8px;background:var(--purple-l);border-radius:8px;"><div style="font-family:var(--font-mono);font-weight:700;color:var(--purple);min-width:60px;">#N/A</div><div>Lookup value not found. Check exact/approximate match in VLOOKUP.</div></div>
     </div>
   </div>
@@ -4243,7 +4326,7 @@ async function startTopicPractice(num){
         '<div style="font-size:32px;margin-bottom:10px;">📶</div>' +
         '<div style="color:var(--muted);margin-bottom:16px;font-size:13px;">Questions taking a while…</div>' +
         '<button onclick="startTopicPractice(\'' + _std + '\')" style="display:block;width:100%;padding:12px;background:var(--navy);color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);margin-bottom:8px;">🔄 Refresh Questions</button>' +
-        '<button onclick="startSession()" style="display:block;width:100%;padding:10px;background:var(--surface);color:var(--navy);border:1.5px solid var(--border);border-radius:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);">↩ Load default topic</button>' +
+        '<button onclick="startSession()" style="display:block;width:100%;padding:10px;background:var(--surface);color:var(--text);border:1.5px solid var(--border);border-radius:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);">↩ Load default topic</button>' +
         '</div>';
     }
   }, 5000);
@@ -4657,7 +4740,7 @@ function answerQ(idx,btn,q){
         'What is the exam trap here?',
         'Which paragraph covers this?',
       ];
-      fqb.innerHTML=chips.map(c=>'<button onclick="askFollowUp(\''+c+'\')" style="background:var(--blue-ll);color:var(--navy);border:1px solid var(--blue-l);border-radius:999px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--font-body);">'+c+'</button>').join('');
+      fqb.innerHTML=chips.map(c=>'<button onclick="askFollowUp(\''+c+'\')" style="background:var(--blue-ll);color:var(--text);border:1px solid var(--blue-l);border-radius:999px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--font-body);">'+c+'</button>').join('');
     }
     // Show remaining follow-up count
     const fl=document.getElementById('followup-limit');
@@ -4909,6 +4992,9 @@ function toggleDarkMode(){
   document.documentElement.setAttribute('data-theme',S.darkMode?'dark':'light');
   try{localStorage.setItem('fm_dark',S.darkMode?'1':'0');}catch(e){}
   ['dark-toggle','dark-toggle-s'].forEach(id=>{const t=document.getElementById(id);if(t) t.classList.toggle('on',S.darkMode);});
+  // Re-render canvas charts so they pick up new theme colors immediately
+  if(typeof renderStudyDonut==='function') renderStudyDonut();
+  if(typeof renderRadarChart==='function') renderRadarChart();
 }
 
 // ── ONBOARDING ──
@@ -5055,7 +5141,7 @@ function buildLoginRewardUI(){
           <div class="lr-day-circle ${isDone?'done':''} ${isToday?'today':''}" style="font-size:${isDone?'14px':isToday?'16px':'11px'};font-weight:${isFuture?'700':'800'};color:${isDone?'var(--green)':isFuture?'var(--steel)':'inherit'};">
             ${isDone?'✓':isToday?'🔥':'?'}
           </div>
-          <div class="lr-day-lbl" style="${isToday?'color:var(--navy);font-weight:700;':''}">${dayName}</div>`;
+          <div class="lr-day-lbl" style="${isToday?'color:var(--text);font-weight:700;':''}">${dayName}</div>`;
         row.appendChild(div);
       }
     }
@@ -5133,8 +5219,8 @@ function updatePlanUI(){
   freeCard.style.cssText = 'border:1.5px solid ' + (free ? 'var(--navy)' : 'var(--border)') + ';position:relative;margin-bottom:12px;';
   freeCard.innerHTML =
     (free ? '<div style="position:absolute;top:12px;right:12px;font-size:9px;padding:3px 8px;border-radius:999px;background:var(--green-l);color:var(--green);font-weight:700;">✓ CURRENT PLAN</div>' : '') +
-    '<div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--navy);">Free</div>' +
-    '<div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--navy);margin:6px 0;">$0<span style="font-size:13px;color:var(--steel);font-weight:400;">/month</span></div>' +
+    '<div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--text);">Free</div>' +
+    '<div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--text);margin:6px 0;">$0<span style="font-size:13px;color:var(--steel);font-weight:400;">/month</span></div>' +
     '<ul style="list-style:none;font-size:12px;display:flex;flex-direction:column;gap:5px;margin-bottom:12px;">' +
       '<li>✓ 15 questions/day</li>' +
       '<li>✓ 5 AI questions/day <span style="color:var(--muted);font-size:10px;">(30/month cap)</span></li>' +
@@ -5157,8 +5243,8 @@ function updatePlanUI(){
     (pro
       ? '<div style="position:absolute;top:12px;right:12px;font-size:9px;padding:3px 8px;border-radius:999px;background:var(--green-l);color:var(--green);font-weight:700;">✓ ACTIVE</div>'
       : '<div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),#FCD34D);color:var(--navy);font-size:9px;font-weight:800;padding:3px 12px;border-radius:999px;letter-spacing:.1em;">MOST POPULAR</div>') +
-    '<div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--navy);margin-top:8px;">Pro</div>' +
-    '<div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--navy);margin:6px 0;">$5<span style="font-size:13px;color:var(--steel);font-weight:400;">/month</span></div>' +
+    '<div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--text);margin-top:8px;">Pro</div>' +
+    '<div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--text);margin:6px 0;">$5<span style="font-size:13px;color:var(--steel);font-weight:400;">/month</span></div>' +
     (pro
       ? '<div style="font-size:10px;color:var(--green);font-weight:700;margin-bottom:8px;">✓ Your plan is active</div>'
       : '<div style="font-size:10px;color:var(--green);font-weight:700;margin-bottom:8px;">7-day free trial included</div>') +
@@ -5409,7 +5495,7 @@ function updateAIBanner(){
       '<div style="flex:1;font-size:12px;color:#92400E;"><strong>Free Plan</strong> — Upgrade to unlock unlimited access.</div>'+
       '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">'+
         '<button class="btn btn-primary" style="padding:5px 12px;font-size:11px;" onclick="startProTrial()">Upgrade Pro</button>'+
-        (!loggedIn ? '<button class="btn" style="padding:5px 12px;font-size:11px;background:var(--surface);color:var(--navy);border:1px solid var(--border);" onclick="showAuthPopup()">Sign Up / Login</button>' : '')+
+        (!loggedIn ? '<button class="btn" style="padding:5px 12px;font-size:11px;background:var(--surface);color:var(--text);border:1px solid var(--border);" onclick="showAuthPopup()">Sign Up / Login</button>' : '')+
       '</div>';
     if(planLabel) planLabel.textContent = 'Free Plan';
     if(planLabel) planLabel.style.color = 'var(--blue-l)';
@@ -5447,11 +5533,19 @@ function getDailyQRemaining(){
   // Never return unlimited for non-logged-in users
   // Only unlimited for confirmed logged-in pro users
   if(_currentUser && isPro()) return 999;
-  // Everyone else: check localStorage count
-  const used = parseInt(localStorage.getItem(getDailyQKey()) || '0');
+  // Everyone else: check Supabase for logged-in users, localStorage fallback for guests
+  const used = getDailyQUsed();
   return Math.max(0, 15 - used);
 }
+
 function getDailyQUsed(){
+  // For logged-in users: check Supabase (server-authoritative)
+  if(_currentUser && S.userId){
+    // Synchronous check: use the cached value from S.dailyQCount if available
+    // Async refresh happens in background via loadUserProgress
+    if(S.dailyQCount !== undefined) return S.dailyQCount;
+  }
+  // Fallback for guests: use localStorage
   return parseInt(localStorage.getItem(getDailyQKey()) || '0');
 }
 
@@ -5473,8 +5567,25 @@ function incrementDailyQ(){
   try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return; }catch(e){}
   const key = getDailyQKey();
   const used = parseInt(localStorage.getItem(key) || '0');
-  localStorage.setItem(key, String(used + 1));
-  S.dailyQCount = used + 1;
+  const newUsed = used + 1;
+  localStorage.setItem(key, String(newUsed));
+  S.dailyQCount = newUsed;
+  
+  // For logged-in users: also update Supabase in background
+  if(_currentUser && S.userId){
+    (async function(){
+      try{
+        const today = new Date().toISOString().split('T')[0];
+        await _supa.from('user_progress').update({
+          daily_questions_used: newUsed,
+          daily_questions_date: today
+        }).eq('user_id', S.userId);
+      }catch(e){
+        console.error('Failed to update daily count on server:', e);
+        // Even if Supabase fails, localStorage is still updated, so app continues working
+      }
+    })();
+  }
 }
 
 function checkPlanFeature(feature){
@@ -6224,7 +6335,7 @@ function filterJEEntries(query){
     if(matches.length>0){
       sug.innerHTML=matches.slice(0,6).map(function(o){
         var idx=Array.from(document.getElementById('je-scenario').querySelectorAll('option')).indexOf(o);
-        return '<div onmousedown="drPickJEByIndex('+idx+')" ontouchstart="drPickJEByIndex('+idx+')" style="padding:9px 12px;font-size:12px;font-weight:600;color:var(--navy);border-bottom:1px solid var(--border2);cursor:pointer;background:var(--surface);" onmouseover="this.style.background=\'var(--blue-ll)\'" onmouseout="this.style.background=\'var(--surface)\'">'+o.textContent+'</div>';
+        return '<div onmousedown="drPickJEByIndex('+idx+')" ontouchstart="drPickJEByIndex('+idx+')" style="padding:9px 12px;font-size:12px;font-weight:600;color:var(--text);border-bottom:1px solid var(--border2);cursor:pointer;background:var(--surface);" onmouseover="this.style.background=\'var(--blue-ll)\'" onmouseout="this.style.background=\'var(--surface)\'">'+o.textContent+'</div>';
       }).join('');
       sug.style.display='block';
     } else {
@@ -6290,7 +6401,7 @@ function filterFormulas(query){
     var hints=FORMULA_LIST.filter(function(f){return f.toLowerCase().includes(q);}).slice(0,5);
     if(hints.length>0){
       sug.innerHTML=hints.map(function(h){
-        return '<div onclick="drPickFormula(\''+h+'\')" style="padding:8px 12px;font-size:12px;font-weight:600;color:var(--navy);border-bottom:1px solid var(--border2);cursor:pointer;background:var(--surface);" onmouseover="this.style.background=\'var(--blue-ll)\'" onmouseout="this.style.background=\'var(--surface)\'">🧮 '+h+'</div>';
+        return '<div onclick="drPickFormula(\''+h+'\')" style="padding:8px 12px;font-size:12px;font-weight:600;color:var(--text);border-bottom:1px solid var(--border2);cursor:pointer;background:var(--surface);" onmouseover="this.style.background=\'var(--blue-ll)\'" onmouseout="this.style.background=\'var(--surface)\'">🧮 '+h+'</div>';
       }).join('');
       sug.style.display='block';
     } else {
@@ -7295,7 +7406,7 @@ function doGlobalSearch(val) {
     <div class="card" style="cursor:pointer;padding:10px 14px;margin-bottom:6px;" onclick="${h.action.toString().replace(/"/g,"'")}">
       <div style="display:flex;align-items:center;gap:8px;">
         <span style="font-size:14px;">${h.type==='topic'?'📚':h.type==='question'?'❓':'📒'}</span>
-        <div><div style="font-size:13px;font-weight:600;color:var(--navy);">${h.label}</div><div style="font-size:10px;color:var(--muted);">${h.sub}</div></div>
+        <div><div style="font-size:13px;font-weight:600;color:var(--text);">${h.label}</div><div style="font-size:10px;color:var(--muted);">${h.sub}</div></div>
         <span style="margin-left:auto;color:var(--steel);">›</span>
       </div>
     </div>`).join('');
@@ -7502,10 +7613,10 @@ function showExitConfirm(){
     modal.innerHTML=
       '<div style="background:var(--surface);border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);">'+
       '<div style="font-size:36px;margin-bottom:12px;">🚪</div>'+
-      '<div style="font-family:var(--font-display);font-size:20px;font-weight:600;color:var(--navy);margin-bottom:8px;">Exit session?</div>'+
+      '<div style="font-family:var(--font-display);font-size:20px;font-weight:600;color:var(--text);margin-bottom:8px;">Exit session?</div>'+
       '<div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6;" id="exit-confirm-stats">Your progress will be saved.</div>'+
       '<div style="display:flex;gap:10px;">'+
-      '<button onclick="closeExitConfirm()" style="flex:1;padding:12px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--navy);cursor:pointer;">Keep going</button>'+
+      '<button onclick="closeExitConfirm()" style="flex:1;padding:12px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--text);cursor:pointer;">Keep going</button>'+
       '<button onclick="confirmExit()" style="flex:1;padding:12px;border-radius:12px;border:none;background:var(--red);color:#fff;font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer;">Exit session</button>'+
       '</div></div>';
     document.body.appendChild(modal);
@@ -7628,7 +7739,7 @@ function sendFollowUp(){
       if(!text && data.error) text = 'Error: ' + data.error;
       if(!text) text = 'Sorry, could not get a response.';
       var html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
-      ansDiv.innerHTML = '<div style="font-size:13px;line-height:1.6;color:var(--navy);">' + html + '</div>';
+      ansDiv.innerHTML = '<div style="font-size:13px;line-height:1.6;color:var(--text);">' + html + '</div>';
       // Cache answer for all users
       _supa.from('ai_explanations').upsert({ cache_key: qKey, question: questionText.substring(0,200), student_query: q.substring(0,100), answer: html, standard: std, created_at: new Date().toISOString() }, { onConflict: 'cache_key' }).then(function(){}).catch(function(){});
     }).catch(function(err){
@@ -7640,7 +7751,7 @@ function sendFollowUp(){
   _supa.from('ai_explanations').select('answer').eq('cache_key', qKey).single()
     .then(function(res){
       if(res.data && res.data.answer){
-        ansDiv.innerHTML = '<div style="font-size:13px;line-height:1.6;color:var(--navy);">' + res.data.answer + '<br><span style="font-size:10px;color:var(--muted);">⚡ Instant answer</span></div>';
+        ansDiv.innerHTML = '<div style="font-size:13px;line-height:1.6;color:var(--text);">' + res.data.answer + '<br><span style="font-size:10px;color:var(--muted);">⚡ Instant answer</span></div>';
       } else { doAICall(); }
     }).catch(function(){ doAICall(); });
 }
@@ -8283,12 +8394,16 @@ function renderStudyDonut(){
   const goal=120; // 2 hour goal
   const pct=Math.min(1,studyMins/goal);
   const r=30,cx=W/2,cy=H/2;
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  const trackColor=isDark?'#1E3568':'#E2E8F0';
+  const progColor=isDark?'#8FA3FF':'#0A1F6E';
+  const textColor=isDark?'#E6ECFB':'#0A1F6E';
   // Background circle
-  ctx2.beginPath();ctx2.arc(cx,cy,r,0,Math.PI*2);ctx2.strokeStyle='var(--border2)';ctx2.lineWidth=8;ctx2.stroke();
+  ctx2.beginPath();ctx2.arc(cx,cy,r,0,Math.PI*2);ctx2.strokeStyle=trackColor;ctx2.lineWidth=8;ctx2.stroke();
   // Progress arc
-  ctx2.beginPath();ctx2.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+pct*Math.PI*2);ctx2.strokeStyle='#0A1F6E';ctx2.lineWidth=8;ctx2.lineCap='round';ctx2.stroke();
+  ctx2.beginPath();ctx2.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+pct*Math.PI*2);ctx2.strokeStyle=progColor;ctx2.lineWidth=8;ctx2.lineCap='round';ctx2.stroke();
   // Center text
-  ctx2.fillStyle='#0A1F6E';ctx2.font='bold 13px var(--font-mono, monospace)';ctx2.textAlign='center';ctx2.textBaseline='middle';
+  ctx2.fillStyle=textColor;ctx2.font='bold 13px var(--font-mono, monospace)';ctx2.textAlign='center';ctx2.textBaseline='middle';
   ctx2.fillText(Math.round(pct*100)+'%',cx,cy);
   // Update count
   const sh=document.getElementById('study-hours-count');
@@ -8306,6 +8421,12 @@ function renderRadarChart(){
   const scores=[0.92,0.78,0.65,0.64,0.55,0.41]; // Example mastery scores
   const n=topics.length;
   const angle=(i)=>-Math.PI/2+(i/n)*Math.PI*2;
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  const gridColor=isDark?'#1E3568':'#E2E8F0';
+  const fillColor=isDark?'rgba(143,163,255,.18)':'rgba(10,31,110,.15)';
+  const lineColor=isDark?'#8FA3FF':'#0A1F6E';
+  const pointColor=isDark?'#8FA3FF':'#0A1F6E';
+  const labelColor=isDark?'#94A3B8':'#64748B';
   // Draw grid
   [0.25,0.5,0.75,1].forEach(scale=>{
     ctx2.beginPath();
@@ -8313,13 +8434,13 @@ function renderRadarChart(){
       const a=angle(i),x=cx+Math.cos(a)*r*scale,y=cy+Math.sin(a)*r*scale;
       i===0?ctx2.moveTo(x,y):ctx2.lineTo(x,y);
     });
-    ctx2.closePath();ctx2.strokeStyle='var(--border2)';ctx2.lineWidth=1;ctx2.stroke();
+    ctx2.closePath();ctx2.strokeStyle=gridColor;ctx2.lineWidth=1;ctx2.stroke();
   });
   // Draw axes
   topics.forEach((_,i)=>{
     const a=angle(i);
     ctx2.beginPath();ctx2.moveTo(cx,cy);ctx2.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);
-    ctx2.strokeStyle='var(--border2)';ctx2.lineWidth=1;ctx2.stroke();
+    ctx2.strokeStyle=gridColor;ctx2.lineWidth=1;ctx2.stroke();
   });
   // Draw data polygon
   ctx2.beginPath();
@@ -8328,15 +8449,15 @@ function renderRadarChart(){
     i===0?ctx2.moveTo(x,y):ctx2.lineTo(x,y);
   });
   ctx2.closePath();
-  ctx2.fillStyle='rgba(10,31,110,.15)';ctx2.fill();
-  ctx2.strokeStyle='#0A1F6E';ctx2.lineWidth=2;ctx2.stroke();
+  ctx2.fillStyle=fillColor;ctx2.fill();
+  ctx2.strokeStyle=lineColor;ctx2.lineWidth=2;ctx2.stroke();
   // Draw points
   topics.forEach((_,i)=>{
     const a=angle(i),x=cx+Math.cos(a)*r*scores[i],y=cy+Math.sin(a)*r*scores[i];
-    ctx2.beginPath();ctx2.arc(x,y,4,0,Math.PI*2);ctx2.fillStyle='#0A1F6E';ctx2.fill();
+    ctx2.beginPath();ctx2.arc(x,y,4,0,Math.PI*2);ctx2.fillStyle=pointColor;ctx2.fill();
   });
   // Labels
-  ctx2.fillStyle='#64748B';ctx2.font='9px Arial';ctx2.textAlign='center';
+  ctx2.fillStyle=labelColor;ctx2.font='9px Arial';ctx2.textAlign='center';
   topics.forEach((t,i)=>{
     const a=angle(i),x=cx+Math.cos(a)*(r+16),y=cy+Math.sin(a)*(r+16);
     ctx2.fillText(t,x,y+3);
@@ -8376,7 +8497,7 @@ function updateProfileStats(){
       .filter(m=>S.totalQ>=m[0])
       .forEach(m=>{
         const d=document.createElement('div');d.style.cssText='margin-bottom:12px;';
-        d.innerHTML='<div style="font-size:12px;font-weight:700;color:var(--navy);">'+m[1]+'</div><div style="font-size:10px;color:var(--muted);">'+m[0]+' questions milestone</div>';
+        d.innerHTML='<div style="font-size:12px;font-weight:700;color:var(--text);">'+m[1]+'</div><div style="font-size:10px;color:var(--muted);">'+m[0]+' questions milestone</div>';
         mt.appendChild(d);
       });
   }
@@ -8412,7 +8533,7 @@ function processNotifQueue(){
   bar.innerHTML='';
   const iconSpan=document.createElement('span');iconSpan.style.cssText='font-size:20px;flex-shrink:0;';iconSpan.textContent=n.icon;
   const textDiv=document.createElement('div');textDiv.style.cssText='flex:1;min-width:0;';
-  textDiv.innerHTML='<div style="font-size:12px;font-weight:700;color:var(--navy);">'+n.title+'</div><div style="font-size:11px;color:var(--muted);">'+n.msg+'</div>';
+  textDiv.innerHTML='<div style="font-size:12px;font-weight:700;color:var(--text);">'+n.title+'</div><div style="font-size:11px;color:var(--muted);">'+n.msg+'</div>';
   const closeBtn=document.createElement('button');closeBtn.style.cssText='background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted);flex-shrink:0;';closeBtn.textContent='✕';
   closeBtn.addEventListener('click',function(){bar.style.transform='translateY(-80px)';bar.style.opacity='0';});
   bar.appendChild(iconSpan);bar.appendChild(textDiv);bar.appendChild(closeBtn);
@@ -8933,7 +9054,7 @@ function calcRatios(){
   if(!container) return;
   container.innerHTML=ratios.map(r=>`
     <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg);border-radius:8px;border-left:3px solid ${r.ok?'var(--green)':'var(--red)'};">
-      <div><div style="font-size:12px;font-weight:700;color:var(--navy);">${r.name}</div><div style="font-size:9px;color:var(--muted);">Benchmark: ${r.bench}</div></div>
+      <div><div style="font-size:12px;font-weight:700;color:var(--text);">${r.name}</div><div style="font-size:9px;color:var(--muted);">Benchmark: ${r.bench}</div></div>
       <div style="font-family:var(--font-mono);font-size:16px;font-weight:700;color:${r.ok?'var(--green)':'var(--red)'};">${r.val}</div>
     </div>`).join('');
 }
@@ -9049,7 +9170,7 @@ function buildConfidenceSlider(){
   const existing=document.getElementById('confidence-wrap');if(existing) existing.remove();
   const wrap=document.createElement('div');wrap.id='confidence-wrap';
   wrap.style.cssText='margin-top:8px;';
-  wrap.innerHTML='<div style="font-size:10px;color:var(--muted);margin-bottom:4px;">How confident are you?</div><input class="confidence-slider" type="range" min="1" max="5" value="3" id="conf-inp"><span id="conf-lbl" style="font-size:11px;color:var(--navy);font-weight:700;margin-left:8px;">Medium</span>';
+  wrap.innerHTML='<div style="font-size:10px;color:var(--muted);margin-bottom:4px;">How confident are you?</div><input class="confidence-slider" type="range" min="1" max="5" value="3" id="conf-inp"><span id="conf-lbl" style="font-size:11px;color:var(--text);font-weight:700;margin-left:8px;">Medium</span>';
   wrap.querySelector('#conf-inp').addEventListener('input',function(){
     const labels=['','Low','Unsure','Medium','Confident','Very sure!'];
     const lbl=wrap.querySelector('#conf-lbl');
@@ -9506,14 +9627,25 @@ function showLimitPopup(type){
   // 5 more free (soft only, bonus not used today)
   var _bonusKey = getDailyQKey() + '_bonus';
   var _bonusUsedToday = localStorage.getItem(_bonusKey) === '1';
+  // For logged-in users, also check Supabase (Issue 4 defensive fix)
   if(isSoft && !_bonusUsedToday){
-    box.appendChild(makeBtn('Continue with 5 more free \u27A1','#EEF2FF','#0A1F6E', function(){
+    box.appendChild(makeBtn('Continue with 5 more free →','#EEF2FF','#0A1F6E', function(){
       _guestBonusUsed = true;
       try{ localStorage.setItem(getDailyQKey()+'_bonus','1'); }catch(e){}
+      // Also update Supabase if logged in
+      if(isLoggedIn && _currentUser){
+        (async function(){
+          try{
+            await _supa.from('user_progress').update({
+              daily_bonus_used: true
+            }).eq('user_id', _currentUser.id);
+          }catch(e){}
+        })();
+      }
       overlay.remove();
       // Re-enable next button so user can continue from where they were
       var _nb=document.getElementById('next-btn');
-      if(_nb){ _nb.disabled=false; _nb.textContent='Next \u203A'; }
+      if(_nb){ _nb.disabled=false; _nb.textContent='Next ›'; }
       // If no active question session, start one
       if(!S.sessionQs || S.sessionQs.length===0){
         if(typeof startSession==='function') startSession();
@@ -9675,7 +9807,7 @@ const _origAnswerQ=answerQ;
   display: flex; align-items: center; justify-content: center;
   font-size: 20px; flex-shrink: 0;
 }
-.ch-card-title { font-size: 14px; font-weight: 800; color: var(--navy); }
+.ch-card-title { font-size: 14px; font-weight: 800; color: var(--ink); }
 .ch-card-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
 
 /* Online matchmaking card */
@@ -13072,6 +13204,26 @@ async function loadUserProgress() {
           if(lt && lt !== 'free'){ S.plan=lt; S.tier=lt; S.aiPlan=lt; }
         }catch(e){}
       }
+      // Load daily question count from Supabase (Issue 3 fix)
+      if(data.daily_questions_date){
+        const today = new Date().toISOString().split('T')[0];
+        // If the date in DB matches today, use the server count; otherwise reset to 0
+        if(data.daily_questions_date === today){
+          S.dailyQCount = data.daily_questions_used || 0;
+        } else {
+          // New day — reset to 0 and sync to DB
+          S.dailyQCount = 0;
+          try{
+            await _supa.from('user_progress').update({
+              daily_questions_used: 0,
+              daily_questions_date: today
+            }).eq('user_id', _currentUser.id);
+          }catch(e){}
+        }
+      } else {
+        // Columns don't exist yet or no data — use localStorage fallback
+        S.dailyQCount = parseInt(localStorage.getItem(getDailyQKey()) || '0');
+      }
       // Always enforce demo account as pro (even if DB has 'free')
       if(_currentUser && _currentUser.email === 'demo@finmentra.com'){
         S.plan='pro'; S.tier='pro'; S.aiPlan='pro';
@@ -13345,26 +13497,8 @@ _offlineCheckInterval = setInterval(function(){
 
 
 (async function checkSession() {
-  // Handle token in URL hash (Supabase OAuth redirect)
-  if(window.location.hash && window.location.hash.includes('access_token')){
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const accessToken = hashParams.get('access_token');
-    const refreshToken = hashParams.get('refresh_token');
-    if(accessToken){
-      const storageKey = 'sb-vofxhqnipoywbbkmlxcp-auth-token';
-      const sessionData = {
-        access_token: accessToken,
-        refresh_token: refreshToken || '',
-        token_type: 'bearer',
-        expires_in: parseInt(hashParams.get('expires_in') || '3600'),
-        expires_at: parseInt(hashParams.get('expires_at') || (Math.floor(Date.now()/1000) + 3600))
-      };
-      localStorage.setItem(storageKey, JSON.stringify(sessionData));
-      window.history.replaceState({}, document.title, window.location.pathname);
-      window.location.reload();
-      return;
-    }
-  }
+  // Supabase SDK's detectSessionInUrl:true (line 101) handles OAuth redirects automatically
+  // No manual hash-parsing needed — it would create conflicts
 
   let data;
   try {
@@ -15122,11 +15256,11 @@ async function chlLoadRankings(){
         <div class="ch-lb-rank ${medals[i]||''}">${i<3?['🥇','🥈','🥉'][i]:i+1}</div>
         <div style="font-size:18px;">${tier.icon}</div>
         <div style="flex:1;">
-          <div style="font-size:13px;font-weight:700;color:var(--navy);">${name}${isMe?' 👈':''}</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);">${name}${isMe?' 👈':''}</div>
           <div style="font-size:10px;color:var(--muted);">${tier.name} · ${p.wins||0}W ${p.losses||0}L · Streak: ${p.win_streak||0}</div>
         </div>
         <div style="text-align:right;">
-          <div style="font-family:var(--font-mono);font-size:15px;font-weight:700;color:var(--navy);">${p.rating||1000}</div>
+          <div style="font-family:var(--font-mono);font-size:15px;font-weight:700;color:var(--text);">${p.rating||1000}</div>
           <div style="font-size:9px;color:var(--muted);">${p.total_played||0} played</div>
         </div>
       </div>`;
@@ -15862,7 +15996,7 @@ function chlShowResults(result, myScore, oppScore, xpReward, ratingChange){
 
   // Breakdown
   if(breakdownEl){
-    const header = '<div style="padding:12px 14px;font-size:11px;font-weight:700;color:var(--navy);border-bottom:1px solid var(--border);">Your answers</div>';
+    const header = '<div style="padding:12px 14px;font-size:11px;font-weight:700;color:var(--text);border-bottom:1px solid var(--border);">Your answers</div>';
     const rows = CHL.myAnswers.map((a,i)=>{
       const q = CHL.questions[i];
       const pts = a.points || 0;
