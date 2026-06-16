@@ -23,7 +23,7 @@
       "@type": "WebApplication",
       "name": "FinMentra",
       "url": "https://www.finmentra.com",
-      "description": "Gamified finance education app for ACCA, CPA, IFRS and IAS exam students. Features Arena quizzes, Debit and Credit drill, Case Studies, Boss Battle and AI-powered explanations.",
+      "description": "AI-powered finance learning app helping students prepare for ACCA, CPA, CMA and CA exams. Practice IFRS, IAS and ISA standards with gamified quizzes, Debit and Credit drills, real-world case studies, Boss Battle challenges and instant AI explanations.",
       "applicationCategory": "EducationApplication",
       "operatingSystem": "Android, Web",
       "offers": {
@@ -36,7 +36,7 @@
         "ratingValue": "5",
         "ratingCount": "12"
       },
-      "featureList": "ACCA exam preparation, IFRS quiz, IAS standards, Debit Credit drill, Case Studies, AI explanations"
+      "featureList": "ACCA exam preparation, CPA exam preparation, CMA exam preparation, IFRS quiz, IAS standards, ISA audit standards, Debit Credit drill, Case Studies, AI explanations"
     },
     {
       "@type": "Organization",
@@ -57,8 +57,8 @@
 </script>
 
 <!-- SEO Meta Tags -->
-<meta name="description" content="Master ACCA, CPA, IFRS and IAS with FinMentra — the gamified finance education app. Arena, Dr/Cr Drill, Case Studies, Boss Battle and more."/>
-<meta name="keywords" content="ACCA, CPA, IFRS, IAS, finance education, accounting, exam preparation, gamified learning"/>
+<meta name="description" content="FinMentra is an AI-powered finance learning app helping you master ACCA, CPA, CMA and CA exams. Practice IFRS, IAS and ISA standards with Arena quizzes, Dr/Cr Drill, Case Studies, Boss Battle and more."/>
+<meta name="keywords" content="ACCA exam prep, CPA exam prep, CMA exam prep, CA exam prep, IFRS practice questions, IAS standards quiz, ISA audit standards, financial reporting, finance education, accounting exam preparation, AI learning, gamified learning, journal entries practice, debit and credit drill, accounting case studies, financial accounting app, management accounting practice"/>
 <meta name="author" content="FinMentra"/>
 <meta name="theme-color" content="#0A1F6E"/>
 
@@ -66,7 +66,7 @@
 <meta property="og:type" content="website"/>
 <meta property="og:url" content="https://www.finmentra.com"/>
 <meta property="og:title" content="FinMentra — Finance Education App"/>
-<meta property="og:description" content="Master ACCA, CPA, IFRS and IAS with gamified learning. Arena quizzes, Dr/Cr Drill, Case Studies and AI-powered explanations."/>
+<meta property="og:description" content="FinMentra is an AI-powered finance learning app helping you master ACCA, CPA, CMA and CA exams. IFRS and IAS practice through Arena quizzes, Dr/Cr Drill, Case Studies and instant AI explanations."/>
 <meta property="og:image" content="https://www.finmentra.com/favicon.png"/>
 <meta property="og:image:width" content="1200"/>
 <meta property="og:image:height" content="630"/>
@@ -75,7 +75,7 @@
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:title" content="FinMentra — Finance Education App"/>
-<meta name="twitter:description" content="Master ACCA, CPA, IFRS and IAS with gamified learning."/>
+<meta name="twitter:description" content="FinMentra — AI-powered ACCA, CPA, CMA and CA exam prep with gamified IFRS and IAS practice."/>
 <meta name="twitter:image" content="https://www.finmentra.com/favicon.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -645,15 +645,6 @@ a{color:inherit;text-decoration:none;}
 .ratio-row span.lab{font-size:12px;}
 .ratio-row span.bench{font-size:10px;color:var(--steel);display:block;}
 
-/* ── CPD ── */
-.cpd-circle{display:grid;place-items:center;padding:12px;}
-.cpd-circle svg{display:block;}
-.cpd-hours{font-family:var(--font-mono);font-size:42px;font-weight:500;color:var(--navy);text-anchor:middle;dominant-baseline:central;fill:var(--ink);}
-.cpd-log-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border2);}
-.cpd-log-item:last-child{border-bottom:none;}
-.cpd-log-title{font-size:12px;font-weight:600;color:var(--navy);}
-.cpd-log-date{font-size:10px;color:var(--muted);}
-.cpd-log-hrs{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--blue);}
 
 /* ── DISCLOSURE ── */
 .check-item,.checkitem{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border2);cursor:pointer;}
@@ -1489,6 +1480,9 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div class="auth-box">
     <div class="auth-logo">Fin<em>Mentra</em></div>
     <div class="auth-sub">Where Finance Becomes Second Nature</div>
+    <p style="font-size:12px;line-height:1.6;color:#94A3B8;text-align:center;margin:10px 0 18px;">
+      FinMentra is an AI-powered finance learning app that helps you master accounting and financial reporting standards through interactive quizzes, exam-style case studies, journal entry drills and instant AI explanations — built for active, exam-ready practice instead of passive textbook reading.
+    </p>
 
     <!-- Social login buttons -->
     <button class="auth-social-btn" onclick="signInWithGoogle()">
@@ -1525,7 +1519,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <span class="auth-skip" onclick="startAsGuest()" style="display:block;margin-top:14px;padding:12px;background:var(--bg);border:2px dashed #4A6CF7;border-radius:12px;text-align:center;font-size:13px;font-weight:700;color:#4A6CF7;text-decoration:none;cursor:pointer;">🎯 Try 15 free questions — no account needed</span>
 
     <div style="margin-top:12px;font-size:10px;color:#94A3B8;">
-      By continuing you agree to our <a href="https://www.finmentra.com/privacy" target="_blank" style="color:#4A6CF7;text-decoration:none;font-weight:700;">Terms & Privacy Policy</a>
+      By continuing you agree to our <a href="https://www.finmentra.com/privacy.html" target="_blank" style="color:#4A6CF7;text-decoration:none;font-weight:700;">Terms & Privacy Policy</a>
     </div>
   </div>
 </div>
@@ -1581,7 +1575,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <p class="ob-text">We'll personalise your experience based on your goal.</p>
       <div class="ob-mode-row">
         <button class="ob-mode-btn active" id="ob-student-btn" onclick="selectObMode('student')"><span class="ob-mode-icon">🎓</span>Student<br><span style="font-weight:400;font-size:10px;color:var(--muted);">Exam prep</span></button>
-        <button class="ob-mode-btn" id="ob-pro-btn" onclick="selectObMode('professional')"><span class="ob-mode-icon">💼</span>Professional<br><span style="font-weight:400;font-size:10px;color:var(--muted);">Daily work & CPD</span></button>
+        <button class="ob-mode-btn" id="ob-pro-btn" onclick="selectObMode('professional')"><span class="ob-mode-icon">💼</span>Professional<br><span style="font-weight:400;font-size:10px;color:var(--muted);">Daily work & practice</span></button>
       </div>
       <div class="ob-dots"><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot active"></div><div class="ob-dot"></div></div>
       <button class="ob-btn" onclick="obNext(3)">Continue →</button>
@@ -1891,7 +1885,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
         <div style="font-family:var(--font-display);font-size:24px;font-weight:700;color:#fff;line-height:1.15;margin-bottom:6px;" id="pro-greeting">Good morning.<br>What are you working on?</div>
         <div style="font-size:12px;color:rgba(255,255,255,.45);margin-bottom:16px;">Advanced tools for finance professionals</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <div style="background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);border-radius:999px;padding:5px 12px;font-size:11px;font-weight:800;color:var(--gold);">⚡ CPD Tracker</div>
+        <div style="background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);border-radius:999px;padding:5px 12px;font-size:11px;font-weight:800;color:var(--gold);">⚔️ Challenge Mode</div>
         <div style="background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.25);border-radius:999px;padding:5px 12px;font-size:11px;font-weight:800;color:#10B981;" id="pro-streak-pill">🔥 0 day streak</div>
       </div>
       </div>
@@ -1990,11 +1984,6 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <div class="pro-tool-sub">Ask any standard</div>
       <div style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,.25);color:#fff;font-size:9px;font-weight:900;border-radius:6px;padding:2px 6px;">PRO</div>
     </div>
-    <div class="pro-tool-card" data-e="📋" style="background:#F065AA;" onclick="fmCardTap(this,'cpd')">
-      <div class="pro-tool-emoji">📋</div>
-      <div class="pro-tool-title">CPD Tracker</div>
-      <div class="pro-tool-sub">Track your hours</div>
-    </div>
   </div>
 
   <!-- PRO PRACTICE SECTION -->
@@ -2042,7 +2031,6 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div class="pro-card" onclick="showScreen('jebuilder')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#DCFCE7;">📒</div><div><div class="pro-card-title">Journal Entry Builder</div><div class="pro-card-sub">Pick a scenario → correct debit/credit with standard reference</div></div></div></div>
   <div class="pro-card" onclick="showScreen('fsbuilder')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#E0F2FE;">📊</div><div><div class="pro-card-title">Financial Statements Suite</div><div class="pro-card-sub">Build, analyse and compare IAS 1 compliant statements</div></div></div></div>
   <div class="pro-card" onclick="showScreen('disclosure')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#FEF3C7;">✅</div><div><div class="pro-card-title">Disclosure Checklist</div><div class="pro-card-sub">IFRS disclosure requirements — tick off what's needed</div></div></div></div>
-  <div class="pro-card" onclick="showScreen('cpd')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#EDE9FE;">📜</div><div><div class="pro-card-title">CPD Tracker</div><div class="pro-card-sub">Log hours, track progress, generate certificates</div></div><span class="pill pill-green">40h goal</span></div></div>
   <div class="pro-card" onclick="showScreen('updates')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#FEE2E2;">🔔</div><div><div class="pro-card-title">Standard Updates Feed</div><div class="pro-card-sub">Latest IASB amendments, exposure drafts and new standards</div></div><span class="pill pill-red">3 new</span></div></div>
   <div class="pro-card" onclick="showScreen('client-scenario')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#EDE9FE;">🏢</div><div><div class="pro-card-title">Client Scenario Simulator</div><div class="pro-card-sub">Practice real-world accounting decisions</div></div></div></div>
   <div class="pro-card" onclick="showScreen('audit-file')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#E0F2FE;">🔍</div><div><div class="pro-card-title">Audit File Simulator</div><div class="pro-card-sub">Working papers, findings, sign-off</div></div></div></div>
@@ -3058,25 +3046,6 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   </div>
 </div>
 
-<!-- ══ CPD TRACKER ══ -->
-<div class="screen" id="screen-cpd">
-  <div class="card cpd-circle">
-    <svg width="180" height="180" viewBox="0 0 180 180">
-      <circle cx="90" cy="90" r="70" fill="none" stroke="var(--blue-ll)" stroke-width="14"/>
-      <circle cx="90" cy="90" r="70" fill="none" stroke="var(--teal)" stroke-width="14" stroke-dasharray="439.8" stroke-dashoffset="236" stroke-linecap="round" transform="rotate(-90 90 90)"/>
-      <text x="90" y="86" class="cpd-hours" style="font-size:32px;font-family:var(--font-mono);font-weight:700;">18.5</text>
-      <text x="90" y="108" font-size="11" text-anchor="middle" fill="var(--steel)" font-family="var(--font-mono)">of 40 hrs</text>
-    </svg>
-  </div>
-  <button class="btn btn-teal btn-block" onclick="toast('CPD activity logged')">+ Log CPD Activity</button>
-  <div class="card"><div class="card-h"><div class="card-title">Recent Activity</div></div>
-    <div class="cpd-log-item"><span style="font-size:16px;">📚</span><div style="flex:1;"><div class="cpd-log-title">IFRS 18 webinar</div><div class="cpd-log-date">12 Apr 2026</div></div><span class="pill pill-teal">2.0h</span></div>
-    <div class="cpd-log-item"><span style="font-size:16px;">🎓</span><div style="flex:1;"><div class="cpd-log-title">ICAEW IAS 36 course</div><div class="cpd-log-date">3 Apr 2026</div></div><span class="pill pill-teal">4.5h</span></div>
-    <div class="cpd-log-item"><span style="font-size:16px;">📰</span><div style="flex:1;"><div class="cpd-log-title">Big-4 IFRS update</div><div class="cpd-log-date">28 Mar 2026</div></div><span class="pill pill-teal">1.0h</span></div>
-  </div>
-  <button class="btn btn-secondary btn-block" onclick="toast('CPD certificate generated')">🏅 Generate CPD Certificate</button>
-</div>
-
 <!-- ══ DISCLOSURE CHECKLIST ══ -->
 <div class="screen" id="screen-disclosure">
   <div class="card"><div class="row between" style="margin-bottom:8px;"><div class="card-title">IFRS Disclosures</div><span class="pill pill-teal" id="disc-done">0 done</span></div>
@@ -3907,7 +3876,7 @@ let currentJECat='all';
 
 // ── SCREEN NAV ──
 const STUDENT_TABS=[{id:'home',icon:'🏠',label:'Home'},{id:'topics',icon:'📚',label:'Topics'},{id:'practice',icon:'🏛️',label:'Arena'},{id:'challenge',icon:'⚔️',label:'Challenge'},{id:'progress',icon:'🗺️',label:'Path'},{id:'profile',icon:'👤',label:'Profile'}];
-const PRO_TABS=[{id:'pro-home',icon:'🏠',label:'Home'},{id:'quickref',icon:'📋',label:'Reference'},{id:'fsbuilder',icon:'📊',label:'Stmts'},{id:'cpd',icon:'📜',label:'CPD'},{id:'profile',icon:'👤',label:'Profile'}];
+const PRO_TABS=[{id:'pro-home',icon:'🏠',label:'Home'},{id:'quickref',icon:'📋',label:'Reference'},{id:'fsbuilder',icon:'📊',label:'Stmts'},{id:'challenge',icon:'⚔️',label:'Challenge'},{id:'profile',icon:'👤',label:'Profile'}];
 
 function renderBottomNav(){
   const nav=document.getElementById('bottom-nav');
@@ -3919,7 +3888,6 @@ function showScreen(id){
   // ── GATES FIRST — before any screen activation ──
   if(!isPro()){
     if(id==='fsbuilder')   { _fmProGate('Financial Statement Builder','pro-home'); return; }
-    if(id==='cpd')         { _fmProGate('CPD Tracker','pro-home'); return; }
     if(id==='ethics')      { _fmProGate('Ethics Module','pro-home'); return; }
     if(id==='client-scenario'){ _fmProGate('Case Studies','pro-home'); return; }
     if(id==='excel')       { _fmProGate('Excel for Finance','pro-home'); return; }
@@ -5172,7 +5140,6 @@ function updatePlanUI(){
       '<li>✓ 5 AI questions/day <span style="color:var(--muted);font-size:10px;">(30/month cap)</span></li>' +
       '<li>✓ Basic progress tracking</li>' +
       '<li style="color:var(--muted);">✗ Pro tools</li>' +
-      '<li style="color:var(--muted);">✗ CPD certificates</li>' +
     '</ul>';
   const freeBtn = document.createElement('button');
   freeBtn.className = 'btn btn-secondary';
@@ -5198,8 +5165,7 @@ function updatePlanUI(){
     '<ul style="list-style:none;font-size:12px;display:flex;flex-direction:column;gap:5px;margin-bottom:12px;">' +
       '<li>✓ Unlimited questions</li>' +
       '<li>✓ <strong>50 AI questions/month</strong></li>' +
-      '<li>✓ All Pro tools (FS Builder, JE, CPD)</li>' +
-      '<li>✓ CPD certificates</li>' +
+      '<li>✓ All Pro tools (FS Builder, JE Builder)</li>' +
       '<li>✓ Study buddy matching</li>' +
       '<li>✓ Multiplayer & challenge mode</li>' +
       '<li>✓ AI follow-up threads</li>' +
@@ -8035,7 +8001,7 @@ const SCREEN_LABELS={
   drcr:'Debit & Credit',
   challenge:'Challenge', trophy:'Trophy Room', profile:'Profile',
   quickref:'Quick Ref', jebuilder:'JE Builder', fsbuilder:'Statements',
-  cpd:'CPD', disclosure:'Disclosures', updates:'Updates',
+  disclosure:'Disclosures', updates:'Updates',
   settings:'Settings', bookmarks:'Bookmarks', notes:'Notes',
   coinshop:'Shop', formulas:'Formulas', comparisons:'Comparisons',
   traps:'Exam Traps', timeline:'Timeline', search:'Search',
@@ -17467,7 +17433,7 @@ function checkFreeAccess(tool, limit){
 }
 var FOX_SCREEN_MSG = {
   "home":        ["Ready to level up? 🚀","IFRS won't study itself! 📚","You're on a roll! 🔥","Let's crush it today! 💪"],
-  "pro-home":    ["Time to impress clients! 💼","Pro mode activated! ⚡","Let's build something great!","CPD hours ticking! ⏱️"],
+  "pro-home":    ["Time to impress clients! 💼","Pro mode activated! ⚡","Let's build something great!","Ready for a challenge match? ⚔️"],
   "topics":      ["Pick your standard! 📖","81 standards, infinite wisdom 🦊","Knowledge is power!","Which one today? 🎯"],
   "practice":    ["Answer fast for bonus XP! ⚡","Think before you click! 🤔","You've got this! 💪","FinFox believes in you! 📊"],
   "challenge":   ["Let's battle! ⚔️","ELO on the line! 😤","Show them who's boss!","FinFox is watching! 🦊"],
@@ -17480,7 +17446,6 @@ var FOX_SCREEN_MSG = {
   "quickref":    ["Standards at a glance! 🔍","Quick! Before the exam! ⏰","IASB simplified it! 😄"],
   "comparisons": ["IFRS vs GAAP - fight! 🥊","The differences will surprise you! 😮"],
   "formulas":    ["Math time! FinFox will help 🧮","Key ratios for key decisions! 📊","Exam gold formulas! 🥇"],
-  "cpd":         ["Log those CPD hours! ⏱️","Your license needs renewing! 😅","Professional development rocks! 🚀"],
   "settings":    ["Customise your experience! ⚙️","Dark mode? Smart choice! 🌙","Making it yours! 🦊"],
   "leaderboard": ["Can you reach #1? 🏆","FinFox believes in you! 💪","Top of the league incoming! ⬆️"]
 };
@@ -17534,7 +17499,7 @@ setTimeout(function() { showFoxScreenMessage('home'); }, 1500);
   var proMsgs = [
     "On it! 💼", "Let's crush it! 🦊", "Client meeting ready? 📊",
     "IFRS 16 mastered! ✅", "Pro mode: ON ⚡", "Building those financials! 📈",
-    "CPD hours? On track! 🏆", "Audit season ready! 🔍"
+    "Challenge a peer? ⚔️", "Audit season ready! 🔍"
   ];
   var i = 0;
   setInterval(function() {
