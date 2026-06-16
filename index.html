@@ -6006,11 +6006,62 @@ function _fmDayKey(prefix){
   var d=new Date();
   return prefix+'_'+d.getFullYear()+'_'+(d.getMonth()+1)+'_'+d.getDate();
 }
-function _fmGetUsed(prefix){ return parseInt(localStorage.getItem(_fmDayKey(prefix))||'0'); }
+function _fmGetUsed(prefix){
+  // For logged-in users: check Supabase (server-authoritative)
+  if(_currentUser && _currentUser.id){
+    // Map prefix to S property name: fm_qref -> dailyQrefUsed, fm_cmp -> dailyCmpUsed, etc.
+    var propMap = {
+      'fm_qref': 'dailyQrefUsed',
+      'fm_cmp': 'dailyCmpUsed',
+      'fm_fml': 'dailyFmlUsed',
+      'fm_je': 'dailyJeUsed',
+      'fm_vlt': 'dailyVltUsed'
+    };
+    var propName = propMap[prefix];
+    if(propName && S[propName] !== undefined) return S[propName];
+  }
+  // Fallback for guests: use localStorage
+  return parseInt(localStorage.getItem(_fmDayKey(prefix))||'0');
+}
 function _fmIncrement(prefix){
   if(isPro()) return;
   var k=_fmDayKey(prefix);
-  localStorage.setItem(k, String(_fmGetUsed(prefix)+1));
+  var newUsed = _fmGetUsed(prefix) + 1;
+  localStorage.setItem(k, String(newUsed));
+  
+  // For logged-in users: also update Supabase in background
+  if(_currentUser && _currentUser.id){
+    var propMap = {
+      'fm_qref': 'dailyQrefUsed',
+      'fm_cmp': 'dailyCmpUsed',
+      'fm_fml': 'dailyFmlUsed',
+      'fm_je': 'dailyJeUsed',
+      'fm_vlt': 'dailyVltUsed'
+    };
+    var propName = propMap[prefix];
+    var colMap = {
+      'fm_qref': 'daily_qref_used',
+      'fm_cmp': 'daily_cmp_used',
+      'fm_fml': 'daily_fml_used',
+      'fm_je': 'daily_je_used',
+      'fm_vlt': 'daily_vlt_used'
+    };
+    var colName = colMap[prefix];
+    if(propName && colName){
+      S[propName] = newUsed; // Update cache
+      (async function(){
+        try{
+          var today = new Date().toISOString().split('T')[0];
+          var updateObj = {};
+          updateObj[colName] = newUsed;
+          updateObj['daily_questions_date'] = today;
+          await _supa.from('user_progress').update(updateObj).eq('user_id', _currentUser.id);
+        }catch(e){
+          console.error('Failed to update '+colName+' on server:', e);
+        }
+      })();
+    }
+  }
 }
 function _fmCanUse(prefix, limit){
   if(isPro()) return true;
@@ -6672,6 +6723,11 @@ function drcrGetDailyKey(){
   return 'fm_drcr_'+d.getFullYear()+'_'+(d.getMonth()+1)+'_'+d.getDate();
 }
 function drcrGetDailyUsed(){
+  // For logged-in users: check Supabase (server-authoritative)
+  if(_currentUser && _currentUser.id){
+    if(S.dailyDrcrUsed !== undefined) return S.dailyDrcrUsed;
+  }
+  // Fallback for guests: use localStorage
   return parseInt(localStorage.getItem(drcrGetDailyKey())||'0');
 }
 function drcrGetBonusKey(){
@@ -6683,8 +6739,24 @@ function drcrBonusUsed(){
 function drcrIncrementDaily(){
   if(isPro()) return;
   var key=drcrGetDailyKey();
-  var used=drcrGetDailyUsed();
-  localStorage.setItem(key, String(used+1));
+  var newUsed = drcrGetDailyUsed() + 1;
+  localStorage.setItem(key, String(newUsed));
+  S.dailyDrcrUsed = newUsed;
+  
+  // For logged-in users: also update Supabase in background
+  if(_currentUser && _currentUser.id){
+    (async function(){
+      try{
+        var today = new Date().toISOString().split('T')[0];
+        await _supa.from('user_progress').update({
+          daily_drcr_used: newUsed,
+          daily_questions_date: today
+        }).eq('user_id', _currentUser.id);
+      }catch(e){
+        console.error('Failed to update daily_drcr_used on server:', e);
+      }
+    })();
+  }
 }
 function drcrCheckLimit(){
   if(isPro()) return true;
@@ -13223,6 +13295,41 @@ async function loadUserProgress() {
       } else {
         // Columns don't exist yet or no data — use localStorage fallback
         S.dailyQCount = parseInt(localStorage.getItem(getDailyQKey()) || '0');
+      }
+      // Load other daily limits from Supabase (fm_drcr, fm_qref, fm_cmp, fm_fml, fm_je, fm_vlt)
+      if(data.daily_questions_date){
+        const today = new Date().toISOString().split('T')[0];
+        if(data.daily_questions_date === today){
+          // Load all 6 daily limit columns, default to 0 if missing
+          S.dailyDrcrUsed = data.daily_drcr_used || 0;
+          S.dailyQrefUsed = data.daily_qref_used || 0;
+          S.dailyCmpUsed = data.daily_cmp_used || 0;
+          S.dailyFmlUsed = data.daily_fml_used || 0;
+          S.dailyJeUsed = data.daily_je_used || 0;
+          S.dailyVltUsed = data.daily_vlt_used || 0;
+          S.dailyDrcrBonusUsed = data.daily_drcr_bonus_used || false;
+        } else {
+          // New day — reset all to 0
+          S.dailyDrcrUsed = 0;
+          S.dailyQrefUsed = 0;
+          S.dailyCmpUsed = 0;
+          S.dailyFmlUsed = 0;
+          S.dailyJeUsed = 0;
+          S.dailyVltUsed = 0;
+          S.dailyDrcrBonusUsed = false;
+          try{
+            await _supa.from('user_progress').update({
+              daily_drcr_used: 0,
+              daily_qref_used: 0,
+              daily_cmp_used: 0,
+              daily_fml_used: 0,
+              daily_je_used: 0,
+              daily_vlt_used: 0,
+              daily_drcr_bonus_used: false,
+              daily_questions_date: today
+            }).eq('user_id', _currentUser.id);
+          }catch(e){}
+        }
       }
       // Always enforce demo account as pro (even if DB has 'free')
       if(_currentUser && _currentUser.email === 'demo@finmentra.com'){
