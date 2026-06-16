@@ -5540,7 +5540,7 @@ function getDailyQRemaining(){
 
 function getDailyQUsed(){
   // For logged-in users: check Supabase (server-authoritative)
-  if(_currentUser && S.userId){
+  if(_currentUser && _currentUser.id){
     // Synchronous check: use the cached value from S.dailyQCount if available
     // Async refresh happens in background via loadUserProgress
     if(S.dailyQCount !== undefined) return S.dailyQCount;
@@ -5572,14 +5572,14 @@ function incrementDailyQ(){
   S.dailyQCount = newUsed;
   
   // For logged-in users: also update Supabase in background
-  if(_currentUser && S.userId){
+  if(_currentUser && _currentUser.id){
     (async function(){
       try{
         const today = new Date().toISOString().split('T')[0];
         await _supa.from('user_progress').update({
           daily_questions_used: newUsed,
           daily_questions_date: today
-        }).eq('user_id', S.userId);
+        }).eq('user_id', _currentUser.id);
       }catch(e){
         console.error('Failed to update daily count on server:', e);
         // Even if Supabase fails, localStorage is still updated, so app continues working
