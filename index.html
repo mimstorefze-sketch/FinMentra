@@ -5524,6 +5524,22 @@ function isFree(){
 }
 
 // Daily question limit for free users
+function getDeviceId(){
+  // Generate or retrieve persistent device ID for guests
+  try{
+    let deviceId = localStorage.getItem('fm_device_id');
+    if(!deviceId){
+      // Generate new device ID (UUID-like)
+      deviceId = 'device_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+      localStorage.setItem('fm_device_id', deviceId);
+    }
+    return deviceId;
+  }catch(e){
+    // Fallback if localStorage fails
+    return 'device_' + Math.random().toString(36).substr(2, 9);
+  }
+}
+
 function getDailyQKey(){
   var d=new Date();
   return 'fm_dq_'+d.getFullYear()+'_'+(d.getMonth()+1)+'_'+d.getDate();
@@ -5545,7 +5561,7 @@ function getDailyQUsed(){
     // Async refresh happens in background via loadUserProgress
     if(S.dailyQCount !== undefined) return S.dailyQCount;
   }
-  // Fallback for guests: use localStorage
+  // For guests: check localStorage (will be synced to device_daily_limits in background)
   return parseInt(localStorage.getItem(getDailyQKey()) || '0');
 }
 
@@ -5582,7 +5598,22 @@ function incrementDailyQ(){
         }).eq('user_id', _currentUser.id);
       }catch(e){
         console.error('Failed to update daily count on server:', e);
-        // Even if Supabase fails, localStorage is still updated, so app continues working
+      }
+    })();
+  } else {
+    // For guests: update device_daily_limits table in background
+    (async function(){
+      try{
+        const today = new Date().toISOString().split('T')[0];
+        const deviceId = getDeviceId();
+        await _supa.from('device_daily_limits').upsert({
+          device_id: deviceId,
+          feature: 'fm_dq',
+          used: newUsed,
+          date: today
+        }, { onConflict: 'device_id,feature,date' });
+      }catch(e){
+        console.error('Failed to update device limit:', e);
       }
     })();
   }
@@ -6029,7 +6060,7 @@ function _fmIncrement(prefix){
   var newUsed = _fmGetUsed(prefix) + 1;
   localStorage.setItem(k, String(newUsed));
   
-  // For logged-in users: also update Supabase in background
+  // For logged-in users: update Supabase user_progress
   if(_currentUser && _currentUser.id){
     var propMap = {
       'fm_qref': 'dailyQrefUsed',
@@ -6048,7 +6079,7 @@ function _fmIncrement(prefix){
     };
     var colName = colMap[prefix];
     if(propName && colName){
-      S[propName] = newUsed; // Update cache
+      S[propName] = newUsed;
       (async function(){
         try{
           var today = new Date().toISOString().split('T')[0];
@@ -6061,6 +6092,22 @@ function _fmIncrement(prefix){
         }
       })();
     }
+  } else {
+    // For guests: update device_daily_limits table
+    (async function(){
+      try{
+        var today = new Date().toISOString().split('T')[0];
+        var deviceId = getDeviceId();
+        await _supa.from('device_daily_limits').upsert({
+          device_id: deviceId,
+          feature: prefix,
+          used: newUsed,
+          date: today
+        }, { onConflict: 'device_id,feature,date' });
+      }catch(e){
+        console.error('Failed to update device limit for '+prefix+':', e);
+      }
+    })();
   }
 }
 function _fmCanUse(prefix, limit){
@@ -6743,7 +6790,7 @@ function drcrIncrementDaily(){
   localStorage.setItem(key, String(newUsed));
   S.dailyDrcrUsed = newUsed;
   
-  // For logged-in users: also update Supabase in background
+  // For logged-in users: update Supabase user_progress
   if(_currentUser && _currentUser.id){
     (async function(){
       try{
@@ -6754,6 +6801,22 @@ function drcrIncrementDaily(){
         }).eq('user_id', _currentUser.id);
       }catch(e){
         console.error('Failed to update daily_drcr_used on server:', e);
+      }
+    })();
+  } else {
+    // For guests: update device_daily_limits table
+    (async function(){
+      try{
+        var today = new Date().toISOString().split('T')[0];
+        var deviceId = getDeviceId();
+        await _supa.from('device_daily_limits').upsert({
+          device_id: deviceId,
+          feature: 'fm_drcr',
+          used: newUsed,
+          date: today
+        }, { onConflict: 'device_id,feature,date' });
+      }catch(e){
+        console.error('Failed to update device drcr limit:', e);
       }
     })();
   }
