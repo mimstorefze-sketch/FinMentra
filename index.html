@@ -13301,8 +13301,19 @@ async function handleAuth() {
       result = await _supa.auth.signUp({ email, password, options:{ data:{ full_name: name }, emailRedirectTo: 'https://www.finmentra.com' } });
     } else {
       result = await _supa.auth.signInWithPassword({ email, password });
+      // If login fails, check if user might have signed up with Google or LinkedIn
+      if(result.error){
+        // Check if error is invalid credentials (could be Google/LinkedIn signup)
+        if(result.error.message && result.error.message.includes('Invalid login credentials')){
+          errEl.textContent = '❌ Email/password not found. Did you sign up with Google or LinkedIn? Try one of those buttons instead!';
+        } else {
+          errEl.textContent = result.error.message;
+        }
+        errEl.style.display='block';
+        loadEl.style.display='none';
+        return;
+      }
     }
-    if(result.error){ errEl.textContent=result.error.message; errEl.style.display='block'; loadEl.style.display='none'; return; }
     loadEl.style.display='none';
     // Check if email confirmation is required
     if(isSignup && result.data.user && !result.data.session){
