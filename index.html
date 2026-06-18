@@ -13351,10 +13351,26 @@ async function loadGuestDeviceLimits(){
         if(row.feature === 'fm_je') S.dailyJeUsed = row.used;
         if(row.feature === 'fm_vlt') S.dailyVltUsed = row.used;
       });
+    } else {
+      // New day or no data — initialize all to 0
+      S.dailyQCount = 0;
+      S.dailyDrcrUsed = 0;
+      S.dailyQrefUsed = 0;
+      S.dailyCmpUsed = 0;
+      S.dailyFmlUsed = 0;
+      S.dailyJeUsed = 0;
+      S.dailyVltUsed = 0;
     }
   }catch(e){
     console.error('Failed to load guest device limits:', e);
-    // Fallback to localStorage if Supabase fails
+    // Fallback: initialize to 0
+    S.dailyQCount = 0;
+    S.dailyDrcrUsed = 0;
+    S.dailyQrefUsed = 0;
+    S.dailyCmpUsed = 0;
+    S.dailyFmlUsed = 0;
+    S.dailyJeUsed = 0;
+    S.dailyVltUsed = 0;
   }
 }
 
