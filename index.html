@@ -13322,6 +13322,31 @@ function getDisplayName(user) {
          'Scholar';
 }
 
+async function loadGuestDeviceLimits(){
+  // Load daily limits for guest users from device_daily_limits table
+  if(_currentUser) return; // Only for guests
+  try{
+    const deviceId = getDeviceId();
+    const today = new Date().toISOString().split('T')[0];
+    const { data } = await _supa.from('device_daily_limits').select('*').eq('device_id', deviceId).eq('date', today);
+    if(data && data.length > 0){
+      // Map feature to S property
+      data.forEach(row => {
+        if(row.feature === 'fm_dq') S.dailyQCount = row.used;
+        if(row.feature === 'fm_drcr') S.dailyDrcrUsed = row.used;
+        if(row.feature === 'fm_qref') S.dailyQrefUsed = row.used;
+        if(row.feature === 'fm_cmp') S.dailyCmpUsed = row.used;
+        if(row.feature === 'fm_fml') S.dailyFmlUsed = row.used;
+        if(row.feature === 'fm_je') S.dailyJeUsed = row.used;
+        if(row.feature === 'fm_vlt') S.dailyVltUsed = row.used;
+      });
+    }
+  }catch(e){
+    console.error('Failed to load guest device limits:', e);
+    // Fallback to localStorage if Supabase fails
+  }
+}
+
 async function loadUserProgress() {
   if(!_currentUser) return;
   try {
@@ -13700,6 +13725,8 @@ _offlineCheckInterval = setInterval(function(){
     // No session — show auth screen
     document.getElementById('auth-screen').classList.add('show');
     document.body.classList.add('app-ready');
+    // Load guest device limits from Supabase
+    await loadGuestDeviceLimits();
   }
 
   if(data.session){
