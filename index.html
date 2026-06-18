@@ -5560,8 +5560,22 @@ function getDailyQUsed(){
     // Synchronous check: use the cached value from S.dailyQCount if available
     // Async refresh happens in background via loadUserProgress
     if(S.dailyQCount !== undefined) return S.dailyQCount;
+  } else {
+    // For guests: load from device_daily_limits first (ensures fresh count after logout/refresh)
+    (async function(){
+      try{
+        const deviceId = getDeviceId();
+        const today = new Date().toISOString().split('T')[0];
+        const { data } = await _supa.from('device_daily_limits').select('*').eq('device_id', deviceId).eq('date', today).eq('feature', 'fm_dq').single();
+        if(data){
+          S.dailyQCount = data.used;
+        }
+      }catch(e){
+        // Silently fail, use localStorage fallback
+      }
+    })();
   }
-  // For guests: check localStorage (will be synced to device_daily_limits in background)
+  // Fallback for guests: use localStorage (backup if Supabase unavailable)
   return parseInt(localStorage.getItem(getDailyQKey()) || '0');
 }
 
@@ -6050,6 +6064,28 @@ function _fmGetUsed(prefix){
     };
     var propName = propMap[prefix];
     if(propName && S[propName] !== undefined) return S[propName];
+  } else {
+    // For guests: load from device_daily_limits (ensures fresh count after logout/refresh)
+    (async function(){
+      try{
+        const deviceId = getDeviceId();
+        const today = new Date().toISOString().split('T')[0];
+        const { data } = await _supa.from('device_daily_limits').select('*').eq('device_id', deviceId).eq('date', today).eq('feature', prefix).single();
+        if(data){
+          var propMap = {
+            'fm_qref': 'dailyQrefUsed',
+            'fm_cmp': 'dailyCmpUsed',
+            'fm_fml': 'dailyFmlUsed',
+            'fm_je': 'dailyJeUsed',
+            'fm_vlt': 'dailyVltUsed'
+          };
+          var propName = propMap[prefix];
+          if(propName) S[propName] = data.used;
+        }
+      }catch(e){
+        // Silently fail, use localStorage fallback
+      }
+    })();
   }
   // Fallback for guests: use localStorage
   return parseInt(localStorage.getItem(_fmDayKey(prefix))||'0');
@@ -6773,8 +6809,22 @@ function drcrGetDailyUsed(){
   // For logged-in users: check Supabase (server-authoritative)
   if(_currentUser && _currentUser.id){
     if(S.dailyDrcrUsed !== undefined) return S.dailyDrcrUsed;
+  } else {
+    // For guests: load from device_daily_limits (ensures fresh count after logout/refresh)
+    (async function(){
+      try{
+        const deviceId = getDeviceId();
+        const today = new Date().toISOString().split('T')[0];
+        const { data } = await _supa.from('device_daily_limits').select('*').eq('device_id', deviceId).eq('date', today).eq('feature', 'fm_drcr').single();
+        if(data){
+          S.dailyDrcrUsed = data.used;
+        }
+      }catch(e){
+        // Silently fail, use localStorage fallback
+      }
+    })();
   }
-  // Fallback for guests: use localStorage
+  // Fallback for guests: use localStorage (backup if Supabase unavailable)
   return parseInt(localStorage.getItem(drcrGetDailyKey())||'0');
 }
 function drcrGetBonusKey(){
