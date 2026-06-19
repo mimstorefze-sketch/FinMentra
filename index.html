@@ -3985,6 +3985,36 @@ function showScreen(id){
     if(id==='jebuilder'   && !_fmCanUse('fm_je',3))   { _fmDailyGate('JE Builder scenarios','fm_je',3,'home'); return; }
     if(id==='vault'       && !_fmCanUse('fm_vlt',5))  { _fmDailyGate('Mistake Vault retries','fm_vlt',5,'home'); return; }
     if(id==='drcr'        && !drcrCheckLimit())        { drcrShowLimitPopup(drcrGetDailyUsed()>=10?'hard':'soft'); return; }
+    
+    // ── FRESH DB CHECK FOR GUESTS (async, runs after screen load) ──
+    // For guests, do a background fresh DB check to catch any bypass attempts
+    if(!_currentUser && (id==='drcr' || id==='quickref' || id==='comparisons' || id==='formulas' || id==='jebuilder' || id==='vault')){
+      (async ()=>{
+        let feature = 'fm_dq';
+        if(id==='drcr') feature='fm_drcr';
+        else if(id==='quickref') feature='fm_qref';
+        else if(id==='comparisons') feature='fm_cmp';
+        else if(id==='formulas') feature='fm_fml';
+        else if(id==='jebuilder') feature='fm_je';
+        else if(id==='vault') feature='fm_vlt';
+        
+        const freshUsed = await getFreshDailyUsed(feature);
+        const limits = { fm_drcr: 10, fm_qref: 15, fm_cmp: 15, fm_fml: 15, fm_je: 3, fm_vlt: 5 };
+        const limit = limits[feature] || 15;
+        
+        fmLog('ASYNC-CHECK', 'Fresh check for ' + feature + ': used=' + freshUsed + ', limit=' + limit);
+        if(freshUsed >= limit){
+          fmLog('ASYNC-CHECK', 'BLOCKING ' + id + ' - used >= limit');
+          if(id==='drcr'){
+            drcrShowLimitPopup(freshUsed>=10?'hard':'soft');
+          } else {
+            _fmDailyGate(id, feature, limit, 'home');
+          }
+          // Close the screen  
+          showScreen('home');
+        }
+      })();
+    }
     // Increment on entry
     if(id==='quickref')    _fmIncrement('fm_qref');
     if(id==='comparisons') _fmIncrement('fm_cmp');
@@ -4288,19 +4318,30 @@ function setTopicFilter(el,cat){
   el.classList.add('active');S.topicFilter=cat;renderTopics();
 }
 async function startTopicPractice(num){
-  // ── RELOAD DEVICE LIMITS FOR GUESTS (so logout/login bypass doesn't work) ──
-  if(!_currentUser){
-    await loadGuestDeviceLimits();
-  }
-  
-  // ── GATE: check daily limit before loading ANY topic ──
+  // ── GATE: check daily limit BEFORE loading ANY topic ──
   if(!isPro()){
-    var _used = getDailyQUsed();
-    if(_used >= 15){ showLimitPopup('hard'); return; }
-    if(getDailyQRemaining() <= 0){ showLimitPopup('hard'); return; }
+    // For guests: always do a fresh DB check (don't rely on cached S.dailyQCount)
+    // For logged-in users: check cached Supabase value
+    let _used;
+    if(!_currentUser){
+      _used = await getFreshDailyUsed('fm_dq'); // Fresh DB lookup for guests
+    } else {
+      _used = getDailyQUsed(); // Cached value for logged-in users
+    }
+    
+    fmLog('ARENA-GATE', 'Check before question: _used=' + _used + ', limit=15');
+    if(_used >= 15){ 
+      fmLog('ARENA-GATE', 'BLOCKED: Used >= 15');
+      showLimitPopup('hard'); 
+      return; 
+    }
     if(_used >= 10){
       var _bk = getDailyQKey()+'_bonus';
-      if(localStorage.getItem(_bk) !== '1'){ showLimitPopup('soft'); return; }
+      if(localStorage.getItem(_bk) !== '1'){ 
+        fmLog('ARENA-GATE', 'BLOCKED: No bonus at 10+');
+        showLimitPopup('soft'); 
+        return; 
+      }
     }
   }
   S.currentStandard = num;
@@ -5579,6 +5620,55 @@ function getDailyQUsed(){
   const fallback = parseInt(localStorage.getItem(getDailyQKey()) || '0');
   fmLog('ARENA-GET', 'Using localStorage fallback=' + fallback, true);
   return fallback;
+}
+
+// NEW: Get fresh daily count from DB for ANY feature (guest-focused)
+async function getFreshDailyUsed(feature){
+  if(_currentUser) {
+    // For logged-in users, use cached values
+    if(feature === 'fm_dq') return S.dailyQCount || 0;
+    if(feature === 'fm_drcr') return S.dailyDrcrUsed || 0;
+    if(feature === 'fm_qref') return S.dailyQrefUsed || 0;
+    if(feature === 'fm_cmp') return S.dailyCmpUsed || 0;
+    if(feature === 'fm_fml') return S.dailyFmlUsed || 0;
+    if(feature === 'fm_je') return S.dailyJeUsed || 0;
+    if(feature === 'fm_vlt') return S.dailyVltUsed || 0;
+    return 0;
+  }
+  // For guests: ALWAYS do fresh DB lookup to prevent logout/login bypass
+  try{
+    const deviceId = getDeviceId();
+    const today = new Date().toISOString().split('T')[0];
+    fmLog('FRESH-DB', 'Fetching ' + feature + ' from DB for device=' + deviceId);
+    const { data } = await _supa.from('device_daily_limits').select('used').eq('device_id', deviceId).eq('feature', feature).eq('date', today);
+    if(data && data.length > 0){
+      const used = data[0].used;
+      fmLog('FRESH-DB', 'Fresh ' + feature + '=' + used);
+      // Update cache
+      if(feature === 'fm_dq') S.dailyQCount = used;
+      if(feature === 'fm_drcr') S.dailyDrcrUsed = used;
+      if(feature === 'fm_qref') S.dailyQrefUsed = used;
+      if(feature === 'fm_cmp') S.dailyCmpUsed = used;
+      if(feature === 'fm_fml') S.dailyFmlUsed = used;
+      if(feature === 'fm_je') S.dailyJeUsed = used;
+      if(feature === 'fm_vlt') S.dailyVltUsed = used;
+      return used;
+    } else {
+      fmLog('FRESH-DB', 'No DB record for ' + feature + ', used=0');
+      return 0;
+    }
+  }catch(e){
+    fmLog('FRESH-DB', 'Error fetching ' + feature + ': ' + e.message, true);
+    // Fallback to cached value
+    if(feature === 'fm_dq') return S.dailyQCount || 0;
+    if(feature === 'fm_drcr') return S.dailyDrcrUsed || 0;
+    if(feature === 'fm_qref') return S.dailyQrefUsed || 0;
+    if(feature === 'fm_cmp') return S.dailyCmpUsed || 0;
+    if(feature === 'fm_fml') return S.dailyFmlUsed || 0;
+    if(feature === 'fm_je') return S.dailyJeUsed || 0;
+    if(feature === 'fm_vlt') return S.dailyVltUsed || 0;
+    return 0;
+  }
 }
 
 function checkDailyQLimit(){
