@@ -4321,14 +4321,8 @@ async function startTopicPractice(num){
   // ── GATE: check daily limit BEFORE loading ANY topic ──
   let _limitReached = false;
   if(!isPro()){
-    // For guests: always do a fresh DB check (don't rely on cached S.dailyQCount)
-    // For logged-in users: check cached Supabase value
-    let _used;
-    if(!_currentUser){
-      _used = await getFreshDailyUsed('fm_dq'); // Fresh DB lookup for guests
-    } else {
-      _used = getDailyQUsed(); // Cached value for logged-in users
-    }
+    // ALL free users (guests + logged-in) get fresh DB lookup
+    let _used = await getFreshDailyUsed('fm_dq');
     
     fmLog('ARENA-GATE', 'Check before question: _used=' + _used + ', limit=15');
     if(_used >= 15){ 
@@ -6160,11 +6154,8 @@ async function checkFeatureLimitAndEnter(feature, screenId, callback){
   // Only check limits for FREE users
   if(!isPro()){
     let _used;
-    if(!_currentUser){
-      _used = await getFreshDailyUsed(feature); // Fresh DB lookup for guests
-    } else {
-      _used = getDailyUsed(feature); // Cached for logged-in
-    }
+    // ALL free users (guests + logged-in) get fresh DB lookup
+    _used = await getFreshDailyUsed(feature);
     
     const LIMITS = {
       'fm_dq': 15, 'fm_drcr': 10, 'fm_qref': 15, 'fm_cmp': 15, 
