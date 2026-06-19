@@ -3968,6 +3968,11 @@ function renderBottomNav(){
 }
 
 function showScreen(id){
+  // ── RELOAD DEVICE LIMITS FOR GUESTS (so logout/login bypass doesn't work) ──
+  if(!_currentUser && (id==='drcr' || id==='arena' || id==='quickref' || id==='comparisons' || id==='formulas' || id==='jebuilder' || id==='vault')){
+    loadGuestDeviceLimits(); // Load fresh from Supabase (non-blocking)
+  }
+  
   // ── GATES FIRST — before any screen activation ──
   if(!isPro()){
     if(id==='fsbuilder')   { _fmProGate('Financial Statement Builder','pro-home'); return; }
@@ -4283,6 +4288,11 @@ function setTopicFilter(el,cat){
   el.classList.add('active');S.topicFilter=cat;renderTopics();
 }
 async function startTopicPractice(num){
+  // ── RELOAD DEVICE LIMITS FOR GUESTS (so logout/login bypass doesn't work) ──
+  if(!_currentUser){
+    await loadGuestDeviceLimits();
+  }
+  
   // ── GATE: check daily limit before loading ANY topic ──
   if(!isPro()){
     var _used = getDailyQUsed();
@@ -5557,12 +5567,18 @@ function getDailyQRemaining(){
 function getDailyQUsed(){
   // For logged-in users: check Supabase cache
   if(_currentUser && _currentUser.id){
+    fmLog('ARENA-GET', 'Logged in user, S.dailyQCount=' + S.dailyQCount);
     if(S.dailyQCount !== undefined) return S.dailyQCount;
   }
   // For guests: return cached value from S (loaded by loadGuestDeviceLimits on startup)
   // OR fallback to localStorage
-  if(S.dailyQCount !== undefined) return S.dailyQCount;
-  return parseInt(localStorage.getItem(getDailyQKey()) || '0');
+  if(S.dailyQCount !== undefined) {
+    fmLog('ARENA-GET', 'Guest/returning S.dailyQCount=' + S.dailyQCount);
+    return S.dailyQCount;
+  }
+  const fallback = parseInt(localStorage.getItem(getDailyQKey()) || '0');
+  fmLog('ARENA-GET', 'Using localStorage fallback=' + fallback, true);
+  return fallback;
 }
 
 function checkDailyQLimit(){
@@ -5578,7 +5594,15 @@ function checkDailyQLimit(){
   return true;
 }
 
+// ── LOGGING FOR DEBUG ──
+function fmLog(tag, msg, isError=false){
+  const fullMsg = `[FM-${tag}] ${msg}`;
+  if(isError) console.error(fullMsg);
+  else console.log(fullMsg);
+}
+
 function incrementDailyQ(){
+  fmLog('ARENA', 'incrementDailyQ called, isPro=' + isPro() + ', _currentUser=' + (_currentUser?'YES':'NO'));
   if(isPro()) return;
   try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return; }catch(e){}
   const key = getDailyQKey();
@@ -5586,34 +5610,40 @@ function incrementDailyQ(){
   const newUsed = used + 1;
   localStorage.setItem(key, String(newUsed));
   S.dailyQCount = newUsed;
+  fmLog('ARENA', 'Updated localStorage: ' + key + ' = ' + newUsed);
   
   // For logged-in users: also update Supabase in background
   if(_currentUser && _currentUser.id){
+    fmLog('ARENA', 'User logged in, updating Supabase user_progress');
     (async function(){
       try{
         const today = new Date().toISOString().split('T')[0];
-        await _supa.from('user_progress').update({
+        const result = await _supa.from('user_progress').update({
           daily_questions_used: newUsed,
           daily_questions_date: today
         }).eq('user_id', _currentUser.id);
+        fmLog('ARENA', 'Supabase user_progress update SUCCESS');
       }catch(e){
-        console.error('Failed to update daily count on server:', e);
+        fmLog('ARENA', 'Supabase user_progress update FAILED: ' + e.message, true);
       }
     })();
   } else {
     // For guests: update device_daily_limits table in background
+    fmLog('ARENA', 'Guest user, updating Supabase device_daily_limits');
     (async function(){
       try{
         const today = new Date().toISOString().split('T')[0];
         const deviceId = getDeviceId();
-        await _supa.from('device_daily_limits').upsert({
+        fmLog('ARENA', 'Device ID: ' + deviceId + ', trying upsert...');
+        const result = await _supa.from('device_daily_limits').upsert({
           device_id: deviceId,
           feature: 'fm_dq',
           used: newUsed,
           date: today
         }, { onConflict: 'device_id,feature,date' });
+        fmLog('ARENA', 'Supabase device_daily_limits upsert SUCCESS, used=' + newUsed);
       }catch(e){
-        console.error('Failed to update device limit:', e);
+        fmLog('ARENA', 'Supabase device_daily_limits upsert FAILED: ' + e.message, true);
       }
     })();
   }
@@ -13346,14 +13376,21 @@ function getDisplayName(user) {
 
 async function loadGuestDeviceLimits(){
   // Load daily limits for guest users from device_daily_limits table
-  if(_currentUser) return; // Only for guests
+  fmLog('GUEST-LOAD', 'loadGuestDeviceLimits called, _currentUser=' + (_currentUser?'YES':'NO'));
+  if(_currentUser) {
+    fmLog('GUEST-LOAD', 'User is logged in, skipping guest load');
+    return;
+  }
   try{
     const deviceId = getDeviceId();
     const today = new Date().toISOString().split('T')[0];
+    fmLog('GUEST-LOAD', 'Fetching from device_daily_limits, deviceId=' + deviceId + ', date=' + today);
     const { data } = await _supa.from('device_daily_limits').select('*').eq('device_id', deviceId).eq('date', today);
     if(data && data.length > 0){
+      fmLog('GUEST-LOAD', 'Found ' + data.length + ' records in device_daily_limits');
       // Map feature to S property
       data.forEach(row => {
+        fmLog('GUEST-LOAD', 'Loading feature=' + row.feature + ', used=' + row.used);
         if(row.feature === 'fm_dq') S.dailyQCount = row.used;
         if(row.feature === 'fm_drcr') S.dailyDrcrUsed = row.used;
         if(row.feature === 'fm_qref') S.dailyQrefUsed = row.used;
@@ -13362,7 +13399,9 @@ async function loadGuestDeviceLimits(){
         if(row.feature === 'fm_je') S.dailyJeUsed = row.used;
         if(row.feature === 'fm_vlt') S.dailyVltUsed = row.used;
       });
+      fmLog('GUEST-LOAD', 'S.dailyQCount now = ' + S.dailyQCount);
     } else {
+      fmLog('GUEST-LOAD', 'No data found, initializing all to 0 (new day)');
       // New day or no data — initialize all to 0
       S.dailyQCount = 0;
       S.dailyDrcrUsed = 0;
@@ -13373,7 +13412,7 @@ async function loadGuestDeviceLimits(){
       S.dailyVltUsed = 0;
     }
   }catch(e){
-    console.error('Failed to load guest device limits:', e);
+    fmLog('GUEST-LOAD', 'ERROR: ' + e.message, true);
     // Fallback: initialize to 0
     S.dailyQCount = 0;
     S.dailyDrcrUsed = 0;
