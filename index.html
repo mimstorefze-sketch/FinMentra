@@ -4319,6 +4319,7 @@ function setTopicFilter(el,cat){
 }
 async function startTopicPractice(num){
   // ── GATE: check daily limit BEFORE loading ANY topic ──
+  let _limitReached = false;
   if(!isPro()){
     // For guests: always do a fresh DB check (don't rely on cached S.dailyQCount)
     // For logged-in users: check cached Supabase value
@@ -4332,6 +4333,7 @@ async function startTopicPractice(num){
     fmLog('ARENA-GATE', 'Check before question: _used=' + _used + ', limit=15');
     if(_used >= 15){ 
       fmLog('ARENA-GATE', 'BLOCKED: Used >= 15');
+      _limitReached = true;
       showLimitPopup('hard'); 
       return; 
     }
@@ -4368,15 +4370,17 @@ async function startTopicPractice(num){
   const opts = document.getElementById('options');
   if(qt) qt.textContent = 'Loading '+num+' questions...';
   if(opts) opts.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">⏳ Fetching questions...</div>';
-  // Auto-retry timeout — if still loading after 8 seconds, show retry button
+  // Auto-retry timeout — if still loading after 8 seconds, show retry button (but NOT if limit reached)
   const loadingTimeout = setTimeout(()=>{
     const o = document.getElementById('options');
     if(o && (o.innerHTML.includes('Fetching') || o.innerHTML.includes('Loading'))){
       const _std = S.currentStandard||'IFRS 15';
+      // OPTION B: Only show refresh button if limit NOT reached
+      const refreshBtn = _limitReached ? '' : '<button onclick="startTopicPractice(\'' + _std + '\')" style="display:block;width:100%;padding:12px;background:var(--navy);color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);margin-bottom:8px;">🔄 Refresh Questions</button>';
       o.innerHTML = '<div style="text-align:center;padding:24px 16px;">' +
         '<div style="font-size:32px;margin-bottom:10px;">📶</div>' +
         '<div style="color:var(--muted);margin-bottom:16px;font-size:13px;">Questions taking a while…</div>' +
-        '<button onclick="startTopicPractice(\'' + _std + '\')" style="display:block;width:100%;padding:12px;background:var(--navy);color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);margin-bottom:8px;">🔄 Refresh Questions</button>' +
+        refreshBtn +
         '<button onclick="startSession()" style="display:block;width:100%;padding:10px;background:var(--surface);color:var(--text);border:1.5px solid var(--border);border-radius:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);">↩ Load default topic</button>' +
         '</div>';
     }
