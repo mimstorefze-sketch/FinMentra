@@ -3890,50 +3890,91 @@ const QB_BY_DOMAIN={
 };
 
 // ── TOPICS ──
-const TOPICS=[
-  {cat:'IFRS',num:'IFRS 1',name:'First-time Adoption',sub:'Transition date, opening SFP, exemptions'},
-  {cat:'IFRS',num:'IFRS 2',name:'Share-based Payment',sub:'Grant date FV, equity vs cash-settled'},
-  {cat:'IFRS',num:'IFRS 3',name:'Business Combinations',sub:'Acquisition method, goodwill, NCI'},
-  {cat:'IFRS',num:'IFRS 5',name:'Non-current Assets Held for Sale',sub:'Lower of CA and FVLCD, classification'},
-  {cat:'IFRS',num:'IFRS 7',name:'Financial Instruments: Disclosures',sub:'Credit risk, liquidity risk, market risk'},
-  {cat:'IFRS',num:'IFRS 9',name:'Financial Instruments',sub:'ECL model, classification, hedge accounting'},
-  {cat:'IFRS',num:'IFRS 10',name:'Consolidated Financial Statements',sub:'Control, power, variable returns'},
-  {cat:'IFRS',num:'IFRS 11',name:'Joint Arrangements',sub:'Joint operation vs joint venture'},
-  {cat:'IFRS',num:'IFRS 12',name:'Disclosure of Interests',sub:'Subsidiaries, associates, JVs'},
-  {cat:'IFRS',num:'IFRS 13',name:'Fair Value Measurement',sub:'Exit price, Level 1/2/3 hierarchy'},
-  {cat:'IFRS',num:'IFRS 15',name:'Revenue from Contracts',sub:'5-step model, performance obligations'},
-  {cat:'IFRS',num:'IFRS 16',name:'Leases',sub:'ROU asset, lease liability, lessee accounting'},
-  {cat:'IFRS',num:'IFRS 17',name:'Insurance Contracts',sub:'GMM, PAA, VFA measurement models'},
-  {cat:'IFRS',num:'IFRS 18',name:'Presentation & Disclosure (NEW)',sub:'Replaces IAS 1, categorised P&L'},
-  {cat:'IAS',num:'IAS 1',name:'Presentation of Financial Statements',sub:'5 components, going concern, accrual'},
-  {cat:'IAS',num:'IAS 2',name:'Inventories',sub:'Lower of cost and NRV, FIFO/weighted avg'},
-  {cat:'IAS',num:'IAS 7',name:'Statement of Cash Flows',sub:'Direct/indirect method, classification'},
-  {cat:'IAS',num:'IAS 8',name:'Accounting Policies & Errors',sub:'Changes in policy, estimates, correction'},
-  {cat:'IAS',num:'IAS 10',name:'Events After Reporting Period',sub:'Adjusting vs non-adjusting events'},
-  {cat:'IAS',num:'IAS 12',name:'Income Taxes',sub:'Temporary differences, DTL, DTA'},
-  {cat:'IAS',num:'IAS 16',name:'Property, Plant & Equipment',sub:'Cost vs revaluation model, depreciation'},
-  {cat:'IAS',num:'IAS 19',name:'Employee Benefits',sub:'Defined benefit, actuarial gains to OCI'},
-  {cat:'IAS',num:'IAS 21',name:'Effects of Foreign Exchange',sub:'Functional currency, retranslation'},
-  {cat:'IAS',num:'IAS 36',name:'Impairment of Assets',sub:'CGU, recoverable amount, VIU'},
-  {cat:'IAS',num:'IAS 37',name:'Provisions & Contingencies',sub:'Three-part test, onerous contracts'},
-  {cat:'IAS',num:'IAS 38',name:'Intangible Assets',sub:'Recognition criteria, amortisation'},
-  {cat:'IAS',num:'IAS 40',name:'Investment Property',sub:'Cost vs fair value model, P&L gains'},
-  {cat:'ISA',num:'ISA 315',name:'Identifying & Assessing Risks',sub:'Internal controls, COSO framework'},
-  {cat:'ISA',num:'ISA 320',name:'Materiality',sub:'Performance materiality, clearly trivial'},
-  {cat:'ISA',num:'ISA 570',name:'Going Concern',sub:'Events & conditions, auditor response'},
-  {cat:'ISA',num:'ISA 700',name:'Forming an Opinion',sub:'Unmodified, modified opinions'},
-  {cat:'ISA',num:'ISA 701',name:'Key Audit Matters',sub:'Listed entities, selection criteria'},
-  {cat:'Costing',num:'MC 1',name:'Cost Classification',sub:'Fixed, variable, semi-variable costs'},
-  {cat:'Costing',num:'MC 2',name:'Marginal vs Absorption',sub:'Profit differences, inventory valuation'},
-  {cat:'Costing',num:'MC 5',name:'Standard Costing & Variance',sub:'Material, labour, overhead variances'},
-  {cat:'Costing',num:'MC 7',name:'Capital Investment Appraisal',sub:'NPV, IRR, Payback, ARR'},
-  {cat:'Tax',num:'TX 1',name:'Corporate Tax Principles',sub:'Taxable profits, allowable deductions'},
-  {cat:'Tax',num:'TX 2',name:'Deferred Tax — IAS 12',sub:'Temporary differences, tax base'},
-  {cat:'Tax',num:'TX 5',name:'Transfer Pricing (Tax)',sub:"Arm's length principle, OECD"},
-  {cat:'FM',num:'FM 1',name:'Working Capital Management',sub:'Cash conversion cycle, receivables'},
-  {cat:'FM',num:'FM 3',name:'Cost of Capital & WACC',sub:'CAPM, Ke, Kd, gearing effects'},
-  {cat:'FM',num:'FM 7',name:'Foreign Exchange Risk',sub:'Transaction, translation, economic risk'},
-];
+// ── DYNAMIC TOPICS: Fetch from Supabase questions table ──
+let TOPICS = []; // Will be populated dynamically on app load
+
+async function loadTopicsFromSupabase(){
+  try {
+    // Fetch all unique standards from questions table
+    const url = SUPA_URL + '/rest/v1/questions?select=standard&distinct=true&order=standard.asc&limit=500';
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' },
+      mode: 'cors',
+      credentials: 'omit'
+    });
+    
+    if(!res.ok) throw new Error('Failed to fetch standards');
+    const data = await res.json();
+    if(!data || data.length === 0) throw new Error('No standards found');
+    
+    // Build TOPICS array from standards
+    TOPICS = data.map(row => {
+      const std = row.standard;
+      const cat = std.startsWith('IFRS') ? 'IFRS' : (std.startsWith('IAS') ? 'IAS' : (std.startsWith('ISA') ? 'ISA' : (std.startsWith('MC') ? 'Costing' : (std.startsWith('TX') ? 'Tax' : (std.startsWith('FM') ? 'FM' : 'Other')))));
+      return {
+        cat: cat,
+        num: std,
+        name: STANDARD_NAMES[std] || std,
+        sub: 'Questions available'
+      };
+    });
+    
+    console.log('✅ Loaded ' + TOPICS.length + ' topics from Supabase');
+    return TOPICS;
+  } catch(e) {
+    console.warn('⚠️ Failed to load topics from Supabase, using fallback');
+    loadFallbackTopics();
+    return TOPICS;
+  }
+}
+
+function loadFallbackTopics(){
+  TOPICS = [
+    {cat:'IFRS',num:'IFRS 1',name:'First-time Adoption',sub:'Transition date, opening SFP, exemptions'},
+    {cat:'IFRS',num:'IFRS 2',name:'Share-based Payment',sub:'Grant date FV, equity vs cash-settled'},
+    {cat:'IFRS',num:'IFRS 3',name:'Business Combinations',sub:'Acquisition method, goodwill, NCI'},
+    {cat:'IFRS',num:'IFRS 5',name:'Non-current Assets Held for Sale',sub:'Lower of CA and FVLCD, classification'},
+    {cat:'IFRS',num:'IFRS 7',name:'Financial Instruments: Disclosures',sub:'Credit risk, liquidity risk, market risk'},
+    {cat:'IFRS',num:'IFRS 9',name:'Financial Instruments',sub:'ECL model, classification, hedge accounting'},
+    {cat:'IFRS',num:'IFRS 10',name:'Consolidated Financial Statements',sub:'Control, power, variable returns'},
+    {cat:'IFRS',num:'IFRS 11',name:'Joint Arrangements',sub:'Joint operation vs joint venture'},
+    {cat:'IFRS',num:'IFRS 12',name:'Disclosure of Interests',sub:'Subsidiaries, associates, JVs'},
+    {cat:'IFRS',num:'IFRS 13',name:'Fair Value Measurement',sub:'Exit price, Level 1/2/3 hierarchy'},
+    {cat:'IFRS',num:'IFRS 15',name:'Revenue from Contracts',sub:'5-step model, performance obligations'},
+    {cat:'IFRS',num:'IFRS 16',name:'Leases',sub:'ROU asset, lease liability, lessee accounting'},
+    {cat:'IFRS',num:'IFRS 17',name:'Insurance Contracts',sub:'GMM, PAA, VFA measurement models'},
+    {cat:'IFRS',num:'IFRS 18',name:'Presentation & Disclosure',sub:'Replaces IAS 1, categorised P&L'},
+    {cat:'IAS',num:'IAS 1',name:'Presentation of Financial Statements',sub:'5 components, going concern, accrual'},
+    {cat:'IAS',num:'IAS 2',name:'Inventories',sub:'Lower of cost and NRV, FIFO/weighted avg'},
+    {cat:'IAS',num:'IAS 7',name:'Statement of Cash Flows',sub:'Direct/indirect method, classification'},
+    {cat:'IAS',num:'IAS 8',name:'Accounting Policies & Errors',sub:'Changes in policy, estimates, correction'},
+    {cat:'IAS',num:'IAS 10',name:'Events After Reporting Period',sub:'Adjusting vs non-adjusting events'},
+    {cat:'IAS',num:'IAS 12',name:'Income Taxes',sub:'Temporary differences, DTL, DTA'},
+    {cat:'IAS',num:'IAS 16',name:'Property, Plant & Equipment',sub:'Cost vs revaluation model, depreciation'},
+    {cat:'IAS',num:'IAS 19',name:'Employee Benefits',sub:'Defined benefit, actuarial gains to OCI'},
+    {cat:'IAS',num:'IAS 21',name:'Effects of Foreign Exchange',sub:'Functional currency, retranslation'},
+    {cat:'IAS',num:'IAS 36',name:'Impairment of Assets',sub:'CGU, recoverable amount, VIU'},
+    {cat:'IAS',num:'IAS 37',name:'Provisions & Contingencies',sub:'Three-part test, onerous contracts'},
+    {cat:'IAS',num:'IAS 38',name:'Intangible Assets',sub:'Recognition criteria, amortisation'},
+    {cat:'IAS',num:'IAS 40',name:'Investment Property',sub:'Cost vs fair value model, P&L gains'},
+    {cat:'ISA',num:'ISA 315',name:'Identifying & Assessing Risks',sub:'Internal controls, COSO framework'},
+    {cat:'ISA',num:'ISA 320',name:'Materiality',sub:'Performance materiality, clearly trivial'},
+    {cat:'ISA',num:'ISA 570',name:'Going Concern',sub:'Events & conditions, auditor response'},
+    {cat:'ISA',num:'ISA 700',name:'Forming an Opinion',sub:'Unmodified, modified opinions'},
+    {cat:'ISA',num:'ISA 701',name:'Key Audit Matters',sub:'Listed entities, selection criteria'},
+    {cat:'Costing',num:'MC 1',name:'Cost Classification',sub:'Fixed, variable, semi-variable costs'},
+    {cat:'Costing',num:'MC 2',name:'Marginal vs Absorption',sub:'Profit differences, inventory valuation'},
+    {cat:'Costing',num:'MC 5',name:'Standard Costing & Variance',sub:'Material, labour, overhead variances'},
+    {cat:'Costing',num:'MC 7',name:'Capital Investment Appraisal',sub:'NPV, IRR, Payback, ARR'},
+    {cat:'Tax',num:'TX 1',name:'Corporate Tax Principles',sub:'Taxable profits, allowable deductions'},
+    {cat:'Tax',num:'TX 2',name:'Deferred Tax',sub:'Temporary differences, tax base'},
+    {cat:'Tax',num:'TX 5',name:'Transfer Pricing',sub:"Arm's length principle, OECD"},
+    {cat:'FM',num:'FM 1',name:'Working Capital Management',sub:'Cash conversion cycle, receivables'},
+    {cat:'FM',num:'FM 3',name:'Cost of Capital & WACC',sub:'CAPM, Ke, Kd, gearing effects'},
+    {cat:'FM',num:'FM 7',name:'Foreign Exchange Risk',sub:'Transaction, translation, economic risk'},
+  ];
+}
 
 // ── JE DATA ──
 const JE_DATA={
@@ -7510,8 +7551,19 @@ function toggleCheckItem(item){
   recalcAll();
   setTimeout(recalcAll, 200);
 
-  // Init topics
-  renderTopics();
+  // Load topics dynamically from Supabase
+  (async function initTopics(){
+    await loadTopicsFromSupabase();
+    renderTopics();
+  })();
+  
+  // Fallback: render topics immediately if load takes too long
+  setTimeout(()=>{
+    if(TOPICS.length === 0) {
+      loadFallbackTopics();
+      renderTopics();
+    }
+  }, 3000);
 
   // Pre-warm Supabase question cache for Arena + Challenge
   (async function preloadQuestions(){
