@@ -7574,8 +7574,9 @@ function toggleCheckItem(item){
     // Validate credentials exist
     if(!SUPA_URL || !SUPA_KEY) {
       console.error('Supabase credentials missing');
-      fmLog('TOPICS-LOAD', '❌ Supabase credentials missing - using fallback');
-      loadFallbackTopics();
+      fmLog('TOPICS-LOAD', '❌ FATAL: Supabase credentials missing');
+      alert('❌ Configuration Error: Supabase credentials not found.\n\nPlease contact support.');
+      TOPICS = [];
       renderTopics();
       return;
     }
@@ -7584,13 +7585,7 @@ function toggleCheckItem(item){
     renderTopics();
   })();
   
-  // Fallback: render topics immediately if load takes too long
-  setTimeout(()=>{
-    if(TOPICS.length === 0) {
-      loadFallbackTopics();
-      renderTopics();
-    }
-  }, 3000);
+  // NO FALLBACK - if Supabase fails, it fails. No hardcoding.
 
   // Pre-warm Supabase question cache for Arena + Challenge
   (async function preloadQuestions(){
