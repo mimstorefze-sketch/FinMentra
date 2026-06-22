@@ -3895,22 +3895,45 @@ let TOPICS = []; // Will be populated dynamically on app load
 
 async function loadTopicsFromSupabase(){
   try {
-    // Fetch all unique standards from questions table
-    const url = SUPA_URL + '/rest/v1/questions?select=standard&distinct=true&order=standard.asc&limit=500';
+    fmLog('TOPICS-LOAD', '🔄 Attempting to load topics from Supabase...');
+    
+    // Fetch all questions (we'll deduplicate by standard client-side)
+    const url = SUPA_URL + '/rest/v1/questions?select=standard&limit=3000';
+    fmLog('TOPICS-LOAD', '📡 Fetching all questions...');
+    
     const res = await fetch(url, {
       method: 'GET',
-      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' },
+      headers: { 
+        'apikey': SUPA_KEY, 
+        'Authorization': 'Bearer ' + SUPA_KEY, 
+        'Content-Type': 'application/json' 
+      },
       mode: 'cors',
       credentials: 'omit'
     });
     
-    if(!res.ok) throw new Error('Failed to fetch standards');
+    if(!res.ok) {
+      const errorText = await res.text();
+      console.error('Supabase Topics Error - Status: ' + res.status + ', Body: ' + errorText);
+      fmLog('TOPICS-LOAD', '❌ HTTP ' + res.status);
+      throw new Error('HTTP ' + res.status);
+    }
+    
     const data = await res.json();
-    if(!data || data.length === 0) throw new Error('No standards found');
+    fmLog('TOPICS-LOAD', '📊 Received ' + (data ? data.length : 0) + ' question records');
+    
+    if(!data || data.length === 0) {
+      console.error('Supabase Topics Error - No data returned');
+      fmLog('TOPICS-LOAD', '❌ No data in response');
+      throw new Error('No data');
+    }
+    
+    // Get unique standards and sort them
+    const uniqueStandards = [...new Set(data.map(q => q.standard).filter(s => s))].sort();
+    fmLog('TOPICS-LOAD', '📊 Found ' + uniqueStandards.length + ' unique standards');
     
     // Build TOPICS array from standards
-    TOPICS = data.map(row => {
-      const std = row.standard;
+    TOPICS = uniqueStandards.map(std => {
       const cat = std.startsWith('IFRS') ? 'IFRS' : (std.startsWith('IAS') ? 'IAS' : (std.startsWith('ISA') ? 'ISA' : (std.startsWith('MC') ? 'Costing' : (std.startsWith('TX') ? 'Tax' : (std.startsWith('FM') ? 'FM' : 'Other')))));
       return {
         cat: cat,
@@ -3920,11 +3943,13 @@ async function loadTopicsFromSupabase(){
       };
     });
     
-    console.log('✅ Loaded ' + TOPICS.length + ' topics from Supabase');
+    fmLog('TOPICS-LOAD', '✅ Loaded ' + TOPICS.length + ' topics dynamically from Supabase');
     return TOPICS;
   } catch(e) {
-    console.warn('⚠️ Failed to load topics from Supabase, using fallback');
+    console.warn('⚠️ Failed to load topics from Supabase: ' + e.message);
+    fmLog('TOPICS-LOAD', '⚠️ Failed (' + e.message + ') - Using fallback');
     loadFallbackTopics();
+    fmLog('TOPICS-LOAD', '✅ Fallback loaded ' + TOPICS.length + ' topics');
     return TOPICS;
   }
 }
@@ -4529,7 +4554,7 @@ async function fetchQuestionsFromSupabase(category, count){
     return fyShuffle(SQ_CACHE[cacheKey]).slice(0,count);
   }
   try{
-    const url = SUPA_URL + '/rest/v1/questions?select=*&limit=1000';
+    const url = SUPA_URL + '/rest/v1/questions?select=*&limit=3000';
     const res = await fetch(url, {
       method: 'GET',
       headers:{
@@ -7553,6 +7578,15 @@ function toggleCheckItem(item){
 
   // Load topics dynamically from Supabase
   (async function initTopics(){
+    // Validate credentials exist
+    if(!SUPA_URL || !SUPA_KEY) {
+      console.error('Supabase credentials missing');
+      fmLog('TOPICS-LOAD', '❌ Supabase credentials missing - using fallback');
+      loadFallbackTopics();
+      renderTopics();
+      return;
+    }
+    
     await loadTopicsFromSupabase();
     renderTopics();
   })();
@@ -7568,7 +7602,7 @@ function toggleCheckItem(item){
   // Pre-warm Supabase question cache for Arena + Challenge
   (async function preloadQuestions(){
     try{
-      const url = SUPA_URL + '/rest/v1/questions?select=*&limit=1000';
+      const url = SUPA_URL + '/rest/v1/questions?select=*&limit=3000';
       const res = await fetch(url, {
         headers:{
           'apikey': SUPA_KEY,
