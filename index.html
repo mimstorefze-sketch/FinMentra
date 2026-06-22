@@ -3897,9 +3897,9 @@ async function loadTopicsFromSupabase(){
   try {
     fmLog('TOPICS-LOAD', '🔄 Attempting to load topics from Supabase...');
     
-    // Fetch all questions (we'll deduplicate by standard client-side)
-    const url = SUPA_URL + '/rest/v1/questions?select=standard&limit=5000';
-    fmLog('TOPICS-LOAD', '📡 Fetching all questions...');
+    // Load from TOPICS table (already deduplicated, no duplicates)
+    const url = SUPA_URL + '/rest/v1/topics?select=*&is_active=eq.true&limit=500&order=standard.asc';
+    fmLog('TOPICS-LOAD', '📡 Fetching from topics table...');
     
     const res = await fetch(url, {
       method: 'GET',
@@ -3920,7 +3920,7 @@ async function loadTopicsFromSupabase(){
     }
     
     const data = await res.json();
-    fmLog('TOPICS-LOAD', '📊 Received ' + (data ? data.length : 0) + ' question records');
+    fmLog('TOPICS-LOAD', '📊 Received ' + (data ? data.length : 0) + ' topics');
     
     if(!data || data.length === 0) {
       console.error('Supabase Topics Error - No data returned');
@@ -3928,29 +3928,22 @@ async function loadTopicsFromSupabase(){
       throw new Error('No data');
     }
     
-    // Get unique standards and sort them
-    const uniqueStandards = [...new Set(data.map(q => q.standard).filter(s => s))].sort();
-    fmLog('TOPICS-LOAD', '📊 Found ' + uniqueStandards.length + ' unique standards');
+    // Map topics table directly (no need to deduplicate - already clean)
+    TOPICS = data.map(t => ({
+      cat: t.category,
+      num: t.standard,
+      name: t.name || t.standard,
+      sub: 'Questions available'
+    }));
     
-    // Build TOPICS array from standards
-    TOPICS = uniqueStandards.map(std => {
-      const cat = std.startsWith('IFRS') ? 'IFRS' : (std.startsWith('IAS') ? 'IAS' : (std.startsWith('ISA') ? 'ISA' : (std.startsWith('MC') ? 'Costing' : (std.startsWith('TX') ? 'Tax' : (std.startsWith('FM') ? 'FM' : 'Other')))));
-      return {
-        cat: cat,
-        num: std,
-        name: STANDARD_NAMES[std] || std,
-        sub: 'Questions available'
-      };
-    });
-    
-    fmLog('TOPICS-LOAD', '✅ Loaded ' + TOPICS.length + ' topics dynamically from Supabase');
+    fmLog('TOPICS-LOAD', '✅ Loaded ' + TOPICS.length + ' topics from Supabase (NO FALLBACK - PRODUCTION)');
     return TOPICS;
   } catch(e) {
-    console.warn('⚠️ Failed to load topics from Supabase: ' + e.message);
-    fmLog('TOPICS-LOAD', '⚠️ Failed (' + e.message + ') - Using fallback');
-    loadFallbackTopics();
-    fmLog('TOPICS-LOAD', '✅ Fallback loaded ' + TOPICS.length + ' topics');
-    return TOPICS;
+    console.error('❌ FATAL: Failed to load topics - ' + e.message);
+    fmLog('TOPICS-LOAD', '❌ ERROR: ' + e.message);
+    TOPICS = [];
+    alert('⚠️ Cannot load topics from Supabase.\nError: ' + e.message + '\n\nPlease reload the page or contact support.');
+    return [];
   }
 }
 
@@ -7597,12 +7590,12 @@ function toggleCheckItem(item){
       loadFallbackTopics();
       renderTopics();
     }
-  }, 8000);
+  }, 3000);
 
   // Pre-warm Supabase question cache for Arena + Challenge
   (async function preloadQuestions(){
     try{
-      const url = SUPA_URL + '/rest/v1/questions?select=*&limit=5000';
+      const url = SUPA_URL + '/rest/v1/questions?select=*&limit=3000';
       const res = await fetch(url, {
         headers:{
           'apikey': SUPA_KEY,
