@@ -3895,42 +3895,56 @@ let TOPICS = []; // Will be populated dynamically on app load
 
 async function loadTopicsFromSupabase(){
   try {
-    fmLog('TOPICS-LOAD', '🔄 Attempting to load topics from Supabase...');
+    fmLog('TOPICS-LOAD', '🔄 Attempting to load ALL topics from Supabase (unlimited)...');
     
-    // Fetch all questions (we'll deduplicate by standard client-side)
-    const url = SUPA_URL + '/rest/v1/questions?select=standard&limit=3000';
-    fmLog('TOPICS-LOAD', '📡 Fetching all questions...');
+    let allStandards = [];
+    let offset = 0;
+    const batchSize = 5000;
     
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: { 
-        'apikey': SUPA_KEY, 
-        'Authorization': 'Bearer ' + SUPA_KEY, 
-        'Content-Type': 'application/json' 
-      },
-      mode: 'cors',
-      credentials: 'omit'
-    });
-    
-    if(!res.ok) {
-      const errorText = await res.text();
-      console.error('Supabase Topics Error - Status: ' + res.status + ', Body: ' + errorText);
-      fmLog('TOPICS-LOAD', '❌ HTTP ' + res.status);
-      throw new Error('HTTP ' + res.status);
+    // Pagination: Fetch all unique standards
+    while(true){
+      const url = SUPA_URL + '/rest/v1/questions?select=standard&limit=' + batchSize + '&offset=' + offset;
+      fmLog('TOPICS-LOAD', '📡 Fetching batch ' + (Math.floor(offset/batchSize)+1) + ' (offset: ' + offset + ')...');
+      
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: { 
+          'apikey': SUPA_KEY, 
+          'Authorization': 'Bearer ' + SUPA_KEY, 
+          'Content-Type': 'application/json' 
+        },
+        mode: 'cors',
+        credentials: 'omit'
+      });
+      
+      if(!res.ok) {
+        const errorText = await res.text();
+        console.error('Supabase Topics Error - Status: ' + res.status + ', Body: ' + errorText);
+        fmLog('TOPICS-LOAD', '❌ HTTP ' + res.status);
+        throw new Error('HTTP ' + res.status);
+      }
+      
+      const data = await res.json();
+      
+      if(!data || data.length === 0) {
+        fmLog('TOPICS-LOAD', '📊 Pagination complete at offset ' + offset);
+        break; // No more data
+      }
+      
+      fmLog('TOPICS-LOAD', '📊 Received ' + data.length + ' records (total so far: ' + (allStandards.length + data.length) + ')');
+      allStandards = allStandards.concat(data);
+      offset += batchSize;
     }
     
-    const data = await res.json();
-    fmLog('TOPICS-LOAD', '📊 Received ' + (data ? data.length : 0) + ' question records');
-    
-    if(!data || data.length === 0) {
+    if(!allStandards || allStandards.length === 0) {
       console.error('Supabase Topics Error - No data returned');
       fmLog('TOPICS-LOAD', '❌ No data in response');
       throw new Error('No data');
     }
     
     // Get unique standards and sort them
-    const uniqueStandards = [...new Set(data.map(q => q.standard).filter(s => s))].sort();
-    fmLog('TOPICS-LOAD', '📊 Found ' + uniqueStandards.length + ' unique standards');
+    const uniqueStandards = [...new Set(allStandards.map(q => q.standard).filter(s => s))].sort();
+    fmLog('TOPICS-LOAD', '📊 Found ' + uniqueStandards.length + ' unique standards from ' + allStandards.length + ' total records');
     
     // Build TOPICS array from standards
     TOPICS = uniqueStandards.map(std => {
@@ -3943,7 +3957,7 @@ async function loadTopicsFromSupabase(){
       };
     });
     
-    fmLog('TOPICS-LOAD', '✅ Loaded ' + TOPICS.length + ' topics dynamically from Supabase');
+    fmLog('TOPICS-LOAD', '✅ Loaded ' + TOPICS.length + ' topics dynamically from Supabase (UNLIMITED)');
     return TOPICS;
   } catch(e) {
     console.warn('⚠️ Failed to load topics from Supabase: ' + e.message);
@@ -4554,19 +4568,50 @@ async function fetchQuestionsFromSupabase(category, count){
     return fyShuffle(SQ_CACHE[cacheKey]).slice(0,count);
   }
   try{
-    const url = SUPA_URL + '/rest/v1/questions?select=*&limit=3000';
-    const res = await fetch(url, {
-      method: 'GET',
-      headers:{
-        'apikey': SUPA_KEY,
-        'Authorization': 'Bearer ' + SUPA_KEY,
-        'Content-Type': 'application/json'
-      },
-      mode: 'cors',
-      credentials: 'omit'
-    });
-    if(!res.ok){ return null; }
-    const allData = await res.json();
+    console.log('📥 Fetching UNLIMITED questions (pagination) for category: ' + (category||'Mixed'));
+    
+    let allData = [];
+    let offset = 0;
+    const batchSize = 3000;
+    let batchNum = 1;
+    
+    // Pagination: Fetch ALL questions in batches
+    while(true){
+      const url = SUPA_URL + '/rest/v1/questions?select=*&limit=' + batchSize + '&offset=' + offset;
+      
+      console.log('📡 Fetching batch ' + batchNum + ' (offset: ' + offset + ')...');
+      
+      const res = await fetch(url, {
+        method: 'GET',
+        headers:{
+          'apikey': SUPA_KEY,
+          'Authorization': 'Bearer ' + SUPA_KEY,
+          'Content-Type': 'application/json'
+        },
+        mode: 'cors',
+        credentials: 'omit'
+      });
+      
+      if(!res.ok){ 
+        console.error('❌ Batch ' + batchNum + ' failed with status ' + res.status);
+        if(batchNum === 1) return null; // First batch failed, abort
+        break; // Continue with what we have
+      }
+      
+      const batch = await res.json();
+      
+      if(!batch || batch.length===0){ 
+        console.log('✅ Pagination complete. Total records fetched: ' + allData.length);
+        break; // No more data
+      }
+      
+      allData = allData.concat(batch);
+      console.log('📊 Batch ' + batchNum + ' loaded. Running total: ' + allData.length + ' questions');
+      
+      offset += batchSize;
+      batchNum++;
+    }
+
     if(!allData||allData.length===0){ return null; }
 
     // Shuffle options to avoid answer bias
@@ -4579,6 +4624,7 @@ async function fetchQuestionsFromSupabase(category, count){
     })).filter(q=>q.correct>=0&&q.q&&q.opts[0]);
 
     SQ_CACHE['Mixed'] = allConverted;
+    console.log('✅ Cached ' + allConverted.length + ' total questions');
 
     // Filter client-side by category — strict, no fallback to other domains
     let filtered = allConverted;
@@ -4598,8 +4644,10 @@ async function fetchQuestionsFromSupabase(category, count){
     }
 
     SQ_CACHE[cacheKey] = filtered;
+    console.log('✅ Category ' + (category||'Mixed') + ' has ' + filtered.length + ' questions');
     return fyShuffle(filtered).slice(0,count);
   }catch(e){
+    console.error('❌ Error fetching questions: ' + e.message);
     return null;
   }
 }
@@ -7599,21 +7647,53 @@ function toggleCheckItem(item){
     }
   }, 3000);
 
-  // Pre-warm Supabase question cache for Arena + Challenge
+  // Pre-warm Supabase question cache for Arena + Challenge (UNLIMITED with pagination)
   (async function preloadQuestions(){
     try{
-      const url = SUPA_URL + '/rest/v1/questions?select=*&limit=3000';
-      const res = await fetch(url, {
-        headers:{
-          'apikey': SUPA_KEY,
-          'Authorization': 'Bearer ' + SUPA_KEY,
-          'Content-Type': 'application/json'
-        },
-        mode: 'cors', credentials: 'omit'
-      });
-      if(!res.ok) return;
-      const allData = await res.json();
+      console.log('🔄 Pre-warming cache with UNLIMITED questions (pagination)...');
+      
+      let allData = [];
+      let offset = 0;
+      const batchSize = 3000;
+      let batchNum = 1;
+      
+      // Pagination: Fetch ALL questions
+      while(true){
+        const url = SUPA_URL + '/rest/v1/questions?select=*&limit=' + batchSize + '&offset=' + offset;
+        
+        console.log('📡 Pre-warm batch ' + batchNum + ' (offset: ' + offset + ')...');
+        
+        const res = await fetch(url, {
+          headers:{
+            'apikey': SUPA_KEY,
+            'Authorization': 'Bearer ' + SUPA_KEY,
+            'Content-Type': 'application/json'
+          },
+          mode: 'cors', credentials: 'omit'
+        });
+        
+        if(!res.ok) {
+          console.warn('⚠️ Pre-warm batch ' + batchNum + ' failed, continuing...');
+          if(batchNum === 1) return; // First batch failed
+          break; // Continue with what we have
+        }
+        
+        const batch = await res.json();
+        
+        if(!batch || batch.length===0) {
+          console.log('✅ Pre-warming complete. Total cached: ' + allData.length);
+          break; // No more data
+        }
+        
+        allData = allData.concat(batch);
+        console.log('📊 Pre-warm batch ' + batchNum + ' loaded. Running total: ' + allData.length);
+        
+        offset += batchSize;
+        batchNum++;
+      }
+      
       if(!allData || !allData.length) return;
+      
       const allConverted = allData.map(q=>({
         q: q.question,
         opts: [q.option_a, q.option_b, q.option_c, q.option_d],
@@ -7621,8 +7701,11 @@ function toggleCheckItem(item){
         explain: q.explanation||'',
         standard: q.standard||''
       })).filter(q=>q.correct>=0&&q.q&&q.opts[0]);
+      
       // Cache by Mixed and each category
       SQ_CACHE['Mixed'] = allConverted;
+      console.log('✅ Cached Mixed category with ' + allConverted.length + ' questions');
+      
       ['IFRS','IAS','ISA','Costing','FM','Tax'].forEach(cat=>{
         SQ_CACHE[cat] = allConverted.filter(q=>{
           const std = q.standard||'';
@@ -7635,8 +7718,13 @@ function toggleCheckItem(item){
           return true;
         });
         if(!SQ_CACHE[cat].length) SQ_CACHE[cat] = allConverted;
+        console.log('✅ Cached ' + cat + ' category with ' + SQ_CACHE[cat].length + ' questions');
       });
-    }catch(e){ }
+      
+      console.log('🎉 Pre-warming COMPLETE - All questions cached (UNLIMITED)');
+    }catch(e){ 
+      console.error('❌ Pre-warming error: ' + e.message);
+    }
   })();
 
   // Init session deferred — called after auth check completes (Fix A)
