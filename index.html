@@ -3717,31 +3717,9 @@ const RANKS=[
 function getRank(xp){let r=RANKS[0];for(const rank of RANKS) if(xp>=rank.min) r=rank;return r;}
 
 // ── QUESTION BANK ──
-const STANDARD_NAMES={
-  "IFRS 1":"First-time Adoption of IFRS","IFRS 2":"Share-based Payment",
-  "IFRS 3":"Business Combinations","IFRS 5":"Non-current Assets Held for Sale",
-  "IFRS 7":"Financial Instruments: Disclosures","IFRS 9":"Financial Instruments",
-  "IFRS 10":"Consolidated Financial Statements","IFRS 11":"Joint Arrangements",
-  "IFRS 12":"Disclosure of Interests in Other Entities","IFRS 13":"Fair Value Measurement",
-  "IFRS 15":"Revenue from Contracts with Customers","IFRS 16":"Leases",
-  "IFRS 17":"Insurance Contracts","IFRS 18":"Presentation and Disclosure in Financial Statements",
-  "IAS 1":"Presentation of Financial Statements","IAS 2":"Inventories",
-  "IAS 7":"Statement of Cash Flows","IAS 8":"Accounting Policies, Changes and Errors",
-  "IAS 10":"Events After the Reporting Period","IAS 12":"Income Taxes",
-  "IAS 16":"Property, Plant and Equipment","IAS 19":"Employee Benefits",
-  "IAS 21":"Effects of Changes in Foreign Exchange Rates","IAS 36":"Impairment of Assets",
-  "IAS 37":"Provisions, Contingent Liabilities and Contingent Assets","IAS 38":"Intangible Assets",
-  "IAS 40":"Investment Property","ISA 200":"Overall Objectives of the Independent Auditor",
-  "ISA 315":"Identifying and Assessing Risks of Material Misstatement",
-  "ISA 320":"Materiality in Planning and Performing an Audit","ISA 570":"Going Concern",
-  "ISA 700":"Forming an Opinion and Reporting on Financial Statements",
-  "ISA 701":"Communicating Key Audit Matters",
-  "ISA 705":"Modifications to the Opinion in the Auditor Report",
-  "MC 1":"Cost Classification","MC 2":"Marginal vs Absorption Costing",
-  "MC 5":"Standard Costing and Variance Analysis","MC 7":"Capital Investment Appraisal",
-  "TX 1":"Corporate Tax Principles","TX 2":"Deferred Tax","TX 5":"Transfer Pricing",
-  "FM 1":"Working Capital Management","FM 3":"Cost of Capital and WACC","FM 7":"Foreign Exchange Risk"
-};
+// STANDARD_NAMES - Only used as fallback display names (can be empty)
+// Primary source is Supabase questions table
+const STANDARD_NAMES={};
 const Q=(q,opts,correct,trap,explain,dyk)=>({q,opts,correct,trap,explain,dyk});
 const QB={
   'IFRS 15':[
@@ -3895,13 +3873,13 @@ let TOPICS = []; // Will be populated dynamically on app load
 
 async function loadTopicsFromSupabase(){
   try {
-    fmLog('TOPICS-LOAD', '🔄 Attempting to load ALL topics from Supabase (unlimited)...');
+    fmLog('TOPICS-LOAD', '🔄 Loading ALL topics from Supabase (DYNAMIC ONLY - NO FALLBACK)...');
     
     let allStandards = [];
     let offset = 0;
     const batchSize = 5000;
     
-    // Pagination: Fetch all unique standards
+    // Pagination: Fetch all unique standards from Supabase
     while(true){
       const url = SUPA_URL + '/rest/v1/questions?select=standard&limit=' + batchSize + '&offset=' + offset;
       fmLog('TOPICS-LOAD', '📡 Fetching batch ' + (Math.floor(offset/batchSize)+1) + ' (offset: ' + offset + ')...');
@@ -3937,82 +3915,45 @@ async function loadTopicsFromSupabase(){
     }
     
     if(!allStandards || allStandards.length === 0) {
-      console.error('Supabase Topics Error - No data returned');
-      fmLog('TOPICS-LOAD', '❌ No data in response');
-      throw new Error('No data');
+      console.error('Supabase Topics Error - No questions found in database');
+      fmLog('TOPICS-LOAD', '❌ No questions found in Supabase');
+      throw new Error('No data in questions table');
     }
     
     // Get unique standards and sort them
+    // IMPORTANT: Only include standards that have at least 1 question
     const uniqueStandards = [...new Set(allStandards.map(q => q.standard).filter(s => s))].sort();
-    fmLog('TOPICS-LOAD', '📊 Found ' + uniqueStandards.length + ' unique standards from ' + allStandards.length + ' total records');
+    fmLog('TOPICS-LOAD', '📊 Found ' + uniqueStandards.length + ' unique standards from ' + allStandards.length + ' total questions');
     
-    // Build TOPICS array from standards
+    // Build TOPICS array from standards (only those with questions)
     TOPICS = uniqueStandards.map(std => {
       const cat = std.startsWith('IFRS') ? 'IFRS' : (std.startsWith('IAS') ? 'IAS' : (std.startsWith('ISA') ? 'ISA' : (std.startsWith('MC') ? 'Costing' : (std.startsWith('TX') ? 'Tax' : (std.startsWith('FM') ? 'FM' : 'Other')))));
       return {
         cat: cat,
         num: std,
-        name: STANDARD_NAMES[std] || std,
+        name: STANDARD_NAMES[std] || std,  // Use standard code if no name defined
         sub: 'Questions available'
       };
     });
     
-    fmLog('TOPICS-LOAD', '✅ Loaded ' + TOPICS.length + ' topics dynamically from Supabase (UNLIMITED)');
+    fmLog('TOPICS-LOAD', '✅ Loaded ' + TOPICS.length + ' topics dynamically from Supabase (UNLIMITED - NO FALLBACK)');
+    console.log('✅ Topics loaded from Supabase: ' + TOPICS.length + ' standards');
     return TOPICS;
   } catch(e) {
-    console.warn('⚠️ Failed to load topics from Supabase: ' + e.message);
-    fmLog('TOPICS-LOAD', '⚠️ Failed (' + e.message + ') - Using fallback');
-    loadFallbackTopics();
-    fmLog('TOPICS-LOAD', '✅ Fallback loaded ' + TOPICS.length + ' topics');
-    return TOPICS;
+    console.error('❌ FATAL: Failed to load topics from Supabase: ' + e.message);
+    fmLog('TOPICS-LOAD', '❌ FATAL ERROR: ' + e.message);
+    // NO FALLBACK - Show error to user
+    TOPICS = [];
+    return null;
   }
 }
 
 function loadFallbackTopics(){
-  TOPICS = [
-    {cat:'IFRS',num:'IFRS 1',name:'First-time Adoption',sub:'Transition date, opening SFP, exemptions'},
-    {cat:'IFRS',num:'IFRS 2',name:'Share-based Payment',sub:'Grant date FV, equity vs cash-settled'},
-    {cat:'IFRS',num:'IFRS 3',name:'Business Combinations',sub:'Acquisition method, goodwill, NCI'},
-    {cat:'IFRS',num:'IFRS 5',name:'Non-current Assets Held for Sale',sub:'Lower of CA and FVLCD, classification'},
-    {cat:'IFRS',num:'IFRS 7',name:'Financial Instruments: Disclosures',sub:'Credit risk, liquidity risk, market risk'},
-    {cat:'IFRS',num:'IFRS 9',name:'Financial Instruments',sub:'ECL model, classification, hedge accounting'},
-    {cat:'IFRS',num:'IFRS 10',name:'Consolidated Financial Statements',sub:'Control, power, variable returns'},
-    {cat:'IFRS',num:'IFRS 11',name:'Joint Arrangements',sub:'Joint operation vs joint venture'},
-    {cat:'IFRS',num:'IFRS 12',name:'Disclosure of Interests',sub:'Subsidiaries, associates, JVs'},
-    {cat:'IFRS',num:'IFRS 13',name:'Fair Value Measurement',sub:'Exit price, Level 1/2/3 hierarchy'},
-    {cat:'IFRS',num:'IFRS 15',name:'Revenue from Contracts',sub:'5-step model, performance obligations'},
-    {cat:'IFRS',num:'IFRS 16',name:'Leases',sub:'ROU asset, lease liability, lessee accounting'},
-    {cat:'IFRS',num:'IFRS 17',name:'Insurance Contracts',sub:'GMM, PAA, VFA measurement models'},
-    {cat:'IFRS',num:'IFRS 18',name:'Presentation & Disclosure',sub:'Replaces IAS 1, categorised P&L'},
-    {cat:'IAS',num:'IAS 1',name:'Presentation of Financial Statements',sub:'5 components, going concern, accrual'},
-    {cat:'IAS',num:'IAS 2',name:'Inventories',sub:'Lower of cost and NRV, FIFO/weighted avg'},
-    {cat:'IAS',num:'IAS 7',name:'Statement of Cash Flows',sub:'Direct/indirect method, classification'},
-    {cat:'IAS',num:'IAS 8',name:'Accounting Policies & Errors',sub:'Changes in policy, estimates, correction'},
-    {cat:'IAS',num:'IAS 10',name:'Events After Reporting Period',sub:'Adjusting vs non-adjusting events'},
-    {cat:'IAS',num:'IAS 12',name:'Income Taxes',sub:'Temporary differences, DTL, DTA'},
-    {cat:'IAS',num:'IAS 16',name:'Property, Plant & Equipment',sub:'Cost vs revaluation model, depreciation'},
-    {cat:'IAS',num:'IAS 19',name:'Employee Benefits',sub:'Defined benefit, actuarial gains to OCI'},
-    {cat:'IAS',num:'IAS 21',name:'Effects of Foreign Exchange',sub:'Functional currency, retranslation'},
-    {cat:'IAS',num:'IAS 36',name:'Impairment of Assets',sub:'CGU, recoverable amount, VIU'},
-    {cat:'IAS',num:'IAS 37',name:'Provisions & Contingencies',sub:'Three-part test, onerous contracts'},
-    {cat:'IAS',num:'IAS 38',name:'Intangible Assets',sub:'Recognition criteria, amortisation'},
-    {cat:'IAS',num:'IAS 40',name:'Investment Property',sub:'Cost vs fair value model, P&L gains'},
-    {cat:'ISA',num:'ISA 315',name:'Identifying & Assessing Risks',sub:'Internal controls, COSO framework'},
-    {cat:'ISA',num:'ISA 320',name:'Materiality',sub:'Performance materiality, clearly trivial'},
-    {cat:'ISA',num:'ISA 570',name:'Going Concern',sub:'Events & conditions, auditor response'},
-    {cat:'ISA',num:'ISA 700',name:'Forming an Opinion',sub:'Unmodified, modified opinions'},
-    {cat:'ISA',num:'ISA 701',name:'Key Audit Matters',sub:'Listed entities, selection criteria'},
-    {cat:'Costing',num:'MC 1',name:'Cost Classification',sub:'Fixed, variable, semi-variable costs'},
-    {cat:'Costing',num:'MC 2',name:'Marginal vs Absorption',sub:'Profit differences, inventory valuation'},
-    {cat:'Costing',num:'MC 5',name:'Standard Costing & Variance',sub:'Material, labour, overhead variances'},
-    {cat:'Costing',num:'MC 7',name:'Capital Investment Appraisal',sub:'NPV, IRR, Payback, ARR'},
-    {cat:'Tax',num:'TX 1',name:'Corporate Tax Principles',sub:'Taxable profits, allowable deductions'},
-    {cat:'Tax',num:'TX 2',name:'Deferred Tax',sub:'Temporary differences, tax base'},
-    {cat:'Tax',num:'TX 5',name:'Transfer Pricing',sub:"Arm's length principle, OECD"},
-    {cat:'FM',num:'FM 1',name:'Working Capital Management',sub:'Cash conversion cycle, receivables'},
-    {cat:'FM',num:'FM 3',name:'Cost of Capital & WACC',sub:'CAPM, Ke, Kd, gearing effects'},
-    {cat:'FM',num:'FM 7',name:'Foreign Exchange Risk',sub:'Transaction, translation, economic risk'},
-  ];
+  // NO HARDCODED FALLBACK - All topics must come from Supabase
+  // If Supabase loading fails, show error and load nothing
+  console.error('❌ Cannot load topics - Supabase data required');
+  fmLog('TOPICS-LOAD', '❌ CRITICAL: No fallback available - all topics must come from Supabase');
+  TOPICS = [];
 }
 
 // ── JE DATA ──
