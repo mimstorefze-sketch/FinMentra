@@ -325,11 +325,18 @@ a{color:inherit;text-decoration:none;}
   height:calc(60px + env(safe-area-inset-top));
   padding-top:env(safe-area-inset-top);
   background:var(--navy); color:#fff;
-  display:flex;align-items:center;padding-left:12px;padding-right:12px;gap:6px;
+  display:flex;align-items:center;padding-left:8px;padding-right:12px;gap:4px;
   box-shadow:0 2px 24px rgba(10,31,110,.35);
   backdrop-filter:blur(10px);
+  min-width:0;
 }
-.nav-brand{font-family:var(--font-display);font-size:23px;font-weight:700;letter-spacing:.2px;flex:0 0 auto;margin-right:auto;}
+.nav-brand{font-family:var(--font-display);font-size:20px;font-weight:700;letter-spacing:.2px;flex:0 0 auto;margin-right:auto;min-width:0;}
+.tn-stat{display:none;}
+@media(min-width:480px){
+  .tn-stat{display:flex;}
+  .nav{padding-left:12px;padding-right:12px;gap:6px;}
+  .nav-brand{font-size:23px;}
+}
 .nav-brand em{font-style:italic;font-weight:600;color:#93C5FD;}
 .tn-stat{display:flex;align-items:center;gap:3px;font-size:11px;font-weight:800;background:rgba(255,255,255,.12);padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.08);}
 .tn-xp{display:flex;flex-direction:column;gap:2px;}
@@ -970,7 +977,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;op
 
 
 /* ── FLOATING ACTION BUTTON ── */
-#fab{position:fixed;bottom:90px;right:16px;z-index:450;display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
+#fab{position:fixed;bottom:calc(88px + env(safe-area-inset-bottom));right:16px;z-index:510;display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
 #fab-main{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;font-size:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(10,31,110,.35);cursor:pointer;border:none;transition:transform .3s,rotate .3s;font-family:var(--font-body);}
 #fab-main.open{transform:rotate(45deg);}
 #fab-items{display:none;flex-direction:column;align-items:flex-end;gap:8px;}
@@ -1862,15 +1869,6 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     </div>
   </div>
 
-  <!-- ── XP PROGRESS BAR ── -->
-  <div class="fm-xp-bar-wrap">
-    <div class="fm-xp-bar-header">
-      <span class="fm-xp-label">Progress to next rank</span>
-      <span class="fm-xp-val" id="fm-xp-to-next">— XP to go</span>
-    </div>
-    <div class="fm-xp-track"><div class="fm-xp-fill" id="fm-xp-fill" style="width:0%"></div></div>
-  </div>
-
   <!-- ── NEXT UP ── -->
   <div class="fm-next-up" id="next-up-card" data-std="IFRS 15" onclick="goNextUp()">
     <div class="fm-next-icon">📚</div>
@@ -1908,7 +1906,6 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <!-- ── STREAK HEATMAP ── -->
   <div class="fm-card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-      <div style="font-size:12px;font-weight:800;color:var(--text);">🔥 <span id="streak-heatmap-label">0-day streak</span></div>
       <div style="font-size:10px;color:var(--muted);">Last 7 days</div>
     </div>
     <div style="display:flex;gap:5px;align-items:flex-end;height:56px;" id="streak-heatmap"></div>
@@ -1922,8 +1919,6 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <span style="font-size:10px;color:var(--muted);font-family:var(--font-mono);">Resets in 14h</span>
     </div>
     <div class="mission-card"><div class="mission-icon">🏛️</div><div class="mission-info"><div class="mission-title">Answer 10 questions</div><div class="mission-sub" id="mission-q-sub">0 / 10 completed</div><div class="bar"><span id="mission-q-bar" style="width:0%;"></span></div></div><div class="mission-reward"><div class="mission-xp">+50 XP</div></div></div>
-    <div class="mission-card"><div class="mission-icon">🔥</div><div class="mission-info"><div class="mission-title">Build a 5-answer streak</div><div class="mission-sub" id="mission-s-sub">0 / 5 in a row</div><div class="bar"><span id="mission-s-bar" style="width:0%;background:var(--gold);"></span></div></div><div class="mission-reward"><div class="mission-xp">+30 XP</div></div></div>
-    <div class="mission-card"><div class="mission-icon">✅</div><div class="mission-info"><div class="mission-title">Beat your accuracy record</div><div class="mission-sub" id="mission-a-sub">Current best: —%</div><div class="bar"><span id="mission-a-bar" style="width:0%;background:var(--green);"></span></div></div><div class="mission-reward">⬜</div></div>
   </div>
 
   <!-- ── QUICK ACCESS ── -->
@@ -5990,16 +5985,6 @@ function updateMissions(){
   const qBar = document.getElementById('mission-q-bar');
   if(qSub) qSub.textContent = Math.min(todayQ,10) + ' / 10 completed';
   if(qBar) qBar.style.width = Math.min(todayQ/10*100,100) + '%';
-  // Streak mission
-  const sSub = document.getElementById('mission-s-sub');
-  const sBar = document.getElementById('mission-s-bar');
-  if(sSub) sSub.textContent = Math.min(streak,5) + ' / 5 in a row';
-  if(sBar) sBar.style.width = Math.min(streak/5*100,100) + '%';
-  // Accuracy mission
-  const aSub = document.getElementById('mission-a-sub');
-  const aBar = document.getElementById('mission-a-bar');
-  if(aSub) aSub.textContent = 'Current best: ' + (bestAcc||'—') + '%';
-  if(aBar) aBar.style.width = Math.min(acc,100) + '%';
 }
 
 // ── RENDER VAULT ──
@@ -7887,12 +7872,14 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ── SWIPE GESTURES ──
-let touchStartX = 0;
-document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+let touchStartX = 0, touchStartY = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; }, { passive: true });
 document.addEventListener('touchend', e => {
   if (S.screen !== 'practice') return;
   const dx = e.changedTouches[0].clientX - touchStartX;
-  if (Math.abs(dx) > 80) {
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  // Only swipe if: horizontal > 120px AND vertical movement < 50px (not a scroll)
+  if (Math.abs(dx) > 120 && Math.abs(dy) < 50) {
     if (dx < 0 && S.answered) nextQuestion();
     if (dx > 0 && S.qIndex > 0) goBack();
   }
@@ -8280,16 +8267,20 @@ function showTip(idx){
 }
 function initTipSwipe(){
   const tc=document.getElementById('tip-container');if(!tc) return;
-  let startX=0;
-  tc.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
+  let startX=0, startY=0;
+  tc.addEventListener('touchstart',e=>{startX=e.touches[0].clientX; startY=e.touches[0].clientY;},{passive:true});
   tc.addEventListener('touchend',e=>{
     const dx=e.changedTouches[0].clientX-startX;
-    if(Math.abs(dx)>40){ dx<0?showTip(tipIndex+1):showTip(tipIndex-1); hapticFeedback('light'); }
+    const dy=e.changedTouches[0].clientY-startY;
+    // Only swipe if horizontal > 50px AND vertical < 40px (not a scroll)
+    if(Math.abs(dx)>50 && Math.abs(dy)<40){ dx<0?showTip(tipIndex+1):showTip(tipIndex-1); hapticFeedback('light'); }
   },{passive:true});
-  tc.addEventListener('mousedown',e=>{startX=e.clientX;});
+  tc.addEventListener('mousedown',e=>{startX=e.clientX; startY=e.clientY;});
   tc.addEventListener('mouseup',e=>{
     const dx=e.clientX-startX;
-    if(Math.abs(dx)>40){ dx<0?showTip(tipIndex+1):showTip(tipIndex-1); }
+    const dy=e.clientY-startY;
+    // Only swipe if horizontal > 50px AND vertical < 40px (not a scroll)
+    if(Math.abs(dx)>50 && Math.abs(dy)<40){ dx<0?showTip(tipIndex+1):showTip(tipIndex-1); }
   });
   // Rotate tips daily
   const today=new Date().getDate();
