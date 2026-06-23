@@ -18325,7 +18325,30 @@ async function loadQuestionsForStandard(standard, limit = 100) {
     }
     
     console.log(`✅ Loaded ${data.length} questions for ${standard}`);
-    return data;
+    
+    // Transform Supabase columns into expected format
+    const transformed = data.map(q => {
+      const opts = [q.option_a, q.option_b, q.option_c, q.option_d];
+      const correct = ['a', 'b', 'c', 'd'].indexOf((q.correct_option || 'a').toLowerCase());
+      
+      // Shuffle options (Fisher-Yates) to prevent answer bias
+      const correctText = opts[correct];
+      for(let i = opts.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [opts[i], opts[j]] = [opts[j], opts[i]];
+      }
+      const newCorrect = opts.indexOf(correctText);
+      
+      return {
+        q: q.question_text,
+        opts: opts,
+        correct: newCorrect,
+        explain: q.explanation || '',
+        standard: q.standard || standard
+      };
+    }).filter(q => q.correct >= 0 && q.q && q.opts[0]);
+    
+    return transformed;
   } catch(e) {
     console.error(`❌ Error loading ${standard}:`, e.message);
     return [];
