@@ -5,21 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>FinMentra — Where Finance Becomes Second Nature</title>
 
-<!-- 🚀 PERFORMANCE OPTIMIZATION: CRITICAL CSS INLINE -->
-<!-- This ensures the login/auth box renders immediately without waiting for full CSS -->
-<style>
-/* Critical path styles - needed for first paint */
-html { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-body { margin: 0; padding: 0; background: #0f1419; }
-.shell { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 0; }
-.auth-box { background: #1a2332; border-radius: 12px; padding: 24px; width: 90%; max-width: 400px; min-height: 320px; }
-.auth-tab { background: #4a6cf7; color: white; border: none; padding: 12px; border-radius: 6px; width: 100%; cursor: pointer; font-weight: 600; }
-.fm-hero { background: linear-gradient(135deg, #001a4d 0%, #0033cc 100%); padding: 24px; border-radius: 8px; text-align: center; }
-</style>
-<!-- Non-critical CSS deferred until after first paint -->
-<link rel="stylesheet" href="styles.css" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="styles.css"></noscript>
-
 <!-- Favicon -->
 <link rel="icon" type="image/png" href="/favicon.png"/>
 <link rel="apple-touch-icon" href="/favicon.png"/>
@@ -94,9 +79,6 @@ body { margin: 0; padding: 0; background: #0f1419; }
 <meta name="twitter:image" content="https://www.finmentra.com/favicon.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link rel="preconnect" href="https://vofxhqnipoywbbkmlxcp.supabase.co" crossorigin/>
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
-<link rel="dns-prefetch" href="https://api.anthropic.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-S5HZSJ6SF9"></script>
@@ -106,55 +88,6 @@ body { margin: 0; padding: 0; background: #0f1419; }
   gtag('js', new Date());
   gtag('config', 'G-S5HZSJ6SF9');
 </script>
-
-<!-- 📋 DEPLOYMENT INSTRUCTIONS & SECURITY HEADERS
-═══════════════════════════════════════════════════════════════════════════════
-To complete all PageSpeed optimizations, create a vercel.json file in your repo:
-
-{
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Strict-Transport-Security",
-          "value": "max-age=63072000; includeSubDomains; preload"
-        },
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self' https:; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://api.anthropic.com; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; connect-src 'self' https://vofxhqnipoywbbkmlxcp.supabase.co https://api.anthropic.com https://*.stripe.com; frame-ancestors 'none'"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "SAMEORIGIN"
-        },
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        }
-      ]
-    }
-  ]
-}
-
-═════════════════════════════════════════════════════════════════════════════
-OPTIMIZATIONS APPLIED IN THIS FILE:
-✅ 1. Fixed low contrast: .auth-sub color → #64748b (WCAG AA compliant)
-✅ 2. Inlined critical CSS for faster FCP
-✅ 3. Deferred non-critical CSS with media="print" trick
-✅ 4. Replaced background-position animations with opacity (GPU-friendly)
-✅ 5. Added min-height to .auth-box to prevent layout shift
-✅ 6. Wrapped question preloading in requestIdleCallback
-✅ 7. Added preconnect to Supabase, CDN, and API endpoints
-✅ 8. Optimized animation performance (4 non-composited → 0)
-
-EXPECTED RESULTS:
-• FCP improvement: ~1-2 seconds faster
-• LCP improvement: ~2-3 seconds faster
-• Performance score: 66 → 80+
-• Accessibility: 92 → 95+ (with vercel.json)
-═════════════════════════════════════════════════════════════════════════════
--->
 
 <!-- 🔓 CONSOLE DEBUG MODE - UNLOCKED -->
 <script>
@@ -231,7 +164,7 @@ const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
   font-weight:700;color:#0A1F6E;margin-bottom:4px;letter-spacing:-.3px;
 }
 .auth-logo em{font-style:italic;color:#4A6CF7;font-weight:600;}
-.auth-sub{font-size:12px;color:#64748b;margin-bottom:24px;font-weight:600;}
+.auth-sub{font-size:12px;color:#475569;margin-bottom:24px;font-weight:600;}
 /* Social buttons */
 .auth-social-btn {
   width:100%;padding:12px 16px;border-radius:12px;
@@ -242,7 +175,7 @@ const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
 }
 .auth-social-btn:hover{background:#EEF2FF;border-color:#4A6CF7;}
 .auth-divider{display:flex;align-items:center;gap:10px;margin:4px 0 14px;}
-.auth-divider span{font-size:11px;color:#94A3B8;white-space:nowrap;}
+.auth-divider span{font-size:11px;color:#475569;white-space:nowrap;}
 .auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:#E2E8F0;}
 /* Tabs */
 .auth-tabs{display:flex;gap:4px;background:#EEF2FF;border-radius:10px;padding:4px;margin-bottom:14px;}
@@ -271,7 +204,7 @@ const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
 .reg-popup-sub{font-size:13px;color:#64748B;margin-bottom:20px;line-height:1.5;}
 .reg-popup-xp{background:#EEF2FF;border-radius:12px;padding:12px;margin-bottom:16px;font-size:13px;font-weight:700;color:#0A1F6E;}
 .reg-popup-btn{width:100%;padding:14px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px;}
-.reg-popup-skip{font-size:12px;color:#94A3B8;cursor:pointer;}
+.reg-popup-skip{font-size:12px;color:#475569;cursor:pointer;}
 </style>
 <style>
 /* ══════════════════════════════════════════════════
@@ -301,7 +234,7 @@ const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
 [data-theme="dark"] {
   --bg:#0B1120; --bg2:#0F172A; --surface:#141E35;
   --border:#1A2E5A; --border2:#1E3568;
-  --ink:#E6ECFB; --text:#E6ECFB; --muted:#94A3B8; --steel:#94A3B8;
+  --ink:#E6ECFB; --text:#E6ECFB; --muted:#475569; --steel:#475569;
   --blue-ll:#0F1A36; --blue-l:#1E2D5C;
   --gold-l:rgba(245,158,11,.12); --green-l:rgba(10,110,58,.15);
   --red-l:rgba(220,38,38,.1); --purple-l:rgba(124,58,237,.1); --teal-l:rgba(8,145,178,.1);
@@ -1242,9 +1175,9 @@ button[onclick*="ISA"]:hover .topic-name b { color: var(--purple); }
 
 /* ── ANIMATED GRADIENT WELCOME CARD ── */
 @keyframes gradientShift {
-  0%   { opacity: 1; }
-  50%  { opacity: 0.95; }
-  100% { opacity: 1; }
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 .home-welcome {
   background: linear-gradient(-45deg, #0A1F6E, #1E3A8A, #1D4ED8, #0A1F6E);
@@ -1353,7 +1286,7 @@ button[onclick*="ISA"]:hover .topic-name b { color: var(--purple); }
 .gradient-border-inner{border-radius:calc(var(--radius) - 2px);background:var(--surface);padding:14px;}
 
 /* ── Animated gradient welcome ── */
-@keyframes gradientShift{0%{opacity:1;}50%{opacity:0.95;}100%{opacity:1;}}
+@keyframes gradientShift{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
 .home-welcome{
   background:linear-gradient(-45deg,#0A1F6E,#1E3A8A,#0891B2,#0A1F6E);
   background-size:400% 400%;
@@ -1485,8 +1418,8 @@ button[onclick*="ISA"]:hover .topic-name b { color: var(--purple); }
 .gradient-border-inner { border-radius:calc(var(--radius) - 2px);background:var(--surface);padding:14px; }
 
 /* ── ANIMATED GRADIENT WELCOME ── */
-@keyframes gradientShift { 0%{opacity:1;} 50%{opacity:0.95;} 100%{opacity:1;} }
-.home-welcome { background:linear-gradient(135deg,var(--navy),#1E3A8A,#1D4ED8,#0891B2);animation:gradientShift 8s ease infinite; }
+@keyframes gradientShift { 0%{background-position:0% 50%;} 50%{background-position:100% 50%;} 100%{background-position:0% 50%;} }
+.home-welcome { background:linear-gradient(135deg,var(--navy),#1E3A8A,#1D4ED8,#0891B2);background-size:300% 300%;animation:gradientShift 8s ease infinite; }
 
 /* ── SVG PATH DRAW on learning map ── */
 @keyframes drawPath { from{stroke-dashoffset:1000;} to{stroke-dashoffset:0;} }
@@ -1659,7 +1592,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div class="auth-box">
     <div class="auth-logo">Fin<em>Mentra</em></div>
     <div class="auth-sub">Where Finance Becomes Second Nature</div>
-    <p style="font-size:12px;line-height:1.6;color:#94A3B8;text-align:center;margin:10px 0 18px;">
+    <p style="font-size:12px;line-height:1.6;color:#475569;text-align:center;margin:10px 0 18px;">
       FinMentra is an AI-powered finance learning app that helps you master accounting and financial reporting standards through interactive quizzes, exam-style case studies, journal entry drills and instant AI explanations — built for active, exam-ready practice instead of passive textbook reading.
     </p>
 
@@ -1697,7 +1630,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <!-- Skip / guest option -->
     <span class="auth-skip" onclick="startAsGuest()" style="display:block;margin-top:14px;padding:12px;background:var(--bg);border:2px dashed #4A6CF7;border-radius:12px;text-align:center;font-size:13px;font-weight:700;color:#4A6CF7;text-decoration:none;cursor:pointer;">🎯 Try 15 free questions — no account needed</span>
 
-    <div style="margin-top:12px;font-size:10px;color:#94A3B8;">
+    <div style="margin-top:12px;font-size:10px;color:#475569;">
       By continuing you agree to our <a href="https://www.finmentra.com/privacy.html" target="_blank" style="color:#4A6CF7;text-decoration:none;font-weight:700;">Terms & Privacy Policy</a>
     </div>
   </div>
@@ -4060,8 +3993,6 @@ function showScreen(id){
     if(id==='ethics')      { _fmProGate('Ethics Module','pro-home'); return; }
     if(id==='client-scenario'){ _fmProGate('Case Studies','pro-home'); return; }
     if(id==='excel')       { _fmProGate('Excel for Finance','pro-home'); return; }
-    // NOTE: Topic Practice is gated by daily limit (15/day) AND subscription (first 3 IFRS open)
-    // Lock message for specific topics is handled in renderTopics()
     if(id==='quickref'    && !_fmCanUse('fm_qref',5)) { _fmDailyGate('Quick Reference views','fm_qref',5,'home'); return; }
     if(id==='comparisons' && !_fmCanUse('fm_cmp',2))  { _fmDailyGate('Standard Comparisons','fm_cmp',2,'home'); return; }
     if(id==='formulas'    && !_fmCanUse('fm_fml',5))  { _fmDailyGate('Formula lookups','fm_fml',5,'home'); return; }
@@ -4379,10 +4310,7 @@ function renderTopics(){
     btn.style.opacity = locked ? '0.6' : '1';
 
     if(locked){
-      btn.onclick = ()=>{ 
-        toast('🔒 Subscribe to use ' + t.num + ' and other topics'); 
-        setTimeout(()=>showScreen('profile'), 900); 
-      };
+      btn.onclick = ()=>{ toast('🔒 Upgrade to Pro to unlock all topics'); setTimeout(()=>showScreen('profile'),900); };
     } else {
       btn.onclick = ()=>startTopicPractice(t.num);
     }
@@ -4496,9 +4424,20 @@ async function startTopicPractice(num){
     return;
   }
 
-  // Daily limit enforced at entry (line 4340)
-  // No per-topic session limits — all questions available until 15/day reached
-  const limit = isPro() ? 50 : 50; // Use reasonable per-session cap for all users
+  // Apply limits based on plan and position
+  const topicIdx = t ? TOPICS.filter(x=>x.cat===t.cat).findIndex(x=>x.num===num) : 0;
+  let limit = isPro() ? 20 : 8; // FIX1: Pro=20, free=8
+  if(isFree()){
+    if(topicIdx === 0) limit = 8; // First standard: full open
+    else if(topicIdx < 3) limit = 3; // Standards 2-3: 3 questions only
+    else limit = 0; // Rest locked
+  }
+
+  if(limit === 0){
+    if(qt) qt.textContent = '🔒 Upgrade to Pro to access '+num;
+    if(opts) opts.innerHTML = '<div style="text-align:center;padding:20px;"><button onclick="checkPlanFeature(\'multiplayer\')" style="padding:12px 24px;background:#0A1F6E;color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;">Upgrade to Pro 🚀</button></div>';
+    return;
+  }
 
   pool = fyShuffle(pool);
   S.sessionQs = pool.slice(0, Math.min(limit, pool.length));
@@ -4796,11 +4735,7 @@ function loadQuestion(){
   // Hide AI follow-up panel
   const fap=document.getElementById('followup-answer');if(fap){fap.style.display='none';fap.textContent='';}
   const fi=document.getElementById('followup-input');if(fi) fi.value='';
-  const pm=document.getElementById('prog-meta');if(pm) {
-    const dailyUsed = getDailyQUsed();
-    const dailyLimit = 15;
-    pm.textContent=dailyUsed+' / '+dailyLimit;
-  }
+  const pm=document.getElementById('prog-meta');if(pm) pm.textContent=(S.qIndex+1)+' / '+S.sessionQs.length;
   const q=S.sessionQs[S.qIndex];
   console.log(`📋 loadQuestion: qIndex=${S.qIndex}, sessionQs.length=${S.sessionQs.length}, q=`, q);
   if(!q) {
@@ -4921,20 +4856,6 @@ function answerQ(idx,btn,q){
   }
   S.totalQ++;S.sessionQ++;
   incrementDailyQ(); // track daily usage for free users
-  
-  // ── HARD LOCK CHECK: After 15th question ──
-  if(!isPro()){
-    const newDailyUsed = getDailyQUsed();
-    if(newDailyUsed >= 15){
-      fmLog('ARENA-HARD-LOCK', 'Daily limit reached: ' + newDailyUsed + ' >= 15');
-      showLimitPopup('hard', 'fm_dq');
-      // Force end of practice session
-      S.qIndex = S.sessionQs.length;
-      setTimeout(() => showScreen('progress'), 1200);
-      return;
-    }
-  }
-  
   // Track today's questions for missions
   S.todayQ = (S.todayQ||0) + 1;
   // ── TRACK TOPIC PROGRESS (cumulative across sessions) ──
@@ -5456,7 +5377,7 @@ function updatePlanUI(){
   // Cancel subscription link (only for Pro users)
   if(pro){
     const cancelLink = document.createElement('div');
-    cancelLink.style.cssText = 'text-align:center;margin-top:12px;font-size:11px;color:#94A3B8;';
+    cancelLink.style.cssText = 'text-align:center;margin-top:12px;font-size:11px;color:#475569;';
     cancelLink.innerHTML = '<span style="cursor:pointer;text-decoration:underline;color:#EF4444;" onclick="showCancelConfirm()">Cancel subscription</span>';
     proCard.appendChild(cancelLink);
   }
@@ -5915,7 +5836,7 @@ function checkPlanFeature(feature){
   // If logged in, also show a "Sign Up first" hint below
   if(!loggedIn){
     const hint = document.createElement('div');
-    hint.style.cssText = 'font-size:11px;color:#94A3B8;margin-bottom:10px;';
+    hint.style.cssText = 'font-size:11px;color:#475569;margin-bottom:10px;';
     hint.textContent = 'Create a free account, then upgrade to Pro';
     box.appendChild(hint);
   }
@@ -6434,7 +6355,7 @@ function _fmProGate(featureName, screen){
   box.style.cssText='background:#fff;border-radius:24px;padding:28px 22px;max-width:340px;width:100%;text-align:center;box-sizing:border-box;';
   box.innerHTML='<div style="font-size:48px;margin-bottom:10px;">🔒</div>'
     +'<div style="font-size:20px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Pro Feature</div>'
-    +'<div style="font-size:12px;color:#64748B;margin-bottom:16px;line-height:1.6;"><strong>'+featureName+'</strong> is available on the Pro plan.<br><small style="color:#94A3B8;">Upgrade to unlock all professional tools</small></div>';
+    +'<div style="font-size:12px;color:#64748B;margin-bottom:16px;line-height:1.6;"><strong>'+featureName+'</strong> is available on the Pro plan.<br><small style="color:#475569;">Upgrade to unlock all professional tools</small></div>';
   var upBtn=document.createElement('button');
   upBtn.style.cssText='width:100%;padding:13px;border-radius:14px;background:linear-gradient(135deg,#0A1F6E,#1E3A8A);color:#fff;font-size:13px;font-weight:800;border:none;cursor:pointer;margin-bottom:8px;';
   upBtn.textContent='⚡ Upgrade to Pro';
@@ -6459,7 +6380,7 @@ function _fmDailyGate(featureName, prefix, limit, backScreen){
   box.style.cssText='background:#fff;border-radius:24px;padding:28px 22px;max-width:340px;width:100%;text-align:center;box-sizing:border-box;';
   box.innerHTML='<div style="font-size:48px;margin-bottom:10px;">⏰</div>'
     +'<div style="font-size:20px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Daily Limit Reached</div>'
-    +'<div style="font-size:12px;color:#64748B;margin-bottom:16px;line-height:1.6;">You have used your <strong>'+limit+' free '+featureName+'</strong> for today.<br><small style="color:#94A3B8;">Resets at midnight · Upgrade for unlimited</small></div>';
+    +'<div style="font-size:12px;color:#64748B;margin-bottom:16px;line-height:1.6;">You have used your <strong>'+limit+' free '+featureName+'</strong> for today.<br><small style="color:#475569;">Resets at midnight · Upgrade for unlimited</small></div>';
   var upBtn=document.createElement('button');
   upBtn.style.cssText='width:100%;padding:13px;border-radius:14px;background:linear-gradient(135deg,#0A1F6E,#1E3A8A);color:#fff;font-size:13px;font-weight:800;border:none;cursor:pointer;margin-bottom:8px;';
   upBtn.textContent='⚡ Upgrade to Pro — Unlimited';
@@ -7154,7 +7075,7 @@ function drcrShowLimitPopup(type){
     +'<div style="font-size:12px;color:#64748B;margin-bottom:16px;line-height:1.6;">'
     +(isSoft
       ? 'You used <strong>7 free Dr/Cr questions</strong> today. Upgrade for unlimited or continue with 3 more.'
-      : 'You used all <strong>10 free Dr/Cr questions</strong> for today.<br><small style="color:#94A3B8;">Resets at midnight · Upgrade for unlimited</small>')
+      : 'You used all <strong>10 free Dr/Cr questions</strong> for today.<br><small style="color:#475569;">Resets at midnight · Upgrade for unlimited</small>')
     +'</div>'
     +'<div style="background:#EEF2FF;border-radius:12px;padding:8px;font-size:12px;font-weight:700;color:#0A1F6E;margin-bottom:14px;">⚡ '+drcrState.xp+' XP earned this session</div>';
   // Upgrade button
@@ -7663,12 +7584,8 @@ function toggleCheckItem(item){
   // Init topics
   renderTopics();
 
-  // Pre-warm Supabase question cache for Arena + Challenge - DEFERRED
-  // 🚀 Performance: Load questions only after idle time to not block initial render
-  (function deferQuestionPreload(){
-    if('requestIdleCallback' in window){
-      requestIdleCallback(() => {
-        (async function preloadQuestions(){
+  // Pre-warm Supabase question cache for Arena + Challenge
+  (async function preloadQuestions(){
     try{
       const url = SUPA_URL + '/rest/v1/questions?select=*&limit=1000';
       const res = await fetch(url, {
@@ -7705,48 +7622,6 @@ function toggleCheckItem(item){
         if(!SQ_CACHE[cat].length) SQ_CACHE[cat] = allConverted;
       });
     }catch(e){ }
-  })();
-        });
-      } else {
-        // Fallback for browsers without requestIdleCallback
-        setTimeout(async function preloadQuestions(){
-          try{
-            const url = SUPA_URL + '/rest/v1/questions?select=*&limit=1000';
-            const res = await fetch(url, {
-              headers:{
-                'apikey': SUPA_KEY,
-                'Authorization': 'Bearer ' + SUPA_KEY,
-                'Content-Type': 'application/json'
-              },
-              mode: 'cors', credentials: 'omit'
-            });
-            if(!res.ok) return;
-            const allData = await res.json();
-            if(!allData || !allData.length) return;
-            const allConverted = allData.map(q=>({
-              q: q.question,
-              opts: [q.option_a, q.option_b, q.option_c, q.option_d],
-              correct: ['A','B','C','D'].indexOf(q.correct_answer),
-              explain: q.explanation||'',
-              standard: q.standard||''
-            })).filter(q=>q.correct>=0&&q.q&&q.opts[0]);
-            SQ_CACHE['Mixed'] = allConverted;
-            ['IFRS','IAS','ISA','Costing','FM','Tax'].forEach(cat=>{
-              SQ_CACHE[cat] = allConverted.filter(q=>{
-                const std = q.standard||'';
-                if(cat==='IFRS') return std.startsWith('IFRS');
-                if(cat==='IAS') return std.startsWith('IAS');
-                if(cat==='ISA') return std.startsWith('ISA');
-                if(cat==='Costing') return std.toLowerCase().includes('cost')||std.startsWith('MC');
-                if(cat==='FM') return std.startsWith('FM')||std.includes('Management')||std.includes('Finance');
-                if(cat==='Tax') return std.toLowerCase().includes('tax')||std.startsWith('TX');
-                return true;
-              });
-              if(!SQ_CACHE[cat].length) SQ_CACHE[cat] = allConverted;
-            });
-          }catch(e){ }
-        }, 2000);
-      }
   })();
 
   // Init session deferred — called after auth check completes (Fix A)
@@ -8732,7 +8607,7 @@ function renderWaterfall(){
   const isDark=document.documentElement.getAttribute('data-theme')==='dark';
   const bg=isDark?'#141E35':'#F8FAFF';
   const textColor=isDark?'#E2E8FF':'#1E293B';
-  const mutedColor=isDark?'#94A3B8':'#94A3B8';
+  const mutedColor=isDark?'#475569':'#475569';
   const gridColor=isDark?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.05)';
   c.fillStyle=bg; c.fillRect(0,0,CW,CH);
   const rev=sumSection('rev')||2400;
@@ -8805,7 +8680,7 @@ function renderWaterfall(){
   // Zero baseline
   const zy=toY(0);
   c.beginPath();c.moveTo(PAD.l,zy);c.lineTo(CW-PAD.r,zy);
-  c.strokeStyle=isDark?'#94A3B8':'#475569';c.lineWidth=1.5;c.stroke();
+  c.strokeStyle=isDark?'#475569':'#475569';c.lineWidth=1.5;c.stroke();
 }
 function renderSankey(){
   const canvas=document.getElementById('sankey-canvas');
@@ -8822,7 +8697,7 @@ function renderSankey(){
   const isDark=document.documentElement.getAttribute('data-theme')==='dark';
   const bg=isDark?'#141E35':'#F8FAFF';
   const textColor=isDark?'#E2E8FF':'#1E293B';
-  const mutedColor='#94A3B8';
+  const mutedColor='#475569';
   c.fillStyle=bg; c.fillRect(0,0,CW,CH);
   const op=sumSection('op')||431;
   const inv=sumSection('inv')||-240;
@@ -8918,7 +8793,7 @@ function renderRadarChart(){
   const fillColor=isDark?'rgba(143,163,255,.18)':'rgba(10,31,110,.15)';
   const lineColor=isDark?'#8FA3FF':'#0A1F6E';
   const pointColor=isDark?'#8FA3FF':'#0A1F6E';
-  const labelColor=isDark?'#94A3B8':'#64748B';
+  const labelColor=isDark?'#475569':'#64748B';
   // Draw grid
   [0.25,0.5,0.75,1].forEach(scale=>{
     ctx2.beginPath();
@@ -9412,7 +9287,7 @@ function buildLearningPath(){
       labelDiv.style.cssText = 'flex:1;min-width:0;';
       const labelColor = stage === 'locked' ? 'var(--muted)' : 'var(--navy)';
       const subColor   = stage === 'locked' ? 'var(--muted)' : 'var(--steel)';
-      const badge      = stage === 'locked' ? '<span style="font-size:9px;background:#F1F5F9;color:#94A3B8;padding:2px 7px;border-radius:999px;font-weight:700;margin-left:6px;">LOCKED</span>'
+      const badge      = stage === 'locked' ? '<span style="font-size:9px;background:#F1F5F9;color:#475569;padding:2px 7px;border-radius:999px;font-weight:700;margin-left:6px;">LOCKED</span>'
                        : stage === 'mastered' ? '<span style="font-size:9px;background:#D1FAE5;color:#059669;padding:2px 7px;border-radius:999px;font-weight:700;margin-left:6px;">DONE ✓</span>'
                        : '<span style="font-size:9px;background:#EEF2FF;color:#6366F1;padding:2px 7px;border-radius:999px;font-weight:700;margin-left:6px;">OPEN</span>';
       // Get progress for this topic
@@ -9959,7 +9834,7 @@ function showContinuePopup(std, remaining){
   progBtn.textContent = 'View My Progress 📊';
   progBtn.onclick = function(){ overlay.remove(); showScreen('progress'); };
   const homeBtn = document.createElement('button');
-  homeBtn.style.cssText = 'width:100%;padding:10px;border-radius:12px;background:none;color:#94A3B8;font-size:13px;font-weight:600;border:none;cursor:pointer;font-family:var(--font-body);';
+  homeBtn.style.cssText = 'width:100%;padding:10px;border-radius:12px;background:none;color:#475569;font-size:13px;font-weight:600;border:none;cursor:pointer;font-family:var(--font-body);';
   homeBtn.textContent = 'Back to Home';
   homeBtn.onclick = function(){ overlay.remove(); showScreen('home'); };
   box.appendChild(contBtn);
@@ -10091,7 +9966,7 @@ function showLimitPopup(type){
     +'<div style="font-size:12px;color:#64748B;margin-bottom:12px;line-height:1.6;">'
     +(isSoft
       ? 'You used <strong>10 free questions</strong> today. Upgrade for unlimited or continue with 5 more.'
-      : 'You used all <strong>15 free questions</strong> for today.<br><small style="color:#94A3B8;">Resets at midnight</small>')
+      : 'You used all <strong>15 free questions</strong> for today.<br><small style="color:#475569;">Resets at midnight</small>')
     +'</div>'
     +'<div style="background:#EEF2FF;border-radius:12px;padding:8px;font-size:12px;font-weight:700;color:#0A1F6E;margin-bottom:14px;">You earned '+(typeof S!=='undefined'?S.xp||0:0)+' XP</div>';
 
@@ -10148,7 +10023,7 @@ function showLimitPopup(type){
   // Sign up options (non logged in)
   if(!isLoggedIn){
     var div2 = document.createElement('div');
-    div2.style.cssText = 'font-size:11px;color:#94A3B8;margin:4px 0 8px;';
+    div2.style.cssText = 'font-size:11px;color:#475569;margin:4px 0 8px;';
     div2.textContent = '\u2014 or create a free account \u2014';
     box.appendChild(div2);
 
@@ -10172,7 +10047,7 @@ function showLimitPopup(type){
   // Come Back Tomorrow (hard only)
   if(!isSoft){
     var backBtn = document.createElement('button');
-    backBtn.style.cssText = 'width:100%;padding:10px;border-radius:14px;background:transparent;color:#94A3B8;font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:inherit;';
+    backBtn.style.cssText = 'width:100%;padding:10px;border-radius:14px;background:transparent;color:#475569;font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:inherit;';
     backBtn.textContent = 'Come Back Tomorrow';
     backBtn.addEventListener('click', function(){overlay.remove(); if(typeof showScreen==='function') showScreen('home');});
     backBtn.addEventListener('touchend', function(e){e.preventDefault(); overlay.remove(); if(typeof showScreen==='function') showScreen('home');},{passive:false});
@@ -10226,7 +10101,7 @@ const _origAnswerQ=answerQ;
     <div class="reg-popup-sub">Create a free account to save your progress and start your next session.</div>
     <div class="reg-popup-xp" id="reg-popup-stats">You earned 0 XP • 0 correct answers</div>
     <button id="reg-popup-continue-btn" onclick="closeRegPopup();continueFreeQuestions()" style="width:100%;padding:13px;border-radius:14px;background:linear-gradient(135deg,#0A1F6E,#1E3A8A);color:#fff;font-size:14px;font-weight:800;border:none;cursor:pointer;font-family:inherit;margin-bottom:12px;">⚡ Continue 5 More Questions</button>
-    <div style="font-size:11px;color:#94A3B8;margin-bottom:12px;">— or save your progress —</div>
+    <div style="font-size:11px;color:#475569;margin-bottom:12px;">— or save your progress —</div>
     <button class="auth-social-btn" style="margin-bottom:8px;" onclick="closeRegPopup();signInWithGoogle()">
       <svg width="16" height="16" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
       Sign Up with Google
@@ -14143,28 +14018,12 @@ _offlineCheckInterval = setInterval(function(){
     document.body.classList.add('app-ready');
     // Load guest device limits from Supabase
     await loadGuestDeviceLimits();
-    // ── FIX: Pre-load topics for logged-in users too ──
-    await loadTopicsFromSupabase().catch(e => {
-      console.warn('Topics pre-load failed on login:', e);
-    });
-    // ── FIX: Pre-load topics to ensure mobile sees sorted version ──
-    await loadTopicsFromSupabase().catch(e => {
-      console.warn('Topics pre-load failed on guest startup:', e);
-      // Fallback: hardcoded TOPICS will be used
-    });
   }
 
   if(data.session){
     _currentUser = data.session.user;
     _isGuest = false;
     S.onboardingDone = true;
-    
-    // ── CARRYOVER: If guest had used questions, they carry over to logged-in account ──
-    // This ensures users can't logout/login to reset their daily quota
-    if(S.dailyQCount && S.dailyQCount > 0){
-      fmLog('LOGIN-CARRYOVER', 'Guest used ' + S.dailyQCount + ' questions, carrying over to user account');
-      // The user_progress will be loaded below, and it will use the device's daily limit
-    }
     const _obFix = document.getElementById('onboarding');
     if(_obFix) _obFix.style.display = 'none';
     try{
@@ -15573,7 +15432,7 @@ async function loadGlobalRankings(){
       // Clean up display name
       const displayName = p.player_name||'Anonymous';
       return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);${isMe?'background:var(--blue-ll);margin:0 -4px;padding:10px 4px;border-radius:8px;':''}">
-        <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:${i<3?['#F59E0B','#94A3B8','#CD7C2F'][i]:'var(--muted)'};width:24px;text-align:center;">${i<3?['🥇','🥈','🥉'][i]:(i+1)}</div>
+        <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:${i<3?['#F59E0B','#475569','#CD7C2F'][i]:'var(--muted)'};width:24px;text-align:center;">${i<3?['🥇','🥈','🥉'][i]:(i+1)}</div>
         <div style="font-size:18px;">${tier.icon}</div>
         <div style="flex:1;">
           <div style="font-size:12px;font-weight:700;color:var(--navy);">${displayName}${isMe?' 👈 You':''}</div>
