@@ -3739,6 +3739,32 @@ const S = {
   completedTopics:{}, // tracks { 'IAS 1': true, 'IFRS 15': true, ... }
 };
 
+// ── CHALLENGE/MULTIPLAYER STATE ──
+const CH = {
+  challengeId: null,
+  code: null,
+  role: null,  // 'creator' or 'joiner'
+  isOnlineMatch: false,
+  isAIMatch: false,
+  questions: [],
+  currentQ: 0,
+  myScore: 0,
+  opponentScore: 0,
+  myAnswers: [],
+  opponentAnswers: [],
+  battleStartsAt: null,
+  battleStarted: false,
+  myFinished: false,
+  answered: false,
+  timerSeconds: 20,
+  timerInterval: null,
+  subscription: null,
+  wins: 0,
+  losses: 0,
+  winStreak: 0,
+  totalPlayed: 0
+};
+
 const RANKS=[
   {min:0,    title:'Initiate',     emblem:'🌱',xpNext:500},
   {min:500,  title:'Analyst',      emblem:'📊',xpNext:1500},
