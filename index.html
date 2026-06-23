@@ -3755,67 +3755,155 @@ const STANDARD_NAMES={
   "FM 1":"Working Capital Management","FM 3":"Cost of Capital and WACC","FM 7":"Foreign Exchange Risk"
 };
 const Q=(q,opts,correct,trap,explain,dyk)=>({q,opts,correct,trap,explain,dyk});
+const QB={
+  'IFRS 15':[
+    Q('Under IFRS 15, when a contract modification adds distinct goods at standalone selling price, it should be treated as:',['A separate new contract','Modification of existing via cumulative catch-up','Termination and new contract','Deferred until complete'],0,true,'<strong>IFRS 15, para 20:</strong> Modification adding distinct goods at SSP → separate contract.','IFRS 15 replaced over 40 revenue standards when issued in 2014.'),
+    Q('Under IFRS 15, revenue is recognised when (or as) a performance obligation is:',['Invoiced to the customer','Satisfied by transferring control','Agreed in a signed contract','Paid for by the customer'],1,false,'<strong>IFRS 15, para 31:</strong> Revenue recognised when control transfers — not when invoiced or paid.',''),
+    Q('Which is NOT a criterion for a contract to exist under IFRS 15?',['Parties have approved the contract','Payment terms are identified','The contract is in writing','Collection of consideration is probable'],2,true,'<strong>IFRS 15, para 9:</strong> A contract need not be written — it can be oral or implied.',''),
+  ],
+  'IFRS 9':[
+    Q('Under IFRS 9 ECL model, a financial asset moves to Stage 2 when:',['It is 90+ days past due','There is significant increase in credit risk since initial recognition','A confirmed credit loss has occurred','Management elects to reclassify'],1,true,'<strong>IFRS 9, para 5.5.3:</strong> Stage 2 = significant increase in credit risk. 90-day past due is a rebuttable presumption for Stage 3.','IFRS 9 ECL model was designed to prevent the "too little too late" problem from 2008.'),
+    Q('Under IFRS 9, a financial asset at amortised cost must pass:',['The fair value test only','Both the business model test and SPPI test','The liquidity test','The market price test'],1,false,'<strong>IFRS 9, para 4.1.2:</strong> Amortised cost = (1) Business model: held to collect + (2) SPPI test.',''),
+  ],
+  'IFRS 16':[
+    Q('On commencement of a lease under IFRS 16, the lessee recognises:',['Only a lease liability','A right-of-use asset and a lease liability','An expense equal to annual payment','Nothing if lease is under 5 years'],1,false,'<strong>IFRS 16, para 22:</strong> Lessee recognises both ROU asset and lease liability.','IFRS 16 added approximately $3 trillion in lease liabilities to global balance sheets.'),
+    Q('Under IFRS 16, which is included in the measurement of the lease liability?',['Variable lease payments based on sales','Fixed lease payments','Executory costs (insurance, maintenance)','Contingent rent based on future performance'],1,true,'<strong>IFRS 16, para 26:</strong> Lease liability includes fixed payments. NOT variable payments based on sales.',''),
+  ],
+  'IAS 36':[
+    Q('The recoverable amount of an asset under IAS 36 is:',['Higher of FVLCD and Value in Use','Lower of carrying amount and fair value','Historical cost less depreciation','Net realisable value'],0,false,'<strong>IAS 36, para 18:</strong> Recoverable amount = HIGHER of FVLCD and VIU.',''),
+    Q('Under IAS 36, goodwill must be tested for impairment:',['Only when indicators exist','Annually and when indicators exist','Every 5 years','Only on disposal'],1,true,'<strong>IAS 36, para 96:</strong> Goodwill tested ANNUALLY regardless of indicators.',''),
+  ],
+  'IAS 37':[
+    Q('A provision should be recognised under IAS 37 when:',['A possible obligation may arise','Present obligation, probable outflow, reliable estimate','Management decides it is prudent','A legal claim has been filed'],1,true,'<strong>IAS 37, para 14:</strong> ALL three must be met: present obligation, probable outflow, reliable estimate.',''),
+  ],
+  'IAS 12':[
+    Q('A deferred tax liability arises when:',['Tax base exceeds carrying amount','Carrying amount exceeds tax base','Tax losses are available','Accounting depreciation exceeds capital allowances'],1,true,'<strong>IAS 12, para 15:</strong> DTL arises when carrying amount > tax base → taxable temporary difference.',''),
+  ],
 
-
+  'IFRS 1':[
+    Q('Under IFRS 1, the transition date is:',['The date of the first IFRS financial statements','The beginning of the earliest comparative period presented','The date IFRS was adopted by law','The end of the first IFRS reporting period'],1,true,'<b>IFRS 1 Para 4:</b> Transition date = beginning of the earliest period for which full comparative IFRS info is presented.','An entity presents at least one year of comparatives under IFRS 1.'),
+  ],
+  'IFRS 2':[
+    Q('For equity-settled share-based payments, IFRS 2 requires measurement at:',['Fair value at each reporting date','Fair value at grant date — never remeasured','Intrinsic value at vesting date','Cost of shares issued'],1,true,'<b>IFRS 2 Para 11:</b> Equity-settled SBP: measure at grant date FV. NOT remeasured even if market price changes.','Cash-settled SBP ARE remeasured at each reporting date.'),
+  ],
+  'IFRS 3':[
+    Q('Under IFRS 3, acquisition-related costs are:',['Added to goodwill','Capitalised as intangibles','Expensed as incurred','Deducted from NCI'],2,true,'<b>IFRS 3 Para 53:</b> Transaction costs (legal, advisory) are expensed in the period incurred — NOT added to goodwill.',''),
+    Q('Goodwill under IFRS 3 equals:',['Purchase price minus book value','Consideration + NCI + FV of prior interest minus FV of net identifiable assets','Excess of purchase price over market cap','Total intangible assets not separately identifiable'],1,false,'<b>IFRS 3 Para 32:</b> Goodwill = Consideration + NCI + FV of previously held interest − FV of identifiable net assets.',''),
+  ],
+  'IFRS 5':[
+    Q('Under IFRS 5, a non-current asset is classified as held for sale when:',['Management plans to sell it eventually','Available for immediate sale AND sale highly probable within 12 months','Board approval has been given','It has been advertised for sale'],1,true,'<b>IFRS 5 Para 7:</b> BOTH conditions: (1) Available for immediate sale in current condition, (2) Sale highly probable within 12 months.','Once classified as HFS, depreciation ceases.'),
+  ],
+  'IFRS 7':[
+    Q('IFRS 7 requires disclosure of:',['Only credit risk','Market risk, credit risk and liquidity risk','Only quantitative risk information','Only derivatives held'],1,false,'<b>IFRS 7 Para 31:</b> Disclose information about: credit risk, liquidity risk, and market risk (interest rate, currency, other price).',''),
+  ],
+  'IFRS 10':[
+    Q('Under IFRS 10, control requires:',['More than 50% of voting rights only','Power AND exposure to variable returns AND ability to use power to affect returns','Majority of board seats','More than 20% ownership'],1,true,'<b>IFRS 10 Para 7:</b> All three elements simultaneously: (1) Power, (2) Exposure to variable returns, (3) Ability to use power to affect returns.',''),
+  ],
+  'IFRS 13':[
+    Q('Under IFRS 13, fair value is:',['The cost to replace an asset','The price received to sell an asset or paid to transfer a liability in an orderly transaction','Net realisable value','Value in use'],1,false,'<b>IFRS 13 Para 9:</b> Fair value = EXIT price in an orderly market transaction between market participants at measurement date.',''),
+  ],
+  'IFRS 17':[
+    Q('IFRS 17 replaces which standard?',['IFRS 4','IAS 39','IFRS 9','IAS 32'],0,false,'IFRS 17 Insurance Contracts replaced IFRS 4. Effective for periods beginning on or after 1 January 2023.',''),
+  ],
+  'IFRS 18':[
+    Q('IFRS 18 replaces which standard?',['IFRS 7','IAS 7','IAS 1','IAS 8'],2,false,'IFRS 18 replaces IAS 1 — Presentation of Financial Statements. Introduces categorised P&L: operating, investing, financing. Effective 2027.',''),
+  ],
+  'IAS 1':[
+    Q('Under IAS 1, a complete set of financial statements does NOT include:',['Statement of Financial Position','Statement of Retained Earnings only','Statement of Cash Flows','Notes to the financial statements'],1,true,'<b>IAS 1 Para 10:</b> Complete set: SFP, P&L/OCI, Changes in Equity, Cash Flows, Notes. Retained earnings statement alone is not sufficient.',''),
+    Q('The going concern assessment under IAS 1 covers at least:',['6 months from reporting date','12 months from reporting date','24 months from reporting date','The entire next financial year'],1,false,'<b>IAS 1 Para 25:</b> Management assesses ability to continue as going concern for at least 12 months from the reporting date.',''),
+  ],
+  'IAS 2':[
+    Q('Under IAS 2, inventory is measured at:',['Cost','Net realisable value','Lower of cost and net realisable value','Higher of cost and NRV'],2,true,'<b>IAS 2 Para 9:</b> Inventory = LOWER of cost and NRV. NRV = estimated selling price less estimated costs of completion and selling costs.','LIFO is prohibited under IFRS. FIFO or weighted average are acceptable.'),
+  ],
+  'IAS 7':[
+    Q('Under IAS 7, dividends PAID may be classified as:',['Operating activities only','Financing activities only','Either operating or financing activities','Investing activities only'],2,false,'<b>IAS 7 Para 34:</b> Dividends paid may be classified as financing (preferred) or operating (to show ability to pay from operations).',''),
+  ],
+  'IAS 8':[
+    Q('A change in accounting policy under IAS 8 is applied:',['Prospectively from the date of change','Retrospectively, restating prior periods','Only if required by a new standard','At management discretion'],1,true,'<b>IAS 8 Para 19:</b> Changes in accounting policy applied retrospectively — prior periods restated as if new policy had always applied.','A change in accounting ESTIMATE is applied prospectively.'),
+  ],
+  'IAS 10':[
+    Q('An adjusting event after the reporting period under IAS 10:',['Occurs and is disclosed after year-end','Provides evidence of conditions that existed at the reporting date','Creates a new condition that arose after year-end','Is always disclosed in the notes'],1,true,'<b>IAS 10 Para 3:</b> Adjusting events provide evidence of conditions that EXISTED at reporting date. Non-adjusting events arise AFTER year-end.',''),
+  ],
+  'IAS 16':[
+    Q('Under IAS 16, subsequent expenditure on PPE is capitalised when:',['It improves the asset beyond its originally assessed standard of performance','It is above a specified monetary threshold','Management decides it is material','It relates to routine maintenance'],0,false,'<b>IAS 16 Para 10:</b> Capitalise if probable future economic benefits flow and cost reliably measured — i.e. improves beyond original assessed performance.',''),
+    Q('Under the revaluation model (IAS 16), an upward revaluation is recognised in:',['Profit or loss','Other comprehensive income (OCI)','Retained earnings directly','A deferred revenue account'],1,true,'<b>IAS 16 Para 39:</b> Revaluation increases go to OCI into revaluation surplus in equity. NOT recycled to P&L on disposal.',''),
+  ],
+  'IAS 19':[
+    Q('Under IAS 19, actuarial gains and losses on defined benefit plans are recognised in:',['Profit or loss','Other comprehensive income — never recycled to P&L','Retained earnings directly','Spread over remaining service lives'],1,true,'<b>IAS 19 Para 120:</b> Remeasurements go to OCI and are NEVER subsequently reclassified to profit or loss.',''),
+  ],
+  'IAS 21':[
+    Q('Under IAS 21, monetary items at year-end are translated at:',['Historical rate','Closing rate','Average rate for the year','Rate at date of settlement'],1,false,'<b>IAS 21 Para 23:</b> Monetary items retranslated at the CLOSING rate. Exchange differences go to P&L.','Non-monetary items stay at historical rate.'),
+  ],
+  'IAS 38':[
+    Q('Research costs under IAS 38 are:',['Capitalised if future benefits are probable','Always expensed as incurred','Capitalised then amortised over 5 years','At management discretion to capitalise'],1,true,'<b>IAS 38 Para 54:</b> Research costs are ALWAYS expensed. Development costs are capitalised only when all 6 criteria met (PIRATE mnemonic).',''),
+  ],
+  'IAS 40':[
+    Q('Under the fair value model for investment property (IAS 40), changes in fair value are in:',['Other comprehensive income','Profit or loss','Revaluation surplus in equity','Deferred revenue'],1,false,'<b>IAS 40 Para 35:</b> Under fair value model, ALL gains and losses from fair value changes go directly to P&L.',''),
+  ],
+  'ISA 200':[
+    Q('The primary objective of an audit under ISA 200 is to:',['Detect all fraud','Obtain reasonable assurance that financial statements are free from material misstatement','Prepare financial statements','Guarantee financial statements are accurate'],1,false,'<b>ISA 200 Para 3:</b> The objective is to obtain REASONABLE (high but not absolute) assurance that the financial statements are free from material misstatement.',''),
+  ],
+  'ISA 315':[
+    Q('Under ISA 315, the auditor identifies risks through:',['Substantive procedures only','Understanding the entity and its environment including internal controls','Confirmation of balances only','Review of prior year file only'],1,false,'<b>ISA 315:</b> The auditor must understand the entity, its environment, applicable framework, and internal controls to identify and assess risks of material misstatement.',''),
+  ],
+  'ISA 320':[
+    Q('Performance materiality under ISA 320 is set:',['Equal to overall materiality','Higher than overall materiality','Lower than overall materiality to reduce aggregation risk','At 1% of revenue by default'],2,false,'<b>ISA 320 Para 11:</b> Performance materiality is set BELOW overall materiality to reduce probability that aggregate uncorrected misstatements exceed overall materiality.',''),
+  ],
+  'ISA 570':[
+    Q('When going concern doubt exists, the auditor under ISA 570 should:',['Immediately issue an adverse opinion','Evaluate management plans and assess whether going concern basis is appropriate','Resign from the engagement','Report directly to shareholders'],1,false,'<b>ISA 570:</b> Auditor evaluates management plans, considers adequacy of disclosures, determines impact on opinion (modified or emphasis of matter paragraph).',''),
+  ],
+  'ISA 700':[
+    Q('An unmodified audit opinion under ISA 700 is issued when:',['There are no errors in the financial statements','Financial statements are presented fairly in all material respects per the applicable framework','The auditor reviewed all transactions','Management confirmed there is no fraud'],1,false,'<b>ISA 700 Para 35:</b> Unmodified = presented fairly in all material respects (or true and fair view) per the applicable financial reporting framework.',''),
+  ],
+  'ISA 701':[
+    Q('Key Audit Matters under ISA 701 must be communicated for:',['All audit clients','Listed entities','All public interest entities','Any client with complex accounting'],1,false,'<b>ISA 701 Para 2:</b> KAMs are required for listed entities. Extension to others is voluntary or may be required by regulators.',''),
+  ],
+  'ISA 705':[
+    Q('A qualified audit opinion under ISA 705 is issued when:',['Financial statements are misleading as a whole','There is a pervasive material misstatement or scope limitation','The issue is material but NOT pervasive','The auditor cannot express any opinion'],2,true,'<b>ISA 705 Para 7:</b> Qualified = material but NOT pervasive. Adverse = material AND pervasive. Disclaimer = pervasive scope limitation.',''),
+  ],
+  'MC 1':[
+    Q('A cost that remains constant in total regardless of output level is:',['Variable cost','Fixed cost','Semi-variable cost','Step cost'],1,false,'A fixed cost (e.g. rent, depreciation) remains constant in total but decreases per unit as output increases.',''),
+  ],
+  'MC 2':[
+    Q('When production exceeds sales, which costing method reports higher profit?',['Marginal costing','Absorption costing','Both are the same','Depends on tax rate'],1,true,'Absorption costing defers fixed overhead in closing inventory — more fixed costs deferred = higher profit reported. Marginal costing expenses ALL fixed costs as period costs.',''),
+  ],
+  'MC 5':[
+    Q('A favourable material usage variance means:',['Actual materials used were more than standard','Actual materials used were less than standard','Actual price paid was lower than standard','Output was higher than budget'],1,false,'Material usage variance = (Standard qty for actual output − Actual qty) x Standard price. Favourable = LESS material used than standard for actual output.',''),
+  ],
+  'MC 7':[
+    Q('A project should be accepted if:',['IRR is positive','NPV is positive','Payback period is under 2 years','ARR exceeds target'],1,false,'A positive NPV means PV of inflows > PV of outflows at the WACC — the project creates value above the cost of capital and should be accepted.',''),
+  ],
+  'TX 1':[
+    Q('Taxable profit differs from accounting profit primarily because of:',['Different accounting standards','Disallowable expenditure and capital allowances replacing depreciation','Management estimates','Audit adjustments'],1,false,'Taxable profit = Accounting profit + Disallowable expenses (e.g. depreciation, client entertaining) − Capital allowances.',''),
+  ],
+  'TX 2':[
+    Q('A deferred tax asset arises from:',['A taxable temporary difference','A deductible temporary difference or unused tax losses','A permanent difference','Tax credits receivable'],1,false,'<b>IAS 12 Para 24:</b> DTA arises when tax base exceeds carrying amount (deductible temp difference) — e.g. from provisions not yet deductible or unused tax losses.',''),
+  ],
+  'TX 5':[
+    Q("The arm's length principle in transfer pricing requires:",["Transactions between related parties at any agreed price","Pricing as if the transaction were between independent parties","Tax authorities to set prices","Transfer prices equal to cost"],1,false,"The OECD arm's length principle: conditions between related parties must not differ from those between independent parties in comparable transactions.",''),
+  ],
+  'FM 1':[
+    Q('The cash conversion cycle equals:',['Debtor days + Creditor days minus Inventory days','Inventory days + Debtor days minus Creditor days','Debtor days minus Inventory days','Inventory days + Creditor days'],1,false,'CCC = Inventory days + Receivable days − Payable days. Shorter CCC = cash tied up for less time.',''),
+  ],
+  'FM 3':[
+    Q('In CAPM, systematic risk is measured by:',['Standard deviation','Beta (β)','Alpha','Variance'],1,false,'Beta measures systematic (market) risk — sensitivity of returns to market returns. β > 1 = more volatile than market; β < 1 = less volatile.',''),
+  ],
+  'FM 7':[
+    Q('Transaction exposure in FX risk refers to:',['Risk from retranslating overseas subsidiaries','Risk that exchange rates change between contract date and settlement','Long-term competitive impact of FX changes','Risk of FX regulations changing'],1,false,'Transaction exposure: agreed future cash flows in foreign currency — risk that rates move before settlement.',''),
+  ],
+};
+const QB_BY_DOMAIN={
+  IFRS:[...(QB['IFRS 15']||[]),...(QB['IFRS 9']||[]),...(QB['IFRS 16']||[]),...(QB['IFRS 1']||[]),...(QB['IFRS 2']||[]),...(QB['IFRS 3']||[]),...(QB['IFRS 5']||[]),...(QB['IFRS 7']||[]),...(QB['IFRS 10']||[]),...(QB['IFRS 13']||[]),...(QB['IFRS 17']||[]),...(QB['IFRS 18']||[])],
+  IAS:[...(QB['IAS 36']||[]),...(QB['IAS 37']||[]),...(QB['IAS 12']||[]),...(QB['IAS 1']||[]),...(QB['IAS 2']||[]),...(QB['IAS 7']||[]),...(QB['IAS 8']||[]),...(QB['IAS 10']||[]),...(QB['IAS 16']||[]),...(QB['IAS 19']||[]),...(QB['IAS 21']||[]),...(QB['IAS 38']||[]),...(QB['IAS 40']||[])],
+  ISA:[...(QB['ISA 200']||[]),...(QB['ISA 315']||[]),...(QB['ISA 320']||[]),...(QB['ISA 570']||[]),...(QB['ISA 700']||[]),...(QB['ISA 701']||[]),...(QB['ISA 705']||[]),Q('Materiality under ISA 320 is determined by:',['Auditor judgement based on user needs','A fixed 5% of revenue','Client request','Regulatory body'],0,false,'<b>ISA 320</b> — materiality is a matter of professional judgement.','Performance materiality is set lower to reduce aggregation risk.'),Q('A "key audit matter" under ISA 701 is:',['Any error found','A matter of most significance in the audit','Always a misstatement','A management override'],1,false,'KAMs are matters of <b>most significance</b> in the audit, communicated for listed entities.','KAMs were introduced post-2008.')],
+  Costing:[...(QB['MC 1']||[]),...(QB['MC 2']||[]),...(QB['MC 5']||[]),...(QB['MC 7']||[]),Q('Under marginal costing, fixed manufacturing overheads are:',['Absorbed into product cost','Treated as period costs','Capitalised','Allocated to inventory'],1,true,'Marginal costing treats <b>only variable costs</b> as product costs; fixed overheads are period costs.','Absorption costing can shift profit between periods by changing inventory levels.')],
+  FM:[...(QB['FM 1']||[]),...(QB['FM 3']||[]),...(QB['FM 7']||[]),Q('WACC stands for:',['Weighted Average Cost of Capital','Working Average Capital Cost','Weighted Annual Cost Calculation','Working Asset Capital Cost'],0,false,'<b>WACC</b> blends the cost of equity and after-tax cost of debt by market value weights.','A higher WACC = higher hurdle rate = fewer projects accepted.')],
+  Tax:[...(QB['TX 1']||[]),...(QB['TX 2']||[]),...(QB['TX 5']||[]),Q('Withholding tax is:',['A tax on imports','Tax deducted at source on certain payments','A penalty for late tax','VAT on services'],1,false,'<b>Withholding tax</b> is deducted by the payer on dividends, interest, royalties.','WHT rates are commonly reduced by Double Taxation Treaties.')],
+};
 
 // ── TOPICS ──
-const TOPICS = [];
-
-// Load topics dynamically from Supabase
-async function initializeTopicsFromSupabase() {
-  try {
-    console.log('📚 Loading topics from Supabase...');
-    
-    // Fetch all questions
-    const { data, error } = await _supa
-      .from('questions')
-      .select('standard')
-      .order('standard');
-    
-    if(error) {
-      console.error('❌ Error loading topics:', error);
-      window.TOPICS = [];
-      return false;
-    }
-    
-    if(!data || data.length === 0) {
-      console.warn('⚠ No questions found in Supabase');
-      window.TOPICS = [];
-      return false;
-    }
-    
-    // Get unique standards and build TOPICS
-    const standards = [...new Set(data.map(q => q.standard))].sort();
-    window.TOPICS = standards.map((s, idx) => {
-      const count = data.filter(q => q.standard === s).length;
-      return {
-        num: s,
-        cat: 'IFRS/IAS',
-        icon: '📋',
-        qcount: count,
-        locked: false,
-        position: idx
-      };
-    });
-    
-    // IMPORTANT: Sync to global TOPICS array
-    window.TOPICS.forEach(t => {
-      const existing = TOPICS.find(x => x.num === t.num);
-      if(!existing) {
-        TOPICS.push(t);
-      }
-    });
-    
-    console.log('✅ Topics loaded and synced:', TOPICS.length, 'topics');
-    console.log('Topics:', TOPICS.map(t => t.num).join(', '));
-    
-    return true;
-  } catch(e) {
-    console.error('❌ Exception loading topics:', e);
-    window.TOPICS = [];
-    return false;
-  }
-}
+// Topics will load from Supabase topics table
+let TOPICS = [];
 
 
 // ── JE DATA ──
@@ -4219,11 +4307,7 @@ async function startTopicPractice(num){
     }
   }
   S.currentStandard = num;
-  const t = TOPICS.find(x => x.num === num) || window.TOPICS?.find(x => x.num === num);
-  if(!t) {
-    console.error('Topic not found:', num, 'Available:', TOPICS.map(x => x.num).join(', '));
-    return;
-  }
+  const t = TOPICS.find(x=>x.num===num);
   if(t) S.domain = t.cat;
   S.sessionQs = [];
   S.qIndex = 0;
@@ -4241,18 +4325,6 @@ async function startTopicPractice(num){
 
   showScreen('practice');
 
-  // Load questions from Supabase
-  (async () => {
-    const questions = await loadQuestionsFromSupabase(num, 100);
-    if(!questions || questions.length === 0) {
-      document.getElementById('q-text').textContent = 'No questions found for ' + num;
-      return;
-    }
-    S.sessionQs = questions;
-    S.qIndex = 0;
-    buildProgressDots();
-    loadQuestion();
-  })();
   // Show loading
   const qt = document.getElementById('q-text');
   const opts = document.getElementById('options');
@@ -4276,12 +4348,15 @@ async function startTopicPractice(num){
 
   // Fetch from Supabase for THIS specific standard
   let pool = [];
-  const supaQs = await fetchQuestionsForStandard(num);
+  const supaQs = await loadQuestionsForStandard(num);
   if(supaQs && supaQs.length >= 1){
     pool = supaQs;
   } else {
-    // Fallback to local QB
-    pool = QB[num] ? [...QB[num]] : [...(QB_BY_DOMAIN[t?t.cat:'IFRS']||[])];
+    // No questions found - show error
+    clearTimeout(loadingTimeout);
+    if(qt) qt.textContent = '❌ No questions found for ' + num;
+    if(opts) opts.innerHTML = '<div style="text-align:center;padding:20px;color:#f44336;">No questions available for this topic. Check Supabase data.</div>';
+    return;
   }
 
   // Apply limits based on plan and position
@@ -4439,19 +4514,11 @@ async function fetchQuestionsFromSupabase(category, count){
 
 
 async function startSession(){
-  // Wait for topics to load BEFORE doing anything else
-  (async () => {
-    await initializeTopicsFromSupabase();
-    // Now topics are loaded, continue with session
-    const dailyRemaining = getDailyQRemaining();
-    if(!isPro() && dailyRemaining <= 0){ showDailyLimitPopup(); return; }
-    const _clearDomain = S.domain || 'IFRS';
-    delete SQ_CACHE[_clearDomain];
-    delete SQ_CACHE[_clearDomain+'_100'];
-    delete SQ_CACHE['Mixed'];
-  })();
+  // Load topics from Supabase first
+  await loadTopicsFromSupabase().catch(e => {
+    console.error('Failed to load topics:', e);
+  });
   
-  // Initialize topics().catch(e => console.error('Topics init error:', e));
   const dailyRemaining = getDailyQRemaining();
   // Block if daily limit reached - no loopholes for topic switching
   if(!isPro() && dailyRemaining <= 0){ showDailyLimitPopup(); return; }
@@ -13186,7 +13253,6 @@ let _planLoaded = false; // becomes true after Supabase plan is confirmed
 
 // ── GUEST MODE ──
 function startAsGuest(){
-  initializeTopicsFromSupabase().catch(e => console.error('Topics init error:', e));
   _isGuest = true;
   _guestQCount = 0;
   _guestBonusUsed = false;
@@ -13221,7 +13287,14 @@ function startAsGuest(){
     ob.style.display = 'flex';
     window._guestAfterOnboard = true;
   } else {
-    showScreen('home');
+    // Load topics before showing home
+    loadTopicsFromSupabase().then(() => {
+      console.log('✅ Topics loaded for guest');
+      showScreen('home');
+    }).catch(e => {
+      console.error('⚠️ Failed to load topics, showing home anyway');
+      showScreen('home');
+    });
   }
 }
 function getGuestThreshold(){
@@ -17989,16 +18062,73 @@ setTimeout(function() { showFoxScreenMessage('home'); }, 1500);
   }, 4000);
 })();
 
-
-// Load questions for a specific standard
-async function loadQuestionsFromSupabase(standard, limit = 100) {
+// ════════════════════════════════════════════════════════════════════════════
+// ── SUPABASE: Load topics from topics table ──
+// ════════════════════════════════════════════════════════════════════════════
+async function loadTopicsFromSupabase() {
   try {
-    if (!standard || standard.trim() === '') {
-      console.warn('⚠ Empty standard provided');
+    console.log('📚 Loading topics from Supabase topics table...');
+    
+    if (!_supa) {
+      console.error('❌ Supabase not initialized');
+      return false;
+    }
+    
+    // Load from topics table where status = 'Active'
+    const { data, error } = await _supa
+      .from('topics')
+      .select('*')
+      .eq('status', 'Active')
+      .order('sort_order', { ascending: true });
+    
+    if (error) {
+      console.error('❌ Error loading topics:', error.message);
+      return false;
+    }
+    
+    if (!data || data.length === 0) {
+      console.warn('⚠️ No active topics found');
+      TOPICS = [];
+      return false;
+    }
+    
+    // Map topics to TOPICS format
+    TOPICS = data.map(t => ({
+      num: t.standard,
+      name: t.name || '',
+      cat: t.category || 'Other',
+      icon: '📋',
+      qcount: 0,
+      locked: false,
+      position: t.sort_order || 0
+    }));
+    
+    console.log('✅ Topics loaded:', TOPICS.length, 'topics');
+    console.log('📋 Standards:', TOPICS.map(t => t.num).join(', '));
+    
+    return true;
+  } catch(e) {
+    console.error('❌ Exception loading topics:', e.message);
+    return false;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// ── SUPABASE: Load questions for a standard ──
+// ════════════════════════════════════════════════════════════════════════════
+async function loadQuestionsForStandard(standard, limit = 100) {
+  try {
+    if (!standard) {
+      console.warn('⚠️ No standard provided');
       return [];
     }
     
-    console.log(`📡 Fetching questions for: "${standard}"`);
+    console.log(`📡 Loading questions for: ${standard}`);
+    
+    if (!_supa) {
+      console.error('❌ Supabase not initialized');
+      return [];
+    }
     
     const { data, error } = await _supa
       .from('questions')
@@ -18007,12 +18137,12 @@ async function loadQuestionsFromSupabase(standard, limit = 100) {
       .limit(limit);
     
     if (error) {
-      console.error(`❌ Supabase error for ${standard}:`, error.message);
+      console.error(`❌ Error loading ${standard}:`, error.message);
       return [];
     }
     
     if (!data || data.length === 0) {
-      console.warn(`⚠ No questions found for ${standard}`);
+      console.warn(`⚠️ No questions found for ${standard}`);
       return [];
     }
     
@@ -18022,78 +18152,6 @@ async function loadQuestionsFromSupabase(standard, limit = 100) {
     console.error(`❌ Exception loading ${standard}:`, e.message);
     return [];
   }
-}
-
-// Load questions for Arena
-async function loadArenaQuestions(limit = 15) {
-  try {
-    const { data, error } = await _supa.from('questions').select('*').limit(limit);
-    return (error || !data) ? [] : data;
-  } catch(e) { return []; }
-}
-
-// Load questions for Boss Battle
-async function loadBossBattleQuestions(difficulty = 'medium', limit = 10) {
-  try {
-    let q = _supa.from('questions').select('*');
-    if(difficulty) q = q.eq('difficulty', difficulty);
-    const { data, error } = await q.limit(limit);
-    return (error || !data) ? [] : data;
-  } catch(e) { return []; }
-}
-
-// Load questions for Challenge
-async function loadChallengeQuestions(limit = 20) {
-  try {
-    const { data, error } = await _supa.from('questions').select('*').limit(limit);
-    return (error || !data) ? [] : data;
-  } catch(e) { return []; }
-}
-
-
-
-// ── Display topics list from loaded TOPICS ──
-function renderTopicsFromSupabase() {
-  const container = document.getElementById('topic-list');
-  if (!container) return;
-  
-  console.log('🎨 Rendering topics. Available:', TOPICS.length);
-  
-  if (TOPICS.length === 0) {
-    console.warn('⚠ No topics available to render');
-    container.innerHTML = '<div style="padding: 20px; text-align: center; color: red;">No topics loaded. Check Supabase data.</div>';
-    return;
-  }
-  
-  // Filter by search/category if needed
-  let topics = TOPICS;
-  if (S.topicFilter && S.topicFilter !== 'all') {
-    topics = topics.filter(t => t.cat === S.topicFilter);
-  }
-  if (S.topicSearch) {
-    const search = S.topicSearch.toLowerCase();
-    topics = topics.filter(t => (t.num + ' ' + (t.name || '')).toLowerCase().includes(search));
-  }
-  
-  if (topics.length === 0) {
-    container.innerHTML = '<div style="padding: 20px; text-align: center;">No topics match your search.</div>';
-    return;
-  }
-  
-  // Render each topic
-  container.innerHTML = topics.map(t => `
-    <div style="display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid var(--border2);cursor:pointer;" 
-         onclick="startTopicPractice('${t.num}')">
-      <div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--blue-ll);">
-        ${t.icon || '📋'}
-      </div>
-      <div style="flex:1;">
-        <div style="font-weight:700;color:var(--text);">${t.num}</div>
-        <div style="font-size:12px;color:var(--muted);">${t.qcount} questions</div>
-      </div>
-      <div style="color:var(--muted);">›</div>
-    </div>
-  `).join('');
 }
 
 </script>
