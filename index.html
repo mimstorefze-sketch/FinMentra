@@ -4372,6 +4372,7 @@ async function startTopicPractice(num){
   });
 
   showScreen('practice');
+  console.log('🎨 Practice screen shown');
 
   // Show loading
   const qt = document.getElementById('q-text');
@@ -4750,6 +4751,11 @@ function loadQuestion(){
 
   // BUG FIX: Rebuild options fresh — ensures no stale disabled state
   const optsContainer=document.getElementById('options');
+  console.log('🎯 DOM check: qt=', document.getElementById('q-text') ? 'found' : 'MISSING', 'opts=', optsContainer ? 'found' : 'MISSING');
+  if(qt) {
+    qt.textContent = q.q;
+    console.log('✅ Question text set');
+  }
   if(optsContainer){
     optsContainer.innerHTML='';
     q.opts.forEach((o,i)=>{
@@ -4759,6 +4765,9 @@ function loadQuestion(){
       btn.addEventListener('click',()=>answerQ(i,btn,q));
       optsContainer.appendChild(btn);
     });
+    console.log('✅ Options rendered:', q.opts.length);
+  } else {
+    console.error('❌ options element NOT FOUND');
   }
   // Disable Next until answered, reset Skip
   const nb=document.getElementById('next-btn');if(nb) nb.disabled=true;
