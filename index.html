@@ -3777,27 +3777,8 @@ const RANKS=[
 function getRank(xp){let r=RANKS[0];for(const rank of RANKS) if(xp>=rank.min) r=rank;return r;}
 
 // ── QUESTION BANK ──
-const STANDARD_NAMES={
-  "IFRS 1":"First-time Adoption of IFRS","IFRS 2":"Share-based Payment",
-  "IFRS 3":"Business Combinations","IFRS 5":"Non-current Assets Held for Sale",
-  "IFRS 7":"Financial Instruments: Disclosures","IFRS 9":"Financial Instruments",
-  "IFRS 10":"Consolidated Financial Statements","IFRS 11":"Joint Arrangements",
-  "IFRS 12":"Disclosure of Interests in Other Entities","IFRS 13":"Fair Value Measurement",
-  "IFRS 15":"Revenue from Contracts with Customers","IFRS 16":"Leases",
-  "IFRS 17":"Insurance Contracts","IFRS 18":"Presentation and Disclosure in Financial Statements",
-  "IAS 1":"Presentation of Financial Statements","IAS 2":"Inventories",
-  "IAS 7":"Statement of Cash Flows","IAS 8":"Accounting Policies, Changes and Errors",
-  "IAS 10":"Events After the Reporting Period","IAS 12":"Income Taxes",
-  "IAS 16":"Property, Plant and Equipment","IAS 19":"Employee Benefits",
-  "IAS 21":"Effects of Changes in Foreign Exchange Rates","IAS 36":"Impairment of Assets",
-  "IAS 37":"Provisions, Contingent Liabilities and Contingent Assets","IAS 38":"Intangible Assets",
-  "IAS 40":"Investment Property","ISA 200":"Overall Objectives of the Independent Auditor",
-  "ISA 315":"Identifying and Assessing Risks of Material Misstatement",
-  "ISA 320":"Materiality in Planning and Performing an Audit","ISA 570":"Going Concern",
-  "ISA 700":"Forming an Opinion and Reporting on Financial Statements",
-  "ISA 701":"Communicating Key Audit Matters",
-  "ISA 705":"Modifications to the Opinion in the Auditor Report",
-  "MC 1":"Cost Classification","MC 2":"Marginal vs Absorption Costing",
+// ❌ REMOVED: Hardcoded standard names
+// ✅ All names now come from Supabase topics table
   "MC 5":"Standard Costing and Variance Analysis","MC 7":"Capital Investment Appraisal",
   "TX 1":"Corporate Tax Principles","TX 2":"Deferred Tax","TX 5":"Transfer Pricing",
   "FM 1":"Working Capital Management","FM 3":"Cost of Capital and WACC","FM 7":"Foreign Exchange Risk"
@@ -4727,9 +4708,7 @@ function loadQuestion(){
   if(domLabel) domLabel.textContent=S.domain||'IFRS';
   applyDomainAccent();
   if(stdLabel){
-    const sName=S.currentStandard?
-      (S.currentStandard+(STANDARD_NAMES[S.currentStandard]?' — '+STANDARD_NAMES[S.currentStandard].split(' ').slice(0,3).join(' '):''))
-      :(S.domain+' Practice Arena');
+    const sName=S.currentStandard?S.currentStandard:(S.domain+' Practice Arena');
     stdLabel.textContent=sName;
   }
   // Hide AI follow-up panel
@@ -4746,12 +4725,11 @@ function loadQuestion(){
   const label=S.currentStandard||S.domain;
   const qs=document.getElementById('q-standard');
   if(qs){
-    const sDesc=STANDARD_NAMES[label];
-    qs.textContent='◆ '+label+(sDesc?' · '+sDesc.split(',')[0].split('(')[0].trim().slice(0,22):'');
-    qs.title=sDesc||label;
+    qs.textContent='◆ '+label;
+    qs.title=label;
   }
   const qsn=document.getElementById('q-standard-name');
-  if(qsn) qsn.textContent=STANDARD_NAMES[label]||'';
+  if(qsn) qsn.textContent='';
   const qt=document.getElementById('q-text');if(qt) qt.textContent=q.q;
   // Card flip animation
   const qc=document.getElementById('question-card');
@@ -8444,9 +8422,9 @@ function updateNextUpCard(){
   ];
   const idx=Math.min(byLevel.length-1, Math.floor(S.xp/200));
   const suggested=byLevel[idx];
-  const stdName=STANDARD_NAMES[suggested]||suggested;
+  const stdName=suggested; // Get name from Supabase TOPICS array if needed
   nu.textContent=suggested;
-  ns.textContent=stdName;
+  ns.textContent='Next standard to unlock';
   card.dataset.std=suggested; // Store actual standard ID for goNextUp()
 }
 
