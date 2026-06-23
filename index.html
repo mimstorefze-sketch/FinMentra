@@ -15452,11 +15452,16 @@ setInterval(saveUserProgress, 30000);
 })();
 
 // ── CONTENT PROTECTION ──
+// 🔓 UNLOCKED FOR DEBUGGING - Disabled right click block
+/*
 // Disable right click
 document.addEventListener('contextmenu', function(e){
   e.preventDefault();
 });
+*/
 
+// 🔓 UNLOCKED FOR DEBUGGING - Disabled F12 and keyboard shortcuts block
+/*
 // Disable F12, Ctrl+Shift+I, Ctrl+U, Ctrl+Shift+C, Ctrl+S
 document.addEventListener('keydown', function(e){
   if(
@@ -15469,6 +15474,7 @@ document.addEventListener('keydown', function(e){
     return false;
   }
 });
+*/
 
 // DevTools detection disabled — causes false positives on mobile/split screen
 
