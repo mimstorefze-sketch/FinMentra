@@ -4424,7 +4424,11 @@ async function startTopicPractice(num){
 
   pool = fyShuffle(pool);
   S.sessionQs = pool.slice(0, Math.min(limit, pool.length));
+  console.log(`✅ Session prepared: ${S.sessionQs.length} questions queued, limit=${limit}`);
+  console.log('First question:', S.sessionQs[0]);
+  clearTimeout(loadingTimeout);
   loadQuestion();
+  console.log('loadQuestion() called');
 }
 
 // Fetch questions for a SPECIFIC standard from Supabase
@@ -4715,7 +4719,12 @@ function loadQuestion(){
   const fap=document.getElementById('followup-answer');if(fap){fap.style.display='none';fap.textContent='';}
   const fi=document.getElementById('followup-input');if(fi) fi.value='';
   const pm=document.getElementById('prog-meta');if(pm) pm.textContent=(S.qIndex+1)+' / '+S.sessionQs.length;
-  const q=S.sessionQs[S.qIndex];if(!q) return;
+  const q=S.sessionQs[S.qIndex];
+  console.log(`📋 loadQuestion: qIndex=${S.qIndex}, sessionQs.length=${S.sessionQs.length}, q=`, q);
+  if(!q) {
+    console.warn('⚠️ No question at index', S.qIndex);
+    return;
+  }
   S.currentQuestion = q; // store for AI context
   const label=S.currentStandard||S.domain;
   const qs=document.getElementById('q-standard');
