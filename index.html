@@ -18375,14 +18375,14 @@ async function loadQuestionsForStandard(standard, limit = 100) {
       const newCorrect = opts.indexOf(correctText);
       
       return {
-        q: q.question_text,
+        q: q.question,  // ✅ FIXED: was question_text, should be question
         opts: opts,
         correct: newCorrect,
         explain: q.explanation || '',
         standard: q.standard || standard
       };
     }).filter(q => {
-      if(!q.correct || q.correct < 0) console.log('❌ Filtered: correct is', q.correct);
+      if(q.correct < 0) console.log('❌ Filtered: correct is', q.correct);
       if(!q.q) console.log('❌ Filtered: q.q is', q.q);
       if(!q.opts[0]) console.log('❌ Filtered: opts[0] is', q.opts[0]);
       return q.correct >= 0 && q.q && q.opts[0];
