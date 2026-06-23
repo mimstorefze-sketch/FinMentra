@@ -4042,6 +4042,7 @@ function showScreen(id){
   const target=document.getElementById('screen-'+id);
   if(target){
     target.style.display=''; // remove any inline display:none
+    target.style.opacity='1'; // FORCE FIX: Ensure full opacity
     target.classList.add('active');
     target.classList.remove('slide-in');
     void target.offsetWidth;
@@ -4374,9 +4375,10 @@ async function startTopicPractice(num){
   showScreen('practice');
   console.log('🎨 Practice screen shown');
   
-  // Check if screen is actually visible
+  // FORCE FIX: Ensure screen is fully opaque
   const practiceScreen = document.getElementById('screen-practice');
   if(practiceScreen){
+    practiceScreen.style.opacity = '1';
     const styles = window.getComputedStyle(practiceScreen);
     console.log('📺 Screen visibility:', {
       display: styles.display,
@@ -18357,6 +18359,7 @@ async function loadQuestionsForStandard(standard, limit = 100) {
     }
     
     console.log(`✅ Loaded ${data.length} questions for ${standard}`);
+    console.log('📋 First question raw data:', data[0]);
     
     // Transform Supabase columns into expected format
     const transformed = data.map(q => {
@@ -18378,8 +18381,14 @@ async function loadQuestionsForStandard(standard, limit = 100) {
         explain: q.explanation || '',
         standard: q.standard || standard
       };
-    }).filter(q => q.correct >= 0 && q.q && q.opts[0]);
+    }).filter(q => {
+      if(!q.correct || q.correct < 0) console.log('❌ Filtered: correct is', q.correct);
+      if(!q.q) console.log('❌ Filtered: q.q is', q.q);
+      if(!q.opts[0]) console.log('❌ Filtered: opts[0] is', q.opts[0]);
+      return q.correct >= 0 && q.q && q.opts[0];
+    });
     
+    console.log(`📊 After transform: ${transformed.length} valid questions`);
     return transformed;
   } catch(e) {
     console.error(`❌ Error loading ${standard}:`, e.message);
