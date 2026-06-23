@@ -88,6 +88,28 @@
   gtag('js', new Date());
   gtag('config', 'G-S5HZSJ6SF9');
 </script>
+
+<!-- 🔓 CONSOLE DEBUG MODE - UNLOCKED -->
+<script>
+(function() {
+  // Ensure console is fully accessible for debugging
+  if (!window.console) {
+    window.console = {};
+  }
+  
+  // Restore all console methods
+  const methods = ['log', 'info', 'warn', 'error', 'debug', 'table', 'clear'];
+  methods.forEach(method => {
+    if (!window.console[method]) {
+      window.console[method] = function(...args) {};
+    }
+  });
+  
+  console.log('%c🔓 Console UNLOCKED for debugging', 'color: green; font-size: 16px; font-weight: bold');
+  console.log('%cAll errors will be visible - ready to collect issues', 'color: blue; font-weight: bold');
+})();
+</script>
+
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -18063,38 +18085,53 @@ setTimeout(function() { showFoxScreenMessage('home'); }, 1500);
 })();
 
 // ════════════════════════════════════════════════════════════════════════════
-// ── SUPABASE: Load topics from topics table ──
+// ── SUPABASE: Load topics from topics table using REST API ──
 // ════════════════════════════════════════════════════════════════════════════
 async function loadTopicsFromSupabase() {
   try {
-    console.log('📚 Loading topics from Supabase topics table...');
+    console.log('%c📚 Loading topics from Supabase topics table...', 'color: blue; font-weight: bold');
     
-    if (!_supa) {
-      console.error('❌ Supabase not initialized');
+    // Use REST API directly instead of client
+    const projectId = 'vofxhqnipoywbbkmlxcp';
+    const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvZnhocW5pcG95d2Jia21seGNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTAwNjQyNDgsImV4cCI6MTk5NjY0MDI0OH0.sTzrPxRa2cOHeOpM9hVRJjwV72JvNKzgcBvvxYbKlQI';
+    
+    const url = `https://${projectId}.supabase.co/rest/v1/topics?status=eq.Active&order=sort_order`;
+    
+    console.log('🔍 Fetching from REST API...');
+    const response = await fetch(url, {
+      headers: {
+        'apikey': anonKey,
+        'Authorization': `Bearer ${anonKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      console.error(`❌ HTTP ${response.status}: ${response.statusText}`);
+      TOPICS = [];
       return false;
     }
     
-    // Load from topics table where status = 'Active'
-    const { data, error } = await _supa
-      .from('topics')
-      .select('*')
-      .eq('status', 'Active')
-      .order('sort_order', { ascending: true });
+    const data = await response.json();
+    console.log('✅ Response received');
     
-    if (error) {
-      console.error('❌ Error loading topics:', error.message);
+    if (!Array.isArray(data)) {
+      console.warn('⚠️ Response is not an array');
+      TOPICS = [];
       return false;
     }
     
-    if (!data || data.length === 0) {
-      console.warn('⚠️ No active topics found');
+    console.log(`📊 Rows returned: ${data.length}`);
+    
+    if (data.length === 0) {
+      console.warn('%c⚠️ No rows with status="Active" found', 'color: orange; font-weight: bold');
       TOPICS = [];
       return false;
     }
     
     // Map topics to TOPICS format
     TOPICS = data.map(t => ({
-      num: t.standard,
+      num: t.standard || '',
       name: t.name || '',
       cat: t.category || 'Other',
       icon: '📋',
@@ -18103,19 +18140,116 @@ async function loadTopicsFromSupabase() {
       position: t.sort_order || 0
     }));
     
-    console.log('✅ Topics loaded:', TOPICS.length, 'topics');
+    console.log('%c✅ Topics loaded:', 'color: green; font-weight: bold', TOPICS.length, 'topics');
     console.log('📋 Standards:', TOPICS.map(t => t.num).join(', '));
     
     return true;
   } catch(e) {
-    console.error('❌ Exception loading topics:', e.message);
+    console.error('❌ Exception:', e.message);
+    TOPICS = [];
     return false;
   }
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// ── SUPABASE: Load questions for a standard ──
+// ── DIAGNOSTIC: Check Supabase connection and topics data ──
 // ════════════════════════════════════════════════════════════════════════════
+async function diagnoseTopicsLoading() {
+  console.log('%c🔍 DIAGNOSTIC: Topics Loading Check', 'color: blue; font-size: 14px; font-weight: bold');
+  console.log('');
+  
+  // Check 1: Supabase initialized?
+  console.log('1️⃣ Checking Supabase connection...');
+  if (!_supa) {
+    console.error('❌ _supa is NOT initialized');
+    return;
+  }
+  console.log('✅ _supa is initialized');
+  console.log('  URL:', _supa.supabaseUrl);
+  console.log('');
+  
+  // Check 2: Can we connect to topics table?
+  console.log('2️⃣ Checking topics table...');
+  try {
+    const { data: allTopics, error: tableError } = await _supa
+      .from('topics')
+      .select('*');
+    
+    if (tableError) {
+      console.error('❌ Cannot access topics table:', tableError.message);
+      return;
+    }
+    
+    console.log('✅ topics table exists');
+    console.log('   Total rows:', allTopics?.length || 0);
+    console.log('');
+    
+    // Check 3: How many have status="Active"?
+    console.log('3️⃣ Checking Active status...');
+    const activeTopics = allTopics?.filter(t => t.status === 'Active') || [];
+    console.log('   Rows with status="Active":', activeTopics.length);
+    
+    if (activeTopics.length === 0) {
+      console.warn('⚠️ NO rows have status="Active"');
+      console.log('   All statuses in DB:', [...new Set(allTopics?.map(t => t.status))]);
+      console.log('   Sample rows:');
+      allTopics?.slice(0, 3).forEach(t => {
+        console.log(`     - ${t.standard}: status="${t.status}"`);
+      });
+      return;
+    }
+    console.log('✅ Active topics found');
+    console.log('');
+    
+    // Check 4: Column structure
+    console.log('4️⃣ Checking columns...');
+    if (activeTopics.length > 0) {
+      const cols = Object.keys(activeTopics[0]);
+      console.log('   Columns:', cols.join(', '));
+      console.log('');
+      
+      // Check for required columns
+      const required = ['standard', 'name', 'category', 'status'];
+      required.forEach(col => {
+        if (cols.includes(col)) {
+          console.log(`   ✅ ${col}`);
+        } else {
+          console.log(`   ❌ ${col} - MISSING!`);
+        }
+      });
+    }
+    console.log('');
+    
+    // Check 5: Sample data
+    console.log('5️⃣ Sample data:');
+    activeTopics.slice(0, 5).forEach(t => {
+      console.log(`   • standard: "${t.standard}", name: "${t.name}", category: "${t.category}"`);
+    });
+    console.log('');
+    
+    // Check 6: Current TOPICS array
+    console.log('6️⃣ Current TOPICS array in memory:');
+    console.log('   Length:', TOPICS.length);
+    if (TOPICS.length === 0) {
+      console.warn('⚠️ TOPICS is empty!');
+    } else {
+      console.log('   Standards:', TOPICS.map(t => t.num).join(', '));
+    }
+    
+  } catch(e) {
+    console.error('❌ Exception during diagnosis:', e.message);
+    console.error('Stack:', e.stack);
+  }
+}
+
+// Convenience function to reload topics
+async function reloadTopics() {
+  console.log('🔄 Reloading topics...');
+  const result = await loadTopicsFromSupabase();
+  console.log(result ? '✅ Topics reloaded' : '❌ Failed to reload');
+}
+
+
 async function loadQuestionsForStandard(standard, limit = 100) {
   try {
     if (!standard) {
@@ -18125,23 +18259,28 @@ async function loadQuestionsForStandard(standard, limit = 100) {
     
     console.log(`📡 Loading questions for: ${standard}`);
     
-    if (!_supa) {
-      console.error('❌ Supabase not initialized');
+    // Use REST API directly
+    const projectId = 'vofxhqnipoywbbkmlxcp';
+    const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvZnhocW5pcG95d2Jia21seGNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTAwNjQyNDgsImV4cCI6MTk5NjY0MDI0OH0.sTzrPxRa2cOHeOpM9hVRJjwV72JvNKzgcBvvxYbKlQI';
+    
+    const url = `https://${projectId}.supabase.co/rest/v1/questions?standard=eq.${encodeURIComponent(standard)}&limit=${limit}`;
+    
+    const response = await fetch(url, {
+      headers: {
+        'apikey': anonKey,
+        'Authorization': `Bearer ${anonKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      console.error(`❌ HTTP ${response.status} loading ${standard}`);
       return [];
     }
     
-    const { data, error } = await _supa
-      .from('questions')
-      .select('*')
-      .eq('standard', standard)
-      .limit(limit);
+    const data = await response.json();
     
-    if (error) {
-      console.error(`❌ Error loading ${standard}:`, error.message);
-      return [];
-    }
-    
-    if (!data || data.length === 0) {
+    if (!Array.isArray(data) || data.length === 0) {
       console.warn(`⚠️ No questions found for ${standard}`);
       return [];
     }
@@ -18149,7 +18288,7 @@ async function loadQuestionsForStandard(standard, limit = 100) {
     console.log(`✅ Loaded ${data.length} questions for ${standard}`);
     return data;
   } catch(e) {
-    console.error(`❌ Exception loading ${standard}:`, e.message);
+    console.error(`❌ Error loading ${standard}:`, e.message);
     return [];
   }
 }
