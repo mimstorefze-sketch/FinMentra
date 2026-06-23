@@ -18132,7 +18132,7 @@ async function loadTopicsFromSupabase() {
     const projectId = 'vofxhqnipoywbbkmlxcp';
     const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvZnhocW5pcG95d2Jia21seGNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5Nzk3ODUsImV4cCI6MjA5MzU1NTc4NX0.7UDDR3oNoiebxMQPR_jPHM8fOhhOzQ2MxpmR7TpBCHQ';
     
-    const url = `https://${projectId}.supabase.co/rest/v1/topics?status=eq.Active&order=sort_order`;
+    const url = `https://${projectId}.supabase.co/rest/v1/topics?select=*&status=eq.Active&order=sort_order.asc`;
     
     console.log('🔍 Fetching from REST API...');
     const response = await fetch(url, {
@@ -18300,7 +18300,7 @@ async function loadQuestionsForStandard(standard, limit = 100) {
     const projectId = 'vofxhqnipoywbbkmlxcp';
     const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvZnhocW5pcG95d2Jia21seGNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5Nzk3ODUsImV4cCI6MjA5MzU1NTc4NX0.7UDDR3oNoiebxMQPR_jPHM8fOhhOzQ2MxpmR7TpBCHQ';
     
-    const url = `https://${projectId}.supabase.co/rest/v1/questions?standard=eq.${encodeURIComponent(standard)}&limit=${limit}`;
+    const url = `https://${projectId}.supabase.co/rest/v1/questions?select=*&standard=eq.${encodeURIComponent(standard)}&limit=${limit}`;
     
     const response = await fetch(url, {
       headers: {
