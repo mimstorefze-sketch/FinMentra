@@ -1951,8 +1951,8 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <span style="font-size:10px;color:var(--muted);font-family:var(--font-mono);">Resets in 14h</span>
     </div>
     <div class="mission-card"><div class="mission-icon">🏛️</div><div class="mission-info"><div class="mission-title">Answer 10 questions</div><div class="mission-sub" id="mission-q-sub">0 / 10 completed</div><div class="bar"><span id="mission-q-bar" style="width:0%;"></span></div></div><div class="mission-reward"><div class="mission-xp">+50 XP</div></div></div>
-    <div class="mission-card"><div class="mission-icon">🔥</div><div class="mission-info"><div class="mission-title">Build a 5-answer streak</div><div class="mission-sub" id="mission-s-sub">0 / 5 in a row</div><div class="bar"><span id="mission-s-bar" style="width:0%;background:var(--gold);"></span></div></div><div class="mission-reward"><div class="mission-xp">+30 XP</div></div></div>
-    <div class="mission-card"><div class="mission-icon">✅</div><div class="mission-info"><div class="mission-title">Beat your accuracy record</div><div class="mission-sub" id="mission-a-sub">Current best: —%</div><div class="bar"><span id="mission-a-bar" style="width:0%;background:var(--green);"></span></div></div><div class="mission-reward">⬜</div></div>
+
+
   </div>
 
   <!-- ── QUICK ACCESS ── -->
@@ -2142,10 +2142,10 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div class="pro-card" onclick="checkFeatureLimitAndEnter('fm_qref','quickref')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#EEF2FF;">📋</div><div><div class="pro-card-title">Quick Reference Cards</div><div class="pro-card-sub">Any standard in 30 seconds — key points, journal entries</div></div><span class="pill pill-navy">81 standards</span></div></div>
   <div class="pro-card" onclick="showScreen('jebuilder')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#DCFCE7;">📒</div><div><div class="pro-card-title">Journal Entry Builder</div><div class="pro-card-sub">Pick a scenario → correct debit/credit with standard reference</div></div></div></div>
   <div class="pro-card" onclick="showScreen('fsbuilder')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#E0F2FE;">📊</div><div><div class="pro-card-title">Financial Statements Suite</div><div class="pro-card-sub">Build, analyse and compare IAS 1 compliant statements</div></div></div></div>
-  <div class="pro-card" onclick="showScreen('disclosure')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#FEF3C7;">✅</div><div><div class="pro-card-title">Disclosure Checklist</div><div class="pro-card-sub">IFRS disclosure requirements — tick off what's needed</div></div></div></div>
-  <div class="pro-card" onclick="showScreen('updates')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#FEE2E2;">🔔</div><div><div class="pro-card-title">Standard Updates Feed</div><div class="pro-card-sub">Latest IASB amendments, exposure drafts and new standards</div></div><span class="pill pill-red">3 new</span></div></div>
-  <div class="pro-card" onclick="showScreen('client-scenario')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#EDE9FE;">🏢</div><div><div class="pro-card-title">Client Scenario Simulator</div><div class="pro-card-sub">Practice real-world accounting decisions</div></div></div></div>
-  <div class="pro-card" onclick="showScreen('audit-file')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#E0F2FE;">🔍</div><div><div class="pro-card-title">Audit File Simulator</div><div class="pro-card-sub">Working papers, findings, sign-off</div></div></div></div>
+
+
+
+
   <div class="pro-card" onclick="showScreen('ethics')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#DCFCE7;">⚖️</div><div><div class="pro-card-title">Ethics Case Studies</div><div class="pro-card-sub">IESBA threats — independence, confidentiality</div></div></div></div>
   <div class="pro-card" onclick="showScreen('excel')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#F0FDF4;">📊</div><div><div class="pro-card-title">Excel for Finance</div><div class="pro-card-sub">Formulas, shortcuts, error diagnosis, templates</div></div></div></div>
 </div>
@@ -3993,6 +3993,8 @@ function showScreen(id){
     if(id==='ethics')      { _fmProGate('Ethics Module','pro-home'); return; }
     if(id==='client-scenario'){ _fmProGate('Case Studies','pro-home'); return; }
     if(id==='excel')       { _fmProGate('Excel for Finance','pro-home'); return; }
+    // NOTE: Topic Practice is gated by daily limit (15/day) AND subscription (first 3 IFRS open)
+    // Lock message for specific topics is handled in renderTopics()
     if(id==='quickref'    && !_fmCanUse('fm_qref',5)) { _fmDailyGate('Quick Reference views','fm_qref',5,'home'); return; }
     if(id==='comparisons' && !_fmCanUse('fm_cmp',2))  { _fmDailyGate('Standard Comparisons','fm_cmp',2,'home'); return; }
     if(id==='formulas'    && !_fmCanUse('fm_fml',5))  { _fmDailyGate('Formula lookups','fm_fml',5,'home'); return; }
@@ -4310,7 +4312,10 @@ function renderTopics(){
     btn.style.opacity = locked ? '0.6' : '1';
 
     if(locked){
-      btn.onclick = ()=>{ toast('🔒 Upgrade to Pro to unlock all topics'); setTimeout(()=>showScreen('profile'),900); };
+      btn.onclick = ()=>{ 
+        toast('🔒 Subscribe to use ' + t.num + ' and other topics'); 
+        setTimeout(()=>showScreen('profile'), 900); 
+      };
     } else {
       btn.onclick = ()=>startTopicPractice(t.num);
     }
@@ -4424,20 +4429,9 @@ async function startTopicPractice(num){
     return;
   }
 
-  // Apply limits based on plan and position
-  const topicIdx = t ? TOPICS.filter(x=>x.cat===t.cat).findIndex(x=>x.num===num) : 0;
-  let limit = isPro() ? 20 : 8; // FIX1: Pro=20, free=8
-  if(isFree()){
-    if(topicIdx === 0) limit = 8; // First standard: full open
-    else if(topicIdx < 3) limit = 3; // Standards 2-3: 3 questions only
-    else limit = 0; // Rest locked
-  }
-
-  if(limit === 0){
-    if(qt) qt.textContent = '🔒 Upgrade to Pro to access '+num;
-    if(opts) opts.innerHTML = '<div style="text-align:center;padding:20px;"><button onclick="checkPlanFeature(\'multiplayer\')" style="padding:12px 24px;background:#0A1F6E;color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;">Upgrade to Pro 🚀</button></div>';
-    return;
-  }
+  // Daily limit enforced at entry (line 4340)
+  // No per-topic session limits — all questions available until 15/day reached
+  const limit = isPro() ? 50 : 50; // Use reasonable per-session cap for all users
 
   pool = fyShuffle(pool);
   S.sessionQs = pool.slice(0, Math.min(limit, pool.length));
@@ -4735,7 +4729,11 @@ function loadQuestion(){
   // Hide AI follow-up panel
   const fap=document.getElementById('followup-answer');if(fap){fap.style.display='none';fap.textContent='';}
   const fi=document.getElementById('followup-input');if(fi) fi.value='';
-  const pm=document.getElementById('prog-meta');if(pm) pm.textContent=(S.qIndex+1)+' / '+S.sessionQs.length;
+  const pm=document.getElementById('prog-meta');if(pm) {
+    const dailyUsed = getDailyQUsed();
+    const dailyLimit = 15;
+    pm.textContent=dailyUsed+' / '+dailyLimit;
+  }
   const q=S.sessionQs[S.qIndex];
   console.log(`📋 loadQuestion: qIndex=${S.qIndex}, sessionQs.length=${S.sessionQs.length}, q=`, q);
   if(!q) {
@@ -4856,6 +4854,20 @@ function answerQ(idx,btn,q){
   }
   S.totalQ++;S.sessionQ++;
   incrementDailyQ(); // track daily usage for free users
+  
+  // ── HARD LOCK CHECK: After 15th question ──
+  if(!isPro()){
+    const newDailyUsed = getDailyQUsed();
+    if(newDailyUsed >= 15){
+      fmLog('ARENA-HARD-LOCK', 'Daily limit reached: ' + newDailyUsed + ' >= 15');
+      showLimitPopup('hard', 'fm_dq');
+      // Force end of practice session
+      S.qIndex = S.sessionQs.length;
+      setTimeout(() => showScreen('progress'), 1200);
+      return;
+    }
+  }
+  
   // Track today's questions for missions
   S.todayQ = (S.todayQ||0) + 1;
   // ── TRACK TOPIC PROGRESS (cumulative across sessions) ──
@@ -14018,12 +14030,28 @@ _offlineCheckInterval = setInterval(function(){
     document.body.classList.add('app-ready');
     // Load guest device limits from Supabase
     await loadGuestDeviceLimits();
+    // ── FIX: Pre-load topics for logged-in users too ──
+    await loadTopicsFromSupabase().catch(e => {
+      console.warn('Topics pre-load failed on login:', e);
+    });
+    // ── FIX: Pre-load topics to ensure mobile sees sorted version ──
+    await loadTopicsFromSupabase().catch(e => {
+      console.warn('Topics pre-load failed on guest startup:', e);
+      // Fallback: hardcoded TOPICS will be used
+    });
   }
 
   if(data.session){
     _currentUser = data.session.user;
     _isGuest = false;
     S.onboardingDone = true;
+    
+    // ── CARRYOVER: If guest had used questions, they carry over to logged-in account ──
+    // This ensures users can't logout/login to reset their daily quota
+    if(S.dailyQCount && S.dailyQCount > 0){
+      fmLog('LOGIN-CARRYOVER', 'Guest used ' + S.dailyQCount + ' questions, carrying over to user account');
+      // The user_progress will be loaded below, and it will use the device's daily limit
+    }
     const _obFix = document.getElementById('onboarding');
     if(_obFix) _obFix.style.display = 'none';
     try{
@@ -18162,7 +18190,7 @@ async function loadTopicsFromSupabase() {
     const projectId = 'vofxhqnipoywbbkmlxcp';
     const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvZnhocW5pcG95d2Jia21seGNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5Nzk3ODUsImV4cCI6MjA5MzU1NTc4NX0.7UDDR3oNoiebxMQPR_jPHM8fOhhOzQ2MxpmR7TpBCHQ';
     
-    const url = `https://${projectId}.supabase.co/rest/v1/topics?select=*`;
+    const url = `https://${projectId}.supabase.co/rest/v1/topics?select=*&order=sort_order.asc`;
     
     console.log('🔗 URL:', url);
     const response = await fetch(url, {
