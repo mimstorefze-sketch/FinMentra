@@ -13837,6 +13837,9 @@ async function logoutUser() {
 }
 
 async function doLogout(){
+  // PRESERVE device_id for quota tracking
+  const deviceIdToPreserve = localStorage.getItem("fm_device_id");
+
   await _supa.auth.signOut();
   _currentUser = null;
   _isGuest = false;
