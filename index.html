@@ -105,7 +105,7 @@
     }
   });
   
-  console.log('%c🔓 Console UNLOCKED for debugging', 'color: green; font-size: 16px; font-weight: bold');
+  // Console locked in production
   console.log('%cAll errors will be visible - ready to collect issues', 'color: blue; font-weight: bold');
 })();
 </script>
@@ -4042,7 +4042,7 @@ function showScreen(id){
   const target=document.getElementById('screen-'+id);
   if(target){
     target.style.display=''; // remove any inline display:none
-    target.style.opacity='1'; // FORCE FIX: Ensure full opacity
+    target.style.opacity='1 !important'; // FORCE FIX: Ensure full opacity
     target.classList.add('active');
     target.classList.remove('slide-in');
     void target.offsetWidth;
@@ -15517,16 +15517,13 @@ setInterval(saveUserProgress, 30000);
 })();
 
 // ── CONTENT PROTECTION ──
-// 🔓 UNLOCKED FOR DEBUGGING - Disabled right click block
-/*
+// 🔐 PRODUCTION MODE - Re-enable right click block
 // Disable right click
 document.addEventListener('contextmenu', function(e){
   e.preventDefault();
 });
-*/
 
-// 🔓 UNLOCKED FOR DEBUGGING - Disabled F12 and keyboard shortcuts block
-/*
+// 🔐 PRODUCTION MODE - Re-enable F12 and keyboard shortcuts block
 // Disable F12, Ctrl+Shift+I, Ctrl+U, Ctrl+Shift+C, Ctrl+S
 document.addEventListener('keydown', function(e){
   if(
@@ -15539,7 +15536,6 @@ document.addEventListener('keydown', function(e){
     return false;
   }
 });
-*/
 
 // DevTools detection disabled — causes false positives on mobile/split screen
 
