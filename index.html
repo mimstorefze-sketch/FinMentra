@@ -4373,6 +4373,20 @@ async function startTopicPractice(num){
 
   showScreen('practice');
   console.log('🎨 Practice screen shown');
+  
+  // Check if screen is actually visible
+  const practiceScreen = document.getElementById('screen-practice');
+  if(practiceScreen){
+    const styles = window.getComputedStyle(practiceScreen);
+    console.log('📺 Screen visibility:', {
+      display: styles.display,
+      visibility: styles.visibility,
+      opacity: styles.opacity,
+      pointerEvents: styles.pointerEvents
+    });
+  } else {
+    console.error('❌ screen-practice element NOT FOUND in DOM!');
+  }
 
   // Show loading
   const qt = document.getElementById('q-text');
