@@ -2748,7 +2748,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <!-- Usage banner — updated dynamically by updateAIBanner() -->
   <div id="ai-usage-banner" style="display:flex;align-items:center;gap:8px;background:var(--gold-l);border:1px solid var(--gold);border-radius:12px;padding:10px 14px;">
     <span style="font-size:16px;">🔒</span>
-    <div style="flex:1;font-size:12px;color:#92400E;"><strong>Free Plan:</strong> 15 questions/day · 3 AI questions/day.</div>
+    <div style="flex:1;font-size:12px;color:#92400E;"><strong>Free Plan:</strong> 15 questions/day · 5 AI questions/day.</div>
     <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
       <button class="btn btn-primary" style="padding:5px 12px;font-size:11px;" onclick="startProTrial()">Upgrade Pro</button>
       <button class="btn" style="padding:5px 12px;font-size:11px;background:var(--surface);color:var(--text);border:1px solid var(--border);" onclick="showAuthPopup()">Sign Up / Login</button>
@@ -3777,8 +3777,27 @@ const RANKS=[
 function getRank(xp){let r=RANKS[0];for(const rank of RANKS) if(xp>=rank.min) r=rank;return r;}
 
 // ── QUESTION BANK ──
-// ❌ REMOVED: Hardcoded standard names
-// ✅ All names now come from Supabase topics table
+const STANDARD_NAMES={
+  "IFRS 1":"First-time Adoption of IFRS","IFRS 2":"Share-based Payment",
+  "IFRS 3":"Business Combinations","IFRS 5":"Non-current Assets Held for Sale",
+  "IFRS 7":"Financial Instruments: Disclosures","IFRS 9":"Financial Instruments",
+  "IFRS 10":"Consolidated Financial Statements","IFRS 11":"Joint Arrangements",
+  "IFRS 12":"Disclosure of Interests in Other Entities","IFRS 13":"Fair Value Measurement",
+  "IFRS 15":"Revenue from Contracts with Customers","IFRS 16":"Leases",
+  "IFRS 17":"Insurance Contracts","IFRS 18":"Presentation and Disclosure in Financial Statements",
+  "IAS 1":"Presentation of Financial Statements","IAS 2":"Inventories",
+  "IAS 7":"Statement of Cash Flows","IAS 8":"Accounting Policies, Changes and Errors",
+  "IAS 10":"Events After the Reporting Period","IAS 12":"Income Taxes",
+  "IAS 16":"Property, Plant and Equipment","IAS 19":"Employee Benefits",
+  "IAS 21":"Effects of Changes in Foreign Exchange Rates","IAS 36":"Impairment of Assets",
+  "IAS 37":"Provisions, Contingent Liabilities and Contingent Assets","IAS 38":"Intangible Assets",
+  "IAS 40":"Investment Property","ISA 200":"Overall Objectives of the Independent Auditor",
+  "ISA 315":"Identifying and Assessing Risks of Material Misstatement",
+  "ISA 320":"Materiality in Planning and Performing an Audit","ISA 570":"Going Concern",
+  "ISA 700":"Forming an Opinion and Reporting on Financial Statements",
+  "ISA 701":"Communicating Key Audit Matters",
+  "ISA 705":"Modifications to the Opinion in the Auditor Report",
+  "MC 1":"Cost Classification","MC 2":"Marginal vs Absorption Costing",
   "MC 5":"Standard Costing and Variance Analysis","MC 7":"Capital Investment Appraisal",
   "TX 1":"Corporate Tax Principles","TX 2":"Deferred Tax","TX 5":"Transfer Pricing",
   "FM 1":"Working Capital Management","FM 3":"Cost of Capital and WACC","FM 7":"Foreign Exchange Risk"
@@ -3974,9 +3993,9 @@ function showScreen(id){
     if(id==='ethics')      { _fmProGate('Ethics Module','pro-home'); return; }
     if(id==='client-scenario'){ _fmProGate('Case Studies','pro-home'); return; }
     if(id==='excel')       { _fmProGate('Excel for Finance','pro-home'); return; }
-    if(id==='quickref')   { _fmProGate('Quick Reference Cards','home'); return; }
+    if(id==='quickref'    && !_fmCanUse('fm_qref',5)) { _fmDailyGate('Quick Reference views','fm_qref',5,'home'); return; }
     if(id==='comparisons' && !_fmCanUse('fm_cmp',2))  { _fmDailyGate('Standard Comparisons','fm_cmp',2,'home'); return; }
-    if(id==='formulas'    && !_fmCanUse('fm_fml',15))  { _fmDailyGate('Formula lookups','fm_fml',15,'home'); return; }
+    if(id==='formulas'    && !_fmCanUse('fm_fml',5))  { _fmDailyGate('Formula lookups','fm_fml',5,'home'); return; }
     if(id==='jebuilder'   && !_fmCanUse('fm_je',3))   { _fmDailyGate('JE Builder scenarios','fm_je',3,'home'); return; }
     if(id==='vault'       && !_fmCanUse('fm_vlt',5))  { _fmDailyGate('Mistake Vault retries','fm_vlt',5,'home'); return; }
     if(id==='drcr'        && !drcrCheckLimit())        { drcrShowLimitPopup(drcrGetDailyUsed()>=10?'hard':'soft'); return; }
@@ -4708,7 +4727,9 @@ function loadQuestion(){
   if(domLabel) domLabel.textContent=S.domain||'IFRS';
   applyDomainAccent();
   if(stdLabel){
-    const sName=S.currentStandard?S.currentStandard:(S.domain+' Practice Arena');
+    const sName=S.currentStandard?
+      (S.currentStandard+(STANDARD_NAMES[S.currentStandard]?' — '+STANDARD_NAMES[S.currentStandard].split(' ').slice(0,3).join(' '):''))
+      :(S.domain+' Practice Arena');
     stdLabel.textContent=sName;
   }
   // Hide AI follow-up panel
@@ -4725,11 +4746,12 @@ function loadQuestion(){
   const label=S.currentStandard||S.domain;
   const qs=document.getElementById('q-standard');
   if(qs){
-    qs.textContent='◆ '+label;
-    qs.title=label;
+    const sDesc=STANDARD_NAMES[label];
+    qs.textContent='◆ '+label+(sDesc?' · '+sDesc.split(',')[0].split('(')[0].trim().slice(0,22):'');
+    qs.title=sDesc||label;
   }
   const qsn=document.getElementById('q-standard-name');
-  if(qsn) qsn.textContent='';
+  if(qsn) qsn.textContent=STANDARD_NAMES[label]||'';
   const qt=document.getElementById('q-text');if(qt) qt.textContent=q.q;
   // Card flip animation
   const qc=document.getElementById('question-card');
@@ -5282,7 +5304,7 @@ const AI_LIMITS={
 // ── AI SUBSCRIPTION PLANS ──
 const AI_PLANS = {
   free:  { daily:3, monthlyMax:30, monthly:null, label:'Free',  aed:0,  cost_aed:0   },
-  pro:   { daily:35, monthlyMax:null, monthly:null, label:'Pro',   aed:18, cost_aed:5   },
+  pro:   { daily:null, monthlyMax:null, monthly:50,  label:'Pro',   aed:18, cost_aed:5   },
 };
 // AI usage tracking
 S.aiPlan = S.aiPlan || 'free';
@@ -5306,7 +5328,7 @@ function updatePlanUI(){
     '<div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--text);margin:6px 0;">$0<span style="font-size:13px;color:var(--steel);font-weight:400;">/month</span></div>' +
     '<ul style="list-style:none;font-size:12px;display:flex;flex-direction:column;gap:5px;margin-bottom:12px;">' +
       '<li>✓ 15 questions/day</li>' +
-      '<li>✓ 3 AI questions/day</li>' +
+      '<li>✓ 5 AI questions/day <span style="color:var(--muted);font-size:10px;">(30/month cap)</span></li>' +
       '<li>✓ Basic progress tracking</li>' +
       '<li style="color:var(--muted);">✗ Pro tools</li>' +
     '</ul>';
@@ -5333,7 +5355,7 @@ function updatePlanUI(){
       : '<div style="font-size:10px;color:var(--green);font-weight:700;margin-bottom:8px;">7-day free trial included</div>') +
     '<ul style="list-style:none;font-size:12px;display:flex;flex-direction:column;gap:5px;margin-bottom:12px;">' +
       '<li>✓ Unlimited questions</li>' +
-      '<li>✓ <strong>35 AI questions/day</strong></li>' +
+      '<li>✓ <strong>50 AI questions/month</strong></li>' +
       '<li>✓ All Pro tools (FS Builder, JE Builder)</li>' +
       '<li>✓ Study buddy matching</li>' +
       '<li>✓ Multiplayer & challenge mode</li>' +
@@ -5484,7 +5506,7 @@ function showProCongrats(){
     '<div style="font-size:13px;color:#64748B;line-height:1.6;margin-bottom:20px;">You now have unlimited questions, AI tutor, challenge mode and all Pro features!</div>'+
     '<div style="background:#EEF2FF;border-radius:12px;padding:12px;margin-bottom:20px;text-align:left;">'+
       '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Unlimited questions</div>'+
-      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ 35 AI questions/day</div>'+
+      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ 50 AI questions/month</div>'+
       '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Challenge & multiplayer</div>'+
       '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ All Pro tools unlocked</div>'+
     '</div>';
@@ -5906,9 +5928,9 @@ function sendChat(){
     const isDaily=check.daily;
     const isMonthlyFree=check.monthlyFree;
     let msg='';
-    if(isDaily) msg='Free plan: 3 AI questions/day. Upgrade to Pro for 35/day.';
-    else if(isMonthlyFree) msg='Free plan: 30 AI questions/month limit reached. Upgrade to Pro for 35/day.';
-    else msg='Pro plan: 35 AI questions/day used. Your limit resets tomorrow.';
+    if(isDaily) msg='Free plan: 3 AI questions/day. Upgrade to Pro for 50/month.';
+    else if(isMonthlyFree) msg='Free plan: 30 AI questions/month limit reached. Upgrade to Pro for 50/month.';
+    else msg='Pro plan: 50 AI questions/month used. Your limit resets next month.';
     addChatMsg('ai','<div style="background:var(--gold-l);border-radius:8px;padding:10px;"><div style="font-weight:700;color:#92400E;">🔒 AI limit reached</div><div style="font-size:11px;color:var(--steel);margin-top:4px;">'+msg+'</div>'+(isFree()?'<div style="display:flex;gap:6px;margin-top:8px;"><button onclick="startProTrial()" style="flex:1;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font-body);">Upgrade Pro</button>'+(!window._currentUser?'<button onclick="showAuthPopup()" style="flex:1;background:#4A6CF7;color:#fff;border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font-body);">Sign Up</button>':'')+'</div>':'')+'</div>');
     return;
   }
@@ -8422,9 +8444,9 @@ function updateNextUpCard(){
   ];
   const idx=Math.min(byLevel.length-1, Math.floor(S.xp/200));
   const suggested=byLevel[idx];
-  const stdName=suggested; // Get name from Supabase TOPICS array if needed
+  const stdName=STANDARD_NAMES[suggested]||suggested;
   nu.textContent=suggested;
-  ns.textContent='Next standard to unlock';
+  ns.textContent=stdName;
   card.dataset.std=suggested; // Store actual standard ID for goNextUp()
 }
 
@@ -9862,7 +9884,7 @@ function showProLockedPopup(featureName){
       '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Time Attack — unlimited</div>'+
       '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Boss Battle — unlimited</div>'+
       '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Challenge mode — unlimited</div>'+
-      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ 35 AI questions/day</div>'+
+      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ 50 AI questions/month</div>'+
     '</div>';
   const upBtn = document.createElement('button');
   upBtn.style.cssText = 'width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#F59E0B,#FCD34D);color:#0A1F6E;font-size:15px;font-weight:800;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px;';
@@ -18186,34 +18208,6 @@ async function loadTopicsFromSupabase() {
       locked: false,
       position: t.sort_order || 0
     }));
-    
-    // Sort topics: IAS 1-41 → IFRS 1-19 → ISA 200+ → Others
-    TOPICS.sort((a, b) => {
-      const getOrder = (topic) => {
-        const num = topic.num.toUpperCase();
-        if (num.startsWith('IAS ')) {
-          const n = parseInt(num.replace('IAS ', ''));
-          return [0, n]; // Group 0 = IAS
-        }
-        if (num.startsWith('IFRS ')) {
-          const n = parseInt(num.replace('IFRS ', ''));
-          return [1, n]; // Group 1 = IFRS
-        }
-        if (num.startsWith('ISA ')) {
-          const n = parseInt(num.replace('ISA ', ''));
-          return [2, n]; // Group 2 = ISA
-        }
-        // Everything else by category
-        const catOrder = { 'Audit': 3, 'Costing': 4, 'FM': 5, 'Tax': 6, 'Other': 7 };
-        return [catOrder[topic.cat] || 7, 0];
-      };
-      
-      const [groupA, numA] = getOrder(a);
-      const [groupB, numB] = getOrder(b);
-      
-      if (groupA !== groupB) return groupA - groupB;
-      return numA - numB;
-    });
     
     console.log('%c✅ Topics loaded:', 'color: green; font-weight: bold', TOPICS.length, 'topics');
     console.log('📋 Standards:', TOPICS.map(t => t.num).join(', '));
