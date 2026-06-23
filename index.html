@@ -1869,6 +1869,15 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     </div>
   </div>
 
+  <!-- ── XP PROGRESS BAR ── -->
+  <div class="fm-xp-bar-wrap">
+    <div class="fm-xp-bar-header">
+      <span class="fm-xp-label">Progress to next rank</span>
+      <span class="fm-xp-val" id="fm-xp-to-next">— XP to go</span>
+    </div>
+    <div class="fm-xp-track"><div class="fm-xp-fill" id="fm-xp-fill" style="width:0%"></div></div>
+  </div>
+
   <!-- ── NEXT UP ── -->
   <div class="fm-next-up" id="next-up-card" data-std="IFRS 15" onclick="goNextUp()">
     <div class="fm-next-icon">📚</div>
@@ -1906,6 +1915,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <!-- ── STREAK HEATMAP ── -->
   <div class="fm-card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div style="font-size:12px;font-weight:800;color:var(--text);">🔥 <span id="streak-heatmap-label">0-day streak</span></div>
       <div style="font-size:10px;color:var(--muted);">Last 7 days</div>
     </div>
     <div style="display:flex;gap:5px;align-items:flex-end;height:56px;" id="streak-heatmap"></div>
@@ -1919,6 +1929,8 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <span style="font-size:10px;color:var(--muted);font-family:var(--font-mono);">Resets in 14h</span>
     </div>
     <div class="mission-card"><div class="mission-icon">🏛️</div><div class="mission-info"><div class="mission-title">Answer 10 questions</div><div class="mission-sub" id="mission-q-sub">0 / 10 completed</div><div class="bar"><span id="mission-q-bar" style="width:0%;"></span></div></div><div class="mission-reward"><div class="mission-xp">+50 XP</div></div></div>
+    <div class="mission-card"><div class="mission-icon">🔥</div><div class="mission-info"><div class="mission-title">Build a 5-answer streak</div><div class="mission-sub" id="mission-s-sub">0 / 5 in a row</div><div class="bar"><span id="mission-s-bar" style="width:0%;background:var(--gold);"></span></div></div><div class="mission-reward"><div class="mission-xp">+30 XP</div></div></div>
+    <div class="mission-card"><div class="mission-icon">✅</div><div class="mission-info"><div class="mission-title">Beat your accuracy record</div><div class="mission-sub" id="mission-a-sub">Current best: —%</div><div class="bar"><span id="mission-a-bar" style="width:0%;background:var(--green);"></span></div></div><div class="mission-reward">⬜</div></div>
   </div>
 
   <!-- ── QUICK ACCESS ── -->
@@ -3890,109 +3902,50 @@ const QB_BY_DOMAIN={
 };
 
 // ── TOPICS ──
-// ── DYNAMIC TOPICS: Fetch from Supabase questions table ──
-let TOPICS = []; // Will be populated dynamically on app load
-
-async function loadTopicsFromSupabase(){
-  try {
-    fmLog('TOPICS-LOAD', '🔄 Attempting to load topics from Supabase...');
-    
-    // Load from TOPICS table (already deduplicated, no duplicates)
-    const url = SUPA_URL + '/rest/v1/topics?select=*&is_active=eq.true&limit=500&order=standard.asc';
-    fmLog('TOPICS-LOAD', '📡 Fetching from topics table...');
-    
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: { 
-        'apikey': SUPA_KEY, 
-        'Authorization': 'Bearer ' + SUPA_KEY, 
-        'Content-Type': 'application/json' 
-      },
-      mode: 'cors',
-      credentials: 'omit'
-    });
-    
-    if(!res.ok) {
-      const errorText = await res.text();
-      console.error('Supabase Topics Error - Status: ' + res.status + ', Body: ' + errorText);
-      fmLog('TOPICS-LOAD', '❌ HTTP ' + res.status);
-      throw new Error('HTTP ' + res.status);
-    }
-    
-    const data = await res.json();
-    fmLog('TOPICS-LOAD', '📊 Received ' + (data ? data.length : 0) + ' topics');
-    
-    if(!data || data.length === 0) {
-      console.error('Supabase Topics Error - No data returned');
-      fmLog('TOPICS-LOAD', '❌ No data in response');
-      throw new Error('No data');
-    }
-    
-    // Map topics table directly (no need to deduplicate - already clean)
-    TOPICS = data.map(t => ({
-      cat: t.category,
-      num: t.standard,
-      name: t.name || t.standard,
-      sub: 'Questions available'
-    }));
-    
-    fmLog('TOPICS-LOAD', '✅ Loaded ' + TOPICS.length + ' topics from Supabase (NO FALLBACK - PRODUCTION)');
-    return TOPICS;
-  } catch(e) {
-    console.error('❌ FATAL: Failed to load topics - ' + e.message);
-    fmLog('TOPICS-LOAD', '❌ ERROR: ' + e.message);
-    TOPICS = [];
-    alert('⚠️ Cannot load topics from Supabase.\nError: ' + e.message + '\n\nPlease reload the page or contact support.');
-    return [];
-  }
-}
-
-function loadFallbackTopics(){
-  TOPICS = [
-    {cat:'IFRS',num:'IFRS 1',name:'First-time Adoption',sub:'Transition date, opening SFP, exemptions'},
-    {cat:'IFRS',num:'IFRS 2',name:'Share-based Payment',sub:'Grant date FV, equity vs cash-settled'},
-    {cat:'IFRS',num:'IFRS 3',name:'Business Combinations',sub:'Acquisition method, goodwill, NCI'},
-    {cat:'IFRS',num:'IFRS 5',name:'Non-current Assets Held for Sale',sub:'Lower of CA and FVLCD, classification'},
-    {cat:'IFRS',num:'IFRS 7',name:'Financial Instruments: Disclosures',sub:'Credit risk, liquidity risk, market risk'},
-    {cat:'IFRS',num:'IFRS 9',name:'Financial Instruments',sub:'ECL model, classification, hedge accounting'},
-    {cat:'IFRS',num:'IFRS 10',name:'Consolidated Financial Statements',sub:'Control, power, variable returns'},
-    {cat:'IFRS',num:'IFRS 11',name:'Joint Arrangements',sub:'Joint operation vs joint venture'},
-    {cat:'IFRS',num:'IFRS 12',name:'Disclosure of Interests',sub:'Subsidiaries, associates, JVs'},
-    {cat:'IFRS',num:'IFRS 13',name:'Fair Value Measurement',sub:'Exit price, Level 1/2/3 hierarchy'},
-    {cat:'IFRS',num:'IFRS 15',name:'Revenue from Contracts',sub:'5-step model, performance obligations'},
-    {cat:'IFRS',num:'IFRS 16',name:'Leases',sub:'ROU asset, lease liability, lessee accounting'},
-    {cat:'IFRS',num:'IFRS 17',name:'Insurance Contracts',sub:'GMM, PAA, VFA measurement models'},
-    {cat:'IFRS',num:'IFRS 18',name:'Presentation & Disclosure',sub:'Replaces IAS 1, categorised P&L'},
-    {cat:'IAS',num:'IAS 1',name:'Presentation of Financial Statements',sub:'5 components, going concern, accrual'},
-    {cat:'IAS',num:'IAS 2',name:'Inventories',sub:'Lower of cost and NRV, FIFO/weighted avg'},
-    {cat:'IAS',num:'IAS 7',name:'Statement of Cash Flows',sub:'Direct/indirect method, classification'},
-    {cat:'IAS',num:'IAS 8',name:'Accounting Policies & Errors',sub:'Changes in policy, estimates, correction'},
-    {cat:'IAS',num:'IAS 10',name:'Events After Reporting Period',sub:'Adjusting vs non-adjusting events'},
-    {cat:'IAS',num:'IAS 12',name:'Income Taxes',sub:'Temporary differences, DTL, DTA'},
-    {cat:'IAS',num:'IAS 16',name:'Property, Plant & Equipment',sub:'Cost vs revaluation model, depreciation'},
-    {cat:'IAS',num:'IAS 19',name:'Employee Benefits',sub:'Defined benefit, actuarial gains to OCI'},
-    {cat:'IAS',num:'IAS 21',name:'Effects of Foreign Exchange',sub:'Functional currency, retranslation'},
-    {cat:'IAS',num:'IAS 36',name:'Impairment of Assets',sub:'CGU, recoverable amount, VIU'},
-    {cat:'IAS',num:'IAS 37',name:'Provisions & Contingencies',sub:'Three-part test, onerous contracts'},
-    {cat:'IAS',num:'IAS 38',name:'Intangible Assets',sub:'Recognition criteria, amortisation'},
-    {cat:'IAS',num:'IAS 40',name:'Investment Property',sub:'Cost vs fair value model, P&L gains'},
-    {cat:'ISA',num:'ISA 315',name:'Identifying & Assessing Risks',sub:'Internal controls, COSO framework'},
-    {cat:'ISA',num:'ISA 320',name:'Materiality',sub:'Performance materiality, clearly trivial'},
-    {cat:'ISA',num:'ISA 570',name:'Going Concern',sub:'Events & conditions, auditor response'},
-    {cat:'ISA',num:'ISA 700',name:'Forming an Opinion',sub:'Unmodified, modified opinions'},
-    {cat:'ISA',num:'ISA 701',name:'Key Audit Matters',sub:'Listed entities, selection criteria'},
-    {cat:'Costing',num:'MC 1',name:'Cost Classification',sub:'Fixed, variable, semi-variable costs'},
-    {cat:'Costing',num:'MC 2',name:'Marginal vs Absorption',sub:'Profit differences, inventory valuation'},
-    {cat:'Costing',num:'MC 5',name:'Standard Costing & Variance',sub:'Material, labour, overhead variances'},
-    {cat:'Costing',num:'MC 7',name:'Capital Investment Appraisal',sub:'NPV, IRR, Payback, ARR'},
-    {cat:'Tax',num:'TX 1',name:'Corporate Tax Principles',sub:'Taxable profits, allowable deductions'},
-    {cat:'Tax',num:'TX 2',name:'Deferred Tax',sub:'Temporary differences, tax base'},
-    {cat:'Tax',num:'TX 5',name:'Transfer Pricing',sub:"Arm's length principle, OECD"},
-    {cat:'FM',num:'FM 1',name:'Working Capital Management',sub:'Cash conversion cycle, receivables'},
-    {cat:'FM',num:'FM 3',name:'Cost of Capital & WACC',sub:'CAPM, Ke, Kd, gearing effects'},
-    {cat:'FM',num:'FM 7',name:'Foreign Exchange Risk',sub:'Transaction, translation, economic risk'},
-  ];
-}
+const TOPICS=[
+  {cat:'IFRS',num:'IFRS 1',name:'First-time Adoption',sub:'Transition date, opening SFP, exemptions'},
+  {cat:'IFRS',num:'IFRS 2',name:'Share-based Payment',sub:'Grant date FV, equity vs cash-settled'},
+  {cat:'IFRS',num:'IFRS 3',name:'Business Combinations',sub:'Acquisition method, goodwill, NCI'},
+  {cat:'IFRS',num:'IFRS 5',name:'Non-current Assets Held for Sale',sub:'Lower of CA and FVLCD, classification'},
+  {cat:'IFRS',num:'IFRS 7',name:'Financial Instruments: Disclosures',sub:'Credit risk, liquidity risk, market risk'},
+  {cat:'IFRS',num:'IFRS 9',name:'Financial Instruments',sub:'ECL model, classification, hedge accounting'},
+  {cat:'IFRS',num:'IFRS 10',name:'Consolidated Financial Statements',sub:'Control, power, variable returns'},
+  {cat:'IFRS',num:'IFRS 11',name:'Joint Arrangements',sub:'Joint operation vs joint venture'},
+  {cat:'IFRS',num:'IFRS 12',name:'Disclosure of Interests',sub:'Subsidiaries, associates, JVs'},
+  {cat:'IFRS',num:'IFRS 13',name:'Fair Value Measurement',sub:'Exit price, Level 1/2/3 hierarchy'},
+  {cat:'IFRS',num:'IFRS 15',name:'Revenue from Contracts',sub:'5-step model, performance obligations'},
+  {cat:'IFRS',num:'IFRS 16',name:'Leases',sub:'ROU asset, lease liability, lessee accounting'},
+  {cat:'IFRS',num:'IFRS 17',name:'Insurance Contracts',sub:'GMM, PAA, VFA measurement models'},
+  {cat:'IFRS',num:'IFRS 18',name:'Presentation & Disclosure (NEW)',sub:'Replaces IAS 1, categorised P&L'},
+  {cat:'IAS',num:'IAS 1',name:'Presentation of Financial Statements',sub:'5 components, going concern, accrual'},
+  {cat:'IAS',num:'IAS 2',name:'Inventories',sub:'Lower of cost and NRV, FIFO/weighted avg'},
+  {cat:'IAS',num:'IAS 7',name:'Statement of Cash Flows',sub:'Direct/indirect method, classification'},
+  {cat:'IAS',num:'IAS 8',name:'Accounting Policies & Errors',sub:'Changes in policy, estimates, correction'},
+  {cat:'IAS',num:'IAS 10',name:'Events After Reporting Period',sub:'Adjusting vs non-adjusting events'},
+  {cat:'IAS',num:'IAS 12',name:'Income Taxes',sub:'Temporary differences, DTL, DTA'},
+  {cat:'IAS',num:'IAS 16',name:'Property, Plant & Equipment',sub:'Cost vs revaluation model, depreciation'},
+  {cat:'IAS',num:'IAS 19',name:'Employee Benefits',sub:'Defined benefit, actuarial gains to OCI'},
+  {cat:'IAS',num:'IAS 21',name:'Effects of Foreign Exchange',sub:'Functional currency, retranslation'},
+  {cat:'IAS',num:'IAS 36',name:'Impairment of Assets',sub:'CGU, recoverable amount, VIU'},
+  {cat:'IAS',num:'IAS 37',name:'Provisions & Contingencies',sub:'Three-part test, onerous contracts'},
+  {cat:'IAS',num:'IAS 38',name:'Intangible Assets',sub:'Recognition criteria, amortisation'},
+  {cat:'IAS',num:'IAS 40',name:'Investment Property',sub:'Cost vs fair value model, P&L gains'},
+  {cat:'ISA',num:'ISA 315',name:'Identifying & Assessing Risks',sub:'Internal controls, COSO framework'},
+  {cat:'ISA',num:'ISA 320',name:'Materiality',sub:'Performance materiality, clearly trivial'},
+  {cat:'ISA',num:'ISA 570',name:'Going Concern',sub:'Events & conditions, auditor response'},
+  {cat:'ISA',num:'ISA 700',name:'Forming an Opinion',sub:'Unmodified, modified opinions'},
+  {cat:'ISA',num:'ISA 701',name:'Key Audit Matters',sub:'Listed entities, selection criteria'},
+  {cat:'Costing',num:'MC 1',name:'Cost Classification',sub:'Fixed, variable, semi-variable costs'},
+  {cat:'Costing',num:'MC 2',name:'Marginal vs Absorption',sub:'Profit differences, inventory valuation'},
+  {cat:'Costing',num:'MC 5',name:'Standard Costing & Variance',sub:'Material, labour, overhead variances'},
+  {cat:'Costing',num:'MC 7',name:'Capital Investment Appraisal',sub:'NPV, IRR, Payback, ARR'},
+  {cat:'Tax',num:'TX 1',name:'Corporate Tax Principles',sub:'Taxable profits, allowable deductions'},
+  {cat:'Tax',num:'TX 2',name:'Deferred Tax — IAS 12',sub:'Temporary differences, tax base'},
+  {cat:'Tax',num:'TX 5',name:'Transfer Pricing (Tax)',sub:"Arm's length principle, OECD"},
+  {cat:'FM',num:'FM 1',name:'Working Capital Management',sub:'Cash conversion cycle, receivables'},
+  {cat:'FM',num:'FM 3',name:'Cost of Capital & WACC',sub:'CAPM, Ke, Kd, gearing effects'},
+  {cat:'FM',num:'FM 7',name:'Foreign Exchange Risk',sub:'Transaction, translation, economic risk'},
+];
 
 // ── JE DATA ──
 const JE_DATA={
@@ -4547,7 +4500,7 @@ async function fetchQuestionsFromSupabase(category, count){
     return fyShuffle(SQ_CACHE[cacheKey]).slice(0,count);
   }
   try{
-    const url = SUPA_URL + '/rest/v1/questions?select=*&limit=3000';
+    const url = SUPA_URL + '/rest/v1/questions?select=*&limit=1000';
     const res = await fetch(url, {
       method: 'GET',
       headers:{
@@ -4599,6 +4552,7 @@ async function fetchQuestionsFromSupabase(category, count){
 
 
 async function startSession(){
+  initializeTopicsFromSupabase().catch(e => console.error("Topics init failed:", e));
   const dailyRemaining = getDailyQRemaining();
   // Block if daily limit reached - no loopholes for topic switching
   if(!isPro() && dailyRemaining <= 0){ showDailyLimitPopup(); return; }
@@ -5627,21 +5581,42 @@ function isFree(){
 }
 
 // Daily question limit for free users
+
+// ── SECURE DEVICE ID (Browser Fingerprint + localStorage) ──
 function getDeviceId(){
-  // Generate or retrieve persistent device ID for guests
-  try{
-    let deviceId = localStorage.getItem('fm_device_id');
-    if(!deviceId){
-      // Generate new device ID (UUID-like)
-      deviceId = 'device_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-      localStorage.setItem('fm_device_id', deviceId);
-    }
-    return deviceId;
-  }catch(e){
-    // Fallback if localStorage fails
-    return 'device_' + Math.random().toString(36).substr(2, 9);
+  let deviceId = localStorage.getItem('fm_device_id');
+  if(deviceId) return deviceId;
+  
+  // Create browser fingerprint from multiple entropy sources
+  let fingerprint = [
+    navigator.userAgent,
+    navigator.language,
+    new Date().getTimezoneOffset(),
+    navigator.hardwareConcurrency || 'unknown',
+    navigator.deviceMemory || 'unknown',
+    screen.width + 'x' + screen.height,
+    new Date().getFullYear()  // Reset once per year
+  ].join('|');
+  
+  // Simple hash function
+  let hash = 0;
+  for(let i = 0; i < fingerprint.length; i++){
+    let char = fingerprint.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
   }
+  
+  deviceId = 'device_' + Math.abs(hash).toString(36);
+  
+  try{
+    localStorage.setItem('fm_device_id', deviceId);
+  }catch(e){
+    console.error('Cannot persist device ID:', e);
+  }
+  
+  return deviceId;
 }
+
 
 function getDailyQKey(){
   var d=new Date();
@@ -6044,6 +6019,16 @@ function updateMissions(){
   const qBar = document.getElementById('mission-q-bar');
   if(qSub) qSub.textContent = Math.min(todayQ,10) + ' / 10 completed';
   if(qBar) qBar.style.width = Math.min(todayQ/10*100,100) + '%';
+  // Streak mission
+  const sSub = document.getElementById('mission-s-sub');
+  const sBar = document.getElementById('mission-s-bar');
+  if(sSub) sSub.textContent = Math.min(streak,5) + ' / 5 in a row';
+  if(sBar) sBar.style.width = Math.min(streak/5*100,100) + '%';
+  // Accuracy mission
+  const aSub = document.getElementById('mission-a-sub');
+  const aBar = document.getElementById('mission-a-bar');
+  if(aSub) aSub.textContent = 'Current best: ' + (bestAcc||'—') + '%';
+  if(aBar) aBar.style.width = Math.min(acc,100) + '%';
 }
 
 // ── RENDER VAULT ──
@@ -7569,33 +7554,13 @@ function toggleCheckItem(item){
   recalcAll();
   setTimeout(recalcAll, 200);
 
-  // Load topics dynamically from Supabase
-  (async function initTopics(){
-    // Validate credentials exist
-    if(!SUPA_URL || !SUPA_KEY) {
-      console.error('Supabase credentials missing');
-      fmLog('TOPICS-LOAD', '❌ Supabase credentials missing - using fallback');
-      loadFallbackTopics();
-      renderTopics();
-      return;
-    }
-    
-    await loadTopicsFromSupabase();
-    renderTopics();
-  })();
-  
-  // Fallback: render topics immediately if load takes too long
-  setTimeout(()=>{
-    if(TOPICS.length === 0) {
-      loadFallbackTopics();
-      renderTopics();
-    }
-  }, 3000);
+  // Init topics
+  renderTopics();
 
   // Pre-warm Supabase question cache for Arena + Challenge
   (async function preloadQuestions(){
     try{
-      const url = SUPA_URL + '/rest/v1/questions?select=*&limit=3000';
+      const url = SUPA_URL + '/rest/v1/questions?select=*&limit=1000';
       const res = await fetch(url, {
         headers:{
           'apikey': SUPA_KEY,
@@ -7951,14 +7916,12 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ── SWIPE GESTURES ──
-let touchStartX = 0, touchStartY = 0;
-document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; }, { passive: true });
+let touchStartX = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
 document.addEventListener('touchend', e => {
   if (S.screen !== 'practice') return;
   const dx = e.changedTouches[0].clientX - touchStartX;
-  const dy = e.changedTouches[0].clientY - touchStartY;
-  // Only swipe if: horizontal > 120px AND vertical movement < 50px (not a scroll)
-  if (Math.abs(dx) > 120 && Math.abs(dy) < 50) {
+  if (Math.abs(dx) > 80) {
     if (dx < 0 && S.answered) nextQuestion();
     if (dx > 0 && S.qIndex > 0) goBack();
   }
@@ -8346,20 +8309,16 @@ function showTip(idx){
 }
 function initTipSwipe(){
   const tc=document.getElementById('tip-container');if(!tc) return;
-  let startX=0, startY=0;
-  tc.addEventListener('touchstart',e=>{startX=e.touches[0].clientX; startY=e.touches[0].clientY;},{passive:true});
+  let startX=0;
+  tc.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
   tc.addEventListener('touchend',e=>{
     const dx=e.changedTouches[0].clientX-startX;
-    const dy=e.changedTouches[0].clientY-startY;
-    // Only swipe if horizontal > 50px AND vertical < 40px (not a scroll)
-    if(Math.abs(dx)>50 && Math.abs(dy)<40){ dx<0?showTip(tipIndex+1):showTip(tipIndex-1); hapticFeedback('light'); }
+    if(Math.abs(dx)>40){ dx<0?showTip(tipIndex+1):showTip(tipIndex-1); hapticFeedback('light'); }
   },{passive:true});
-  tc.addEventListener('mousedown',e=>{startX=e.clientX; startY=e.clientY;});
+  tc.addEventListener('mousedown',e=>{startX=e.clientX;});
   tc.addEventListener('mouseup',e=>{
     const dx=e.clientX-startX;
-    const dy=e.clientY-startY;
-    // Only swipe if horizontal > 50px AND vertical < 40px (not a scroll)
-    if(Math.abs(dx)>50 && Math.abs(dy)<40){ dx<0?showTip(tipIndex+1):showTip(tipIndex-1); }
+    if(Math.abs(dx)>40){ dx<0?showTip(tipIndex+1):showTip(tipIndex-1); }
   });
   // Rotate tips daily
   const today=new Date().getDate();
@@ -13349,8 +13308,11 @@ let _planLoaded = false; // becomes true after Supabase plan is confirmed
 
 // ── GUEST MODE ──
 function startAsGuest(){
+  initializeTopicsFromSupabase().catch(e => console.error("Topics init failed:", e));
   _isGuest = true;
   _guestQCount = 0;
+  // Load daily count from Supabase for device
+  (async()=>{ await getFreshDailyUsed(); })();;
   _guestBonusUsed = false;
 
   // Hide auth screen completely - clear ALL display states
@@ -17194,7 +17156,7 @@ function achInitScreen(){
 </script>
 
 
-<!-- ══ CHALLENGE ARENA ══ -->
+<!-- ══ CHALLENGE ARENA (Questions from Supabase) ══ -->
 <div class="screen" id="screen-arena-v2">
 
   <!-- ─── LOBBY ─── -->
@@ -18150,6 +18112,309 @@ setTimeout(function() { showFoxScreenMessage('home'); }, 1500);
     el.style.animation = 'fmBubblePop .5s cubic-bezier(0.34,1.56,0.64,1) both';
   }, 4000);
 })();
+
+// ── LOAD TOPICS FROM SUPABASE (Dynamic, not hardcoded) ──
+async function initializeTopicsFromSupabase(){
+  try {
+    console.log('🔄 Loading topics from Supabase...');
+    
+    // Fetch unique standards from questions table
+    const { data, error } = await _supa
+      .from('questions')
+      .select('standard')
+      .order('standard');
+    
+    if(error) throw error;
+    if(!data || data.length === 0) {
+      console.warn('No questions found in Supabase');
+      return;
+    }
+    
+    // Deduplicate standards and build TOPICS array
+    const standards = [...new Set(data.map(q => q.standard))];
+    window.TOPICS = standards.map(s => {
+      const matches = data.filter(q => q.standard === s);
+      return {
+        num: s,
+        cat: 'IFRS/IAS',
+        icon: '📋',
+        qcount: matches.length,
+        locked: false
+      };
+    });
+    
+    console.log('✓ Topics loaded:', window.TOPICS.length);
+  } catch(e){
+    console.error('Failed to load topics:', e);
+    // Fallback: at least have a basic structure
+    window.TOPICS = [];
+  }
+}
+
+
+async function loadTopicsFromSupabase(){
+  try {
+    fmLog('TOPICS-LOAD', '🔄 Attempting to load topics from Supabase...');
+    
+    // Fetch all questions (we'll deduplicate by standard client-side)
+    const url = SUPA_URL + '/rest/v1/questions?select=standard&limit=3000';
+    fmLog('TOPICS-LOAD', '📡 Fetching all questions...');
+    
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: { 
+        'apikey': SUPA_KEY, 
+        'Authorization': 'Bearer ' + SUPA_KEY, 
+        'Content-Type': 'application/json' 
+      },
+      mode: 'cors',
+      credentials: 'omit'
+    });
+    
+    if(!res.ok) {
+      const errorText = await res.text();
+      console.error('Supabase Topics Error - Status: ' + res.status + ', Body: ' + errorText);
+      fmLog('TOPICS-LOAD', '❌ HTTP ' + res.status);
+      throw new Error('HTTP ' + res.status);
+    }
+    
+    const data = await res.json();
+    fmLog('TOPICS-LOAD', '📊 Received ' + (data ? data.length : 0) + ' question records');
+    
+    if(!data || data.length === 0) {
+      console.error('Supabase Topics Error - No data returned');
+      fmLog('TOPICS-LOAD', '❌ No data in response');
+      throw new Error('No data');
+    }
+    
+    // Get unique standards and sort them
+    const uniqueStandards = [...new Set(data.map(q => q.standard).filter(s => s))].sort();
+    fmLog('TOPICS-LOAD', '📊 Found ' + uniqueStandards.length + ' unique standards');
+    
+    // Build TOPICS array from standards
+    TOPICS = uniqueStandards.map(std => {
+      const cat = std.startsWith('IFRS') ? 'IFRS' : (std.startsWith('IAS') ? 'IAS' : (std.startsWith('ISA') ? 'ISA' : (std.startsWith('MC') ? 'Costing' : (std.startsWith('TX') ? 'Tax' : (std.startsWith('FM') ? 'FM' : 'Other')))));
+      return {
+        cat: cat,
+        num: std,
+        name: STANDARD_NAMES[std] || std,
+        sub: 'Questions available'
+      };
+    });
+    
+    fmLog('TOPICS-LOAD', '✅ Loaded ' + TOPICS.length + ' topics dynamically from Supabase');
+    return TOPICS;
+  } catch(e) {
+    console.warn('⚠️ Failed to load topics from Supabase: ' + e.message);
+    fmLog('TOPICS-LOAD', '⚠️ Failed (' + e.message + ') - Using fallback');
+    loadFallbackTopics();
+    fmLog('TOPICS-LOAD', '✅ Fallback loaded ' + TOPICS.length + ' topics');
+    return TOPICS;
+  }
+}
+
+
+
+
+// ── ENHANCED: Load all topics from Supabase with error handling ──
+async function initializeTopicsFromSupabase(){
+  try {
+    console.log('🔄 Loading topics from Supabase...');
+    
+    // Fetch questions directly from Supabase
+    const { data, error } = await _supa
+      .from('questions')
+      .select('standard')
+      .order('standard');
+    
+    if(error) {
+      console.error('Supabase error:', error);
+      // Fallback: create empty TOPICS
+      window.TOPICS = [];
+      return false;
+    }
+    
+    if(!data || data.length === 0) {
+      console.warn('No questions found in Supabase');
+      window.TOPICS = [];
+      return false;
+    }
+    
+    // Build TOPICS array from unique standards
+    const standards = [...new Set(data.map(q => q.standard))].sort();
+    window.TOPICS = standards.map((s, idx) => {
+      const stdQuestions = data.filter(q => q.standard === s);
+      return {
+        num: s,
+        cat: 'IFRS/IAS',
+        icon: '📋',
+        qcount: stdQuestions.length,
+        locked: false,
+        position: idx
+      };
+    });
+    
+    console.log('✓ Topics loaded from Supabase:', window.TOPICS.length);
+    return true;
+  } catch(e){
+    console.error('Failed to load topics:', e);
+    window.TOPICS = [];
+    return false;
+  }
+}
+
+// ── Load questions for any topic/standard ──
+async function loadQuestionsFromSupabase(standard, limit = 100) {
+  try {
+    let query = _supa
+      .from('questions')
+      .select('*')
+      .eq('standard', standard)
+      .limit(limit);
+    
+    const { data, error } = await query;
+    
+    if(error) throw error;
+    return data || [];
+  } catch(e){
+    console.error(`Failed to load questions for ${standard}:`, e);
+    return [];
+  }
+}
+
+// ── Load questions for Arena mode (mixed topics) ──
+async function loadArenaQuestions(limit = 15) {
+  try {
+    const { data, error } = await _supa
+      .from('questions')
+      .select('*')
+      .limit(limit);
+    
+    if(error) throw error;
+    return data || [];
+  } catch(e){
+    console.error('Failed to load Arena questions:', e);
+    return [];
+  }
+}
+
+// ── Load questions for Boss Battle mode ──
+async function loadBossBattleQuestions(difficulty = 'medium', limit = 10) {
+  try {
+    let query = _supa
+      .from('questions')
+      .select('*');
+    
+    if(difficulty) {
+      query = query.eq('difficulty', difficulty);
+    }
+    
+    const { data, error } = await query.limit(limit);
+    
+    if(error) throw error;
+    return data || [];
+  } catch(e){
+    console.error('Failed to load Boss Battle questions:', e);
+    return [];
+  }
+}
+
+// ── Load questions for Challenge Mode ──
+async function loadChallengeQuestions(limit = 20) {
+  try {
+    const { data, error } = await _supa
+      .from('questions')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    
+    if(error) throw error;
+    return data || [];
+  } catch(e){
+    console.error('Failed to load Challenge questions:', e);
+    return [];
+  }
+}
+
+// ── Get question by ID ──
+async function getQuestionById(id) {
+  try {
+    const { data, error } = await _supa
+      .from('questions')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if(error) throw error;
+    return data;
+  } catch(e){
+    console.error('Failed to get question:', e);
+    return null;
+  }
+}
+
+
+
+
+
+// ── BULLETPROOF DAILY LIMIT CHECK ──
+async function verifyDailyLimitWithSupabase(deviceId) {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const { data, error } = await _supa
+      .from('device_daily_limits')
+      .select('questions_used, limit_date')
+      .eq('device_id', deviceId)
+      .eq('limit_date', today)
+      .single();
+    
+    if(error) {
+      // No record for today - safe to proceed
+      return { used: 0, limit: 15 };
+    }
+    
+    return {
+      used: data.questions_used || 0,
+      limit: 15,
+      remaining: Math.max(0, 15 - (data.questions_used || 0))
+    };
+  } catch(e){
+    console.error('Daily limit check failed:', e);
+    // Fallback to localStorage
+    const used = parseInt(localStorage.getItem('fm_dq_' + new Date().toDateString()) || '0');
+    return { used, limit: 15 };
+  }
+}
+
+// ── INCREMENT DAILY COUNT IN BOTH localStorage and Supabase ──
+async function incrementDailyCountBoth(deviceId) {
+  const today = new Date().toISOString().split('T')[0];
+  const key = 'fm_dq_' + new Date().toDateString();
+  
+  // Update localStorage immediately
+  const current = parseInt(localStorage.getItem(key) || '0');
+  const newCount = current + 1;
+  localStorage.setItem(key, String(newCount));
+  
+  // Also update Supabase in background
+  try {
+    await _supa
+      .from('device_daily_limits')
+      .upsert({
+        device_id: deviceId,
+        limit_date: today,
+        questions_used: newCount,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'device_id,limit_date' });
+  } catch(e){
+    console.error('Failed to sync daily count to Supabase:', e);
+    // Continue anyway - localStorage is our source of truth for guests
+  }
+  
+  return newCount;
+}
+
+
 </script>
 
 </body>
