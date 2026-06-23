@@ -3764,29 +3764,56 @@ const TOPICS = [];
 // Load topics dynamically from Supabase
 async function initializeTopicsFromSupabase() {
   try {
-    const { data, error } = await _supa.from('questions').select('standard').order('standard');
-    if(error || !data) { console.error('Failed to load topics:', error); return; }
+    console.log('📚 Loading topics from Supabase...');
     
-    const standards = [...new Set(data.map(q => q.standard))].sort();
-    window.TOPICS = standards.map((s, idx) => ({
-      num: s,
-      cat: 'IFRS/IAS',
-      icon: '📋',
-      qcount: data.filter(q => q.standard === s).length,
-      locked: false,
-      position: idx
-    }));
+    // Fetch all questions
+    const { data, error } = await _supa
+      .from('questions')
+      .select('standard')
+      .order('standard');
     
-    // Sync to global TOPICS
-    for(let t of window.TOPICS) {
-      if(!TOPICS.find(x => x.num === t.num)) {
-        TOPICS.push(t);
-      }
+    if(error) {
+      console.error('❌ Error loading topics:', error);
+      window.TOPICS = [];
+      return false;
     }
     
-    console.log('✅ Topics loaded:', TOPICS.length);
+    if(!data || data.length === 0) {
+      console.warn('⚠ No questions found in Supabase');
+      window.TOPICS = [];
+      return false;
+    }
+    
+    // Get unique standards and build TOPICS
+    const standards = [...new Set(data.map(q => q.standard))].sort();
+    window.TOPICS = standards.map((s, idx) => {
+      const count = data.filter(q => q.standard === s).length;
+      return {
+        num: s,
+        cat: 'IFRS/IAS',
+        icon: '📋',
+        qcount: count,
+        locked: false,
+        position: idx
+      };
+    });
+    
+    // IMPORTANT: Sync to global TOPICS array
+    window.TOPICS.forEach(t => {
+      const existing = TOPICS.find(x => x.num === t.num);
+      if(!existing) {
+        TOPICS.push(t);
+      }
+    });
+    
+    console.log('✅ Topics loaded and synced:', TOPICS.length, 'topics');
+    console.log('Topics:', TOPICS.map(t => t.num).join(', '));
+    
+    return true;
   } catch(e) {
-    console.error('Failed to load topics:', e);
+    console.error('❌ Exception loading topics:', e);
+    window.TOPICS = [];
+    return false;
   }
 }
 
@@ -4192,7 +4219,11 @@ async function startTopicPractice(num){
     }
   }
   S.currentStandard = num;
-  const t = TOPICS.find(x=>x.num===num);
+  const t = TOPICS.find(x => x.num === num) || window.TOPICS?.find(x => x.num === num);
+  if(!t) {
+    console.error('Topic not found:', num, 'Available:', TOPICS.map(x => x.num).join(', '));
+    return;
+  }
   if(t) S.domain = t.cat;
   S.sessionQs = [];
   S.qIndex = 0;
@@ -4408,8 +4439,19 @@ async function fetchQuestionsFromSupabase(category, count){
 
 
 async function startSession(){
-  // Load topics from Supabase
-  initializeTopicsFromSupabase().catch(e => console.error('Topics init error:', e));
+  // Wait for topics to load BEFORE doing anything else
+  (async () => {
+    await initializeTopicsFromSupabase();
+    // Now topics are loaded, continue with session
+    const dailyRemaining = getDailyQRemaining();
+    if(!isPro() && dailyRemaining <= 0){ showDailyLimitPopup(); return; }
+    const _clearDomain = S.domain || 'IFRS';
+    delete SQ_CACHE[_clearDomain];
+    delete SQ_CACHE[_clearDomain+'_100'];
+    delete SQ_CACHE['Mixed'];
+  })();
+  
+  // Initialize topics().catch(e => console.error('Topics init error:', e));
   const dailyRemaining = getDailyQRemaining();
   // Block if daily limit reached - no loopholes for topic switching
   if(!isPro() && dailyRemaining <= 0){ showDailyLimitPopup(); return; }
@@ -17951,17 +17993,33 @@ setTimeout(function() { showFoxScreenMessage('home'); }, 1500);
 // Load questions for a specific standard
 async function loadQuestionsFromSupabase(standard, limit = 100) {
   try {
-    if(!standard) return [];
+    if (!standard || standard.trim() === '') {
+      console.warn('⚠ Empty standard provided');
+      return [];
+    }
+    
+    console.log(`📡 Fetching questions for: "${standard}"`);
+    
     const { data, error } = await _supa
       .from('questions')
       .select('*')
       .eq('standard', standard)
       .limit(limit);
-    if(error) { console.error('Failed to load:', error); return []; }
-    console.log('✅ Loaded', data?.length || 0, 'questions for', standard);
-    return data || [];
+    
+    if (error) {
+      console.error(`❌ Supabase error for ${standard}:`, error.message);
+      return [];
+    }
+    
+    if (!data || data.length === 0) {
+      console.warn(`⚠ No questions found for ${standard}`);
+      return [];
+    }
+    
+    console.log(`✅ Loaded ${data.length} questions for ${standard}`);
+    return data;
   } catch(e) {
-    console.error('Error loading questions:', e);
+    console.error(`❌ Exception loading ${standard}:`, e.message);
     return [];
   }
 }
@@ -17990,6 +18048,52 @@ async function loadChallengeQuestions(limit = 20) {
     const { data, error } = await _supa.from('questions').select('*').limit(limit);
     return (error || !data) ? [] : data;
   } catch(e) { return []; }
+}
+
+
+
+// ── Display topics list from loaded TOPICS ──
+function renderTopicsFromSupabase() {
+  const container = document.getElementById('topic-list');
+  if (!container) return;
+  
+  console.log('🎨 Rendering topics. Available:', TOPICS.length);
+  
+  if (TOPICS.length === 0) {
+    console.warn('⚠ No topics available to render');
+    container.innerHTML = '<div style="padding: 20px; text-align: center; color: red;">No topics loaded. Check Supabase data.</div>';
+    return;
+  }
+  
+  // Filter by search/category if needed
+  let topics = TOPICS;
+  if (S.topicFilter && S.topicFilter !== 'all') {
+    topics = topics.filter(t => t.cat === S.topicFilter);
+  }
+  if (S.topicSearch) {
+    const search = S.topicSearch.toLowerCase();
+    topics = topics.filter(t => (t.num + ' ' + (t.name || '')).toLowerCase().includes(search));
+  }
+  
+  if (topics.length === 0) {
+    container.innerHTML = '<div style="padding: 20px; text-align: center;">No topics match your search.</div>';
+    return;
+  }
+  
+  // Render each topic
+  container.innerHTML = topics.map(t => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid var(--border2);cursor:pointer;" 
+         onclick="startTopicPractice('${t.num}')">
+      <div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--blue-ll);">
+        ${t.icon || '📋'}
+      </div>
+      <div style="flex:1;">
+        <div style="font-weight:700;color:var(--text);">${t.num}</div>
+        <div style="font-size:12px;color:var(--muted);">${t.qcount} questions</div>
+      </div>
+      <div style="color:var(--muted);">›</div>
+    </div>
+  `).join('');
 }
 
 </script>
