@@ -13590,13 +13590,18 @@ async function loadGuestDeviceLimits(){
 
 async function loadUserProgress() {
   if(!_currentUser) return;
+  
+  let data = null;  // ✅ Declare at function scope
+  
   try {
-    const { data } = await _supa.from('user_progress').select('*').eq('user_id', _currentUser.id).single();
+    const response = await _supa.from('user_progress').select('*').eq('user_id', _currentUser.id).single();
+    data = response.data;  // ✅ Now accessible throughout function
+    
     if(data){
       S.xp = data.xp || 0;
       S.coins = data.coins || 240;
       S.streak = data.streak || 0;
-      S.bestStreak = data.best_streak || 0;
+      S.best_streak = data.best_streak || 0;
       S.totalQ = data.total_questions || 0;
       S.totalCorrect = data.total_correct || 0;
       S.hearts = data.hearts || 3;
@@ -18125,7 +18130,7 @@ async function loadTopicsFromSupabase() {
     
     // Use REST API directly instead of client
     const projectId = 'vofxhqnipoywbbkmlxcp';
-    const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvZnhocW5pcG95d2Jia21seGNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTAwNjQyNDgsImV4cCI6MTk5NjY0MDI0OH0.sTzrPxRa2cOHeOpM9hVRJjwV72JvNKzgcBvvxYbKlQI';
+    const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvZnhocW5pcG95d2Jia21seGNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5Nzk3ODUsImV4cCI6MjA5MzU1NTc4NX0.7UDDR3oNoiebxMQPR_jPHM8fOhhOzQ2MxpmR7TpBCHQ';
     
     const url = `https://${projectId}.supabase.co/rest/v1/topics?status=eq.Active&order=sort_order`;
     
@@ -18293,7 +18298,7 @@ async function loadQuestionsForStandard(standard, limit = 100) {
     
     // Use REST API directly
     const projectId = 'vofxhqnipoywbbkmlxcp';
-    const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvZnhocW5pcG95d2Jia21seGNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTAwNjQyNDgsImV4cCI6MTk5NjY0MDI0OH0.sTzrPxRa2cOHeOpM9hVRJjwV72JvNKzgcBvvxYbKlQI';
+    const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvZnhocW5pcG95d2Jia21seGNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5Nzk3ODUsImV4cCI6MjA5MzU1NTc4NX0.7UDDR3oNoiebxMQPR_jPHM8fOhhOzQ2MxpmR7TpBCHQ';
     
     const url = `https://${projectId}.supabase.co/rest/v1/questions?standard=eq.${encodeURIComponent(standard)}&limit=${limit}`;
     
