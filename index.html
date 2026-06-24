@@ -4006,36 +4006,42 @@ function showScreen(id){
     // For guests, do a background fresh DB check to catch any bypass attempts
     if(!_currentUser && (id==='arena' || id==='drcr' || id==='quickref' || id==='comparisons' || id==='formulas' || id==='jebuilder' || id==='vault')){
       (async ()=>{
-        let feature = 'fm_dq';
-        if(id==='arena') feature='fm_dq';
-        else if(id==='drcr') feature='fm_drcr';
-        else if(id==='quickref') feature='fm_qref';
-        else if(id==='comparisons') feature='fm_cmp';
-        else if(id==='formulas') feature='fm_fml';
-        else if(id==='jebuilder') feature='fm_je';
-        else if(id==='vault') feature='fm_vlt';
-        
-        const freshUsed = await getFreshDailyUsed(feature);
-        const limits = { fm_dq: 15, fm_drcr: 10, fm_qref: 15, fm_cmp: 15, fm_fml: 15, fm_je: 3, fm_vlt: 5 };
-        const limit = limits[feature] || 15;
-        
-        fmLog('ASYNC-CHECK', 'Fresh check for ' + feature + ': used=' + freshUsed + ', limit=' + limit);
-        if(freshUsed >= limit){
-          fmLog('ASYNC-CHECK', 'BLOCKING ' + id + ' - used >= limit');
-          if(id==='arena'){
-            showLimitPopup('hard', 'fm_dq');
-          } else if(id==='drcr'){
-            drcrShowLimitPopup(freshUsed>=10?'hard':'soft');
-          } else {
-            _fmDailyGate(id, feature, limit, 'home');
+        try{
+          let feature = 'fm_dq';
+          if(id==='arena') feature='fm_dq';
+          else if(id==='drcr') feature='fm_drcr';
+          else if(id==='quickref') feature='fm_qref';
+          else if(id==='comparisons') feature='fm_cmp';
+          else if(id==='formulas') feature='fm_fml';
+          else if(id==='jebuilder') feature='fm_je';
+          else if(id==='vault') feature='fm_vlt';
+          
+          const freshUsed = await getFreshDailyUsed(feature);
+          const limits = { fm_dq: 15, fm_drcr: 10, fm_qref: 15, fm_cmp: 15, fm_fml: 15, fm_je: 3, fm_vlt: 5 };
+          const limit = limits[feature] || 15;
+          
+          fmLog('ASYNC-CHECK', 'Fresh check for ' + feature + ': used=' + freshUsed + ', limit=' + limit);
+          if(freshUsed >= limit){
+            fmLog('ASYNC-CHECK', 'BLOCKING ' + id + ' - used >= limit');
+            if(id==='arena'){
+              showLimitPopup('hard', 'fm_dq');
+            } else if(id==='drcr'){
+              drcrShowLimitPopup(freshUsed>=10?'hard':'soft');
+            } else {
+              _fmDailyGate(id, feature, limit, 'home');
+            }
+            // Close the screen  
+            showScreen('home');
           }
-          // Close the screen  
-          showScreen('home');
-        }
-        // Update the counter display if we're in Arena
-        if(id==='arena'){
-          const pm=document.getElementById('prog-meta');
-          if(pm) pm.textContent=freshUsed+' / 15';
+          // Update the counter display if we're in Arena
+          if(id==='arena'){
+            const pm=document.getElementById('prog-meta');
+            if(pm) pm.textContent=freshUsed+' / 15';
+          }
+        } catch(freshCheckErr) {
+          fmLog('ASYNC-CHECK-ERROR', 'Fresh check failed: ' + freshCheckErr.message, true);
+          // Don't block user if network check fails - use cached limit
+          // Just log the error silently
         }
       })();
     }
@@ -4750,7 +4756,8 @@ function loadQuestion(){
           const freshUsed = await getFreshDailyUsed('fm_dq');
           if(pm) pm.textContent=freshUsed+' / 15';
         }catch(e){
-          fmLog('COUNTER-UPDATE', 'Error fetching fresh count: ' + e.message, true);
+          // Silently fail and use cached value - don't show error to user
+          fmLog('COUNTER-UPDATE', 'Error fetching fresh count (network may be blocked): ' + e.message);
           const dailyUsed = getDailyQUsed();
           if(pm) pm.textContent=dailyUsed+' / 15';
         }
