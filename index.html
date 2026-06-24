@@ -4033,11 +4033,7 @@ function showScreen(id){
             // Close the screen  
             showScreen('home');
           }
-          // Update the counter display if we're in Arena
-          if(id==='arena'){
-            const pm=document.getElementById('prog-meta');
-            if(pm) pm.textContent=freshUsed+' / 15';
-          }
+          // Fresh DB check complete - counter will be updated by loadQuestion()
         } catch(freshCheckErr) {
           fmLog('ASYNC-CHECK-ERROR', 'Fresh check failed: ' + freshCheckErr.message, true);
           // Don't block user if network check fails - use cached limit
@@ -4745,34 +4741,14 @@ function loadQuestion(){
   const fi=document.getElementById('followup-input');if(fi) fi.value='';
   const pm=document.getElementById('prog-meta');if(pm) {
     if(isPro()){
-      // Pro user: show session progress (e.g., "1/20", "2/20")
+      // Pro user: show session progress only (e.g., "1/20", "2/20")
       const current = S.qIndex + 1;
       const total = S.sessionQs.length;
       pm.textContent = current + ' / ' + total;
     } else {
-      // Free/Guest user: show daily limit counter
-      if(_currentUser){
-        // Logged-in free user: use cached value
-        const dailyUsed = getDailyQUsed();
-        pm.textContent = dailyUsed + ' / 15';
-      } else {
-        // Guest user: fetch fresh from Supabase to prevent counter showing 0
-        (async ()=>{
-          try{
-            const freshUsed = await getFreshDailyUsed('fm_dq');
-            if(pm) pm.textContent = freshUsed + ' / 15';
-          }catch(e){
-            // Silently fail and use cached value - don't show error to user
-            fmLog('COUNTER-UPDATE', 'Error fetching fresh count (network may be blocked): ' + e.message);
-            const dailyUsed = getDailyQUsed();
-            if(pm) pm.textContent = dailyUsed + ' / 15';
-          }
-        })();
-        // Initial display while waiting for async
-        const dailyUsed = getDailyQUsed();
-        const dailyLimit = 15;
-        pm.textContent = dailyUsed + ' / ' + dailyLimit;
-      }
+      // Free/Guest user: show daily limit counter (always "X / 15")
+      const dailyUsed = getDailyQUsed();
+      pm.textContent = dailyUsed + ' / 15';
     }
   }
   const q=S.sessionQs[S.qIndex];
