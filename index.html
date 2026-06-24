@@ -4021,6 +4021,16 @@ function showScreen(id){
           const limit = limits[feature] || 15;
           
           fmLog('ASYNC-CHECK', 'Fresh check for ' + feature + ': used=' + freshUsed + ', limit=' + limit);
+          
+          // Update S cache with fresh Supabase value (bulletproof protection)
+          if(feature === 'fm_dq') S.dailyQUsed = freshUsed;
+          else if(feature === 'fm_drcr') S.dailyDrcrUsed = freshUsed;
+          else if(feature === 'fm_qref') S.dailyQrefUsed = freshUsed;
+          else if(feature === 'fm_cmp') S.dailyCmpUsed = freshUsed;
+          else if(feature === 'fm_fml') S.dailyFmlUsed = freshUsed;
+          else if(feature === 'fm_je') S.dailyJeUsed = freshUsed;
+          else if(feature === 'fm_vlt') S.dailyVltUsed = freshUsed;
+          
           if(freshUsed >= limit){
             fmLog('ASYNC-CHECK', 'BLOCKING ' + id + ' - used >= limit');
             if(id==='arena'){
@@ -4747,7 +4757,7 @@ function loadQuestion(){
       pm.textContent = current + ' / ' + total;
     } else {
       // Free/Guest user: show daily limit counter (always "X / 15")
-      const dailyUsed = getDailyQUsed();
+      const dailyUsed = _fmGetUsed('fm_dq');
       pm.textContent = dailyUsed + ' / 15';
     }
   }
@@ -4818,9 +4828,9 @@ function answerQ(idx,btn,q){
   if(S.answered) return;
   // ── DAILY LIMIT CHECK (all non-pro users) ──
   if(!isPro()){
-    var _used = parseInt(localStorage.getItem(getDailyQKey())||'0');
-    // Hard block at 15
-    if(_used >= 15){ showLimitPopup('hard'); return; }
+    const used = _fmGetUsed('fm_dq');
+    // Hard block at 15 - check Supabase-backed value, not localStorage
+    if(used >= 15){ showLimitPopup('hard'); return; }
   }
   S.answered=true;
   const optsContainer=document.getElementById('options');
@@ -4870,7 +4880,7 @@ function answerQ(idx,btn,q){
     }
   }
   S.totalQ++;S.sessionQ++;
-  incrementDailyQ(); // track daily usage for free users
+  _fmIncrement('fm_dq'); // track daily usage for free users (unified system)
   
   // ── HARD LOCK CHECK: After 15th question ──
   if(!isPro()){
@@ -4959,7 +4969,7 @@ function skipQuestion(){
   // Check limit before allowing skip
   if(!isPro() && getDailyQRemaining() <= 0){ showLimitPopup('hard'); return; }
   S.sessionQ++;
-  incrementDailyQ();
+  _fmIncrement('fm_dq'); // unified system
   updateSessionBar();
   toast('Question skipped — it will return later');
   S.qIndex++;
@@ -6295,6 +6305,7 @@ function _fmGetUsed(prefix){
   // For logged-in users: check Supabase cache
   if(_currentUser && _currentUser.id){
     var propMap = {
+      'fm_dq': 'dailyQUsed',
       'fm_qref': 'dailyQrefUsed',
       'fm_cmp': 'dailyCmpUsed',
       'fm_fml': 'dailyFmlUsed',
@@ -6307,6 +6318,7 @@ function _fmGetUsed(prefix){
   // For guests: return cached value from S (loaded by loadGuestDeviceLimits on startup)
   // OR fallback to localStorage
   var propMap = {
+    'fm_dq': 'dailyQUsed',
     'fm_qref': 'dailyQrefUsed',
     'fm_cmp': 'dailyCmpUsed',
     'fm_fml': 'dailyFmlUsed',
@@ -6323,17 +6335,28 @@ function _fmIncrement(prefix){
   var newUsed = _fmGetUsed(prefix) + 1;
   localStorage.setItem(k, String(newUsed));
   
+  // Update S cache
+  var propMap = {
+    'fm_dq': 'dailyQUsed',
+    'fm_qref': 'dailyQrefUsed',
+    'fm_cmp': 'dailyCmpUsed',
+    'fm_fml': 'dailyFmlUsed',
+    'fm_je': 'dailyJeUsed',
+    'fm_vlt': 'dailyVltUsed'
+  };
+  var propName = propMap[prefix];
+  if(propName) S[propName] = newUsed;
+  
+  // Update counter display for Arena
+  if(prefix === 'fm_dq'){
+    const pm=document.getElementById('prog-meta');
+    if(pm) pm.textContent = newUsed + ' / 15';
+  }
+  
   // For logged-in users: update Supabase user_progress
   if(_currentUser && _currentUser.id){
-    var propMap = {
-      'fm_qref': 'dailyQrefUsed',
-      'fm_cmp': 'dailyCmpUsed',
-      'fm_fml': 'dailyFmlUsed',
-      'fm_je': 'dailyJeUsed',
-      'fm_vlt': 'dailyVltUsed'
-    };
-    var propName = propMap[prefix];
     var colMap = {
+      'fm_dq': 'daily_questions_used',
       'fm_qref': 'daily_qref_used',
       'fm_cmp': 'daily_cmp_used',
       'fm_fml': 'daily_fml_used',
@@ -6342,7 +6365,6 @@ function _fmIncrement(prefix){
     };
     var colName = colMap[prefix];
     if(propName && colName){
-      S[propName] = newUsed;
       (async function(){
         try{
           var today = new Date().toISOString().split('T')[0];
