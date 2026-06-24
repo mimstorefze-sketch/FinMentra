@@ -4505,8 +4505,8 @@ function shuffleOptions(q){
 function selectDomain(el,d){
   // Check daily limit before switching domain — hard AND soft block
   if(!isPro()){
-    if(getDailyQRemaining() <= 0){ showLimitPopup('hard'); return; }
-    if(getDailyQUsed() >= 10){
+    if((15 - _fmGetUsed("fm_dq")) <= 0){ showLimitPopup('hard'); return; }
+    if(_fmGetUsed("fm_dq") >= 10){
       const _bk = getDailyQKey()+'_bonus';
       if(localStorage.getItem(_bk) !== '1'){ showLimitPopup('soft'); return; }
     }
@@ -4596,9 +4596,9 @@ async function startSession(){
     console.error('Failed to load topics:', e);
   });
   
-  const dailyRemaining = getDailyQRemaining();
+  const dailyRemaining = (15 - _fmGetUsed("fm_dq"));
   // Block if daily limit reached - no loopholes for topic switching
-  if(!isPro() && dailyRemaining <= 0){ showDailyLimitPopup(); return; }
+  if(!isPro() && dailyRemaining <= 0){ showLimitPopup("hard"); return; }
   // Clear cache for current domain so questions reshuffle every session
   const _clearDomain = S.domain || 'IFRS';
   delete SQ_CACHE[_clearDomain];
@@ -4620,8 +4620,8 @@ async function startSession(){
     let fresh = supaQs.filter(q => !recentIds.includes(q.q.substring(0,30)));
     if(fresh.length < 5) fresh = supaQs; // reset if too few fresh
     // Cap to remaining daily questions for free users
-    const limit = isPro() ? 20 : Math.min(10, getDailyQRemaining()); // Pro=20, Free=min(10,remaining)
-    if(isFree() && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
+    const limit = isPro() ? 20 : Math.min(10, (15 - _fmGetUsed("fm_dq"))); // Pro=20, Free=min(10,remaining)
+    if(isFree() && (15 - _fmGetUsed("fm_dq")) <= 0){ showLimitPopup("hard"); return; }
     pool = fyShuffle(fresh).slice(0, Math.max(1, limit));
     // Track recently seen
     S.recentQs = pool.map(q=>q.q.substring(0,30));
@@ -4633,8 +4633,8 @@ async function startSession(){
       if(!t) return;
       if(t.cat === category) allLocal.push(...qs);
     });
-    const localRemaining = isFree() ? getDailyQRemaining() : 20;
-    if(isFree() && localRemaining <= 0){ showDailyLimitPopup(); return; }
+    const localRemaining = isFree() ? (15 - _fmGetUsed("fm_dq")) : 20;
+    if(isFree() && localRemaining <= 0){ showLimitPopup("hard"); return; }
     const localLimit = Math.min(20, Math.max(1, localRemaining));
     pool = allLocal.length > 0
       ? fyShuffle(allLocal).slice(0, localLimit)
@@ -4720,9 +4720,9 @@ function buildProgressDots(){
 }
 function loadQuestion(){
   // Block at hard limit (15)
-  if(!isPro() && getDailyQRemaining() <= 0){ showLimitPopup('hard'); return; }
+  if(!isPro() && (15 - _fmGetUsed("fm_dq")) <= 0){ showLimitPopup('hard'); return; }
   // Block at soft limit (10) if bonus not granted
-  if(!isPro() && getDailyQUsed() >= 10){
+  if(!isPro() && _fmGetUsed("fm_dq") >= 10){
     const _bk = getDailyQKey()+'_bonus';
     if(localStorage.getItem(_bk) !== '1'){ showLimitPopup('soft'); return; }
   }
@@ -4877,7 +4877,7 @@ function answerQ(idx,btn,q){
   
   // ── HARD LOCK CHECK: After 15th question ──
   if(!isPro()){
-    const newDailyUsed = getDailyQUsed();
+    const newDailyUsed = _fmGetUsed("fm_dq");
     if(newDailyUsed >= 15){
       fmLog('ARENA-HARD-LOCK', 'Daily limit reached: ' + newDailyUsed + ' >= 15');
       showLimitPopup('hard', 'fm_dq');
@@ -4935,7 +4935,7 @@ function answerQ(idx,btn,q){
   if(typeof checkGuestPrompt==='function') checkGuestPrompt();
   // ── IMMEDIATE limit check after every answer ──
   if(!isPro()){
-    var _nowUsed = getDailyQUsed();
+    var _nowUsed = _fmGetUsed("fm_dq");
     var _bonusK = getDailyQKey()+'_bonus';
     var _bonusSet = localStorage.getItem(_bonusK)==='1';
     if(_nowUsed >= 15){
@@ -4960,7 +4960,7 @@ function checkNearMiss(){
 function skipQuestion(){
   if(S.answered) return;
   // Check limit before allowing skip
-  if(!isPro() && getDailyQRemaining() <= 0){ showLimitPopup('hard'); return; }
+  if(!isPro() && (15 - _fmGetUsed("fm_dq")) <= 0){ showLimitPopup('hard'); return; }
   S.sessionQ++;
   _fmIncrement("fm_dq");
   updateSessionBar();
@@ -4983,9 +4983,9 @@ function goBack(){
 }
 function nextQuestion(){
   // Hard block at 15
-  if((isFree()||_isGuest) && getDailyQRemaining() <= 0){ showLimitPopup('hard'); return; }
+  if((isFree()||_isGuest) && (15 - _fmGetUsed("fm_dq")) <= 0){ showLimitPopup('hard'); return; }
   // Soft block at 10 (if bonus not used today)
-  if((isFree()||_isGuest) && getDailyQUsed() >= 10){
+  if((isFree()||_isGuest) && _fmGetUsed("fm_dq") >= 10){
     const bonusKey = getDailyQKey() + '_bonus';
     if(localStorage.getItem(bonusKey) !== '1'){ showLimitPopup('soft'); return; }
   }
@@ -4995,8 +4995,8 @@ function nextQuestion(){
   // Too few questions loaded — reload same domain (never auto-switch domain)
   if(S.sessionQs.length < 3){
     // Check limit first
-    if(!isPro() && getDailyQRemaining() <= 0){ showLimitPopup('hard'); return; }
-    if(!isPro() && getDailyQUsed() >= 10){
+    if(!isPro() && (15 - _fmGetUsed("fm_dq")) <= 0){ showLimitPopup('hard'); return; }
+    if(!isPro() && _fmGetUsed("fm_dq") >= 10){
       const _bk2 = getDailyQKey()+'_bonus';
       if(localStorage.getItem(_bk2) !== '1'){ showLimitPopup('soft'); return; }
     }
@@ -5018,9 +5018,9 @@ function nextQuestion(){
       setTimeout(buildLearningPath, 400);
     }
   }
-  const remaining = getDailyQRemaining();
+  const remaining = (15 - _fmGetUsed("fm_dq"));
   if((isFree()||_isGuest) && remaining <= 0){ showLimitPopup('hard'); return; }
-  if((isFree()||_isGuest) && getDailyQUsed() >= 10){
+  if((isFree()||_isGuest) && _fmGetUsed("fm_dq") >= 10){
     const bonusKey = getDailyQKey() + '_bonus';
     if(localStorage.getItem(bonusKey) !== '1'){ showLimitPopup('soft'); return; }
   }
@@ -5060,7 +5060,7 @@ function refillHearts(){if(S.coins>=30){S.coins-=30;S.hearts=S.maxHearts;updateH
 // ── HUD ──
 function updateDailyQDisplay(){
   if(!isFree()) return;
-  const remaining = getDailyQRemaining();
+  const remaining = (15 - _fmGetUsed("fm_dq"));
   const el = document.getElementById('daily-q-display');
   if(el){
     el.textContent = remaining > 0 ? remaining + ' questions left today' : 'Daily limit reached';
@@ -5677,157 +5677,9 @@ function getDeviceId(){
   }
 }
 
-function getDailyQKey(){
-  var d=new Date();
-  return 'fm_dq_'+d.getFullYear()+'_'+(d.getMonth()+1)+'_'+d.getDate();
-}
+// OLD ARENA SYSTEM REMOVED - All migrated to unified _fmGetUsed/_fmIncrement system
 
-function getDailyQRemaining(){
-  // Never return unlimited for non-logged-in users
-  // Only unlimited for confirmed logged-in pro users
-  if(_currentUser && isPro()) return 999;
-  // Everyone else: check Supabase for logged-in users, localStorage fallback for guests
-  const used = getDailyQUsed();
-  return Math.max(0, 15 - used);
-}
 
-function getDailyQUsed(){
-  // For logged-in users: check Supabase cache
-  if(_currentUser && _currentUser.id){
-    fmLog('ARENA-GET', 'Logged in user, S.dailyQCount=' + S.dailyQCount);
-    if(S.dailyQCount !== undefined) return S.dailyQCount;
-  }
-  // For guests: return cached value from S (loaded by loadGuestDeviceLimits on startup)
-  // OR fallback to localStorage
-  if(S.dailyQCount !== undefined) {
-    fmLog('ARENA-GET', 'Guest/returning S.dailyQCount=' + S.dailyQCount);
-    return S.dailyQCount;
-  }
-  const fallback = parseInt(localStorage.getItem(getDailyQKey()) || '0');
-  fmLog('ARENA-GET', 'Using localStorage fallback=' + fallback, true);
-  return fallback;
-}
-
-// NEW: Get fresh daily count from DB for ANY feature (guest-focused)
-async function getFreshDailyUsed(feature){
-  if(_currentUser) {
-    // For logged-in users, use cached values
-    if(feature === 'fm_dq') return S.dailyQCount || 0;
-    if(feature === 'fm_drcr') return S.dailyDrcrUsed || 0;
-    if(feature === 'fm_qref') return S.dailyQrefUsed || 0;
-    if(feature === 'fm_cmp') return S.dailyCmpUsed || 0;
-    if(feature === 'fm_fml') return S.dailyFmlUsed || 0;
-    if(feature === 'fm_je') return S.dailyJeUsed || 0;
-    if(feature === 'fm_vlt') return S.dailyVltUsed || 0;
-    return 0;
-  }
-  // For guests: ALWAYS do fresh DB lookup to prevent logout/login bypass
-  try{
-    const deviceId = getDeviceId();
-    const today = new Date().toISOString().split('T')[0];
-    fmLog('FRESH-DB', 'Fetching ' + feature + ' from DB for device=' + deviceId);
-    const { data } = await _supa.from('device_daily_limits').select('used').eq('device_id', deviceId).eq('feature', feature).eq('date', today);
-    if(data && data.length > 0){
-      const used = data[0].used;
-      fmLog('FRESH-DB', 'Fresh ' + feature + '=' + used);
-      // Update cache
-      if(feature === 'fm_dq') S.dailyQCount = used;
-      if(feature === 'fm_drcr') S.dailyDrcrUsed = used;
-      if(feature === 'fm_qref') S.dailyQrefUsed = used;
-      if(feature === 'fm_cmp') S.dailyCmpUsed = used;
-      if(feature === 'fm_fml') S.dailyFmlUsed = used;
-      if(feature === 'fm_je') S.dailyJeUsed = used;
-      if(feature === 'fm_vlt') S.dailyVltUsed = used;
-      return used;
-    } else {
-      fmLog('FRESH-DB', 'No DB record for ' + feature + ', used=0');
-      return 0;
-    }
-  }catch(e){
-    fmLog('FRESH-DB', 'Error fetching ' + feature + ': ' + e.message, true);
-    // Fallback to cached value
-    if(feature === 'fm_dq') return S.dailyQCount || 0;
-    if(feature === 'fm_drcr') return S.dailyDrcrUsed || 0;
-    if(feature === 'fm_qref') return S.dailyQrefUsed || 0;
-    if(feature === 'fm_cmp') return S.dailyCmpUsed || 0;
-    if(feature === 'fm_fml') return S.dailyFmlUsed || 0;
-    if(feature === 'fm_je') return S.dailyJeUsed || 0;
-    if(feature === 'fm_vlt') return S.dailyVltUsed || 0;
-    return 0;
-  }
-}
-
-function checkDailyQLimit(){
-  if(isPro()) return true;
-  try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return true; }catch(e){}
-  const used = getDailyQUsed();
-  if(used >= 15) return false;
-  if(used >= 10){
-    const bonusKey = getDailyQKey() + '_bonus';
-    const bonusUsed = localStorage.getItem(bonusKey);
-    if(!bonusUsed) return false;
-  }
-  return true;
-}
-
-// ── LOGGING FOR DEBUG ──
-function fmLog(tag, msg, isError=false){
-  const fullMsg = `[FM-${tag}] ${msg}`;
-  if(isError) console.error(fullMsg);
-  else console.log(fullMsg);
-}
-
-function incrementDailyQ(){
-  fmLog('ARENA', 'incrementDailyQ called, isPro=' + isPro() + ', _currentUser=' + (_currentUser?'YES':'NO'));
-  if(isPro()) return;
-  try{ const lt=localStorage.getItem('fm_tier'); if(lt==='pro'||lt==='elite') return; }catch(e){}
-  const key = getDailyQKey();
-  const used = parseInt(localStorage.getItem(key) || '0');
-  const newUsed = used + 1;
-  localStorage.setItem(key, String(newUsed));
-  S.dailyQCount = newUsed;
-  fmLog('ARENA', 'Updated localStorage: ' + key + ' = ' + newUsed);
-  
-  // Update counter display immediately
-  const pm=document.getElementById('prog-meta');
-  if(pm) pm.textContent=newUsed+' / 15';
-  
-  // For logged-in users: also update Supabase in background
-  if(_currentUser && _currentUser.id){
-    fmLog('ARENA', 'User logged in, updating Supabase user_progress');
-    (async function(){
-      try{
-        const today = new Date().toISOString().split('T')[0];
-        const result = await _supa.from('user_progress').update({
-          daily_questions_used: newUsed,
-          daily_questions_date: today
-        }).eq('user_id', _currentUser.id);
-        fmLog('ARENA', 'Supabase user_progress update SUCCESS');
-      }catch(e){
-        fmLog('ARENA', 'Supabase user_progress update FAILED: ' + e.message, true);
-      }
-    })();
-  } else {
-    // For guests: update device_daily_limits table in background
-    fmLog('ARENA', 'Guest user, updating Supabase device_daily_limits');
-    (async function(){
-      try{
-        const today = new Date().toISOString().split('T')[0];
-        const deviceId = getDeviceId();
-        fmLog('ARENA', 'Device ID: ' + deviceId + ', trying upsert...');
-        const result = await _supa.from('device_daily_limits').upsert({
-          device_id: deviceId,
-          feature: 'fm_dq',
-          used: newUsed,
-          date: today
-        }, { onConflict: 'device_id,feature,date' });
-        fmLog('ARENA', 'Supabase device_daily_limits upsert SUCCESS, used=' + newUsed);
-      }catch(e){
-        fmLog('ARENA', 'Supabase device_daily_limits upsert FAILED: ' + e.message, true);
-      }
-    })();
-  }
-}
 
 function checkPlanFeature(feature){
   // Demo account has all pro features
@@ -9815,7 +9667,7 @@ function showContinuePopup(std, remaining){
   if(existing) existing.remove();
   // Free users: show soft block at 10, hard block at 15
   if(!isPro()){
-    const used = getDailyQUsed();
+    const used = _fmGetUsed("fm_dq");
     if(used >= 15){ showLimitPopup('hard'); return; }
     if(used >= 10){ showLimitPopup('soft'); return; }
     // Under limit — continue same domain/standard
@@ -9848,9 +9700,9 @@ function showContinuePopup(std, remaining){
     // Check via localStorage directly — works after reopen
     if(!isPro()){
       const _cpUsed = parseInt(localStorage.getItem(getDailyQKey())||'0');
-      if(_cpUsed >= 15){ showDailyLimitPopup(); return; }
+      if(_cpUsed >= 15){ showLimitPopup("hard"); return; }
     }
-    if(!isPro() && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
+    if(!isPro() && (15 - _fmGetUsed("fm_dq")) <= 0){ showLimitPopup("hard"); return; }
     // FIX4: reload from Supabase, not local QB[]
     let pool = [];
     if(S.currentStandard){
@@ -9861,8 +9713,8 @@ function showContinuePopup(std, remaining){
         pool = fyShuffle(QB[S.currentStandard]||[]);
       }
     }
-    const lim = isPro() ? 20 : isFree() ? Math.min(8, getDailyQRemaining()) : 8;
-    if(isFree() && getDailyQRemaining() <= 0){ showDailyLimitPopup(); return; }
+    const lim = isPro() ? 20 : isFree() ? Math.min(8, (15 - _fmGetUsed("fm_dq"))) : 8;
+    if(isFree() && (15 - _fmGetUsed("fm_dq")) <= 0){ showLimitPopup("hard"); return; }
     S.sessionQs = pool.slice(0, Math.max(1, lim));
     S.qIndex = 0; S.sessionQ = 0; S.sessionCorrect = 0; S.answered = false;
     updateSessionBar();
@@ -10100,9 +9952,9 @@ function showLimitPopup(type){
 }
 
 // Keep old names pointing to new function
-function showDailyLimitPopup(){ showLimitPopup('hard'); }
-function showRegisterPopup(){ showLimitPopup('soft'); }
-function showFreePopup(type){ showLimitPopup('hard'); }
+function showLimitPopup("hard"){ showLimitPopup('hard'); }
+function showLimitPopup("soft"){ showLimitPopup('soft'); }
+function showLimitPopup("hard"){ showLimitPopup('hard'); }
 function closeRegPopup(){
   document.querySelectorAll('.fm-limit-overlay').forEach(function(e){e.remove();});
   var p=document.getElementById('register-popup'); if(p) p.classList.remove('show');
@@ -13457,7 +13309,7 @@ function continueFreeQuestions(){
 function continueAsGuest(){
   _guestBonusUsed = true;
   closeRegPopup();
-  const remaining = getDailyQRemaining();
+  const remaining = (15 - _fmGetUsed("fm_dq"));
   if(remaining > 0) toast('You have '+remaining+' questions left today. Sign up to save progress!');
 }
 
@@ -18250,7 +18102,7 @@ function checkFreeAccess(tool, limit){
   if(typeof isPro==='function'&&isPro()) return true;
   if(typeof _currentUser!=='undefined'&&_currentUser) return true;
   var used=getFreeToolUsed(tool);
-  if(used>=limit){ showFreePopup(tool==='quiz'?'quiz':'tool'); return false; }
+  if(used>=limit){ showLimitPopup("hard"); return false; }
   incrementFreeToolUse(tool);
   return true;
 }
