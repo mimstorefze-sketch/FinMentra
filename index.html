@@ -4021,16 +4021,6 @@ function showScreen(id){
           const limit = limits[feature] || 15;
           
           fmLog('ASYNC-CHECK', 'Fresh check for ' + feature + ': used=' + freshUsed + ', limit=' + limit);
-          
-          // Update S cache with fresh Supabase value (bulletproof protection)
-          if(feature === 'fm_dq') S.dailyQUsed = freshUsed;
-          else if(feature === 'fm_drcr') S.dailyDrcrUsed = freshUsed;
-          else if(feature === 'fm_qref') S.dailyQrefUsed = freshUsed;
-          else if(feature === 'fm_cmp') S.dailyCmpUsed = freshUsed;
-          else if(feature === 'fm_fml') S.dailyFmlUsed = freshUsed;
-          else if(feature === 'fm_je') S.dailyJeUsed = freshUsed;
-          else if(feature === 'fm_vlt') S.dailyVltUsed = freshUsed;
-          
           if(freshUsed >= limit){
             fmLog('ASYNC-CHECK', 'BLOCKING ' + id + ' - used >= limit');
             if(id==='arena'){
@@ -4043,7 +4033,11 @@ function showScreen(id){
             // Close the screen  
             showScreen('home');
           }
-          // Fresh DB check complete - counter will be updated by loadQuestion()
+          // Update the counter display if we're in Arena
+          if(id==='arena'){
+            const pm=document.getElementById('prog-meta');
+            if(pm) pm.textContent=freshUsed+' / 15';
+          }
         } catch(freshCheckErr) {
           fmLog('ASYNC-CHECK-ERROR', 'Fresh check failed: ' + freshCheckErr.message, true);
           // Don't block user if network check fails - use cached limit
@@ -4751,12 +4745,12 @@ function loadQuestion(){
   const fi=document.getElementById('followup-input');if(fi) fi.value='';
   const pm=document.getElementById('prog-meta');if(pm) {
     if(isPro()){
-      // Pro user: show session progress only (e.g., "1/20", "2/20")
+      // Pro user: show session progress
       const current = S.qIndex + 1;
       const total = S.sessionQs.length;
       pm.textContent = current + ' / ' + total;
     } else {
-      // Free/Guest user: show daily limit counter (always "X / 15")
+      // Free/Guest user: show daily limit (lightweight - no async)
       const dailyUsed = _fmGetUsed('fm_dq');
       pm.textContent = dailyUsed + ' / 15';
     }
@@ -4829,7 +4823,6 @@ function answerQ(idx,btn,q){
   // ── DAILY LIMIT CHECK (all non-pro users) ──
   if(!isPro()){
     const used = _fmGetUsed('fm_dq');
-    // Hard block at 15 - check Supabase-backed value, not localStorage
     if(used >= 15){ showLimitPopup('hard'); return; }
   }
   S.answered=true;
@@ -4880,7 +4873,7 @@ function answerQ(idx,btn,q){
     }
   }
   S.totalQ++;S.sessionQ++;
-  _fmIncrement('fm_dq'); // track daily usage for free users (unified system)
+  _fmIncrement("fm_dq"); // track daily usage for free users
   
   // ── HARD LOCK CHECK: After 15th question ──
   if(!isPro()){
@@ -4969,7 +4962,7 @@ function skipQuestion(){
   // Check limit before allowing skip
   if(!isPro() && getDailyQRemaining() <= 0){ showLimitPopup('hard'); return; }
   S.sessionQ++;
-  _fmIncrement('fm_dq'); // unified system
+  _fmIncrement("fm_dq");
   updateSessionBar();
   toast('Question skipped — it will return later');
   S.qIndex++;
@@ -6335,26 +6328,17 @@ function _fmIncrement(prefix){
   var newUsed = _fmGetUsed(prefix) + 1;
   localStorage.setItem(k, String(newUsed));
   
-  // Update S cache
-  var propMap = {
-    'fm_dq': 'dailyQUsed',
-    'fm_qref': 'dailyQrefUsed',
-    'fm_cmp': 'dailyCmpUsed',
-    'fm_fml': 'dailyFmlUsed',
-    'fm_je': 'dailyJeUsed',
-    'fm_vlt': 'dailyVltUsed'
-  };
-  var propName = propMap[prefix];
-  if(propName) S[propName] = newUsed;
-  
-  // Update counter display for Arena
-  if(prefix === 'fm_dq'){
-    const pm=document.getElementById('prog-meta');
-    if(pm) pm.textContent = newUsed + ' / 15';
-  }
-  
   // For logged-in users: update Supabase user_progress
   if(_currentUser && _currentUser.id){
+    var propMap = {
+      'fm_dq': 'dailyQUsed',
+      'fm_qref': 'dailyQrefUsed',
+      'fm_cmp': 'dailyCmpUsed',
+      'fm_fml': 'dailyFmlUsed',
+      'fm_je': 'dailyJeUsed',
+      'fm_vlt': 'dailyVltUsed'
+    };
+    var propName = propMap[prefix];
     var colMap = {
       'fm_dq': 'daily_questions_used',
       'fm_qref': 'daily_qref_used',
@@ -6365,6 +6349,7 @@ function _fmIncrement(prefix){
     };
     var colName = colMap[prefix];
     if(propName && colName){
+      S[propName] = newUsed;
       (async function(){
         try{
           var today = new Date().toISOString().split('T')[0];
