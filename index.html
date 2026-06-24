@@ -4004,10 +4004,11 @@ function showScreen(id){
     
     // ── FRESH DB CHECK FOR GUESTS (async, runs after screen load) ──
     // For guests, do a background fresh DB check to catch any bypass attempts
-    if(!_currentUser && (id==='drcr' || id==='quickref' || id==='comparisons' || id==='formulas' || id==='jebuilder' || id==='vault')){
+    if(!_currentUser && (id==='arena' || id==='drcr' || id==='quickref' || id==='comparisons' || id==='formulas' || id==='jebuilder' || id==='vault')){
       (async ()=>{
         let feature = 'fm_dq';
-        if(id==='drcr') feature='fm_drcr';
+        if(id==='arena') feature='fm_dq';
+        else if(id==='drcr') feature='fm_drcr';
         else if(id==='quickref') feature='fm_qref';
         else if(id==='comparisons') feature='fm_cmp';
         else if(id==='formulas') feature='fm_fml';
@@ -4015,19 +4016,26 @@ function showScreen(id){
         else if(id==='vault') feature='fm_vlt';
         
         const freshUsed = await getFreshDailyUsed(feature);
-        const limits = { fm_drcr: 10, fm_qref: 15, fm_cmp: 15, fm_fml: 15, fm_je: 3, fm_vlt: 5 };
+        const limits = { fm_dq: 15, fm_drcr: 10, fm_qref: 15, fm_cmp: 15, fm_fml: 15, fm_je: 3, fm_vlt: 5 };
         const limit = limits[feature] || 15;
         
         fmLog('ASYNC-CHECK', 'Fresh check for ' + feature + ': used=' + freshUsed + ', limit=' + limit);
         if(freshUsed >= limit){
           fmLog('ASYNC-CHECK', 'BLOCKING ' + id + ' - used >= limit');
-          if(id==='drcr'){
+          if(id==='arena'){
+            showLimitPopup('hard', 'fm_dq');
+          } else if(id==='drcr'){
             drcrShowLimitPopup(freshUsed>=10?'hard':'soft');
           } else {
             _fmDailyGate(id, feature, limit, 'home');
           }
           // Close the screen  
           showScreen('home');
+        }
+        // Update the counter display if we're in Arena
+        if(id==='arena'){
+          const pm=document.getElementById('prog-meta');
+          if(pm) pm.textContent=freshUsed+' / 15';
         }
       })();
     }
@@ -4730,9 +4738,28 @@ function loadQuestion(){
   const fap=document.getElementById('followup-answer');if(fap){fap.style.display='none';fap.textContent='';}
   const fi=document.getElementById('followup-input');if(fi) fi.value='';
   const pm=document.getElementById('prog-meta');if(pm) {
-    const dailyUsed = getDailyQUsed();
-    const dailyLimit = 15;
-    pm.textContent=dailyUsed+' / '+dailyLimit;
+    // For guests: use fresh DB data; for logged-in users: use cached value
+    if(_currentUser){
+      const dailyUsed = getDailyQUsed();
+      const dailyLimit = 15;
+      pm.textContent=dailyUsed+' / '+dailyLimit;
+    } else {
+      // Guest: fetch fresh from Supabase to prevent counter showing 0
+      (async ()=>{
+        try{
+          const freshUsed = await getFreshDailyUsed('fm_dq');
+          if(pm) pm.textContent=freshUsed+' / 15';
+        }catch(e){
+          fmLog('COUNTER-UPDATE', 'Error fetching fresh count: ' + e.message, true);
+          const dailyUsed = getDailyQUsed();
+          if(pm) pm.textContent=dailyUsed+' / 15';
+        }
+      })();
+      // Initial display while waiting for async
+      const dailyUsed = getDailyQUsed();
+      const dailyLimit = 15;
+      pm.textContent=dailyUsed+' / '+dailyLimit;
+    }
   }
   const q=S.sessionQs[S.qIndex];
   console.log(`📋 loadQuestion: qIndex=${S.qIndex}, sessionQs.length=${S.sessionQs.length}, q=`, q);
@@ -5767,6 +5794,10 @@ function incrementDailyQ(){
   localStorage.setItem(key, String(newUsed));
   S.dailyQCount = newUsed;
   fmLog('ARENA', 'Updated localStorage: ' + key + ' = ' + newUsed);
+  
+  // Update counter display immediately
+  const pm=document.getElementById('prog-meta');
+  if(pm) pm.textContent=newUsed+' / 15';
   
   // For logged-in users: also update Supabase in background
   if(_currentUser && _currentUser.id){
