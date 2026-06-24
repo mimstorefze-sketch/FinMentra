@@ -13721,18 +13721,40 @@ async function loadGuestDeviceLimits(){
     const { data } = await _supa.from('device_daily_limits').select('*').eq('device_id', deviceId).eq('date', today);
     if(data && data.length > 0){
       fmLog('GUEST-LOAD', 'Found ' + data.length + ' records in device_daily_limits');
-      // Map feature to S property
+      // Map feature to S property AND update localStorage to keep in sync
       data.forEach(row => {
         fmLog('GUEST-LOAD', 'Loading feature=' + row.feature + ', used=' + row.used);
-        if(row.feature === 'fm_dq') S.dailyQCount = row.used;
-        if(row.feature === 'fm_drcr') S.dailyDrcrUsed = row.used;
-        if(row.feature === 'fm_qref') S.dailyQrefUsed = row.used;
-        if(row.feature === 'fm_cmp') S.dailyCmpUsed = row.used;
-        if(row.feature === 'fm_fml') S.dailyFmlUsed = row.used;
-        if(row.feature === 'fm_je') S.dailyJeUsed = row.used;
-        if(row.feature === 'fm_vlt') S.dailyVltUsed = row.used;
+        if(row.feature === 'fm_dq') {
+          S.dailyQCount = row.used;
+          localStorage.setItem(getDailyQKey(), String(row.used));
+          fmLog('GUEST-LOAD', 'Updated localStorage ' + getDailyQKey() + ' = ' + row.used);
+        }
+        if(row.feature === 'fm_drcr') {
+          S.dailyDrcrUsed = row.used;
+          localStorage.setItem(_fmDayKey('fm_drcr'), String(row.used));
+        }
+        if(row.feature === 'fm_qref') {
+          S.dailyQrefUsed = row.used;
+          localStorage.setItem(_fmDayKey('fm_qref'), String(row.used));
+        }
+        if(row.feature === 'fm_cmp') {
+          S.dailyCmpUsed = row.used;
+          localStorage.setItem(_fmDayKey('fm_cmp'), String(row.used));
+        }
+        if(row.feature === 'fm_fml') {
+          S.dailyFmlUsed = row.used;
+          localStorage.setItem(_fmDayKey('fm_fml'), String(row.used));
+        }
+        if(row.feature === 'fm_je') {
+          S.dailyJeUsed = row.used;
+          localStorage.setItem(_fmDayKey('fm_je'), String(row.used));
+        }
+        if(row.feature === 'fm_vlt') {
+          S.dailyVltUsed = row.used;
+          localStorage.setItem(_fmDayKey('fm_vlt'), String(row.used));
+        }
       });
-      fmLog('GUEST-LOAD', 'S.dailyQCount now = ' + S.dailyQCount);
+      fmLog('GUEST-LOAD', 'S.dailyQCount now = ' + S.dailyQCount + ' (localStorage synced)');
     } else {
       fmLog('GUEST-LOAD', 'No data found, initializing all to 0 (new day)');
       // New day or no data — initialize all to 0
@@ -13743,6 +13765,18 @@ async function loadGuestDeviceLimits(){
       S.dailyFmlUsed = 0;
       S.dailyJeUsed = 0;
       S.dailyVltUsed = 0;
+      // Also clear localStorage for these features
+      try{
+        const today = new Date();
+        const dq_key = 'fm_dq_'+today.getFullYear()+'_'+(today.getMonth()+1)+'_'+today.getDate();
+        localStorage.removeItem(dq_key);
+        localStorage.removeItem(_fmDayKey('fm_drcr'));
+        localStorage.removeItem(_fmDayKey('fm_qref'));
+        localStorage.removeItem(_fmDayKey('fm_cmp'));
+        localStorage.removeItem(_fmDayKey('fm_fml'));
+        localStorage.removeItem(_fmDayKey('fm_je'));
+        localStorage.removeItem(_fmDayKey('fm_vlt'));
+      }catch(e){}
     }
   }catch(e){
     fmLog('GUEST-LOAD', 'ERROR: ' + e.message, true);
@@ -13754,6 +13788,18 @@ async function loadGuestDeviceLimits(){
     S.dailyFmlUsed = 0;
     S.dailyJeUsed = 0;
     S.dailyVltUsed = 0;
+    // Also sync to localStorage
+    try{
+      const today = new Date();
+      const dq_key = 'fm_dq_'+today.getFullYear()+'_'+(today.getMonth()+1)+'_'+today.getDate();
+      localStorage.removeItem(dq_key);
+      localStorage.removeItem(_fmDayKey('fm_drcr'));
+      localStorage.removeItem(_fmDayKey('fm_qref'));
+      localStorage.removeItem(_fmDayKey('fm_cmp'));
+      localStorage.removeItem(_fmDayKey('fm_fml'));
+      localStorage.removeItem(_fmDayKey('fm_je'));
+      localStorage.removeItem(_fmDayKey('fm_vlt'));
+    }catch(err){}
   }
 }
 
