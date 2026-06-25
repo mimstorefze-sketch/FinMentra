@@ -2812,42 +2812,6 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 </div>
 
 <!-- ══ COMMUNITY ══ -->
-<div class="screen" id="screen-community">
-  <div class="chips">
-    <button class="chip active" onclick="setCommTab(this)">All</button>
-    <button class="chip" onclick="setCommTab(this)">IFRS</button>
-    <button class="chip" onclick="setCommTab(this)">IAS</button>
-    <button class="chip" onclick="setCommTab(this)">Audit</button>
-    <button class="chip" onclick="setCommTab(this)">Careers</button>
-  </div>
-  <!-- STUDY BUDDY (Pro feature) -->
-  <div class="card gradient-border">
-    <div class="gradient-border-inner" style="display:flex;align-items:center;gap:12px;">
-      <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--purple),#A78BFA);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">👥</div>
-      <div style="flex:1;">
-        <div style="font-size:13px;font-weight:700;color:var(--text);">Study Buddy Matching</div>
-        <div style="font-size:11px;color:var(--muted);">Get matched with a learner at your level. Study together, compete, motivate.</div>
-      </div>
-      <button onclick="matchStudyBuddy()" style="background:var(--purple);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;">Match Me</button>
-    </div>
-  </div>
-  <div class="post-card"><div class="post-header"><div class="post-avatar">👩</div><div><div class="post-author">Mei T.</div><div class="post-meta">2h ago</div></div><span class="pill pill-navy" style="margin-left:auto;">IFRS 15</span></div><div class="post-text">How do you handle contract modifications mid-period? Our client added new services to an existing SaaS deal.</div><div class="post-actions"><button class="post-action">💬 12</button><button class="post-action">👍 8</button><button class="post-action">🔖</button></div></div>
-  <div class="post-card"><div class="post-header"><div class="post-avatar">👨</div><div><div class="post-author">Diego R.</div><div class="post-meta">5h ago</div></div><span class="pill pill-navy" style="margin-left:auto;">IAS 36</span></div><div class="post-text">Best way to test goodwill impairment for a small CGU with limited market data?</div><div class="post-actions"><button class="post-action">💬 7</button><button class="post-action">👍 15</button><button class="post-action">🔖</button></div></div>
-  <button class="btn btn-primary btn-block" onclick="toast('Post created')">+ Post a Question</button>
-  <div class="sec-label">🏆 I Passed! Wall</div>
-  <div id="passed-wall">
-    <div class="post-card" style="background:linear-gradient(135deg,var(--green-l),#DCFCE7);border-color:var(--green);">
-      <div class="post-header"><div class="post-avatar">👩</div><div><div class="post-author" style="color:var(--green);">Sarah Al-Rashidi</div><div class="post-meta">Passed ACCA P2 · 3 days ago</div></div><span class="pill pill-green">PASSED 🎉</span></div>
-      <div class="post-text">"FinMentra's IFRS 15 section was exactly what I needed. Distinction grade!"</div>
-    </div>
-    <div class="post-card" style="background:linear-gradient(135deg,var(--green-l),#DCFCE7);border-color:var(--green);">
-      <div class="post-header"><div class="post-avatar">👨</div><div><div class="post-author" style="color:var(--green);">Hamza Q.</div><div class="post-meta">Passed ICAEW FR · 1 week ago</div></div><span class="pill pill-green">PASSED 🎉</span></div>
-      <div class="post-text">"Boss battles made IAS 36 click. Would never have got 85% without this app."</div>
-    </div>
-    <button class="btn btn-secondary btn-block" onclick="addPassedPost()">🎉 Share your pass!</button>
-  </div>
-</div>
-
 <!-- ══ CHALLENGE LEAGUE ══ -->
 <!-- ══ TROPHY ROOM ══ -->
 <div class="screen" id="screen-trophy">
@@ -2952,10 +2916,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div class="sec-label">Account</div>
   <div class="card">
     <button class="profile-item" onclick="showScreen('trophy')"><div class="profile-item-icon">🏆</div><div class="profile-item-label">Trophy Room</div><div class="profile-item-val">3 earned</div><div class="profile-item-arrow">›</div></button>
-    <button class="profile-item" onclick="showScreen('community')"><div class="profile-item-icon">👥</div><div class="profile-item-label">Community</div><div class="profile-item-arrow">›</div></button>
 
-    <button class="profile-item" onclick="showScreen('bookmarks')"><div class="profile-item-icon">🔖</div><div class="profile-item-label">My Bookmarks</div><div class="profile-item-arrow">›</div></button>
-    <button class="profile-item" onclick="showScreen('notes')"><div class="profile-item-icon">📝</div><div class="profile-item-label">My Notes</div><div class="profile-item-arrow">›</div></button>
     <button class="profile-item" onclick="showScreen('coinshop')"><div class="profile-item-icon">🪙</div><div class="profile-item-label">Coin Shop</div><div class="profile-item-val" id="profile-coins">240 🪙</div><div class="profile-item-arrow">›</div></button>
     <button class="profile-item" onclick="showScreen('settings')"><div class="profile-item-icon">⚙️</div><div class="profile-item-label">Settings</div><div class="profile-item-arrow">›</div></button>
     <button class="profile-item" onclick="showScreen('diagnostic')"><div class="profile-item-icon">🧪</div><div class="profile-item-label">Diagnostic Test</div><div class="profile-item-arrow">›</div></button>
@@ -3222,24 +3183,6 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
 </div>
 
 <!-- ══ BOOKMARKS ══ -->
-<div class="screen" id="screen-bookmarks">
-  <div class="alert info">📌 Tap 🔖 during practice to bookmark questions.</div>
-  <div class="vault-row vault-stack"><div class="row between"><span class="pill pill-navy">IFRS 15</span><button class="btn btn-secondary" style="padding:4px 10px;font-size:11px;" onclick="startTopicPractice('IFRS 15')">Retry →</button></div><div style="font-size:13px;margin-top:6px;">Contract modification adding distinct goods at SSP → treated as a separate new contract.</div></div>
-  <div class="vault-row vault-stack"><div class="row between"><span class="pill pill-navy">IAS 36</span><button class="btn btn-secondary" style="padding:4px 10px;font-size:11px;" onclick="startTopicPractice('IAS 36')">Retry →</button></div><div style="font-size:13px;margin-top:6px;">Recoverable amount = higher of FVLCD and Value in Use.</div></div>
-</div>
-
-<!-- ══ PERSONAL NOTES ══ -->
-<div class="screen" id="screen-notes">
-  <div class="card">
-    <div class="card-h"><div class="card-title">📝 My Notes</div><button class="btn btn-primary" style="padding:5px 12px;font-size:11px;" onclick="toast('Note saved!')">Save</button></div>
-    <input id="note-title" style="width:100%;border:none;border-bottom:1px solid var(--border);padding:8px 0;font-size:14px;font-weight:700;color:var(--text);outline:none;background:transparent;margin-bottom:10px;" placeholder="Note title...">
-    <textarea style="width:100%;border:none;outline:none;font-size:13px;line-height:1.7;background:transparent;resize:vertical;min-height:160px;font-family:var(--font-body);" placeholder="Key formulas, mnemonics, principles..."></textarea>
-  </div>
-  <div class="sec-label">Saved Notes</div>
-  <div class="card" style="cursor:pointer;"><div style="display:flex;justify-content:space-between;"><b style="font-size:13px;">IFRS 15 Key Points</b><span style="font-size:10px;color:var(--muted);">Today</span></div><div style="font-size:12px;color:var(--steel);margin-top:4px;">5-step model: contract → POs → price → allocate → recognise...</div></div>
-  <div class="card" style="cursor:pointer;"><div style="display:flex;justify-content:space-between;"><b style="font-size:13px;">IAS 36 Impairment Checklist</b><span style="font-size:10px;color:var(--muted);">Yesterday</span></div><div style="font-size:12px;color:var(--steel);margin-top:4px;">Annual test for goodwill. RA = max(FVLCD, VIU). Never reverse goodwill...</div></div>
-</div>
-
 <!-- ══ COIN SHOP ══ -->
 <div class="screen" id="screen-coinshop">
   <div class="home-welcome" style="background:linear-gradient(135deg,#B45309,var(--gold));">
@@ -6220,7 +6163,6 @@ function addChatMsg(role,text,withActions){
   msgs.appendChild(div);
   msgs.scrollTop=msgs.scrollHeight;
 }
-function setCommTab(el){document.querySelectorAll('.comm-tab,.chip').forEach(c=>{if(c.parentElement.id!=='topic-filters') return;});document.querySelectorAll('.chips .chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');}
 
 // ── BOSS BATTLE ──
 let bossTimer,bossTime=480,bossQ=0,bossScore=0;
@@ -8237,17 +8179,6 @@ function completeDailyChallenge(){
 }
 
 // ── PASSED WALL ──
-function addPassedPost(){
-  const wall=document.getElementById('passed-wall');
-  if(!wall) return;
-  const post=document.createElement('div');
-  post.className='post-card';
-  post.style.cssText='background:linear-gradient(135deg,var(--green-l),#DCFCE7);border-color:var(--green);';
-  post.innerHTML='<div class="post-header"><div class="post-avatar">🎓</div><div><div class="post-author" style="color:var(--green);">You</div><div class="post-meta">Just now</div></div><span class="pill pill-green">PASSED 🎉</span></div><div class="post-text">I passed! Thank you FinMentra!</div>';
-  wall.insertBefore(post,wall.lastElementChild);
-  spawnConfetti();
-  toast('Your pass has been shared! 🎉');
-}
 
 // ── MILESTONE CELEBRATIONS ──
 const MILESTONES=[
@@ -8515,7 +8446,7 @@ function hapticFeedback(type){
 // ── BREADCRUMB TRAIL ──
 const SCREEN_LABELS={
   home:'Home', 'pro-home':'Pro Home', topics:'Topics', practice:'Arena',
-  progress:'Progress', vault:'Vault', askai:'AI Chat', community:'Community',
+  progress:'Progress', vault:'Vault', askai:'AI Chat',
   drcr:'Debit & Credit',
   challenge:'Challenge', trophy:'Trophy Room', profile:'Profile',
   quickref:'Quick Ref', jebuilder:'JE Builder', fsbuilder:'Statements',
@@ -8985,22 +8916,6 @@ function checkInAppNotifications(){
 setTimeout(checkInAppNotifications, 3000); // Check 3s after load
 
 // ── STUDY BUDDY MATCHING ──
-function matchStudyBuddy(){
-  const tier=S.tier||'free';
-  if(tier==='free'){
-    toast('Study Buddy is a Pro feature. Upgrade to get matched!');
-    setTimeout(()=>showScreen('profile'),1000);
-    return;
-  }
-  const buddies=[
-    {name:'Sarah Al-Rashidi',level:'Distinguished',topic:'IFRS 9',emoji:'👩'},
-    {name:'Hamza Qureshi',level:'Qualified',topic:'IAS 36',emoji:'👨'},
-    {name:'Priya Nair',level:'Associate',topic:'IFRS 15',emoji:'👩'},
-  ];
-  const b=buddies[Math.floor(Math.random()*buddies.length)];
-  toast('Matched with '+b.name+' ('+b.level+') — studying '+b.topic);
-  showBadgeToast('Study Buddy found! 👥 Say hello to '+b.name);
-}
 
 // ── PRO TRIAL ──
 S.tier = S.tier || 'free';
