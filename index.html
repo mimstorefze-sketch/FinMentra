@@ -2126,21 +2126,15 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <div><div style="font-size:13px;font-weight:800;color:var(--text);">IFRS 16 — Leases</div><div style="font-size:10px;color:var(--muted);">Last studied · Continue where you left off</div></div>
       <div style="margin-left:auto;font-size:20px;color:var(--muted);">›</div>
     </div>
-    <div onclick="showScreen('quickref')" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='var(--blue-ll)'" onmouseout="this.style.background=''">
-      <div style="width:38px;height:38px;border-radius:12px;background:#D1FAE5;display:flex;align-items:center;justify-content:center;font-size:18px;">🗂️</div>
-      <div><div style="font-size:13px;font-weight:800;color:var(--text);">Quick Reference</div><div style="font-size:10px;color:var(--muted);">Standards at a glance</div></div>
-      <div style="margin-left:auto;font-size:20px;color:var(--muted);">›</div>
-    </div>
   </div>
 
   <div class="fm-sec-label">Your Tools</div>
-  <div class="pro-card" onclick="checkFeatureLimitAndEnter('fm_qref','quickref')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#EEF2FF;">📋</div><div><div class="pro-card-title">Quick Reference Cards</div><div class="pro-card-sub">Any standard in 30 seconds — key points, journal entries</div></div><span class="pill pill-navy">81 standards</span></div></div>
   <div class="pro-card" onclick="showScreen('jebuilder')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#DCFCE7;">📒</div><div><div class="pro-card-title">Journal Entry Builder</div><div class="pro-card-sub">Pick a scenario → correct debit/credit with standard reference</div></div></div></div>
   <div class="pro-card" onclick="showScreen('fsbuilder')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#E0F2FE;">📊</div><div><div class="pro-card-title">Financial Statements Suite</div><div class="pro-card-sub">Build, analyse and compare IAS 1 compliant statements</div></div></div></div>
-
-
-
-
+  <div class="pro-card" onclick="showScreen('coinshop')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#FEF3C7;">🪙</div><div><div class="pro-card-title">Coin Shop</div><div class="pro-card-sub">Spend coins on boosts & streak shields</div></div></div></div>
+  <div class="pro-card" onclick="showScreen('diagnostic')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#F3E8FF;">🧪</div><div><div class="pro-card-title">Diagnostic Test</div><div class="pro-card-sub">20 questions — build your study plan</div></div></div></div>
+  <div class="pro-card" onclick="showScreen('worked-examples')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#DDD6FE;">📝</div><div><div class="pro-card-title">Worked Examples</div><div class="pro-card-sub">Step-by-step solutions with IFRS references</div></div></div></div>
+  <div class="pro-card" onclick="showScreen('comparisons')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#E0E7FF;">⚡</div><div><div class="pro-card-title">Comparison Cards</div><div class="pro-card-sub">IFRS vs GAAP — spot the differences</div></div></div></div>
   <div class="pro-card" onclick="showScreen('excel')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#F0FDF4;">📊</div><div><div class="pro-card-title">Excel for Finance</div><div class="pro-card-sub">Formulas, shortcuts, error diagnosis, templates</div></div></div></div>
 </div>
 
@@ -2922,23 +2916,6 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <button class="profile-item" style="border-bottom:none;" onclick="showScreen('search')"><div class="profile-item-icon">🔍</div><div class="profile-item-label">Global Search</div><div class="profile-item-arrow">›</div></button>
   </div>
   <div class="muted center" style="padding:18px 8px;font-size:10px;">© FinMentra · Not affiliated with any professional body.</div>
-</div>
-
-<!-- ══ QUICK REFERENCE ══ -->
-<div class="screen" id="screen-quickref">
-  <div id="qref-limit-bar" style="display:none;background:#EEF2FF;border:1px solid var(--blue-l);border-radius:10px;padding:8px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
-    <span style="font-size:11px;font-weight:700;color:#0A1F6E;" id="qref-limit-text">5 free views/day</span>
-    <button onclick="startProTrial()" style="padding:4px 10px;border-radius:8px;background:#0A1F6E;color:#fff;font-size:10px;font-weight:700;border:none;cursor:pointer;">Upgrade Pro</button>
-  </div>
-  <input class="search" placeholder="🔍 Search standards..." id="qref-search" oninput="filterQRef(this.value)">
-  <div id="qref-list">
-    <div class="qref-card"><div class="qref-header" onclick="toggleQRef(this)"><div class="qref-num">IFRS 15</div><div class="qref-title">Revenue from Contracts</div><div class="qref-arrow">›</div></div><div class="qref-body"><div class="qref-section"><div class="qref-section-title">Core Principle</div><div class="qref-point">Recognise revenue to depict transfer of goods/services at the amount expected to be received.</div></div><div class="qref-section"><div class="qref-section-title">5-Step Model</div><div class="qref-point">1. Identify contract → 2. Identify POs → 3. Determine price → 4. Allocate → 5. Recognise.</div></div><div class="qref-je"><div class="je-row"><span class="je-dr">Dr Receivable / Cash</span><span class="je-cr">X</span></div><div class="je-row"><span style="padding-left:14px;" class="je-cr">Cr Revenue</span><span class="je-cr">X</span></div></div><div style="margin-top:7px;background:var(--red-l);border-radius:7px;padding:8px 10px;"><div style="font-size:9px;font-weight:700;color:var(--red);margin-bottom:2px;">⚠️ EXAM TRAP</div><div style="font-size:11px;color:#7F1D1D;line-height:1.6;">Recognising on invoice rather than transfer of control.</div></div></div></div>
-    <div class="qref-card"><div class="qref-header" onclick="toggleQRef(this)"><div class="qref-num">IFRS 16</div><div class="qref-title">Leases</div><div class="qref-arrow">›</div></div><div class="qref-body"><div class="qref-section"><div class="qref-section-title">Core Principle</div><div class="qref-point">Lessees recognise ROU asset + lease liability for almost all leases at PV of payments.</div></div><div class="qref-je"><div class="je-row"><span class="je-dr">Dr ROU Asset</span><span class="je-cr">X</span></div><div class="je-row"><span style="padding-left:14px;" class="je-cr">Cr Lease Liability</span><span class="je-cr">X</span></div></div><div style="margin-top:7px;background:var(--red-l);border-radius:7px;padding:8px 10px;"><div style="font-size:9px;font-weight:700;color:var(--red);margin-bottom:2px;">⚠️ EXAM TRAP</div><div style="font-size:11px;color:#7F1D1D;line-height:1.6;">Continuing operating-lease treatment for lessees after 2019.</div></div></div></div>
-    <div class="qref-card"><div class="qref-header" onclick="toggleQRef(this)"><div class="qref-num">IFRS 9</div><div class="qref-title">Financial Instruments</div><div class="qref-arrow">›</div></div><div class="qref-body"><div class="qref-section"><div class="qref-section-title">Core Principle</div><div class="qref-point">Classify at amortised cost, FVOCI or FVPL. ECL model: Stage 1 = 12m, Stage 2 = Lifetime (SICR), Stage 3 = Lifetime credit-impaired.</div></div><div class="qref-je"><div class="je-row"><span class="je-dr">Dr Credit Loss Expense</span><span class="je-cr">ECL</span></div><div class="je-row"><span style="padding-left:14px;" class="je-cr">Cr Loss Allowance</span><span class="je-cr">ECL</span></div></div><div style="margin-top:7px;background:var(--red-l);border-radius:7px;padding:8px 10px;"><div style="font-size:9px;font-weight:700;color:var(--red);margin-bottom:2px;">⚠️ EXAM TRAP</div><div style="font-size:11px;color:#7F1D1D;line-height:1.6;">IFRS 9 is forward-looking — ECL from day 1, not on evidence of default.</div></div></div></div>
-    <div class="qref-card"><div class="qref-header" onclick="toggleQRef(this)"><div class="qref-num">IAS 16</div><div class="qref-title">Property, Plant & Equipment</div><div class="qref-arrow">›</div></div><div class="qref-body"><div class="qref-section"><div class="qref-section-title">Core Principle</div><div class="qref-point">Recognise at cost; subsequently cost or revaluation model (policy choice per class). Depreciate over useful life.</div></div><div class="qref-je"><div class="je-row"><span class="je-dr">Dr PPE (Cost)</span><span class="je-cr">X</span></div><div class="je-row"><span style="padding-left:14px;" class="je-cr">Cr Cash / Payables</span><span class="je-cr">X</span></div></div><div style="margin-top:7px;background:var(--red-l);border-radius:7px;padding:8px 10px;"><div style="font-size:9px;font-weight:700;color:var(--red);margin-bottom:2px;">⚠️ EXAM TRAP</div><div style="font-size:11px;color:#7F1D1D;line-height:1.6;">Revaluation gains go to OCI, not P&L. Training costs are never capitalised.</div></div></div></div>
-    <div class="qref-card"><div class="qref-header" onclick="toggleQRef(this)"><div class="qref-num">IAS 36</div><div class="qref-title">Impairment of Assets</div><div class="qref-arrow">›</div></div><div class="qref-body"><div class="qref-section"><div class="qref-section-title">Core Principle</div><div class="qref-point">Recoverable amount = higher of FVLCD and VIU. Impair when CA > RA. Goodwill tested annually.</div></div><div class="qref-je"><div class="je-row"><span class="je-dr">Dr Impairment Loss (P&L)</span><span class="je-cr">X</span></div><div class="je-row"><span style="padding-left:14px;" class="je-cr">Cr Acc. Impairment / Asset</span><span class="je-cr">X</span></div></div><div style="margin-top:7px;background:var(--red-l);border-radius:7px;padding:8px 10px;"><div style="font-size:9px;font-weight:700;color:var(--red);margin-bottom:2px;">⚠️ EXAM TRAP</div><div style="font-size:11px;color:#7F1D1D;line-height:1.6;">Goodwill impairment is NEVER reversed under IFRS.</div></div></div></div>
-    <div class="qref-card"><div class="qref-header" onclick="toggleQRef(this)"><div class="qref-num">IAS 37</div><div class="qref-title">Provisions & Contingencies</div><div class="qref-arrow">›</div></div><div class="qref-body"><div class="qref-section"><div class="qref-section-title">Core Principle</div><div class="qref-point">Provision when: (1) present obligation from past event, (2) probable outflow, (3) reliable estimate.</div></div><div class="qref-je"><div class="je-row"><span class="je-dr">Dr Expense (P&L)</span><span class="je-cr">X</span></div><div class="je-row"><span style="padding-left:14px;" class="je-cr">Cr Provision</span><span class="je-cr">X</span></div></div><div style="margin-top:7px;background:var(--red-l);border-radius:7px;padding:8px 10px;"><div style="font-size:9px;font-weight:700;color:var(--red);margin-bottom:2px;">⚠️ EXAM TRAP</div><div style="font-size:11px;color:#7F1D1D;line-height:1.6;">Cannot provision for future operating losses — no present obligation.</div></div></div></div>
-  </div>
 </div>
 
 <!-- ══ JOURNAL ENTRY BUILDER ══ -->
@@ -3870,7 +3847,7 @@ let currentJECat='all';
 
 // ── SCREEN NAV ──
 const STUDENT_TABS=[{id:'home',icon:'🏠',label:'Home'},{id:'topics',icon:'📚',label:'Topics'},{id:'practice',icon:'🏛️',label:'Arena'},{id:'challenge',icon:'⚔️',label:'Challenge'},{id:'progress',icon:'🗺️',label:'Path'},{id:'profile',icon:'👤',label:'Profile'}];
-const PRO_TABS=[{id:'pro-home',icon:'🏠',label:'Home'},{id:'quickref',icon:'📋',label:'Reference'},{id:'fsbuilder',icon:'📊',label:'Stmts'},{id:'challenge',icon:'⚔️',label:'Challenge'},{id:'profile',icon:'👤',label:'Profile'}];
+const PRO_TABS=[{id:'pro-home',icon:'🏠',label:'Home'},{id:'fsbuilder',icon:'📊',label:'Stmts'},{id:'challenge',icon:'⚔️',label:'Challenge'},{id:'profile',icon:'👤',label:'Profile'}];
 
 function renderBottomNav(){
   const nav=document.getElementById('bottom-nav');
@@ -3880,7 +3857,7 @@ function renderBottomNav(){
 
 function showScreen(id){
   // ── RELOAD DEVICE LIMITS FOR GUESTS (so logout/login bypass doesn't work) ──
-  if(!_currentUser && (id==='drcr' || id==='arena' || id==='quickref' || id==='comparisons' || id==='formulas' || id==='jebuilder' || id==='vault')){
+  if(!_currentUser && (id==='drcr' || id==='arena' || id==='comparisons' || id==='formulas' || id==='jebuilder' || id==='vault')){
     loadGuestDeviceLimits(); // Load fresh from Supabase (non-blocking)
   }
   
@@ -3891,7 +3868,6 @@ function showScreen(id){
     if(id==='excel')       { _fmProGate('Excel for Finance','pro-home'); return; }
     // NOTE: Topic Practice is gated by daily limit (15/day) AND subscription (first 3 IFRS open)
     // Lock message for specific topics is handled in renderTopics()
-    if(id==='quickref'    && !_fmCanUse('fm_qref',5)) { _fmDailyGate('Quick Reference views','fm_qref',5,'home'); return; }
     if(id==='comparisons' && !_fmCanUse('fm_cmp',2))  { _fmDailyGate('Standard Comparisons','fm_cmp',2,'home'); return; }
     if(id==='formulas'    && !_fmCanUse('fm_fml',5))  { _fmDailyGate('Formula lookups','fm_fml',5,'home'); return; }
     if(id==='jebuilder'   && !_fmCanUse('fm_je',3))   { _fmDailyGate('JE Builder scenarios','fm_je',3,'home'); return; }
@@ -3900,20 +3876,19 @@ function showScreen(id){
     
     // ── FRESH DB CHECK FOR GUESTS (async, runs after screen load) ──
     // For guests, do a background fresh DB check to catch any bypass attempts
-    if(!_currentUser && (id==='arena' || id==='drcr' || id==='quickref' || id==='comparisons' || id==='formulas' || id==='jebuilder' || id==='vault')){
+    if(!_currentUser && (id==='arena' || id==='drcr' || id==='comparisons' || id==='formulas' || id==='jebuilder' || id==='vault')){
       (async ()=>{
         try{
           let feature = 'fm_dq';
           if(id==='arena') feature='fm_dq';
           else if(id==='drcr') feature='fm_drcr';
-          else if(id==='quickref') feature='fm_qref';
           else if(id==='comparisons') feature='fm_cmp';
           else if(id==='formulas') feature='fm_fml';
           else if(id==='jebuilder') feature='fm_je';
           else if(id==='vault') feature='fm_vlt';
           
           const freshUsed = await getFreshDailyUsed(feature);
-          const limits = { fm_dq: 15, fm_drcr: 10, fm_qref: 15, fm_cmp: 15, fm_fml: 15, fm_je: 3, fm_vlt: 5 };
+          const limits = { fm_dq: 15, fm_drcr: 10, fm_cmp: 15, fm_fml: 15, fm_je: 3, fm_vlt: 5 };
           const limit = limits[feature] || 15;
           
           fmLog('ASYNC-CHECK', 'Fresh check for ' + feature + ': used=' + freshUsed + ', limit=' + limit);
@@ -3942,7 +3917,6 @@ function showScreen(id){
       })();
     }
     // Increment on entry
-    if(id==='quickref')    _fmIncrement('fm_qref');
     if(id==='comparisons') _fmIncrement('fm_cmp');
     if(id==='formulas')    _fmIncrement('fm_fml');
     if(id==='jebuilder')   _fmIncrement('fm_je');
@@ -6538,9 +6512,6 @@ function endTimeAttack(){
     + '<button onclick="var o=document.getElementById(&quot;ta-overlay&quot;);if(o)o.remove();" style="padding:14px 32px;border-radius:14px;background:var(--navy,#0A1F6E);color:#fff;font-size:15px;font-weight:800;border:none;cursor:pointer;font-family:inherit;">← Back to Home</button>'
     + '</div>';
 }
-
-function toggleQRef(header){const arrow=header.querySelector('.qref-arrow');const body=header.nextElementSibling;const isOpen=body.classList.contains('open');document.querySelectorAll('.qref-body').forEach(b=>b.classList.remove('open'));document.querySelectorAll('.qref-arrow').forEach(a=>a.classList.remove('open'));if(!isOpen){body.classList.add('open');arrow.classList.add('open');}}
-function filterQRef(val){document.querySelectorAll('.qref-card').forEach(c=>{const text=c.textContent.toLowerCase();c.style.display=text.includes(val.toLowerCase())?'':'none';});}
 
 // ── JE BUILDER ──
 function setJECat(el,cat){document.querySelectorAll('#je-cat-row .chip').forEach(b=>b.classList.remove('active'));el.classList.add('active');currentJECat=cat;populateJEDropdown();document.getElementById('je-output').style.display='none';}
