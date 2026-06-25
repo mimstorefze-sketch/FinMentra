@@ -3025,7 +3025,6 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <option value="manufacturing">🏭 Manufacturing company</option>
       <option value="retail">🛍️ Retail business</option>
     </select>
-    <button onclick="undoLastFSRow()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface);font-family:var(--font-body);font-size:12px;font-weight:700;color:var(--text);cursor:pointer;" title="Undo last added row">↩ Undo</button>
   </div>
 
   <!-- SFP -->
@@ -3192,12 +3191,6 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div class="profile-item"><div class="profile-item-icon">📅</div><div class="profile-item-label">Exam Date</div><input type="date" id="exam-date" style="border:none;background:none;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none;" onchange="S.examDate=this.value;toast('Exam date saved!')"></div>
     <div class="profile-item"><div class="profile-item-icon">♿</div><div class="profile-item-label">Reduce Motion</div><button class="toggle" data-setting="motion" onclick="toggleReduceMotion(this)"></button></div>
     <div class="profile-item" style="border-bottom:none;"><div class="profile-item-icon">🤚</div><div class="profile-item-label">Left-handed Mode</div><button class="toggle" data-setting="lefthanded" onclick="toggleLeftHand(this)"></button></div>
-  </div>
-  <div class="card">
-    <div class="card-h"><div class="card-title">🔔 Notifications</div></div>
-    <div class="profile-item"><div class="profile-item-icon">🔥</div><div class="profile-item-label">Streak at risk</div><button class="toggle on"></button></div>
-    <div class="profile-item"><div class="profile-item-icon">📊</div><div class="profile-item-label">Weekly report</div><button class="toggle on"></button></div>
-    <div class="profile-item" style="border-bottom:none;"><div class="profile-item-icon">🆕</div><div class="profile-item-label">New standards</div><button class="toggle on"></button></div>
   </div>
   <button class="btn btn-block" style="background:var(--red-l);color:var(--red);border:1px solid var(--red);margin-top:4px;" onclick="showResetConfirm()">⚠️ Reset Progress</button>
 
