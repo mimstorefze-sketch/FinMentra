@@ -2085,11 +2085,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <div class="pro-tool-title">Case Studies</div>
       <div class="pro-tool-sub">Real-world cases</div>
     </div>
-    <div class="pro-tool-card" data-e="⚖️" style="background:#F26B6B;" onclick="fmCardTap(this,'ethics')">
-      <div class="pro-tool-emoji">⚖️</div>
-      <div class="pro-tool-title">Ethics Module</div>
-      <div class="pro-tool-sub">Professional standards</div>
-    </div>
+
     <div class="pro-tool-card" data-e="🤖" style="background:#7E80F3;" onclick="fmCardTap(this,'askai')">
       <div class="pro-tool-emoji">🤖</div>
       <div class="pro-tool-title">AI Assistant</div>
@@ -2131,22 +2127,18 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <div><div style="font-size:13px;font-weight:800;color:var(--text);">IFRS 16 — Leases</div><div style="font-size:10px;color:var(--muted);">Last studied · Continue where you left off</div></div>
       <div style="margin-left:auto;font-size:20px;color:var(--muted);">›</div>
     </div>
-    <div onclick="showScreen('quickref')" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='var(--blue-ll)'" onmouseout="this.style.background=''">
-      <div style="width:38px;height:38px;border-radius:12px;background:#D1FAE5;display:flex;align-items:center;justify-content:center;font-size:18px;">🗂️</div>
-      <div><div style="font-size:13px;font-weight:800;color:var(--text);">Quick Reference</div><div style="font-size:10px;color:var(--muted);">Standards at a glance</div></div>
-      <div style="margin-left:auto;font-size:20px;color:var(--muted);">›</div>
-    </div>
+
   </div>
 
   <div class="fm-sec-label">Your Tools</div>
-  <div class="pro-card" onclick="checkFeatureLimitAndEnter('fm_qref','quickref')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#EEF2FF;">📋</div><div><div class="pro-card-title">Quick Reference Cards</div><div class="pro-card-sub">Any standard in 30 seconds — key points, journal entries</div></div><span class="pill pill-navy">81 standards</span></div></div>
+
   <div class="pro-card" onclick="showScreen('jebuilder')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#DCFCE7;">📒</div><div><div class="pro-card-title">Journal Entry Builder</div><div class="pro-card-sub">Pick a scenario → correct debit/credit with standard reference</div></div></div></div>
   <div class="pro-card" onclick="showScreen('fsbuilder')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#E0F2FE;">📊</div><div><div class="pro-card-title">Financial Statements Suite</div><div class="pro-card-sub">Build, analyse and compare IAS 1 compliant statements</div></div></div></div>
 
 
 
 
-  <div class="pro-card" onclick="showScreen('ethics')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#DCFCE7;">⚖️</div><div><div class="pro-card-title">Ethics Case Studies</div><div class="pro-card-sub">IESBA threats — independence, confidentiality</div></div></div></div>
+
   <div class="pro-card" onclick="showScreen('excel')"><div class="pro-card-header"><div class="pro-card-icon" style="background:#F0FDF4;">📊</div><div><div class="pro-card-title">Excel for Finance</div><div class="pro-card-sub">Formulas, shortcuts, error diagnosis, templates</div></div></div></div>
 </div>
 
@@ -2952,10 +2944,10 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div class="sec-label">Account</div>
   <div class="card">
     <button class="profile-item" onclick="showScreen('trophy')"><div class="profile-item-icon">🏆</div><div class="profile-item-label">Trophy Room</div><div class="profile-item-val">3 earned</div><div class="profile-item-arrow">›</div></button>
-    <button class="profile-item" onclick="showScreen('community')"><div class="profile-item-icon">👥</div><div class="profile-item-label">Community</div><div class="profile-item-arrow">›</div></button>
+
 
     <button class="profile-item" onclick="showScreen('bookmarks')"><div class="profile-item-icon">🔖</div><div class="profile-item-label">My Bookmarks</div><div class="profile-item-arrow">›</div></button>
-    <button class="profile-item" onclick="showScreen('notes')"><div class="profile-item-icon">📝</div><div class="profile-item-label">My Notes</div><div class="profile-item-arrow">›</div></button>
+
     <button class="profile-item" onclick="showScreen('coinshop')"><div class="profile-item-icon">🪙</div><div class="profile-item-label">Coin Shop</div><div class="profile-item-val" id="profile-coins">240 🪙</div><div class="profile-item-arrow">›</div></button>
     <button class="profile-item" onclick="showScreen('settings')"><div class="profile-item-icon">⚙️</div><div class="profile-item-label">Settings</div><div class="profile-item-arrow">›</div></button>
     <button class="profile-item" onclick="showScreen('diagnostic')"><div class="profile-item-icon">🧪</div><div class="profile-item-label">Diagnostic Test</div><div class="profile-item-arrow">›</div></button>
@@ -2963,7 +2955,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <button class="profile-item" onclick="showScreen('worked-examples')"><div class="profile-item-icon">🔢</div><div class="profile-item-label">Worked Examples</div><div class="profile-item-arrow">›</div></button>
     <button class="profile-item" onclick="showScreen('comparisons')"><div class="profile-item-icon">⚡</div><div class="profile-item-label">Comparison Cards</div><div class="profile-item-arrow">›</div></button>
     <button class="profile-item" onclick="showScreen('traps')"><div class="profile-item-icon">⚠️</div><div class="profile-item-label">Exam Traps</div><div class="profile-item-arrow">›</div></button>
-    <button class="profile-item" onclick="showScreen('timeline')"><div class="profile-item-icon">📅</div><div class="profile-item-label">Standard Timeline</div><div class="profile-item-arrow">›</div></button>
+
     <button class="profile-item" style="border-bottom:none;" onclick="showScreen('search')"><div class="profile-item-icon">🔍</div><div class="profile-item-label">Global Search</div><div class="profile-item-arrow">›</div></button>
   </div>
   <div class="muted center" style="padding:18px 8px;font-size:10px;">© FinMentra · Not affiliated with any professional body.</div>
@@ -3034,7 +3026,6 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <option value="retail">🛍️ Retail business</option>
     </select>
     <button onclick="undoLastFSRow()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface);font-family:var(--font-body);font-size:12px;font-weight:700;color:var(--text);cursor:pointer;" title="Undo last added row">↩ Undo</button>
-    <button onclick="exportFSToPDF()" style="padding:7px 12px;border:none;border-radius:8px;background:var(--navy);color:#fff;font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;">⬇ PDF</button>
   </div>
 
   <!-- SFP -->
@@ -3104,7 +3095,8 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
         <div class="fs-subtotal-row"><span>EBIT</span><span id="ebit">—</span></div>
         <div class="fs-row"><span class="fs-row-label">Finance Costs</span><input class="fs-input" id="fin-costs" value="64" oninput="formatFSInput(this);recalcPNL()"></div>
         <div class="fs-subtotal-row"><span>Profit Before Tax</span><span id="pbt">—</span></div>
-        <div class="fs-subtotal-row"><span>Income Tax Expense (25%)</span><span id="tax-exp">—</span></div>
+        <div class="fs-row"><span class="fs-row-label">Tax Rate (%)</span><input class="fs-input" id="tax-rate" type="number" value="25" min="0" max="100" step="0.5" oninput="recalcPNL()" style="width:80px;"></div>
+        <div class="fs-subtotal-row"><span id="tax-label">Income Tax Expense (25%)</span><span id="tax-exp">—</span></div>
         <div class="fs-total-row"><span>PROFIT FOR YEAR</span><span id="pat">—</span></div>
       </div>
     </div>
@@ -3593,38 +3585,6 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   </div>
 </div>
 
-<!-- ══ PRO: ETHICS CASE STUDIES ══ -->
-<div class="screen" id="screen-ethics">
-  <div class="alert info">⚖️ Professional ethics cases based on IESBA Code of Ethics and real exam scenarios.</div>
-  <div class="card accent">
-    <div class="card-h"><div class="card-title">Case 1 — Independence</div><span class="pill pill-red">Threat</span></div>
-    <div style="font-size:13px;line-height:1.7;margin-bottom:12px;">Your audit firm has been asked to also prepare the financial statements for Nexus Corp, whose audit you lead. The fee would be significant.</div>
-    <div style="font-size:11px;font-weight:700;color:var(--steel);margin-bottom:8px;">What type of threat arises?</div>
-    <div style="display:flex;flex-direction:column;gap:7px;">
-      <button class="opt" onclick="ethicsAnswer(this,false)"><span class="opt-key">A</span><span>Familiarity threat</span></button>
-      <button class="opt" onclick="ethicsAnswer(this,false)"><span class="opt-key">B</span><span>Advocacy threat</span></button>
-      <button class="opt" onclick="ethicsAnswer(this,true)"><span class="opt-key">C</span><span>Self-review threat</span></button>
-      <button class="opt" onclick="ethicsAnswer(this,false)"><span class="opt-key">D</span><span>Intimidation threat</span></button>
-    </div>
-    <div id="ethics-fb-1" style="display:none;margin-top:10px;padding:10px;background:var(--green-l);border-radius:8px;border-left:3px solid var(--green);font-size:12px;line-height:1.6;color:var(--text);">
-      <strong>Self-review threat</strong> — reviewing your own firm's work creates a threat to objectivity. Safeguards: use a different team, or decline the preparation engagement.
-    </div>
-  </div>
-  <div class="card accent">
-    <div class="card-h"><div class="card-title">Case 2 — Confidentiality</div><span class="pill pill-gold">Dilemma</span></div>
-    <div style="font-size:13px;line-height:1.7;margin-bottom:12px;">During an audit you discover strong evidence that your client has been evading tax. The client refuses to disclose this. What should you do?</div>
-    <div style="display:flex;flex-direction:column;gap:7px;">
-      <button class="opt" onclick="ethicsAnswer(this,false)"><span class="opt-key">A</span><span>Do nothing — confidentiality overrides all</span></button>
-      <button class="opt" onclick="ethicsAnswer(this,false)"><span class="opt-key">B</span><span>Tell the tax authority immediately</span></button>
-      <button class="opt" onclick="ethicsAnswer(this,true)"><span class="opt-key">C</span><span>Consider resignation + legal advice; may report if law requires</span></button>
-      <button class="opt" onclick="ethicsAnswer(this,false)"><span class="opt-key">D</span><span>Issue an unmodified audit opinion</span></button>
-    </div>
-    <div id="ethics-fb-2" style="display:none;margin-top:10px;padding:10px;background:var(--green-l);border-radius:8px;border-left:3px solid var(--green);font-size:12px;line-height:1.6;color:var(--text);">
-      The auditor faces a conflict between confidentiality (IESBA Para 114) and public interest. If law mandates reporting (e.g. POCA/SAR), they must report. Always seek legal advice first.
-    </div>
-  </div>
-</div>
-
 <!-- ══ EXCEL MODULE ══ -->
 <div class="screen" id="screen-excel">
   <div class="mode-banner" style="background:linear-gradient(135deg,#166534,#15803D);"><div class="mode-banner-icon" style="font-size:24px;">📊</div><div><div class="mode-banner-title">Excel for Finance</div><div class="mode-banner-sub">Formulas, shortcuts, error fixes, templates</div></div></div>
@@ -3990,7 +3950,6 @@ function showScreen(id){
   // ── GATES FIRST — before any screen activation ──
   if(!isPro()){
     if(id==='fsbuilder')   { _fmProGate('Financial Statement Builder','pro-home'); return; }
-    if(id==='ethics')      { _fmProGate('Ethics Module','pro-home'); return; }
     if(id==='client-scenario'){ _fmProGate('Case Studies','pro-home'); return; }
     if(id==='excel')       { _fmProGate('Excel for Finance','pro-home'); return; }
     // NOTE: Topic Practice is gated by daily limit (15/day) AND subscription (first 3 IFRS open)
@@ -7470,9 +7429,13 @@ function recalcPNL(){
   let cosV=0,restV=0;
   costInputs.forEach((inp,i)=>{const v=parseFloat((inp.value||'0').replace(/,/g,''))||0;if(i===0)cosV=v;else restV+=v;});
   const fin=parseFloat((document.getElementById('fin-costs')||{value:'0'}).value||'0')||0;
-  const gp=rev-cosV,ebit=gp-restV,pbt=ebit-fin,tax=Math.round(pbt*0.25),pat=pbt-tax;
+  const taxRateEl=document.getElementById('tax-rate');
+  const taxRate=(parseFloat((taxRateEl||{value:'25'}).value||'25')||25)/100;
+  const gp=rev-cosV,ebit=gp-restV,pbt=ebit-fin,tax=Math.round(pbt*taxRate),pat=pbt-tax;
   const setT=(id,v)=>{const e=document.getElementById(id);if(e) e.textContent=v.toLocaleString();};
   setT('gross-profit',gp);setT('ebit',ebit);setT('pbt',pbt);setT('tax-exp',tax);setT('pat',pat);
+  const taxLabelEl=document.getElementById('tax-label');
+  if(taxLabelEl) taxLabelEl.textContent=`Income Tax Expense (${(taxRate*100).toFixed(1)}%)`;
   // Refresh charts if charts tab is currently visible
   const chartsTab=document.getElementById('fs-charts');
   if(chartsTab && chartsTab.style.display !== 'none'){
@@ -8515,7 +8478,7 @@ function hapticFeedback(type){
 // ── BREADCRUMB TRAIL ──
 const SCREEN_LABELS={
   home:'Home', 'pro-home':'Pro Home', topics:'Topics', practice:'Arena',
-  progress:'Progress', vault:'Vault', askai:'AI Chat', community:'Community',
+  progress:'Progress', vault:'Vault', askai:'AI Chat',
   drcr:'Debit & Credit',
   challenge:'Challenge', trophy:'Trophy Room', profile:'Profile',
   quickref:'Quick Ref', jebuilder:'JE Builder', fsbuilder:'Statements',
@@ -8524,7 +8487,7 @@ const SCREEN_LABELS={
   coinshop:'Shop', formulas:'Formulas', comparisons:'Comparisons',
   traps:'Exam Traps', timeline:'Timeline', search:'Search',
   diagnostic:'Diagnostic', 'client-scenario':'Case Studies',
-  'audit-file':'Audit File', ethics:'Ethics', excel:'Excel', 'worked-examples':'Examples'
+  'audit-file':'Audit File', excel:'Excel', 'worked-examples':'Examples'
 };
 
 
@@ -8606,32 +8569,6 @@ function undoLastFSRow(){
 }
 
 // ── FS PDF EXPORT ──
-function exportFSToPDF(){
-  const printWin=window.open('','_blank');
-  if(!printWin){toast('Allow popups to export PDF');return;}
-  const sfp=document.getElementById('fs-sfp');
-  printWin.document.write('<html><head><title>Financial Statements — FinMentra</title><style>body{font-family:Arial,sans-serif;font-size:12px;margin:20px;}table{width:100%;border-collapse:collapse;}td{padding:5px 8px;border-bottom:1px solid #ddd;}.total{font-weight:700;border-top:2px solid #000;border-bottom:2px solid #000;}.section{font-weight:700;color:#0A1F6E;margin-top:12px;font-size:11px;text-transform:uppercase;letter-spacing:1px;}</style></head><body>');
-  printWin.document.write('<h2 style="color:#0A1F6E;">Statement of Financial Position</h2>');
-  printWin.document.write('<p style="color:#666;font-size:11px;">Generated by FinMentra · '+new Date().toLocaleDateString()+'</p>');
-  // Extract data from DOM
-  const rows=sfp?sfp.querySelectorAll('.fs-row, .fs-subtotal-row, .fs-total-row'):[];
-  printWin.document.write('<table>');
-  rows.forEach(row=>{
-    const label=row.querySelector('.fs-row-label,.fs-subtotal-row span:first-child,.fs-total-row span:first-child');
-    const val=row.querySelector('.fs-input,#total-nca,#total-ca,#total-assets,#total-equity,#total-liab,#total-el');
-    if(label){
-      const cls=row.classList.contains('fs-total-row')?'class="total"':row.classList.contains('fs-subtotal-row')?'style="font-weight:700;"':'';
-      const v=val?(val.value||val.textContent||'').replace(/,/g,''):'';
-      printWin.document.write('<tr '+cls+'><td>'+label.textContent+'</td><td style="text-align:right;">'+
-        (v?parseInt(v).toLocaleString():'')+'</td></tr>');
-    }
-  });
-  printWin.document.write('</table></body></html>');
-  printWin.document.close();
-  setTimeout(()=>printWin.print(),400);
-  toast('Opening PDF export...');
-}
-
 // ── WATERFALL CHART ──
 function renderWaterfall(){
   const canvas=document.getElementById('waterfall-canvas');
@@ -9791,13 +9728,6 @@ function setTrapDiff(el, diff){
   loadTraps();
 }
 
-
-function ethicsAnswer(btn,correct){
-  btn.closest('.card').querySelectorAll('.opt').forEach(o=>o.classList.add('disabled'));
-  if(correct){btn.classList.add('correct');}else{btn.classList.add('wrong');}
-  const fb=btn.closest('.card').querySelector('[id^="ethics-fb"]');
-  if(fb) fb.style.display='block';
-}
 
 // ── ENHANCE LOAD QUESTION with timer + confidence ──
 const _origLoadQ=loadQuestion;
