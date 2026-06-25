@@ -6298,7 +6298,7 @@ function _fmGetUsed(prefix){
   // For logged-in users: check Supabase cache
   if(_currentUser && _currentUser.id){
     var propMap = {
-      'fm_dq': 'dailyQUsed',
+      'fm_dq': 'dailyQCount',
       'fm_qref': 'dailyQrefUsed',
       'fm_cmp': 'dailyCmpUsed',
       'fm_fml': 'dailyFmlUsed',
@@ -6311,7 +6311,7 @@ function _fmGetUsed(prefix){
   // For guests: return cached value from S (loaded by loadGuestDeviceLimits on startup)
   // OR fallback to localStorage
   var propMap = {
-    'fm_dq': 'dailyQUsed',
+    'fm_dq': 'dailyQCount',
     'fm_qref': 'dailyQrefUsed',
     'fm_cmp': 'dailyCmpUsed',
     'fm_fml': 'dailyFmlUsed',
