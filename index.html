@@ -3148,7 +3148,6 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div class="card">
     <div class="card-h"><div class="card-title">🌙 Appearance</div></div>
     <div class="profile-item"><div class="profile-item-icon">🌙</div><div class="profile-item-label">Dark Mode</div><button class="toggle" id="dark-toggle-s" onclick="toggleDarkMode()"></button></div>
-    <div class="profile-item"><div class="profile-item-icon">🔤</div><div class="profile-item-label">Font Size</div><div style="display:flex;gap:6px;"><button class="chip active" onclick="setFontSize(14,this)">S</button><button class="chip" onclick="setFontSize(16,this)">M</button><button class="chip" onclick="setFontSize(18,this)">L</button><button class="chip" onclick="setFontSize(20,this)">XL</button></div></div>
     <div class="profile-item" style="border-bottom:none;"><div class="profile-item-icon">🎨</div><div class="profile-item-label">High Contrast</div><button class="toggle" data-setting="contrast" onclick="toggleHighContrast(this)"></button></div>
   </div>
   <div class="card">
@@ -3158,16 +3157,8 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   </div>
   <div class="card">
     <div class="card-h"><div class="card-title">📅 Study</div></div>
-    <div class="profile-item"><div class="profile-item-icon">📅</div><div class="profile-item-label">Exam Date</div><input type="date" id="exam-date" style="border:none;background:none;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none;" onchange="S.examDate=this.value;toast('Exam date saved!')"></div>
     <div class="profile-item"><div class="profile-item-icon">♿</div><div class="profile-item-label">Reduce Motion</div><button class="toggle" data-setting="motion" onclick="toggleReduceMotion(this)"></button></div>
     <div class="profile-item" style="border-bottom:none;"><div class="profile-item-icon">🤚</div><div class="profile-item-label">Left-handed Mode</div><button class="toggle" data-setting="lefthanded" onclick="toggleLeftHand(this)"></button></div>
-  </div>
-  <div class="card">
-    <div class="card-h"><div class="card-title">🔔 Notifications</div></div>
-    <div class="profile-item"><div class="profile-item-icon">🔥</div><div class="profile-item-label">Streak at risk</div><button class="toggle on"></button></div>
-    <div class="profile-item"><div class="profile-item-icon">📊</div><div class="profile-item-label">Weekly report</div><button class="toggle on"></button></div>
-    <div class="profile-item" style="border-bottom:none;"><div class="profile-item-icon">🆕</div><div class="profile-item-label">New standards</div><button class="toggle on"></button></div>
-  </div>
   <button class="btn btn-block" style="background:var(--red-l);color:var(--red);border:1px solid var(--red);margin-top:4px;" onclick="showResetConfirm()">⚠️ Reset Progress</button>
 
   <!-- Legal links -->
@@ -7625,15 +7616,6 @@ function toggleCheckItem(item){
 })();
 
 // ── SETTINGS HELPERS ──
-function setFontSize(px, el) {
-  document.documentElement.style.fontSize = px + 'px';
-  document.querySelectorAll('.chip').forEach(c => {
-    if (['S','M','L','XL'].includes(c.textContent)) c.classList.remove('active');
-  });
-  el.classList.add('active');
-  try { localStorage.setItem('fm_fontsize', px); } catch(e) {}
-  toast('Font size updated');
-}
 
 function toggleHighContrast(btn) {
   btn.classList.toggle('on');
