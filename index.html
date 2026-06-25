@@ -4436,40 +4436,10 @@ async function startTopicPractice(num){
   if(supaQs && supaQs.length >= 1){
     pool = supaQs;
   } else {
-    // No questions found - check if it's due to daily limit
+    // No questions found - show error
     clearTimeout(loadingTimeout);
-    
-    // Check if user hit daily limit
-    const dailyUsed = _fmGetUsed('fm_dq');
-    const hitDailyLimit = !isPro() && dailyUsed >= 15;
-    
-    if(hitDailyLimit){
-      // Daily limit reached - show friendly message
-      if(qt) qt.textContent = '🎉 Great Job!';
-      if(opts) opts.innerHTML = `
-        <div style="text-align:center;padding:28px 20px;">
-          <div style="font-size:48px;margin-bottom:16px;">🎯</div>
-          <div style="font-size:18px;font-weight:600;color:var(--text);margin-bottom:8px;">Limit Reached!</div>
-          <div style="font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.6;">
-            You've completed your <strong>15 daily questions</strong>.<br>
-            Fantastic work! Come back tomorrow to continue learning.
-          </div>
-          <button onclick="showScreen('home')" style="width:100%;padding:13px;background:var(--navy);color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);margin-bottom:10px;">Back to Home</button>
-          <button onclick="showScreen('pricing')" style="width:100%;padding:11px;background:var(--action-blue);color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);">Upgrade to Pro for Unlimited</button>
-        </div>
-      `;
-    } else {
-      // No questions in database - show error
-      if(qt) qt.textContent = '❌ No questions found for ' + num;
-      if(opts) opts.innerHTML = `
-        <div style="text-align:center;padding:24px 20px;">
-          <div style="font-size:32px;margin-bottom:12px;">📭</div>
-          <div style="color:var(--text);margin-bottom:16px;">No questions available for this topic yet.</div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Try another standard or come back later.</div>
-          <button onclick="showScreen('home')" style="width:100%;padding:11px;background:var(--navy);color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);">Go Back</button>
-        </div>
-      `;
-    }
+    if(qt) qt.textContent = '❌ No questions found for ' + num;
+    if(opts) opts.innerHTML = '<div style="text-align:center;padding:20px;color:#F59E0B;"><div style="font-size:32px;margin-bottom:10px;">🎉</div><div style="font-weight:600;margin-bottom:8px;">Great Job!</div><div style="font-size:13px;line-height:1.6;">You\'ve completed your 15 daily questions.<br>Come back tomorrow to keep learning!</div></div>';
     return;
   }
 
