@@ -1579,6 +1579,19 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     }
   });
 })();
+
+// 🔙 Native Android Back Button Handler
+window.addEventListener('native:backpressed', function() {
+    console.log('📱 [Android] Back button pressed from native app');
+    
+    // Check if there's navigation history
+    if (window.history.length > 1) {
+        window.history.back();  // Go back one page
+    } else {
+        window.location.href = '/';  // Go to home
+    }
+});
+
 </script>
 </head>
 <body>
