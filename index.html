@@ -1580,11 +1580,20 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   });
 })();
 
-// Native Android Back Button Handler
+// Native Android Back Button Handler - IMPROVED
 window.addEventListener('native:backpressed', function() {
     console.log('[Android] Back button pressed from native app');
     
-    // Check if there's navigation history
+    // If stuck on Google auth page, force redirect home
+    if (window.location.href.includes('accounts.google.com') || 
+        window.location.href.includes('/auth') ||
+        window.location.href.includes('oauth')) {
+        console.log('[Android] Google Auth detected, redirecting home');
+        window.location.href = '/';
+        return;
+    }
+    
+    // Standard back navigation
     if (window.history.length > 1) {
         window.history.back();  // Go back one page
     } else {
