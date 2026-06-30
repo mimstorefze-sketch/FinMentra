@@ -8941,11 +8941,7 @@ async function startProTrial(){
     return;
   }
   if(isPro()){
-    const remaining = _userProgress[_currentUser.id]?.current_period_end 
-      ? Math.ceil((new Date(_userProgress[_currentUser.id].current_period_end) - new Date()) / (1000 * 60 * 60 * 24))
-      : 0;
-    const daysText = remaining === 1 ? 'day' : 'days';
-    toast(`You're Pro! ${remaining} ${daysText} remaining. ✓`);
+    toast('You are already on Pro! ✓');
     return;
   }
   toast('Redirecting to secure payment... 🔒');
