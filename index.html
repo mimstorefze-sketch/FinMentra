@@ -1580,34 +1580,15 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   });
 })();
 
-// Native Android Back Button Handler
+// 🔙 Native Android Back Button Handler
 window.addEventListener('native:backpressed', function() {
-    console.log('[Android] Back button pressed');
+    console.log('📱 [Android] Back button pressed from native app');
     
-    // ONLY check for actual OAuth domains (not our routes!)
-    // accounts.google.com, linkedin.com, etc.
-    if (window.location.href.includes('accounts.google.com') || 
-        window.location.href.includes('signin.google.com') ||
-        window.location.href.includes('linkedin.com') ||
-        window.location.href.includes('auth.linkedin.com')) {
-        console.log('[Android] OAuth domain detected, going back in history');
-        // Try to go back in history
-        if (window.history.length > 1) {
-            window.history.back();
-        } else {
-            // If no history, redirect to finmentra home
-            window.location.href = 'https://www.finmentra.com';
-        }
-        return;
-    }
-    
-    // For normal pages: Standard back navigation
+    // Check if there's navigation history
     if (window.history.length > 1) {
-        console.log('[Android] Normal back navigation');
-        window.history.back();
+        window.history.back();  // Go back one page
     } else {
-        console.log('[Android] No history, going to finmentra home');
-        window.location.href = 'https://www.finmentra.com';
+        window.location.href = '/';  // Go to home
     }
 });
 
