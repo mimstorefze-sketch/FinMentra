@@ -164,7 +164,7 @@ const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
   font-weight:700;color:#0A1F6E;margin-bottom:4px;letter-spacing:-.3px;
 }
 .auth-logo em{font-style:italic;color:#4A6CF7;font-weight:600;}
-.auth-sub{font-size:12px;color:#94A3B8;margin-bottom:24px;font-weight:600;}
+.auth-sub{font-size:12px;color:#000000;font-weight:600;margin-bottom:24px;font-weight:600;}
 /* Social buttons */
 .auth-social-btn {
   width:100%;padding:12px 16px;border-radius:12px;
@@ -175,7 +175,7 @@ const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
 }
 .auth-social-btn:hover{background:#EEF2FF;border-color:#4A6CF7;}
 .auth-divider{display:flex;align-items:center;gap:10px;margin:4px 0 14px;}
-.auth-divider span{font-size:11px;color:#94A3B8;white-space:nowrap;}
+.auth-divider span{font-size:11px;color:#000000;font-weight:600;white-space:nowrap;}
 .auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:#E2E8F0;}
 /* Tabs */
 .auth-tabs{display:flex;gap:4px;background:#EEF2FF;border-radius:10px;padding:4px;margin-bottom:14px;}
@@ -204,7 +204,7 @@ const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
 .reg-popup-sub{font-size:13px;color:#64748B;margin-bottom:20px;line-height:1.5;}
 .reg-popup-xp{background:#EEF2FF;border-radius:12px;padding:12px;margin-bottom:16px;font-size:13px;font-weight:700;color:#0A1F6E;}
 .reg-popup-btn{width:100%;padding:14px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px;}
-.reg-popup-skip{font-size:12px;color:#94A3B8;cursor:pointer;}
+.reg-popup-skip{font-size:12px;color:#000000;font-weight:600;cursor:pointer;}
 </style>
 <style>
 /* ══════════════════════════════════════════════════
@@ -1593,7 +1593,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   <div class="auth-box">
     <div class="auth-logo">Fin<em>Mentra</em></div>
     <div class="auth-sub">Where Finance Becomes Second Nature</div>
-    <p style="font-size:12px;line-height:1.6;color:#94A3B8;text-align:center;margin:10px 0 18px;">
+    <p style="font-size:12px;line-height:1.6;color:#000000;font-weight:600;text-align:center;margin:10px 0 18px;">
       FinMentra is an AI-powered finance learning app that helps you master accounting and financial reporting standards through interactive quizzes, exam-style case studies, journal entry drills and instant AI explanations — built for active, exam-ready practice instead of passive textbook reading.
     </p>
 
@@ -1631,7 +1631,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <!-- Skip / guest option -->
     <span class="auth-skip" onclick="startAsGuest()" style="display:block;margin-top:14px;padding:12px;background:var(--bg);border:2px dashed #4A6CF7;border-radius:12px;text-align:center;font-size:13px;font-weight:700;color:#4A6CF7;text-decoration:none;cursor:pointer;">🎯 Try 15 free questions — no account needed</span>
 
-    <div style="margin-top:12px;font-size:10px;color:#94A3B8;">
+    <div style="margin-top:12px;font-size:10px;color:#000000;font-weight:600;">
       By continuing you agree to our <a href="https://www.finmentra.com/privacy.html" target="_blank" style="color:#4A6CF7;text-decoration:none;font-weight:700;">Terms & Privacy Policy</a>
     </div>
   </div>
@@ -5362,7 +5362,7 @@ function updatePlanUI(){
   // Cancel subscription link (only for Pro users)
   if(pro){
     const cancelLink = document.createElement('div');
-    cancelLink.style.cssText = 'text-align:center;margin-top:12px;font-size:11px;color:#94A3B8;';
+    cancelLink.style.cssText = 'text-align:center;margin-top:12px;font-size:11px;color:#000000;font-weight:600;';
     cancelLink.innerHTML = '<span style="cursor:pointer;text-decoration:underline;color:#EF4444;" onclick="showCancelConfirm()">Cancel subscription</span>';
     proCard.appendChild(cancelLink);
   }
@@ -5825,7 +5825,7 @@ function checkPlanFeature(feature){
   // If logged in, also show a "Sign Up first" hint below
   if(!loggedIn){
     const hint = document.createElement('div');
-    hint.style.cssText = 'font-size:11px;color:#94A3B8;margin-bottom:10px;';
+    hint.style.cssText = 'font-size:11px;color:#000000;font-weight:600;margin-bottom:10px;';
     hint.textContent = 'Create a free account, then upgrade to Pro';
     box.appendChild(hint);
   }
@@ -6348,7 +6348,7 @@ function _fmProGate(featureName, screen){
   box.style.cssText='background:#fff;border-radius:24px;padding:28px 22px;max-width:340px;width:100%;text-align:center;box-sizing:border-box;';
   box.innerHTML='<div style="font-size:48px;margin-bottom:10px;">🔒</div>'
     +'<div style="font-size:20px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Pro Feature</div>'
-    +'<div style="font-size:12px;color:#64748B;margin-bottom:16px;line-height:1.6;"><strong>'+featureName+'</strong> is available on the Pro plan.<br><small style="color:#94A3B8;">Upgrade to unlock all professional tools</small></div>';
+    +'<div style="font-size:12px;color:#64748B;margin-bottom:16px;line-height:1.6;"><strong>'+featureName+'</strong> is available on the Pro plan.<br><small style="color:#000000;font-weight:600;">Upgrade to unlock all professional tools</small></div>';
   var upBtn=document.createElement('button');
   upBtn.style.cssText='width:100%;padding:13px;border-radius:14px;background:linear-gradient(135deg,#0A1F6E,#1E3A8A);color:#fff;font-size:13px;font-weight:800;border:none;cursor:pointer;margin-bottom:8px;';
   upBtn.textContent='⚡ Upgrade to Pro';
@@ -6373,7 +6373,7 @@ function _fmDailyGate(featureName, prefix, limit, backScreen){
   box.style.cssText='background:#fff;border-radius:24px;padding:28px 22px;max-width:340px;width:100%;text-align:center;box-sizing:border-box;';
   box.innerHTML='<div style="font-size:48px;margin-bottom:10px;">⏰</div>'
     +'<div style="font-size:20px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Daily Limit Reached</div>'
-    +'<div style="font-size:12px;color:#64748B;margin-bottom:16px;line-height:1.6;">You have used your <strong>'+limit+' free '+featureName+'</strong> for today.<br><small style="color:#94A3B8;">Resets at midnight · Upgrade for unlimited</small></div>';
+    +'<div style="font-size:12px;color:#64748B;margin-bottom:16px;line-height:1.6;">You have used your <strong>'+limit+' free '+featureName+'</strong> for today.<br><small style="color:#000000;font-weight:600;">Resets at midnight · Upgrade for unlimited</small></div>';
   var upBtn=document.createElement('button');
   upBtn.style.cssText='width:100%;padding:13px;border-radius:14px;background:linear-gradient(135deg,#0A1F6E,#1E3A8A);color:#fff;font-size:13px;font-weight:800;border:none;cursor:pointer;margin-bottom:8px;';
   upBtn.textContent='⚡ Upgrade to Pro — Unlimited';
@@ -7068,7 +7068,7 @@ function drcrShowLimitPopup(type){
     +'<div style="font-size:12px;color:#64748B;margin-bottom:16px;line-height:1.6;">'
     +(isSoft
       ? 'You used <strong>7 free Dr/Cr questions</strong> today. Upgrade for unlimited or continue with 3 more.'
-      : 'You used all <strong>10 free Dr/Cr questions</strong> for today.<br><small style="color:#94A3B8;">Resets at midnight · Upgrade for unlimited</small>')
+      : 'You used all <strong>10 free Dr/Cr questions</strong> for today.<br><small style="color:#000000;font-weight:600;">Resets at midnight · Upgrade for unlimited</small>')
     +'</div>'
     +'<div style="background:#EEF2FF;border-radius:12px;padding:8px;font-size:12px;font-weight:700;color:#0A1F6E;margin-bottom:14px;">⚡ '+drcrState.xp+' XP earned this session</div>';
   // Upgrade button
@@ -9258,7 +9258,7 @@ function buildLearningPath(){
       labelDiv.style.cssText = 'flex:1;min-width:0;';
       const labelColor = stage === 'locked' ? 'var(--muted)' : 'var(--navy)';
       const subColor   = stage === 'locked' ? 'var(--muted)' : 'var(--steel)';
-      const badge      = stage === 'locked' ? '<span style="font-size:9px;background:#F1F5F9;color:#94A3B8;padding:2px 7px;border-radius:999px;font-weight:700;margin-left:6px;">LOCKED</span>'
+      const badge      = stage === 'locked' ? '<span style="font-size:9px;background:#F1F5F9;color:#000000;font-weight:600;padding:2px 7px;border-radius:999px;font-weight:700;margin-left:6px;">LOCKED</span>'
                        : stage === 'mastered' ? '<span style="font-size:9px;background:#D1FAE5;color:#059669;padding:2px 7px;border-radius:999px;font-weight:700;margin-left:6px;">DONE ✓</span>'
                        : '<span style="font-size:9px;background:#EEF2FF;color:#6366F1;padding:2px 7px;border-radius:999px;font-weight:700;margin-left:6px;">OPEN</span>';
       // Get progress for this topic
@@ -9798,7 +9798,7 @@ function showContinuePopup(std, remaining){
   progBtn.textContent = 'View My Progress 📊';
   progBtn.onclick = function(){ overlay.remove(); showScreen('progress'); };
   const homeBtn = document.createElement('button');
-  homeBtn.style.cssText = 'width:100%;padding:10px;border-radius:12px;background:none;color:#94A3B8;font-size:13px;font-weight:600;border:none;cursor:pointer;font-family:var(--font-body);';
+  homeBtn.style.cssText = 'width:100%;padding:10px;border-radius:12px;background:none;color:#000000;font-weight:600;font-size:13px;font-weight:600;border:none;cursor:pointer;font-family:var(--font-body);';
   homeBtn.textContent = 'Back to Home';
   homeBtn.onclick = function(){ overlay.remove(); showScreen('home'); };
   box.appendChild(contBtn);
@@ -9930,7 +9930,7 @@ function showLimitPopup(type){
     +'<div style="font-size:12px;color:#64748B;margin-bottom:12px;line-height:1.6;">'
     +(isSoft
       ? 'You used <strong>10 free questions</strong> today. Upgrade for unlimited or continue with 5 more.'
-      : 'You used all <strong>15 free questions</strong> for today.<br><small style="color:#94A3B8;">Resets at midnight</small>')
+      : 'You used all <strong>15 free questions</strong> for today.<br><small style="color:#000000;font-weight:600;">Resets at midnight</small>')
     +'</div>'
     +'<div style="background:#EEF2FF;border-radius:12px;padding:8px;font-size:12px;font-weight:700;color:#0A1F6E;margin-bottom:14px;">You earned '+(typeof S!=='undefined'?S.xp||0:0)+' XP</div>';
 
@@ -9987,7 +9987,7 @@ function showLimitPopup(type){
   // Sign up options (non logged in)
   if(!isLoggedIn){
     var div2 = document.createElement('div');
-    div2.style.cssText = 'font-size:11px;color:#94A3B8;margin:4px 0 8px;';
+    div2.style.cssText = 'font-size:11px;color:#000000;font-weight:600;margin:4px 0 8px;';
     div2.textContent = '\u2014 or create a free account \u2014';
     box.appendChild(div2);
 
@@ -10011,7 +10011,7 @@ function showLimitPopup(type){
   // Come Back Tomorrow (hard only)
   if(!isSoft){
     var backBtn = document.createElement('button');
-    backBtn.style.cssText = 'width:100%;padding:10px;border-radius:14px;background:transparent;color:#94A3B8;font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:inherit;';
+    backBtn.style.cssText = 'width:100%;padding:10px;border-radius:14px;background:transparent;color:#000000;font-weight:600;font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:inherit;';
     backBtn.textContent = 'Come Back Tomorrow';
     backBtn.addEventListener('click', function(){overlay.remove(); if(typeof showScreen==='function') showScreen('home');});
     backBtn.addEventListener('touchend', function(e){e.preventDefault(); overlay.remove(); if(typeof showScreen==='function') showScreen('home');},{passive:false});
@@ -10065,7 +10065,7 @@ const _origAnswerQ=answerQ;
     <div class="reg-popup-sub">Create a free account to save your progress and start your next session.</div>
     <div class="reg-popup-xp" id="reg-popup-stats">You earned 0 XP • 0 correct answers</div>
     <button id="reg-popup-continue-btn" onclick="closeRegPopup();continueFreeQuestions()" style="width:100%;padding:13px;border-radius:14px;background:linear-gradient(135deg,#0A1F6E,#1E3A8A);color:#fff;font-size:14px;font-weight:800;border:none;cursor:pointer;font-family:inherit;margin-bottom:12px;">⚡ Continue 5 More Questions</button>
-    <div style="font-size:11px;color:#94A3B8;margin-bottom:12px;">— or save your progress —</div>
+    <div style="font-size:11px;color:#000000;font-weight:600;margin-bottom:12px;">— or save your progress —</div>
     <button class="auth-social-btn" style="margin-bottom:8px;" onclick="closeRegPopup();signInWithGoogle()">
       <svg width="16" height="16" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
       Sign Up with Google
