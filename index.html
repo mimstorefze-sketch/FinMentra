@@ -1,3 +1,4 @@
+<!-- staging test -->
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
@@ -125,6 +126,42 @@ const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
     storage: window.localStorage
   }
 });
+
+// ── Reveal the app / hide the auth overlay whenever a session becomes active.
+// Called from both the deep-link handler and onAuthStateChange so it works
+// regardless of which auth event Supabase emits (SIGNED_IN, TOKEN_REFRESHED,
+// INITIAL_SESSION, etc). Fixes the "stuck on login after 2nd sign-in" bug,
+// where logout left an inline display:flex that the class toggle couldn't clear.
+function _revealAppAfterAuth(){
+  var authEl = document.getElementById('auth-screen');
+  if(authEl){ authEl.classList.remove('show'); authEl.style.display = 'none'; }
+  var ob = document.getElementById('onboarding');
+  if(ob){ ob.style.display = 'none'; }
+  document.body.classList.add('app-ready');
+  document.body.classList.remove('guest-mode');
+  try{ if(typeof closeRegPopup === 'function') closeRegPopup(); }catch(e){}
+}
+
+// ── NATIVE OAUTH DEEP-LINK HANDLER (Capacitor iOS only) ──
+if(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()){
+  window.Capacitor.Plugins.App.addListener('appUrlOpen', async function(event){
+    try{
+      var url = (event && event.url) ? event.url : '';
+      if(url.indexOf('auth/callback') === -1) return;
+      var frag = '';
+      if(url.indexOf('#') !== -1){ frag = url.split('#')[1]; }
+      else if(url.indexOf('?') !== -1){ frag = url.split('?')[1]; }
+      var params = new URLSearchParams(frag);
+      var access_token = params.get('access_token');
+      var refresh_token = params.get('refresh_token');
+      if(access_token && refresh_token){
+        await _supa.auth.setSession({ access_token: access_token, refresh_token: refresh_token });
+        _revealAppAfterAuth();
+      }
+      try{ await window.Capacitor.Plugins.Browser.close(); }catch(e){}
+    }catch(err){ console.error('Deep link auth error:', err); }
+  });
+}
 </script>
 <style>
 /* ── SUPABASE AUTH SCREEN ── */
@@ -13390,7 +13427,26 @@ function showEmailAuth(){
 }
 
 // ── SOCIAL LOGIN ──
+function _isCapacitorNative(){
+  return !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
+}
+
 async function signInWithGoogle(){
+  if(_isCapacitorNative()){
+    const { data, error } = await _supa.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'finmentra://auth/callback',
+        skipBrowserRedirect: true,
+        queryParams: { prompt: 'select_account', access_type: 'offline' }
+      }
+    });
+    if(error){ toast('Google login failed: ' + error.message); return; }
+    if(data && data.url){ await window.Capacitor.Plugins.Browser.open({ url: data.url }); }
+    return;
+  }
+
+  // ── Original web / Android flow (unchanged) ──
   const isMobileApp = window.navigator.userAgent.includes('FinMentra') ||
                       window.location.protocol === 'capacitor:' ||
                       window.location.protocol === 'ionic:' ||
@@ -13410,6 +13466,20 @@ async function signInWithGoogle(){
 }
 
 async function signInWithLinkedIn(){
+  if(_isCapacitorNative()){
+    const { data, error } = await _supa.auth.signInWithOAuth({
+      provider: 'linkedin_oidc',
+      options: {
+        redirectTo: 'finmentra://auth/callback',
+        skipBrowserRedirect: true
+      }
+    });
+    if(error){ toast('LinkedIn login failed: ' + error.message); return; }
+    if(data && data.url){ await window.Capacitor.Plugins.Browser.open({ url: data.url }); }
+    return;
+  }
+
+  // ── Original web / Android flow (unchanged) ──
   const { error } = await _supa.auth.signInWithOAuth({
     provider: 'linkedin_oidc',
     options: { redirectTo: 'https://www.finmentra.com' }
@@ -13987,6 +14057,10 @@ async function doLogout(){
   S.onboardingDone = false; S.mode = null; S.gender = null;
 
   document.getElementById('auth-screen').classList.add('show');
+
+  // ── FULL RELOAD after logout: guarantees a pristine state so the next
+  // login/guest session starts clean (no stale session leaking into guest). ──
+  try{ window.location.reload(); }catch(e){}
 }
 
 // ── CHECK IF ALREADY LOGGED IN (returning user) ──
@@ -14173,7 +14247,10 @@ _offlineCheckInterval = setInterval(function(){
 
   // Listen for OAuth sign-in
   _supa.auth.onAuthStateChange(async (event, session) => {
-    if(event === 'SIGNED_IN' && session){
+    // Handle any event that indicates an active session, not just SIGNED_IN.
+    // A native setSession() often emits TOKEN_REFRESHED / INITIAL_SESSION,
+    // which previously left the auth overlay stuck open on the 2nd login.
+    if((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session){
       _currentUser = session.user;
       _isGuest = false;
       S.onboardingDone = true;
@@ -14186,12 +14263,7 @@ _offlineCheckInterval = setInterval(function(){
         S.plan='pro'; S.tier='pro'; S.aiPlan='pro';
         try{ localStorage.setItem('fm_tier','pro'); }catch(e){}
       }
-      document.getElementById('auth-screen').classList.remove('show');
-      const ob = document.getElementById('onboarding');
-      if(ob) ob.style.display = 'none';
-      closeRegPopup();
-      document.body.classList.add('app-ready');
-      document.body.classList.remove('guest-mode');
+      _revealAppAfterAuth();
       await loadUserProgress();
       updatePlanUI();
       checkStripeReturn();
