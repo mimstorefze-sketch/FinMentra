@@ -14053,6 +14053,12 @@ async function doLogout(){
   S.onboardingDone = false; S.mode = null; S.gender = null;
 
   document.getElementById('auth-screen').classList.add('show');
+
+  // ── FULL RELOAD after logout ──
+  // Guarantees a pristine session state so a second login re-renders the
+  // logged-in UI correctly, and prevents a stale authenticated session from
+  // leaking into guest mode. Applies to web, Android and iOS alike.
+  try{ window.location.reload(); }catch(e){}
 }
 
 // ── CHECK IF ALREADY LOGGED IN (returning user) ──
