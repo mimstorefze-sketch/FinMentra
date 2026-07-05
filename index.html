@@ -126,6 +126,32 @@ const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
     storage: window.localStorage
   }
 });
+
+// ── NATIVE OAUTH DEEP-LINK HANDLER (Capacitor iOS only) ──
+// When the in-app browser returns via finmentra://auth/callback, extract the
+// tokens, set the Supabase session, and close the browser sheet. The existing
+// onAuthStateChange('SIGNED_IN') handler then logs the user in as normal.
+// This block only runs inside the Capacitor app; web + Android are untouched.
+if(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()){
+  window.Capacitor.Plugins.App.addListener('appUrlOpen', async function(event){
+    try{
+      var url = (event && event.url) ? event.url : '';
+      if(url.indexOf('auth/callback') === -1) return;
+      // Tokens are returned in the URL fragment (implicit flow):
+      // finmentra://auth/callback#access_token=...&refresh_token=...
+      var frag = '';
+      if(url.indexOf('#') !== -1){ frag = url.split('#')[1]; }
+      else if(url.indexOf('?') !== -1){ frag = url.split('?')[1]; }
+      var params = new URLSearchParams(frag);
+      var access_token = params.get('access_token');
+      var refresh_token = params.get('refresh_token');
+      if(access_token && refresh_token){
+        await _supa.auth.setSession({ access_token: access_token, refresh_token: refresh_token });
+      }
+      try{ await window.Capacitor.Plugins.Browser.close(); }catch(e){}
+    }catch(err){ console.error('Deep link auth error:', err); }
+  });
+}
 </script>
 <style>
 /* ── SUPABASE AUTH SCREEN ── */
@@ -13391,7 +13417,31 @@ function showEmailAuth(){
 }
 
 // ── SOCIAL LOGIN ──
+// Detects ONLY the Capacitor iOS app. Returns false on web and on the
+// Android WebView wrapper (which has no window.Capacitor), so those flows
+// are completely unaffected.
+function _isCapacitorNative(){
+  return !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
+}
+
 async function signInWithGoogle(){
+  // Capacitor iOS: use in-app browser + deep-link return.
+  // Web + Android WebView: keep the existing behaviour untouched.
+  if(_isCapacitorNative()){
+    const { data, error } = await _supa.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'finmentra://auth/callback',
+        skipBrowserRedirect: true,
+        queryParams: { prompt: 'select_account', access_type: 'offline' }
+      }
+    });
+    if(error){ toast('Google login failed: ' + error.message); return; }
+    if(data && data.url){ await window.Capacitor.Plugins.Browser.open({ url: data.url }); }
+    return;
+  }
+
+  // ── Original web / Android flow (unchanged) ──
   const isMobileApp = window.navigator.userAgent.includes('FinMentra') ||
                       window.location.protocol === 'capacitor:' ||
                       window.location.protocol === 'ionic:' ||
@@ -13411,6 +13461,21 @@ async function signInWithGoogle(){
 }
 
 async function signInWithLinkedIn(){
+  // Capacitor iOS: use in-app browser + deep-link return.
+  if(_isCapacitorNative()){
+    const { data, error } = await _supa.auth.signInWithOAuth({
+      provider: 'linkedin_oidc',
+      options: {
+        redirectTo: 'finmentra://auth/callback',
+        skipBrowserRedirect: true
+      }
+    });
+    if(error){ toast('LinkedIn login failed: ' + error.message); return; }
+    if(data && data.url){ await window.Capacitor.Plugins.Browser.open({ url: data.url }); }
+    return;
+  }
+
+  // ── Original web / Android flow (unchanged) ──
   const { error } = await _supa.auth.signInWithOAuth({
     provider: 'linkedin_oidc',
     options: { redirectTo: 'https://www.finmentra.com' }
