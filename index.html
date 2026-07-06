@@ -8888,71 +8888,6 @@ document.head.appendChild(rankPulseStyle);
 // Render profile charts when profile screen is shown
 // [profile hook → unified]
 
-// ── IN-APP NOTIFICATIONS ──
-const _notifQueue=[];
-let _notifShowing=false;
-function showInAppNotif(title, msg, icon, action){
-  _notifQueue.push({title,msg,icon:icon||'🔔',action});
-  if(!_notifShowing) processNotifQueue();
-}
-function processNotifQueue(){
-  if(!_notifQueue.length){_notifShowing=false;return;}
-  _notifShowing=true;
-  const n=_notifQueue.shift();
-  let bar=document.getElementById('inapp-notif-bar');
-  if(!bar){
-    bar=document.createElement('div');
-    bar.id='inapp-notif-bar';
-    bar.style.cssText='position:fixed;top:120px;left:14px;right:14px;z-index:600;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow2);transform:translateY(-80px);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);';
-    document.body.appendChild(bar);
-  }
-  // Build notification bar with DOM (avoid nested quotes)
-  bar.innerHTML='';
-  const iconSpan=document.createElement('span');iconSpan.style.cssText='font-size:20px;flex-shrink:0;';iconSpan.textContent=n.icon;
-  const textDiv=document.createElement('div');textDiv.style.cssText='flex:1;min-width:0;';
-  textDiv.innerHTML='<div style="font-size:12px;font-weight:700;color:var(--text);">'+n.title+'</div><div style="font-size:11px;color:var(--muted);">'+n.msg+'</div>';
-  const closeBtn=document.createElement('button');closeBtn.style.cssText='background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted);flex-shrink:0;';closeBtn.textContent='✕';
-  closeBtn.addEventListener('click',function(){bar.style.transform='translateY(-80px)';bar.style.opacity='0';});
-  bar.appendChild(iconSpan);bar.appendChild(textDiv);bar.appendChild(closeBtn);
-  if(n.action) bar.onclick=()=>{n.action();bar.style.transform='translateY(-80px)';bar.style.opacity='0';};
-  bar.style.transform='translateY(0)';bar.style.opacity='1';
-  playSound('notification');
-  setTimeout(()=>{bar.style.transform='translateY(-80px)';bar.style.opacity='0';setTimeout(processNotifQueue,500);},4000);
-}
-
-// Trigger notifications at appropriate times
-function checkInAppNotifications(){
-  const h=new Date().getHours();
-  const day=new Date().getDay();
-  // Streak at risk (evening, haven't studied)
-  try{
-    const lastStudy=localStorage.getItem('fm_last_study_date');
-    const today=new Date().toDateString();
-    if(lastStudy!==today&&h>=19&&S.streak>0){
-      showInAppNotif('Streak at risk!','Your '+S.streak+'-day streak ends at midnight.','🔥',()=>showScreen('practice'));
-    }
-    // New standard update (random chance)
-    if(Math.random()<0.1){
-      // Standard update notification removed
-    }
-    // Daily challenge available (morning)
-    if(h>=8&&h<=10){
-      const dc=JSON.parse(localStorage.getItem('fm_dc')||'{}');
-      if(dc.date!==today){
-        showInAppNotif('Daily challenge available!','IFRS 15 sprint · 5 questions · +150 XP','⚡',()=>startDailyChallenge());
-      }
-    }
-    // Weekly report (Monday)
-    if(day===1&&h>=9&&h<=10){
-      showInAppNotif('Weekly Report','Your week: '+S.xp+' XP earned. Keep it up!','📊',()=>showScreen('challenge'));
-    }
-    // Milestone alert
-    if(S.totalQ===50||S.totalQ===100){
-      showInAppNotif('Milestone reached!',S.totalQ+' questions answered! You are on a roll.','🏅',()=>showScreen('trophy'));
-    }
-  }catch(e){}
-}
-setTimeout(checkInAppNotifications, 3000); // Check 3s after load
 
 // ── STUDY BUDDY MATCHING ──
 function matchStudyBuddy(){
@@ -16031,8 +15966,22 @@ function chlGetQuestions(category, count){
   var pool = [];
   var cnt = parseInt(count) || 10;
 
-  // Pull from QB by matching standards to category
-  if(typeof QB !== 'undefined'){
+  // ── SUPABASE FIRST: use the pre-warmed Supabase question cache (SQ_CACHE),
+  // loaded at startup from the questions table. This keeps Challenge Mode in
+  // sync with the full Supabase question bank. Falls back to hardcoded QB
+  // below if the cache isn't ready (offline / Supabase unreachable).
+  try{
+    if(typeof SQ_CACHE !== 'undefined'){
+      var _key = (!category || category === 'Mixed') ? 'Mixed' : (category === 'Audit' ? 'ISA' : category);
+      var _cached = SQ_CACHE[_key];
+      if(Array.isArray(_cached) && _cached.length >= cnt){
+        pool = _cached.slice();
+      }
+    }
+  }catch(e){}
+
+  // ── FALLBACK: hardcoded QB (used only when Supabase cache is unavailable) ──
+  if(pool.length < cnt && typeof QB !== 'undefined'){
     Object.keys(QB).forEach(function(std){
       var qs = QB[std];
       if(!Array.isArray(qs)) return;
