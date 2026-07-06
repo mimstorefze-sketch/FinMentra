@@ -15966,8 +15966,22 @@ function chlGetQuestions(category, count){
   var pool = [];
   var cnt = parseInt(count) || 10;
 
-  // Pull from QB by matching standards to category
-  if(typeof QB !== 'undefined'){
+  // ── SUPABASE FIRST: use the pre-warmed Supabase question cache (SQ_CACHE),
+  // loaded at startup from the questions table. This keeps Challenge Mode in
+  // sync with the full Supabase question bank. Falls back to hardcoded QB
+  // below if the cache isn't ready (offline / Supabase unreachable).
+  try{
+    if(typeof SQ_CACHE !== 'undefined'){
+      var _key = (!category || category === 'Mixed') ? 'Mixed' : (category === 'Audit' ? 'ISA' : category);
+      var _cached = SQ_CACHE[_key];
+      if(Array.isArray(_cached) && _cached.length >= cnt){
+        pool = _cached.slice();
+      }
+    }
+  }catch(e){}
+
+  // ── FALLBACK: hardcoded QB (used only when Supabase cache is unavailable) ──
+  if(pool.length < cnt && typeof QB !== 'undefined'){
     Object.keys(QB).forEach(function(std){
       var qs = QB[std];
       if(!Array.isArray(qs)) return;
