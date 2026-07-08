@@ -4806,15 +4806,51 @@ function loadQuestion(){
     const dt=document.getElementById('dyk-text');if(dt) dt.textContent=q.dyk;
     if(dyk) dyk.style.display='flex';
   }
+  // ── Apply gate to answer buttons (disables them if hard-limited) ──
+  try{ arenaApplyGateToOptions(); }catch(e){}
 }
+
+// ── UNIFIED ARENA GATE (single source of truth) ──
+// Returns 'allowed' | 'soft' | 'hard'. Called from every path that shows,
+// advances, or answers an Arena/Topic question. Ensures the 15/day rule is
+// enforced consistently regardless of entry point (Arena, Topic Library,
+// mid-session topic switch, next question, answer button click).
+function arenaGateCheck(){
+  if(isPro()) return 'allowed';
+  var used = getDailyQUsed();
+  if(used >= 15) return 'hard';
+  if(used >= 10){
+    var bk = getDailyQKey() + '_bonus';
+    if(localStorage.getItem(bk) !== '1') return 'soft';
+  }
+  return 'allowed';
+}
+
+// Disable/enable answer option buttons based on current gate state.
+// Called from loadQuestion after rendering options.
+function arenaApplyGateToOptions(){
+  var gate = arenaGateCheck();
+  var opts = document.getElementById('options');
+  if(!opts) return;
+  var buttons = opts.querySelectorAll('.opt');
+  if(gate === 'hard'){
+    buttons.forEach(function(b){ b.classList.add('disabled'); b.style.pointerEvents='none'; b.style.opacity='0.55'; });
+  } else {
+    buttons.forEach(function(b){
+      if(!b.classList.contains('correct') && !b.classList.contains('wrong')){
+        b.style.pointerEvents=''; b.style.opacity='';
+      }
+    });
+  }
+}
+
 function answerQ(idx,btn,q){
   try{localStorage.setItem('fm_last_study_date',new Date().toDateString());}catch(e){}
   if(S.answered) return;
-  // ── DAILY LIMIT CHECK (all non-pro users) ──
-  if(!isPro()){
-    const used = _fmGetUsed('fm_dq');
-    if(used >= 15){ showLimitPopup('hard'); return; }
-  }
+  // ── UNIFIED GATE (blocks answer taps if at hard OR soft limit) ──
+  var _gate = arenaGateCheck();
+  if(_gate === 'hard'){ showLimitPopup('hard'); return; }
+  if(_gate === 'soft'){ showLimitPopup('soft'); return; }
   S.answered=true;
   const optsContainer=document.getElementById('options');
   if(optsContainer) optsContainer.querySelectorAll('.opt').forEach(o=>o.classList.add('disabled'));
