@@ -44,7 +44,7 @@ footer{text-align:center;padding:20px 16px;font-size:11px;color:var(--muted);max
 <div class="hero">
   <h1>Privacy Policy</h1>
   <p>We care about your privacy. This policy explains how we handle your information when you use FinMentra.</p>
-  <div class="hero-date">Last updated: May 17, 2026</div>
+  <div class="hero-date">Last updated: July 9, 2026</div>
 </div>
 
 <main>
@@ -88,14 +88,22 @@ footer{text-align:center;padding:20px 16px;font-size:11px;color:var(--muted);max
 
     <div class="section">
       <h2>Payment &amp; Financial Data</h2>
-      <p>All payment transactions for FinMentra Pro subscriptions are processed through a PCI DSS Level 1 certified payment processor — the highest level of payment security certification available in the industry.</p>
-      <p>FinMentra does not at any point access, transmit, or store your card number, CVV, expiry date, or any other sensitive financial credentials. Your payment details are handled entirely within the payment processor's secure, certified environment and are never transmitted to or stored on FinMentra's servers.</p>
+      <p>All payment transactions for FinMentra Pro subscriptions are processed through certified third-party payment providers. On our website and Android app, payments are handled by Stripe, a PCI DSS Level 1 certified payment processor. On iOS, subscriptions are processed through Apple's In-App Purchase system in accordance with the App Store's terms.</p>
+      <p>FinMentra does not at any point access, transmit, or store your card number, CVV, expiry date, or any other sensitive financial credentials. Your payment details are handled entirely within the payment provider's secure, certified environment and are never transmitted to or stored on FinMentra's servers.</p>
       <p>The only payment-related information we retain is your subscription status (active or inactive) solely for the purpose of granting or revoking access to Pro features.</p>
     </div>
 
     <div class="section">
       <h2>Third-Party Services</h2>
-      <p>To operate the Service, we may engage trusted third-party service providers for functions such as data storage, authentication, and analytics. These providers are bound by confidentiality obligations and are not permitted to use your information for their own purposes.</p>
+      <p>To operate the Service, we engage the following categories of trusted third-party service providers, each bound by confidentiality obligations and not permitted to use your information for their own purposes:</p>
+      <ul>
+        <li><strong>Authentication &amp; Account Storage:</strong> Supabase (used to securely store your account credentials, study progress, and preferences)</li>
+        <li><strong>Payment Processing:</strong> Stripe (for web and Android subscriptions) and Apple (for iOS App Store subscriptions)</li>
+        <li><strong>AI Explanations:</strong> Anthropic (used to generate contextual explanations for practice questions)</li>
+        <li><strong>Push Notifications:</strong> Firebase Cloud Messaging (used to send you app updates and reminders)</li>
+        <li><strong>Hosting &amp; Delivery:</strong> Vercel (used to serve the FinMentra website and application)</li>
+      </ul>
+      <p>Only the minimum information necessary is shared with each provider. We do not share your data with these providers for advertising or marketing purposes.</p>
       <p>We are not responsible for the privacy practices of any third-party websites or services that may be linked to or from our platform. Accessing those links is at your own risk and subject to their respective privacy policies.</p>
     </div>
 
@@ -153,7 +161,7 @@ footer{text-align:center;padding:20px 16px;font-size:11px;color:var(--muted);max
   </div>
 
   <div class="owner-tag">
-    This Service is operated by <strong>Mimstorefze</strong>, United Arab Emirates.
+    This Service is operated by <strong>Ibad Ali</strong>, an independent developer based in the United Arab Emirates.
   </div>
 
   <div class="contact-box">
