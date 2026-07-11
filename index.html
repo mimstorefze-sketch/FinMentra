@@ -5563,8 +5563,8 @@ function showProCongrats(){
     '<div style="font-family:var(--font-display);font-size:24px;font-weight:700;color:#0A1F6E;margin-bottom:8px;">Welcome to Pro!</div>'+
     '<div style="font-size:13px;color:#64748B;line-height:1.6;margin-bottom:20px;">You now have unlimited questions, AI tutor, challenge mode and all Pro features!</div>'+
     '<div style="background:#EEF2FF;border-radius:12px;padding:12px;margin-bottom:20px;text-align:left;">'+
-      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Unlimited questions</div>'+
-      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ 50 AI questions/month</div>'+
+      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Unlimited practice questions</div>'+
+      '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Advanced AI tutor</div>'+
       '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ Challenge & multiplayer</div>'+
       '<div style="font-size:12px;font-weight:700;color:#0A1F6E;padding:3px 0;">✅ All Pro tools unlocked</div>'+
     '</div>';
@@ -8999,7 +8999,70 @@ async function _rcActivateProLocal(){
   }catch(e){ console.error('Activate Pro local failed:', e); toast('Welcome to Pro! 🎉'); }
 }
 
+// ── PRICING CARD (shown before payment) ──
+// Displays FinMentra Pro features and price so users know exactly what they're
+// buying BEFORE the Apple/Stripe payment sheet appears. Required by Apple App
+// Store review guidelines and improves conversion on web/Android too.
+function showProPricingCard(){
+  // If a card is already showing, don't duplicate
+  var existing = document.getElementById('pro-pricing-popup');
+  if(existing) return;
+  var popup = document.createElement('div');
+  popup.id = 'pro-pricing-popup';
+  popup.style.cssText = 'position:fixed;inset:0;z-index:3500;background:rgba(10,31,110,0.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:16px;box-sizing:border-box;';
+  var box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:24px;padding:28px 22px;max-width:360px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto;box-sizing:border-box;';
+  box.innerHTML =
+    '<div style="font-family:var(--font-display);font-size:22px;font-weight:800;color:#0A1F6E;margin-bottom:4px;">FinMentra Pro</div>'+
+    '<div style="font-size:12px;color:#64748B;margin-bottom:16px;">Everything you need to master finance</div>'+
+    '<div style="font-family:var(--font-mono);font-size:34px;font-weight:800;color:#0A1F6E;line-height:1;margin-bottom:2px;">$2.99<span style="font-size:14px;color:#64748B;font-weight:500;">/month</span></div>'+
+    '<div style="font-size:11px;color:#94A3B8;margin-bottom:20px;">Cancel anytime</div>'+
+    '<div style="background:#EEF2FF;border-radius:14px;padding:14px 16px;margin-bottom:20px;text-align:left;">'+
+      '<div style="font-size:13px;font-weight:700;color:#0A1F6E;padding:5px 0;">✅ Unlimited practice questions</div>'+
+      '<div style="font-size:13px;font-weight:700;color:#0A1F6E;padding:5px 0;">✅ Advanced AI tutor</div>'+
+      '<div style="font-size:13px;font-weight:700;color:#0A1F6E;padding:5px 0;">✅ Challenge mode &amp; multiplayer</div>'+
+      '<div style="font-size:13px;font-weight:700;color:#0A1F6E;padding:5px 0;">✅ All Pro tools unlocked</div>'+
+    '</div>';
+  var subscribeBtn = document.createElement('button');
+  subscribeBtn.style.cssText = 'width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#0A1F6E,#4A6CF7);color:#fff;font-size:15px;font-weight:800;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px;';
+  subscribeBtn.textContent = 'Subscribe for $2.99/month';
+  subscribeBtn.onclick = function(){
+    popup.remove();
+    // Fire the real purchase flow (Apple IAP on iOS, Stripe on web/Android)
+    _startProCheckout();
+  };
+  var closeBtn = document.createElement('button');
+  closeBtn.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-bottom:12px;';
+  closeBtn.textContent = 'Maybe Later';
+  closeBtn.onclick = function(){ popup.remove(); };
+  var legal = document.createElement('div');
+  legal.style.cssText = 'font-size:10px;color:#94A3B8;line-height:1.5;';
+  legal.innerHTML = 'Auto-renews monthly. Cancel anytime from your account. '+
+    'By subscribing you agree to our <a href="https://www.finmentra.com/privacy.html" target="_blank" style="color:#4A6CF7;">Terms &amp; Privacy Policy</a>.';
+  box.appendChild(subscribeBtn);
+  box.appendChild(closeBtn);
+  box.appendChild(legal);
+  popup.appendChild(box);
+  document.body.appendChild(popup);
+}
+
+// startProTrial is the public entry point every "Upgrade Pro" button calls.
+// It now shows the pricing card first; the actual purchase fires when the user
+// taps "Subscribe" inside the card (via _startProCheckout below).
 async function startProTrial(){
+  if(!_currentUser){
+    if(typeof showAuthPopup === 'function') showAuthPopup();
+    return;
+  }
+  if(isPro()){
+    toast('You are already on Pro! ✓');
+    return;
+  }
+  showProPricingCard();
+}
+
+// The real purchase logic. Called from the pricing card's Subscribe button.
+async function _startProCheckout(){
   if(!_currentUser){
     if(typeof showAuthPopup === 'function') showAuthPopup();
     return;
