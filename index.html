@@ -5356,7 +5356,7 @@ function spawnConfetti(){const colors=['#F59E0B','#4A6CF7','#0A6E3A','#DC2626','
 // ── AI CHAT ──
 const AI_LIMITS={
   free:  { daily:3,  monthly:null, label:'Free',  price:'Free',   aed:0,  usd:0  },
-  pro:   { daily:null,monthly:20,  label:'Pro',   price:'AED 11', aed:11, usd:3  },
+  pro:   { daily:null,monthly:20,  label:'Pro',   price:'AED 11', aed:11, usd:2.99  },
   elite: { daily:null,monthly:50,  label:'Elite', price:'AED 18', aed:18, usd:5  },
 };
 // ── AI SUBSCRIPTION PLANS ──
@@ -5407,7 +5407,7 @@ function updatePlanUI(){
       ? '<div style="position:absolute;top:12px;right:12px;font-size:9px;padding:3px 8px;border-radius:999px;background:var(--green-l);color:var(--green);font-weight:700;">✓ ACTIVE</div>'
       : '<div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),#FCD34D);color:var(--navy);font-size:9px;font-weight:800;padding:3px 12px;border-radius:999px;letter-spacing:.1em;">MOST POPULAR</div>') +
     '<div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--text);margin-top:8px;">Pro</div>' +
-    '<div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--text);margin:6px 0;"><span style="font-size:16px;color:var(--muted);font-weight:400;text-decoration:line-through;margin-right:6px;">$6</span>$3<span style="font-size:13px;color:var(--steel);font-weight:400;">/month</span></div>' +
+    '<div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--text);margin:6px 0;"><span style="font-size:16px;color:var(--muted);font-weight:400;text-decoration:line-through;margin-right:6px;">$6</span>$2.99<span style="font-size:13px;color:var(--steel);font-weight:400;">/month</span></div>' +
     (pro
       ? '<div style="font-size:10px;color:var(--green);font-weight:700;margin-bottom:8px;">✓ Your plan is active</div>'
       : '<div style="font-size:10px;color:var(--gold);font-weight:800;margin-bottom:8px;">🎉 Launch offer · 50% off</div>') +
@@ -8945,6 +8945,40 @@ function matchStudyBuddy(){
 
 // ── PRO TRIAL ──
 S.tier = S.tier || 'free';
+
+// ── REVENUECAT INIT (Capacitor iOS only) ──
+// Configured once at first use. Uses the iOS API key from RevenueCat dashboard.
+var _rcInitialized = false;
+async function _rcInit(){
+  if(_rcInitialized) return true;
+  if(!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform())) return false;
+  try{
+    var Purchases = window.Capacitor.Plugins.Purchases;
+    if(!Purchases) return false;
+    await Purchases.configure({
+      apiKey: 'test_YrWQNNgJxlrxEERWXGogeltutYO',
+      appUserID: (typeof _currentUser !== 'undefined' && _currentUser) ? _currentUser.id : null
+    });
+    _rcInitialized = true;
+    return true;
+  }catch(e){ console.error('RevenueCat init failed:', e); return false; }
+}
+
+// Activates Pro locally after a successful Apple IAP purchase.
+// The Supabase plan sync happens via RevenueCat webhook (server-side).
+function _rcActivateProLocal(){
+  try{
+    S.plan = 'pro'; S.tier = 'pro'; S.aiPlan = 'pro';
+    try{ localStorage.setItem('fm_tier','pro'); }catch(e){}
+    if(typeof updatePlanUI === 'function') updatePlanUI();
+    localStorage.setItem('fm_show_congrats', '1');
+    toast('Welcome to Pro! 🎉');
+    if(typeof window.location !== 'undefined'){
+      setTimeout(function(){ try{ window.location.reload(); }catch(e){} }, 1500);
+    }
+  }catch(e){ console.error('Activate Pro local failed:', e); }
+}
+
 async function startProTrial(){
   if(!_currentUser){
     if(typeof showAuthPopup === 'function') showAuthPopup();
@@ -8954,6 +8988,44 @@ async function startProTrial(){
     toast('You are already on Pro! ✓');
     return;
   }
+
+  // ── Capacitor iOS: Apple In-App Purchase via RevenueCat ──
+  // Required by Apple App Store policy — subscriptions must go through Apple IAP.
+  // Web and the Android WebView wrapper continue to use Stripe (see below).
+  if(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()){
+    toast('Loading subscription...');
+    try{
+      var ok = await _rcInit();
+      if(!ok){ toast('Payment setup failed. Please try again.'); return; }
+      var Purchases = window.Capacitor.Plugins.Purchases;
+      // Get available offerings from RevenueCat
+      var offerings = await Purchases.getOfferings();
+      var current = offerings && offerings.current;
+      if(!current || !current.availablePackages || current.availablePackages.length === 0){
+        toast('Subscription not available right now. Please try later.');
+        return;
+      }
+      // Pick the monthly package (there's only one in FinMentra Pro group)
+      var pkg = current.availablePackages[0];
+      // Trigger Apple's native purchase sheet
+      var result = await Purchases.purchasePackage({ aPackage: pkg });
+      // Check if the FinMentra Pro entitlement is now active
+      var isActive = result && result.customerInfo && result.customerInfo.entitlements && result.customerInfo.entitlements.active && result.customerInfo.entitlements.active['FinMentra Pro'];
+      if(isActive){ _rcActivateProLocal(); }
+      else { toast('Purchase not confirmed. Please contact support.'); }
+    }catch(err){
+      // User cancelled — Apple returns a "userCancelled" error which we should not surface as failure
+      if(err && (err.userCancelled === true || String(err.message||'').toLowerCase().indexOf('cancel') !== -1)){
+        // silent — user changed mind
+        return;
+      }
+      console.error('Apple IAP error:', err);
+      toast('Payment error: ' + ((err && err.message) ? err.message : 'unknown'));
+    }
+    return;
+  }
+
+  // ── Web + Android WebView: Stripe checkout (unchanged) ──
   toast('Redirecting to secure payment... 🔒');
   try{
     const resp = await fetch('/api/create-checkout', {
