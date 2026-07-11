@@ -8964,19 +8964,39 @@ async function _rcInit(){
   }catch(e){ console.error('RevenueCat init failed:', e); return false; }
 }
 
-// Activates Pro locally after a successful Apple IAP purchase.
-// The Supabase plan sync happens via RevenueCat webhook (server-side).
-function _rcActivateProLocal(){
+// Activates Pro locally after a successful Apple IAP purchase, mirroring
+// the web/Android Stripe post-payment experience:
+//   1) update in-memory state to pro
+//   2) refresh UI (HUD, plan, AI banner, topics)
+//   3) show the same "Welcome to Pro" celebration screen users see on web
+async function _rcActivateProLocal(){
   try{
     S.plan = 'pro'; S.tier = 'pro'; S.aiPlan = 'pro';
     try{ localStorage.setItem('fm_tier','pro'); }catch(e){}
-    if(typeof updatePlanUI === 'function') updatePlanUI();
-    localStorage.setItem('fm_show_congrats', '1');
-    toast('Welcome to Pro! 🎉');
-    if(typeof window.location !== 'undefined'){
-      setTimeout(function(){ try{ window.location.reload(); }catch(e){} }, 1500);
+
+    // Push plan to Supabase so it persists across devices / sessions.
+    try{
+      if(typeof _currentUser !== 'undefined' && _currentUser && typeof _supa !== 'undefined'){
+        await _supa.from('user_progress')
+          .update({ plan: 'pro', plan_started_at: new Date().toISOString() })
+          .eq('user_id', _currentUser.id);
+      }
+    }catch(e){ console.warn('Supabase plan sync failed (webhook will catch up):', e); }
+
+    // Refresh UI so Pro features are immediately visible behind the celebration.
+    try{ if(typeof updateHUD === 'function') updateHUD(); }catch(e){}
+    try{ if(typeof updatePlanUI === 'function') updatePlanUI(); }catch(e){}
+    try{ if(typeof updateAIBanner === 'function') updateAIBanner(); }catch(e){}
+    try{ if(typeof renderTopics === 'function') renderTopics(); }catch(e){}
+
+    // Show the same celebration screen (confetti, feature list, "Start Learning!")
+    // that web/Android users see after a Stripe payment.
+    if(typeof showProCongrats === 'function'){
+      showProCongrats();
+    } else {
+      toast('Welcome to Pro! 🎉');
     }
-  }catch(e){ console.error('Activate Pro local failed:', e); }
+  }catch(e){ console.error('Activate Pro local failed:', e); toast('Welcome to Pro! 🎉'); }
 }
 
 async function startProTrial(){
@@ -9007,16 +9027,21 @@ async function startProTrial(){
       }
       // Pick the monthly package (there's only one in FinMentra Pro group)
       var pkg = current.availablePackages[0];
-      // Trigger Apple's native purchase sheet
+      // Trigger Apple's native purchase sheet (or RevenueCat test sheet in sandbox)
       var result = await Purchases.purchasePackage({ aPackage: pkg });
-      // Check if the FinMentra Pro entitlement is now active
-      var isActive = result && result.customerInfo && result.customerInfo.entitlements && result.customerInfo.entitlements.active && result.customerInfo.entitlements.active['FinMentra Pro'];
-      if(isActive){ _rcActivateProLocal(); }
-      else { toast('Purchase not confirmed. Please contact support.'); }
+      // Consider the purchase successful if either the FinMentra Pro entitlement
+      // is active OR any entitlement is active (defensive against naming drift
+      // in the Test Store where the entitlement identifier can differ).
+      var ents = result && result.customerInfo && result.customerInfo.entitlements && result.customerInfo.entitlements.active;
+      var isActive = !!(ents && (ents['FinMentra Pro'] || Object.keys(ents).length > 0));
+      if(isActive){
+        await _rcActivateProLocal();
+      } else {
+        toast('Purchase not confirmed. Please contact support.');
+      }
     }catch(err){
-      // User cancelled — Apple returns a "userCancelled" error which we should not surface as failure
+      // User cancelled — Apple returns a "userCancelled" flag which we should not surface as failure
       if(err && (err.userCancelled === true || String(err.message||'').toLowerCase().indexOf('cancel') !== -1)){
-        // silent — user changed mind
         return;
       }
       console.error('Apple IAP error:', err);
