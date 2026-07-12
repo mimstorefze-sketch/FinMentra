@@ -5469,20 +5469,39 @@ function showCancelConfirm(){
     box.innerHTML =
       '<div style="font-size:40px;margin-bottom:12px;">🍎</div>'+
       '<div style="font-size:17px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Manage Subscription</div>'+
-      '<div style="font-size:13px;color:#64748B;margin-bottom:20px;line-height:1.5;">iOS subscriptions are managed by Apple. Tap "Manage Subscription" to open Apple\'s subscription settings, where you can cancel anytime.</div>';
+      '<div style="font-size:13px;color:#64748B;margin-bottom:14px;line-height:1.5;">iOS subscriptions are managed by Apple. To cancel FinMentra Pro:</div>'+
+      '<div style="background:#EEF2FF;border-radius:12px;padding:14px 16px;margin-bottom:16px;text-align:left;">'+
+        '<div style="font-size:13px;color:#0A1F6E;padding:4px 0;line-height:1.6;"><strong>1.</strong> Tap "Open Apple Subscriptions" below</div>'+
+        '<div style="font-size:13px;color:#0A1F6E;padding:4px 0;line-height:1.6;"><strong>2.</strong> If prompted, tap "Continue" to open Settings</div>'+
+        '<div style="font-size:13px;color:#0A1F6E;padding:4px 0;line-height:1.6;"><strong>3.</strong> Tap "FinMentra Pro" from the list</div>'+
+        '<div style="font-size:13px;color:#0A1F6E;padding:4px 0;line-height:1.6;"><strong>4.</strong> Tap "Cancel Subscription"</div>'+
+      '</div>'+
+      '<div style="font-size:11px;color:#94A3B8;margin-bottom:16px;line-height:1.5;">You will keep Pro access until the end of your current billing period.</div>';
     const manageBtn = document.createElement('button');
     manageBtn.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:8px;font-family:inherit;';
-    manageBtn.textContent = 'Manage Subscription';
+    manageBtn.textContent = 'Open Apple Subscriptions';
     manageBtn.onclick = async function(){
+      // Try Apple's native URL scheme first — this opens iOS Settings directly
+      // on the Subscriptions page, which is the proper native experience.
+      // Falls back to https:// if the scheme isn't recognized.
       try{
         var Browser = window.Capacitor.Plugins.Browser;
         if(Browser && Browser.open){
-          await Browser.open({ url: 'https://apps.apple.com/account/subscriptions' });
+          // itms-apps:// deep link opens iOS Settings > [Apple ID] > Subscriptions
+          await Browser.open({ url: 'itms-apps://apps.apple.com/account/subscriptions' });
         } else {
           window.open('https://apps.apple.com/account/subscriptions', '_blank');
         }
       }catch(e){
-        try{ window.open('https://apps.apple.com/account/subscriptions', '_blank'); }catch(e2){}
+        // Fallback to https:// if itms-apps:// scheme not handled
+        try{
+          var Browser2 = window.Capacitor.Plugins.Browser;
+          if(Browser2 && Browser2.open){
+            await Browser2.open({ url: 'https://apps.apple.com/account/subscriptions' });
+          } else {
+            window.open('https://apps.apple.com/account/subscriptions', '_blank');
+          }
+        }catch(e2){}
       }
       popup.remove();
     };
