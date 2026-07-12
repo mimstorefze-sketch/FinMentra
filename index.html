@@ -1645,6 +1645,12 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       Continue with LinkedIn
     </button>
 
+    <!-- Sign in with Apple — shown only on iOS Capacitor (required by Apple guideline 4.8) -->
+    <button id="auth-apple-btn" class="auth-social-btn" onclick="signInWithApple()" style="display:none;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#000"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+      Continue with Apple
+    </button>
+
     <div class="auth-divider"><span>or use email</span></div>
 
     <!-- Email/password tabs -->
@@ -13667,6 +13673,69 @@ async function signInWithLinkedIn(){
   });
   if(error) toast('LinkedIn login failed: ' + error.message);
 }
+
+// ── SIGN IN WITH APPLE (Capacitor iOS only) ──
+// Required by Apple App Store guideline 4.8: any app offering third-party
+// login (Google, LinkedIn, etc.) must also offer Sign in with Apple.
+// Uses the native @capacitor-community/apple-sign-in plugin so the user
+// gets Apple's native authentication sheet, then passes the returned
+// identity token to Supabase to establish a Supabase session.
+async function signInWithApple(){
+  if(!_isCapacitorNative()){
+    toast('Sign in with Apple is available in the iOS app.');
+    return;
+  }
+  try{
+    var AppleSignIn = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SignInWithApple;
+    if(!AppleSignIn){
+      toast('Apple sign in unavailable. Please update the app.');
+      return;
+    }
+    var result = await AppleSignIn.authorize({
+      clientId: 'com.finmentra.app',
+      redirectURI: 'https://www.finmentra.com',
+      scopes: 'email name',
+      state: '' + Date.now(),
+      nonce: 'nonce-' + Date.now()
+    });
+    // Plugin returns { response: { identityToken, ... } }
+    var idToken = result && result.response && result.response.identityToken;
+    if(!idToken){
+      toast('Apple sign in did not return a token.');
+      return;
+    }
+    // Exchange the Apple identity token for a Supabase session
+    var { data, error } = await _supa.auth.signInWithIdToken({
+      provider: 'apple',
+      token: idToken
+    });
+    if(error){
+      console.error('Supabase Apple sign-in error:', error);
+      toast('Apple login failed: ' + (error.message || 'unknown'));
+      return;
+    }
+    // Success — Supabase's onAuthStateChange handler will pick up the session
+    // and route the user into the app (same path as Google/LinkedIn).
+  }catch(err){
+    // User cancelled the native Apple sheet — silent, no error toast
+    if(err && (err.code === '1001' || String(err.message||'').toLowerCase().indexOf('cancel') !== -1)){
+      return;
+    }
+    console.error('Apple sign in error:', err);
+    toast('Apple sign in failed. Please try again.');
+  }
+}
+
+// Reveal the Apple Sign-In button only on iOS Capacitor (required only there).
+// On web / Android the button stays hidden — Google + LinkedIn are enough.
+document.addEventListener('DOMContentLoaded', function(){
+  try{
+    if(_isCapacitorNative()){
+      var btn = document.getElementById('auth-apple-btn');
+      if(btn) btn.style.display = '';
+    }
+  }catch(e){}
+});
 
 // ── AUTH TAB SWITCH ──
 function switchAuthTab(tab, el) {
