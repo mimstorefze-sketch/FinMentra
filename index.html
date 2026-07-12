@@ -5485,23 +5485,13 @@ function showCancelConfirm(){
       // on the Subscriptions page, which is the proper native experience.
       // Falls back to https:// if the scheme isn't recognized.
       try{
-        var Browser = window.Capacitor.Plugins.Browser;
-        if(Browser && Browser.open){
-          // itms-apps:// deep link opens iOS Settings > [Apple ID] > Subscriptions
-          await Browser.open({ url: 'itms-apps://apps.apple.com/account/subscriptions' });
-        } else {
-          window.open('https://apps.apple.com/account/subscriptions', '_blank');
-        }
+        // Use window.location so iOS can intercept and route the itms-apps://
+        // scheme to the native Settings app. Capacitor Browser.open() opens
+        // URLs inside a WebView, which doesn't handle custom URL schemes.
+        window.location.href = 'itms-apps://apps.apple.com/account/subscriptions';
       }catch(e){
-        // Fallback to https:// if itms-apps:// scheme not handled
-        try{
-          var Browser2 = window.Capacitor.Plugins.Browser;
-          if(Browser2 && Browser2.open){
-            await Browser2.open({ url: 'https://apps.apple.com/account/subscriptions' });
-          } else {
-            window.open('https://apps.apple.com/account/subscriptions', '_blank');
-          }
-        }catch(e2){}
+        // Fallback to https:// if the itms-apps scheme is blocked
+        try{ window.location.href = 'https://apps.apple.com/account/subscriptions'; }catch(e2){}
       }
       popup.remove();
     };
