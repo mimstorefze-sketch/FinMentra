@@ -5459,6 +5459,45 @@ function showCancelConfirm(){
   popup.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.8);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
   const box = document.createElement('div');
   box.style.cssText = 'background:#fff;border-radius:24px;padding:28px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.3);max-height:85vh;overflow-y:auto;box-sizing:border-box;';
+
+  // ── iOS Capacitor: subscriptions are managed by Apple, not by our server ──
+  // Apple's App Store policy REQUIRES users to cancel Apple IAP subscriptions
+  // through iOS Settings or Apple's subscription management page.
+  var _isIOSCapacitor = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
+
+  if(_isIOSCapacitor){
+    box.innerHTML =
+      '<div style="font-size:40px;margin-bottom:12px;">🍎</div>'+
+      '<div style="font-size:17px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Manage Subscription</div>'+
+      '<div style="font-size:13px;color:#64748B;margin-bottom:20px;line-height:1.5;">iOS subscriptions are managed by Apple. Tap "Manage Subscription" to open Apple\'s subscription settings, where you can cancel anytime.</div>';
+    const manageBtn = document.createElement('button');
+    manageBtn.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:8px;font-family:inherit;';
+    manageBtn.textContent = 'Manage Subscription';
+    manageBtn.onclick = async function(){
+      try{
+        var Browser = window.Capacitor.Plugins.Browser;
+        if(Browser && Browser.open){
+          await Browser.open({ url: 'https://apps.apple.com/account/subscriptions' });
+        } else {
+          window.open('https://apps.apple.com/account/subscriptions', '_blank');
+        }
+      }catch(e){
+        try{ window.open('https://apps.apple.com/account/subscriptions', '_blank'); }catch(e2){}
+      }
+      popup.remove();
+    };
+    const keepBtn = document.createElement('button');
+    keepBtn.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
+    keepBtn.textContent = 'Not Now';
+    keepBtn.onclick = ()=> popup.remove();
+    box.appendChild(manageBtn);
+    box.appendChild(keepBtn);
+    popup.appendChild(box);
+    document.body.appendChild(popup);
+    return;
+  }
+
+  // ── Web + Android WebView: Stripe cancel flow (unchanged) ──
   box.innerHTML =
     '<div style="font-size:40px;margin-bottom:12px;">😢</div>'+
     '<div style="font-size:17px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Cancel Pro?</div>'+
