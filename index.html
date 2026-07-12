@@ -13695,8 +13695,7 @@ async function signInWithApple(){
       clientId: 'com.finmentra.app',
       redirectURI: 'https://www.finmentra.com',
       scopes: 'email name',
-      state: '' + Date.now(),
-      nonce: 'nonce-' + Date.now()
+      state: '' + Date.now()
     });
     // Plugin returns { response: { identityToken, ... } }
     var idToken = result && result.response && result.response.identityToken;
