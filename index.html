@@ -18720,6 +18720,12 @@ async function loadLibrarySummaries(){
 }
 
 async function openLibrary(){
+  // ── SIGNUP GATE: guests must create a free account to read Study Notes ──
+  if(typeof _currentUser === 'undefined' || !_currentUser){
+    if(typeof toast === 'function') toast('📖 Sign up free to unlock Study Notes');
+    if(typeof showAuthPopup === 'function') showAuthPopup();
+    return;
+  }
   showScreen('library');
   if(!LIB_LOADED){
     const ok = await loadLibrarySummaries();
