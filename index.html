@@ -18833,19 +18833,31 @@ async function qualOpenSubjects(qualId, code, name){
   document.getElementById('qual-subj-title').textContent = code;
   const list = document.getElementById('qual-subj-list');
   list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">⏳ Loading...</div>';
-  const data = await qualFetch('qual_subjects?select=*&qualification_id=eq.'+qualId+'&is_active=eq.true&order=sort_order');
+  // Fetch subjects AND which subject_ids have at least one mapped topic (data-driven active state)
+  const [data, mapped] = await Promise.all([
+    qualFetch('qual_subjects?select=*&qualification_id=eq.'+qualId+'&is_active=eq.true&order=sort_order'),
+    qualFetch('subject_topics?select=subject_id&is_active=eq.true')
+  ]);
   if(!data){ list.innerHTML='<div style="text-align:center;padding:40px;color:#F59E0B;">Couldn\'t load.</div>'; return; }
   QUAL_SUBJECTS = data;
-  // Which subjects actually have mapped topics? Only FR for now.
-  list.innerHTML = data.map(s=>{
-    const active = s.code==='FR'; // pilot: only FR is mapped
-    const badge = active ? '' : '<span style="font-size:10px;background:#E2E8F0;color:#64748B;padding:2px 8px;border-radius:8px;margin-left:8px;">Coming soon</span>';
-    return '<div onclick="'+(active?'qualOpenTopics(\''+s.id+'\',\''+qualEsc(s.code)+'\',\''+qualEsc(s.name)+'\')':'')+'" style="display:flex;align-items:center;gap:12px;padding:15px;margin-bottom:10px;border-radius:14px;background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);cursor:'+(active?'pointer':'default')+';opacity:'+(active?'1':'.55')+';">'+
-      '<div style="width:44px;height:44px;border-radius:10px;background:'+(active?'#EEF2FF':'#F1F5F9')+';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:'+(active?'#5B54D6':'#94A3B8')+';">'+qualEsc(s.code)+'</div>'+
-      '<div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:14px;color:var(--text);">'+qualEsc(s.name)+badge+'</div>'+
-      '<div style="font-size:11px;color:var(--muted);">'+qualEsc(s.level||'')+'</div></div>'+
-      (active?'<div style="color:var(--muted);font-size:18px;">›</div>':'')+'</div>';
-  }).join('');
+  const withTopics = new Set((mapped||[]).map(r=>r.subject_id));
+  // Group by level, preserving sort_order
+  const levels = [];
+  data.forEach(s=>{ if(!levels.includes(s.level)) levels.push(s.level); });
+  let html = '';
+  levels.forEach(lv=>{
+    html += '<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:14px 0 8px;">'+qualEsc(lv||'Other')+'</div>';
+    html += data.filter(s=>s.level===lv).map(s=>{
+      const active = withTopics.has(s.id); // active ONLY if it has topics mapped
+      const badge = active ? '' : '<span style="font-size:10px;background:#E2E8F0;color:#64748B;padding:2px 8px;border-radius:8px;margin-left:8px;">Coming soon</span>';
+      return '<div onclick="'+(active?'qualOpenTopics(\''+s.id+'\',\''+qualEsc(s.code)+'\',\''+qualEsc(s.name)+'\')':'')+'" style="display:flex;align-items:center;gap:12px;padding:14px;margin-bottom:9px;border-radius:14px;background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);cursor:'+(active?'pointer':'default')+';opacity:'+(active?'1':'.55')+';">'+
+        '<div style="width:44px;height:44px;border-radius:10px;background:'+(active?'#EEF2FF':'#F1F5F9')+';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:'+(active?'#5B54D6':'#94A3B8')+';">'+qualEsc(s.code)+'</div>'+
+        '<div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:14px;color:var(--text);">'+qualEsc(s.name)+badge+'</div>'+
+        '<div style="font-size:11px;color:var(--muted);">'+qualEsc(s.code)+'</div></div>'+
+        (active?'<div style="color:var(--muted);font-size:18px;">›</div>':'')+'</div>';
+    }).join('');
+  });
+  list.innerHTML = html;
 }
 
 async function qualOpenTopics(subjectId, code, name){
