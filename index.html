@@ -2006,6 +2006,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div class="fm-qa-card fm-qa-green"  onclick="checkFeatureLimitAndEnter('fm_drcr','drcr',()=>fmCardTap(this,'drcr'))"      data-e="⚖️"><span class="fm-qa-emoji">⚖️</span><div class="fm-qa-title">Debit &amp; Credit</div><div class="fm-qa-sub">Journal entry drill</div></div>
     <div class="fm-qa-card fm-qa-purple" onclick="fmCardTap(this,'topics')"    data-e="📚"><span class="fm-qa-emoji">📚</span><div class="fm-qa-title">Topic Library</div><div class="fm-qa-sub">All 81 standards</div></div>
     <div class="fm-qa-card fm-qa-cyan"   onclick="fmCardTapFn(this,openLibrary)" data-e="📖"><span class="fm-qa-emoji">📖</span><div class="fm-qa-title">Study Notes</div><div class="fm-qa-sub">IFRS · IAS · Costing · Tax · FM</div></div>
+    <div class="fm-qa-card fm-qa-indigo" onclick="fmCardTapFn(this,openQualifications)" data-e="🎓"><span class="fm-qa-emoji">🎓</span><div class="fm-qa-title">Qualifications</div><div class="fm-qa-sub">ACCA · CA · CMA · CPA</div></div>
     <div class="fm-qa-card fm-qa-teal"   onclick="fmCardTap(this,'askai')"     data-e="🤖"><span class="fm-qa-emoji">🤖</span><div class="fm-qa-title">Ask the AI</div><div class="fm-qa-sub">Chat any standard</div><div class="fm-qa-badge">AI</div></div>
     <div class="fm-qa-card fm-qa-rose"   onclick="checkFeatureLimitAndEnter('fm_vlt','vault',()=>fmCardTap(this,'vault'))"     data-e="🗄️"><span class="fm-qa-emoji">🗄️</span><div class="fm-qa-title">Mistake Vault</div><div class="fm-qa-sub">Weak spot focus</div></div>
     <div class="fm-qa-card fm-qa-indigo" onclick="checkFeatureLimitAndEnter('fm_cmp','challenge',()=>fmCardTap(this,'challenge'))" data-e="⚔️"><span class="fm-qa-emoji">⚔️</span><div class="fm-qa-title">Challenge</div><div class="fm-qa-sub">Live battle mode</div></div>
@@ -3287,6 +3288,48 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div style="font-size:12px;color:var(--muted);">Back to Study Notes</div>
   </div>
   <div id="lib-detail"></div>
+</div>
+
+<!-- ══ QUALIFICATIONS (PRO) — drill-down ══ -->
+<div class="screen" id="screen-qualifications">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="showScreen('home')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text);padding:4px;">←</button>
+    <div>
+      <div style="font-family:var(--font-display,serif);font-size:22px;font-weight:800;color:var(--navy,#0A1F6E);line-height:1.1;">🎓 Qualifications</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px;">Choose your professional path</div>
+    </div>
+  </div>
+  <div id="qual-list"><div style="text-align:center;padding:40px 16px;color:var(--muted);font-size:13px;">⏳ Loading...</div></div>
+</div>
+
+<div class="screen" id="screen-qual-subjects">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="showScreen('qualifications')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text);padding:4px;">←</button>
+    <div>
+      <div id="qual-subj-title" style="font-family:var(--font-display,serif);font-size:22px;font-weight:800;color:var(--navy,#0A1F6E);line-height:1.1;">Subjects</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px;">Select a subject</div>
+    </div>
+  </div>
+  <div id="qual-subj-list"></div>
+</div>
+
+<div class="screen" id="screen-qual-topics">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="showScreen('qual-subjects')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text);padding:4px;">←</button>
+    <div>
+      <div id="qual-topics-title" style="font-family:var(--font-display,serif);font-size:22px;font-weight:800;color:var(--navy,#0A1F6E);line-height:1.1;">Topics</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px;">Study &amp; practice by topic</div>
+    </div>
+  </div>
+  <div id="qual-topics-list"></div>
+</div>
+
+<div class="screen" id="screen-qual-topic-detail">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="showScreen('qual-topics')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text);padding:4px;">←</button>
+    <div style="font-size:12px;color:var(--muted);">Back to topics</div>
+  </div>
+  <div id="qual-topic-detail"></div>
 </div>
 
 <!-- ══ COIN SHOP ══ -->
@@ -12017,6 +12060,7 @@ const _origAnswerQ=answerQ;
 .fm-qa-indigo { background: #7E80F3; }
 .fm-qa-rose   { background: #F065AA; }
 .fm-qa-cyan   { background: #0EA5A5; }
+.fm-qa-indigo { background: #5B54D6; }
 .fm-qa-emoji  { font-size: 28px; margin-bottom: 8px; display: block; }
 .fm-qa-title  { font-size: 13px; font-weight: 900; margin-bottom: 2px; color: #fff; }
 .fm-qa-sub    { font-size: 10px; opacity: .75; font-weight: 700; color: #fff; }
@@ -13185,6 +13229,7 @@ body.onboard-visible #fm-float-fox {
 .fm-qa-indigo { background: #7E80F3 !important; }
 .fm-qa-rose   { background: #F065AA !important; }
 .fm-qa-cyan   { background: #0EA5A5 !important; }
+.fm-qa-indigo { background: #5B54D6 !important; }
 .fm-qa-card:active { transform: scale(.96) !important; }
 
 /* ── 9. LUMINOUS HERO LIGHT ── */
@@ -13356,6 +13401,7 @@ body.onboard-visible #fm-float-fox {
 .fm-qa-indigo { background: #7E80F3; }
 .fm-qa-rose   { background: #F065AA; }
 .fm-qa-cyan   { background: #0EA5A5; }
+.fm-qa-indigo { background: #5B54D6; }
 
 /* ── 9. HIDE NAV + FOX DURING AUTH ── */
 body.auth-visible .nav,
@@ -18743,6 +18789,129 @@ function showStudyNotesSignupCard(){
   overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
   document.body.appendChild(overlay);
 }
+
+// ════════════════════════════════════════════════════════════════════════════
+// ── PROFESSIONAL QUALIFICATIONS (PRO) — drill-down, reuses shared content ──
+// ════════════════════════════════════════════════════════════════════════════
+let QUAL_QUALS = [], QUAL_SUBJECTS = [], QUAL_TOPICS = [];
+let QUAL_CUR_QUAL = null, QUAL_CUR_SUBJECT = null;
+
+async function qualFetch(path){
+  const res = await fetch(SUPA_URL + '/rest/v1/' + path, {
+    headers:{ 'apikey': SUPA_KEY, 'Authorization':'Bearer '+SUPA_KEY, 'Content-Type':'application/json' }
+  });
+  if(!res.ok){ console.error('Qual fetch', res.status, path); return null; }
+  return await res.json();
+}
+
+async function openQualifications(){
+  // ── PRO GATE (DISABLED FOR TESTING — re-enable before launch) ──
+  // To restore Pro-only access later, uncomment the 3 lines below:
+  // if(typeof isPro==='function' && !isPro()){
+  //   if(typeof showProLockedPopup==='function') showProLockedPopup('Qualifications');
+  //   return;
+  // }
+  showScreen('qualifications');
+  const list = document.getElementById('qual-list');
+  const data = await qualFetch('qualifications?select=*&is_active=eq.true&order=sort_order');
+  if(!data){ list.innerHTML='<div style="text-align:center;padding:40px;color:#F59E0B;font-size:13px;">Couldn\'t load. Try again.</div>'; return; }
+  QUAL_QUALS = data;
+  list.innerHTML = data.map(q=>{
+    const active = q.code==='ACCA'; // only ACCA has content for now
+    const badge = active ? '' : '<span style="font-size:10px;background:#E2E8F0;color:#64748B;padding:2px 8px;border-radius:8px;margin-left:8px;">Coming soon</span>';
+    return '<div onclick="'+(active?'qualOpenSubjects(\''+q.id+'\',\''+qualEsc(q.code)+'\',\''+qualEsc(q.name)+'\')':'')+'" style="display:flex;align-items:center;gap:14px;padding:18px;margin-bottom:12px;border-radius:16px;background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);cursor:'+(active?'pointer':'default')+';opacity:'+(active?'1':'.6')+';">'+
+      '<div style="width:48px;height:48px;border-radius:12px;background:'+(active?'#5B54D6':'#CBD5E1')+';display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;font-weight:800;">'+qualEsc(q.code.substring(0,2))+'</div>'+
+      '<div style="flex:1;min-width:0;"><div style="font-weight:800;font-size:15px;color:var(--text);">'+qualEsc(q.code)+badge+'</div>'+
+      '<div style="font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+qualEsc(q.name)+'</div></div>'+
+      (active?'<div style="color:var(--muted);font-size:18px;">›</div>':'')+'</div>';
+  }).join('');
+}
+
+async function qualOpenSubjects(qualId, code, name){
+  QUAL_CUR_QUAL = {id:qualId, code, name};
+  showScreen('qual-subjects');
+  document.getElementById('qual-subj-title').textContent = code;
+  const list = document.getElementById('qual-subj-list');
+  list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">⏳ Loading...</div>';
+  const data = await qualFetch('qual_subjects?select=*&qualification_id=eq.'+qualId+'&is_active=eq.true&order=sort_order');
+  if(!data){ list.innerHTML='<div style="text-align:center;padding:40px;color:#F59E0B;">Couldn\'t load.</div>'; return; }
+  QUAL_SUBJECTS = data;
+  // Which subjects actually have mapped topics? Only FR for now.
+  list.innerHTML = data.map(s=>{
+    const active = s.code==='FR'; // pilot: only FR is mapped
+    const badge = active ? '' : '<span style="font-size:10px;background:#E2E8F0;color:#64748B;padding:2px 8px;border-radius:8px;margin-left:8px;">Coming soon</span>';
+    return '<div onclick="'+(active?'qualOpenTopics(\''+s.id+'\',\''+qualEsc(s.code)+'\',\''+qualEsc(s.name)+'\')':'')+'" style="display:flex;align-items:center;gap:12px;padding:15px;margin-bottom:10px;border-radius:14px;background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);cursor:'+(active?'pointer':'default')+';opacity:'+(active?'1':'.55')+';">'+
+      '<div style="width:44px;height:44px;border-radius:10px;background:'+(active?'#EEF2FF':'#F1F5F9')+';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:'+(active?'#5B54D6':'#94A3B8')+';">'+qualEsc(s.code)+'</div>'+
+      '<div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:14px;color:var(--text);">'+qualEsc(s.name)+badge+'</div>'+
+      '<div style="font-size:11px;color:var(--muted);">'+qualEsc(s.level||'')+'</div></div>'+
+      (active?'<div style="color:var(--muted);font-size:18px;">›</div>':'')+'</div>';
+  }).join('');
+}
+
+async function qualOpenTopics(subjectId, code, name){
+  QUAL_CUR_SUBJECT = {id:subjectId, code, name};
+  showScreen('qual-topics');
+  document.getElementById('qual-topics-title').textContent = code + ' — Topics';
+  const list = document.getElementById('qual-topics-list');
+  list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">⏳ Loading...</div>';
+  // Fetch mapping → topics_master (embedded)
+  const data = await qualFetch('subject_topics?select=sort_order,topics_master(*)&subject_id=eq.'+subjectId+'&is_active=eq.true&order=sort_order');
+  if(!data){ list.innerHTML='<div style="text-align:center;padding:40px;color:#F59E0B;">Couldn\'t load.</div>'; return; }
+  QUAL_TOPICS = data.map(r=>r.topics_master).filter(Boolean);
+  // Split standards vs concepts
+  const standards = QUAL_TOPICS.filter(t=>t.topic_type==='standard');
+  const concepts  = QUAL_TOPICS.filter(t=>t.topic_type!=='standard');
+  let html = '';
+  if(standards.length){
+    html += '<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:4px 0 8px;">Standards</div>';
+    html += standards.map(qualTopicRow).join('');
+  }
+  if(concepts.length){
+    html += '<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:16px 0 8px;">Core Concepts</div>';
+    html += concepts.map(qualTopicRow).join('');
+  }
+  list.innerHTML = html || '<div style="text-align:center;padding:40px;color:var(--muted);">No topics yet.</div>';
+}
+
+function qualTopicRow(t){
+  const idx = QUAL_TOPICS.indexOf(t);
+  const hasContent = !!t.standard; // standard topics have content; concepts don't yet
+  const sub = hasContent ? qualEsc(t.name) : '<span style="color:#94A3B8;">Content coming soon</span>';
+  return '<div onclick="'+(hasContent?'qualOpenTopicDetail('+idx+')':'')+'" style="display:flex;align-items:center;gap:12px;padding:13px;margin-bottom:9px;border-radius:12px;background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);cursor:'+(hasContent?'pointer':'default')+';opacity:'+(hasContent?'1':'.6')+';">'+
+    '<div style="width:40px;height:40px;border-radius:9px;background:'+(hasContent?'#EEF2FF':'#F1F5F9')+';display:flex;align-items:center;justify-content:center;font-size:16px;">'+(hasContent?'📄':'🔒')+'</div>'+
+    '<div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:13.5px;color:var(--text);">'+qualEsc(t.code)+'</div>'+
+    '<div style="font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+sub+'</div></div>'+
+    (hasContent?'<div style="color:var(--muted);font-size:16px;">›</div>':'')+'</div>';
+}
+
+function qualOpenTopicDetail(idx){
+  const t = QUAL_TOPICS[idx];
+  if(!t || !t.standard) return;
+  const box = document.getElementById('qual-topic-detail');
+  box.innerHTML =
+    '<div style="margin-bottom:4px;"><span style="display:inline-block;padding:3px 10px;border-radius:20px;background:#5B54D6;color:#fff;font-size:11px;font-weight:700;">'+qualEsc(QUAL_CUR_SUBJECT.code)+'</span></div>'+
+    '<div style="font-family:var(--font-display,serif);font-size:22px;font-weight:800;color:var(--navy,#0A1F6E);line-height:1.2;margin:6px 0 2px;">'+qualEsc(t.code)+'</div>'+
+    '<div style="font-size:14px;color:var(--steel,#475569);font-weight:600;margin-bottom:20px;">'+qualEsc(t.name)+'</div>'+
+    '<button onclick="qualStudyTopic(\''+qualEsc(t.standard)+'\')" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;margin-bottom:12px;background:var(--navy,#0A1F6E);color:#fff;border:none;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer;font-family:var(--font-body);">📖 Study Material</button>'+
+    '<button onclick="qualPracticeTopic(\''+qualEsc(t.standard)+'\')" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;background:#5B54D6;color:#fff;border:none;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer;font-family:var(--font-body);">⚔️ Practice MCQs</button>';
+  showScreen('qual-topic-detail');
+  window.scrollTo(0,0);
+}
+
+// Study Material → reuse the Study Notes renderer by loading that standard's summary
+async function qualStudyTopic(standard){
+  if(!LIB_LOADED){ await loadLibrarySummaries(); }
+  const idx = LIBRARY_DATA.findIndex(s=>s.standard===standard);
+  if(idx>=0){ openLibraryTopic(idx); }
+  else { if(typeof toast==='function') toast('Study material not available for '+standard); }
+}
+
+// Practice → reuse the existing practice engine
+function qualPracticeTopic(standard){
+  if(typeof startTopicPractice==='function') startTopicPractice(standard);
+}
+
+function qualEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,"\\'"); }
 
 async function openLibrary(){
   // ── SIGNUP GATE: guests see a card explaining what they'll unlock ──
