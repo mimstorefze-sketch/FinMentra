@@ -18843,16 +18843,10 @@ async function qualSearchTopics(query){
     }).join('');
 }
 
-// Open a searched topic directly into its detail (study + practice)
+// Open a searched topic directly into its detail (study + practice, in-flow)
 function qualSearchOpen(standard, name){
   QUAL_CUR_SUBJECT = QUAL_CUR_SUBJECT || {code:'', name:''};
-  const box = document.getElementById('qual-topic-detail');
-  box.innerHTML =
-    '<div style="font-family:var(--font-display,serif);font-size:22px;font-weight:800;color:var(--navy,#0A1F6E);line-height:1.2;margin:0 0 20px;">'+qualEsc(name)+'</div>'+
-    '<button onclick="qualStudyTopic(\''+qualEsc(standard)+'\')" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;margin-bottom:12px;background:var(--navy,#0A1F6E);color:#fff;border:none;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer;font-family:var(--font-body);">📖 Study Material</button>'+
-    '<button onclick="qualPracticeTopic(\''+qualEsc(standard)+'\')" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;background:#5B54D6;color:#fff;border:none;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer;font-family:var(--font-body);">⚔️ Practice MCQs</button>';
-  showScreen('qual-topic-detail');
-  window.scrollTo(0,0);
+  qualRenderStudyDetail(standard, name, (QUAL_CUR_SUBJECT&&QUAL_CUR_SUBJECT.code)||'', '');
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -19052,25 +19046,62 @@ function qualTopicRow(t){
     (hasContent?'<div style="color:var(--muted);font-size:16px;flex:0 0 auto;">›</div>':'')+'</div>';
 }
 
-function qualOpenTopicDetail(idx){
+async function qualOpenTopicDetail(idx){
   const t = QUAL_TOPICS[idx];
   if(!t || !t.standard) return;
+  await qualRenderStudyDetail(t.standard, t.name, (QUAL_CUR_SUBJECT&&QUAL_CUR_SUBJECT.code)||'', (t.topic_type==='standard'?t.code:''));
+}
+
+// Render study material + MCQ button directly into the qual-topic-detail screen.
+// Stays inside the Qualifications flow so the back button (→ qual-topics) works correctly.
+async function qualRenderStudyDetail(standard, name, subjCode, stdCode){
   const box = document.getElementById('qual-topic-detail');
-  box.innerHTML =
-    '<div style="margin-bottom:4px;"><span style="display:inline-block;padding:3px 10px;border-radius:20px;background:#5B54D6;color:#fff;font-size:11px;font-weight:700;">'+qualEsc(QUAL_CUR_SUBJECT.code)+'</span>'+(t.topic_type==='standard'?'<span style="display:inline-block;margin-left:6px;padding:3px 10px;border-radius:20px;background:#EEF2FF;color:#5B54D6;font-size:11px;font-weight:800;">'+qualEsc(t.code)+'</span>':'')+'</div>'+
-    '<div style="font-family:var(--font-display,serif);font-size:22px;font-weight:800;color:var(--navy,#0A1F6E);line-height:1.2;margin:6px 0 20px;">'+qualEsc(t.name)+'</div>'+
-    '<button onclick="qualStudyTopic(\''+qualEsc(t.standard)+'\')" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;margin-bottom:12px;background:var(--navy,#0A1F6E);color:#fff;border:none;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer;font-family:var(--font-body);">📖 Study Material</button>'+
-    '<button onclick="qualPracticeTopic(\''+qualEsc(t.standard)+'\')" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;background:#5B54D6;color:#fff;border:none;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer;font-family:var(--font-body);">⚔️ Practice MCQs</button>';
+  if(!box) return;
   showScreen('qual-topic-detail');
+  window.scrollTo(0,0);
+  box.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">⏳ Loading study material…</div>';
+  // Ensure summaries are loaded
+  if(typeof LIB_LOADED!=='undefined' && !LIB_LOADED){ if(typeof loadLibrarySummaries==='function') await loadLibrarySummaries(); }
+  const s = (typeof LIBRARY_DATA!=='undefined') ? LIBRARY_DATA.find(x=>x.standard===standard) : null;
+
+  // Header (subject + code badges + title)
+  let html =
+    '<div style="margin-bottom:4px;">'+
+      '<span style="display:inline-block;padding:3px 10px;border-radius:20px;background:#5B54D6;color:#fff;font-size:11px;font-weight:700;">'+qualEsc(subjCode||'')+'</span>'+
+      (stdCode?'<span style="display:inline-block;margin-left:6px;padding:3px 10px;border-radius:20px;background:#EEF2FF;color:#5B54D6;font-size:11px;font-weight:800;">'+qualEsc(stdCode)+'</span>':'')+
+    '</div>'+
+    '<div style="font-family:var(--font-display,serif);font-size:22px;font-weight:800;color:var(--navy,#0A1F6E);line-height:1.2;margin:6px 0 16px;">'+qualEsc(name)+'</div>';
+
+  if(s){
+    const esc = (typeof escapeHtmlLib==='function') ? escapeHtmlLib : qualEsc;
+    const kp = (s.key_points||'').split('\n').filter(x=>x.trim()).map(x=>'<li style="margin-bottom:7px;line-height:1.5;">'+esc(x.trim())+'</li>').join('');
+    const hasJE = s.journal_entry_dr && s.journal_entry_dr!=='N/A';
+    const jeBlock = hasJE ? ('<div style="margin-top:16px;"><div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:6px;">Typical Journal Entry</div><div style="background:var(--blue-ll,#eef4ff);border-radius:10px;padding:12px;font-family:var(--font-mono,monospace);font-size:12.5px;line-height:1.7;"><div><b>Dr</b> '+esc(s.journal_entry_dr)+'</div><div style="padding-left:18px;"><b>Cr</b> '+esc(s.journal_entry_cr||'')+'</div></div></div>') : '';
+    const exBlock = s.mini_example ? ('<div style="margin-top:16px;"><div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:6px;">Worked Example</div><div style="background:#F0FBF6;border:1px solid #C9EEDD;border-radius:10px;padding:12px;font-size:13px;line-height:1.7;white-space:pre-line;">'+esc(s.mini_example)+'</div></div>') : '';
+    const trapBlock = s.exam_trap ? ('<div style="margin-top:16px;"><div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#B45309;margin-bottom:6px;">⚠️ Exam Traps</div><div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:12px;font-size:13px;line-height:1.7;white-space:pre-line;">'+esc(s.exam_trap)+'</div></div>') : '';
+    html +=
+      '<div style="background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);border-radius:14px;padding:16px;">'+
+        '<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:6px;">Core Principle</div>'+
+        '<div style="font-size:14px;line-height:1.6;">'+esc(s.core_principle||'')+'</div>'+
+        (kp?'<div style="margin-top:16px;"><div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:6px;">Key Points</div><ul style="margin:0;padding-left:18px;font-size:13.5px;">'+kp+'</ul></div>':'')+
+        exBlock + jeBlock + trapBlock +
+      '</div>';
+  } else {
+    html += '<div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:12px;padding:16px;font-size:13px;color:#B45309;line-height:1.6;">Study material isn\'t available for this topic yet — you can still practise the MCQs below.</div>';
+  }
+
+  // MCQ button (always shown)
+  html += '<button onclick="qualPracticeTopic(\''+qualEsc(standard)+'\')" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;margin-top:16px;background:#5B54D6;color:#fff;border:none;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer;font-family:var(--font-body);">⚔️ Practice MCQs</button>'+
+    '<div style="font-size:10px;color:var(--muted);opacity:.75;line-height:1.4;margin-top:14px;text-align:center;">Independent study resource — not affiliated with any professional body. For study purposes only.</div>'+
+    '<div style="height:20px;"></div>';
+
+  box.innerHTML = html;
   window.scrollTo(0,0);
 }
 
-// Study Material → reuse the Study Notes renderer by loading that standard's summary
+// Search path → open a topic's study+practice detail (same in-flow renderer)
 async function qualStudyTopic(standard){
-  if(!LIB_LOADED){ await loadLibrarySummaries(); }
-  const idx = LIBRARY_DATA.findIndex(s=>s.standard===standard);
-  if(idx>=0){ openLibraryTopic(idx); }
-  else { if(typeof toast==='function') toast('Study material not available for '+standard); }
+  await qualRenderStudyDetail(standard, (QUAL_CUR_SUBJECT&&QUAL_CUR_SUBJECT.name)||standard, (QUAL_CUR_SUBJECT&&QUAL_CUR_SUBJECT.code)||'', '');
 }
 
 // Practice → reuse the existing practice engine
