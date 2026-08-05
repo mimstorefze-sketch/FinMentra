@@ -3299,6 +3299,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <div style="font-size:12px;color:var(--muted);margin-top:2px;">Choose your professional path</div>
     </div>
   </div>
+  <div style="font-size:10px;color:var(--muted);opacity:.75;line-height:1.4;margin-bottom:10px;">Independent study resource — not affiliated with any professional body. For study purposes only.</div>
   <input id="qual-topic-search" type="text" placeholder="🔍 Search any topic (e.g. Revenue, Leases, Ratio...)" oninput="qualSearchTopics(this.value)" style="width:100%;box-sizing:border-box;padding:12px 14px;margin-bottom:12px;border:1px solid var(--border,#e2e8f0);border-radius:12px;font-size:13.5px;font-family:var(--font-body);background:var(--surface,#fff);color:var(--text);" />
   <div id="qual-search-results"></div>
   <div id="qual-list"><div style="text-align:center;padding:40px 16px;color:var(--muted);font-size:13px;">⏳ Loading...</div></div>
@@ -3312,6 +3313,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <div style="font-size:12px;color:var(--muted);margin-top:2px;">Select a subject</div>
     </div>
   </div>
+  <div style="font-size:10px;color:var(--muted);opacity:.75;line-height:1.4;margin-bottom:10px;">Independent study resource — not affiliated with any professional body. For study purposes only.</div>
   <div id="qual-subj-list"></div>
 </div>
 
@@ -3323,6 +3325,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <div style="font-size:12px;color:var(--muted);margin-top:2px;">Study &amp; practice by topic</div>
     </div>
   </div>
+  <div style="font-size:10px;color:var(--muted);opacity:.75;line-height:1.4;margin-bottom:10px;">Independent study resource — not affiliated with any professional body. For study purposes only.</div>
   <div id="qual-topics-list"></div>
 </div>
 
@@ -3331,6 +3334,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <button onclick="showScreen('qual-topics')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text);padding:4px;">←</button>
     <div style="font-size:12px;color:var(--muted);">Back to topics</div>
   </div>
+  <div style="font-size:10px;color:var(--muted);opacity:.75;line-height:1.4;margin-bottom:10px;">Independent study resource — not affiliated with any professional body. For study purposes only.</div>
   <div id="qual-topic-detail"></div>
 </div>
 
@@ -14203,6 +14207,8 @@ async function loadUserProgress() {
         try{ localStorage.setItem('fm_tier','pro'); }catch(e){}
       }
       _planLoaded = true; // plan confirmed from Supabase
+      // Load Qualifications T&C-accepted flag (non-blocking)
+      try{ if(typeof loadQualTCFlag==='function') loadQualTCFlag(); }catch(e){}
       // If pro — clear daily question count so no limit popup shows
       if(isPro()){
         try{
@@ -18849,13 +18855,108 @@ function qualSearchOpen(standard, name){
   window.scrollTo(0,0);
 }
 
+// ══════════════════════════════════════════════════════════════
+// QUALIFICATIONS — TERMS & CONDITIONS GATE (first-time, Pro users)
+// ══════════════════════════════════════════════════════════════
+// Returns true if the current user has already accepted the Qualifications T&C.
+// Checks in-memory flag first, then localStorage (fast, offline-safe).
+// The Supabase-backed flag is loaded into S.qualTCAccepted by loadQualTCFlag().
+function qualTCAccepted(){
+  try{
+    if(S && S.qualTCAccepted === true) return true;
+    // Per-account localStorage key (falls back to a generic key for safety)
+    var uid = (typeof _currentUser!=='undefined' && _currentUser && _currentUser.id) ? _currentUser.id : 'anon';
+    if(localStorage.getItem('fm_qual_tc_'+uid) === '1') return true;
+  }catch(e){}
+  return false;
+}
+
+// Load the T&C-accepted flag from Supabase into S (called after login / plan load).
+async function loadQualTCFlag(){
+  try{
+    if(typeof _currentUser==='undefined' || !_currentUser || typeof _supa==='undefined') return;
+    const { data } = await _supa.from('user_progress').select('qual_tc_accepted').eq('user_id', _currentUser.id).single();
+    if(data && data.qual_tc_accepted === true){
+      S.qualTCAccepted = true;
+      try{ localStorage.setItem('fm_qual_tc_'+_currentUser.id, '1'); }catch(e){}
+    }
+  }catch(e){ /* column may not exist yet or offline — non-fatal */ }
+}
+
+// Persist acceptance to Supabase + localStorage + memory.
+async function saveQualTCFlag(){
+  S.qualTCAccepted = true;
+  try{
+    var uid = (typeof _currentUser!=='undefined' && _currentUser && _currentUser.id) ? _currentUser.id : 'anon';
+    localStorage.setItem('fm_qual_tc_'+uid, '1');
+  }catch(e){}
+  try{
+    if(typeof _currentUser!=='undefined' && _currentUser && typeof _supa!=='undefined'){
+      await _supa.from('user_progress').update({ qual_tc_accepted: true }).eq('user_id', _currentUser.id);
+    }
+  }catch(e){ /* non-fatal — localStorage still holds the flag */ }
+}
+
+// First-time Terms & Conditions modal for the Qualifications section.
+function showQualTCModal(){
+  document.querySelectorAll('.qual-tc-overlay').forEach(e=>e.remove());
+  const overlay = document.createElement('div');
+  overlay.className = 'qual-tc-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:3200;background:rgba(10,31,110,0.90);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:16px;box-sizing:border-box;';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:22px;padding:26px 22px;max-width:380px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.35);';
+  box.innerHTML =
+    '<div style="text-align:center;font-size:40px;margin-bottom:8px;">📘</div>'+
+    '<div style="font-family:var(--font-display,serif);font-size:20px;font-weight:800;color:#0A1F6E;text-align:center;line-height:1.25;margin-bottom:14px;">Before you begin</div>'+
+    '<div style="font-size:13px;color:#334155;line-height:1.65;margin-bottom:14px;">'+
+      'Please read and accept the following before accessing the Qualifications study materials:'+
+    '</div>'+
+    '<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:14px;font-size:12.5px;color:#475569;line-height:1.6;margin-bottom:16px;">'+
+      '<div style="font-weight:800;color:#0A1F6E;margin-bottom:6px;">Independent study resource</div>'+
+      'FinMentra is an independent study and revision resource. We are <b>not affiliated with, associated with, endorsed by, or approved by</b> ACCA, or any other professional accountancy body or examining organisation.'+
+      '<div style="height:8px;"></div>'+
+      'Qualification and subject names are used purely for identification and educational reference, and remain the property of their respective owners.'+
+      '<div style="height:8px;"></div>'+
+      'All study materials and practice questions are <b>original content</b> created to support learning. They are not official study materials, past exam papers, or a substitute for them. This content does not guarantee exam success and should be used alongside official resources.'+
+    '</div>'+
+    '<label style="display:flex;align-items:flex-start;gap:9px;cursor:pointer;margin-bottom:16px;font-size:12.5px;color:#334155;line-height:1.5;">'+
+      '<input type="checkbox" id="qual-tc-check" style="margin-top:2px;width:18px;height:18px;flex:0 0 auto;cursor:pointer;accent-color:#5B54D6;" onchange="var b=document.getElementById(\'qual-tc-accept\');if(b){b.disabled=!this.checked;b.style.opacity=this.checked?\'1\':\'.5\';b.style.cursor=this.checked?\'pointer\':\'not-allowed\';}">'+
+      '<span>I have read and agree to the above. I understand FinMentra is an independent resource and is not affiliated with any professional body.</span>'+
+    '</label>';
+  const acceptBtn = document.createElement('button');
+  acceptBtn.id = 'qual-tc-accept';
+  acceptBtn.disabled = true;
+  acceptBtn.style.cssText = 'width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#5B54D6,#7C6FF0);color:#fff;font-size:15px;font-weight:800;border:none;cursor:not-allowed;opacity:.5;font-family:inherit;margin-bottom:10px;';
+  acceptBtn.textContent = 'Agree & Continue';
+  acceptBtn.onclick = async function(){
+    acceptBtn.disabled = true; acceptBtn.textContent = 'Saving…';
+    await saveQualTCFlag();
+    overlay.remove();
+    _openQualificationsInner();
+  };
+  const cancelBtn = document.createElement('button');
+  cancelBtn.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.onclick = function(){ overlay.remove(); };
+  box.appendChild(acceptBtn); box.appendChild(cancelBtn);
+  overlay.appendChild(box); document.body.appendChild(overlay);
+}
+
 async function openQualifications(){
-  // ── PRO GATE (DISABLED FOR TESTING — re-enable before launch) ──
-  // To restore Pro-only access later, uncomment the 3 lines below:
-  // if(typeof isPro==='function' && !isPro()){
-  //   if(typeof showProLockedPopup==='function') showProLockedPopup('Qualifications');
-  //   return;
-  // }
+  // ── PRO GATE (Qualifications is Pro-only) ──
+  if(typeof isPro==='function' && !isPro()){
+    if(typeof showProLockedPopup==='function') showProLockedPopup('Qualifications');
+    return;
+  }
+  // ── FIRST-TIME TERMS & CONDITIONS GATE (Pro users must accept once) ──
+  if(typeof qualTCAccepted==='function' && !qualTCAccepted()){
+    if(typeof showQualTCModal==='function'){ showQualTCModal(); return; }
+  }
+  _openQualificationsInner();
+}
+
+// Actual Qualifications loader (called after Pro + T&C checks pass)
+async function _openQualificationsInner(){
   showScreen('qualifications');
   const _sb = document.getElementById('qual-topic-search'); if(_sb) _sb.value='';
   const _sr = document.getElementById('qual-search-results'); if(_sr) _sr.innerHTML='';
