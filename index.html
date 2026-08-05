@@ -18943,6 +18943,10 @@ function showQualTCModal(){
 }
 
 async function openQualifications(){
+  // ── GUEST GATE: not logged in → show signup card (matches Study Notes funnel) ──
+  if(typeof _currentUser === 'undefined' || !_currentUser){
+    if(typeof showStudyNotesSignupCard==='function'){ showStudyNotesSignupCard(); return; }
+  }
   // ── PRO GATE (Qualifications is Pro-only) ──
   if(typeof isPro==='function' && !isPro()){
     if(typeof showProLockedPopup==='function') showProLockedPopup('Qualifications');
