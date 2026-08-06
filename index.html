@@ -5489,7 +5489,7 @@ function updatePlanUI(){
       : '<div style="font-size:10px;color:var(--gold);font-weight:800;margin-bottom:8px;">🎉 Launch offer · 50% off</div>') +
     '<ul style="list-style:none;font-size:12px;display:flex;flex-direction:column;gap:5px;margin-bottom:12px;">' +
       '<li>✓ Unlimited questions</li>' +
-      '<li>✓ <strong>Unlimited AI questions/month</strong></li>' +
+      '<li>✓ <strong>50 AI questions/month</strong></li>' +
       '<li>✓ All Pro tools (FS Builder, JE Builder)</li>' +
       '<li>✓ Study buddy matching</li>' +
       '<li>✓ Multiplayer & challenge mode</li>' +
@@ -10154,6 +10154,42 @@ function showProLockedPopup(featureName){
   closeBtn.onclick = function(){ overlay.remove(); };
   box.appendChild(upBtn); box.appendChild(closeBtn);
   overlay.appendChild(box); document.body.appendChild(overlay);
+}
+
+// ── PRO LOCK FOR QUALIFICATIONS SUBTOPICS ──
+function showQualProLockedPopup(){
+  document.querySelectorAll('.qual-pro-locked-overlay').forEach(e=>e.remove());
+  const overlay = document.createElement('div');
+  overlay.className = 'qual-pro-locked-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.88);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:16px;';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:24px;padding:32px 24px;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);';
+  box.innerHTML =
+    '<div style="font-size:48px;margin-bottom:14px;">🔐</div>'+
+    '<div style="font-family:var(--font-display);font-size:24px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Unlock Full Access</div>'+
+    '<div style="font-size:14px;color:#64748B;line-height:1.7;margin-bottom:22px;">Explore all ACCA, CPA, CMA & CA subjects, topics, and questions with Pro.</div>'+
+    '<div style="background:#EEF2FF;border-radius:14px;padding:14px;margin-bottom:20px;text-align:left;">'+
+      '<div style="font-size:13px;font-weight:700;color:#0A1F6E;padding:4px 0;display:flex;align-items:center;gap:8px;"><span>✅</span><span>Access all Professional Qualifications</span></div>'+
+      '<div style="font-size:13px;font-weight:700;color:#0A1F6E;padding:4px 0;display:flex;align-items:center;gap:8px;"><span>✅</span><span>Unlimited practice questions</span></div>'+
+      '<div style="font-size:13px;font-weight:700;color:#0A1F6E;padding:4px 0;display:flex;align-items:center;gap:8px;"><span>✅</span><span>Unlimited AI tutor</span></div>'+
+      '<div style="font-size:13px;font-weight:700;color:#0A1F6E;padding:4px 0;display:flex;align-items:center;gap:8px;"><span>✅</span><span>Challenge mode & multiplayer</span></div>'+
+      '<div style="font-size:13px;font-weight:700;color:#0A1F6E;padding:4px 0;display:flex;align-items:center;gap:8px;"><span>✅</span><span>Study buddy matching</span></div>'+
+    '</div>';
+  
+  const upBtn = document.createElement('button');
+  upBtn.style.cssText = 'width:100%;padding:16px;border-radius:14px;background:linear-gradient(135deg,#F59E0B,#FCD34D);color:#0A1F6E;font-size:16px;font-weight:800;border:none;cursor:pointer;font-family:inherit;margin-bottom:12px;box-shadow:0 4px 16px rgba(245,158,11,.3);';
+  upBtn.textContent = 'Upgrade to Pro';
+  upBtn.onclick = function(){ overlay.remove(); showScreen('profile'); };
+  
+  const closeBtn = document.createElement('button');
+  closeBtn.style.cssText = 'width:100%;padding:13px;border-radius:12px;background:#E5E7EB;color:#374151;font-size:15px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
+  closeBtn.textContent = 'Explore Free Features';
+  closeBtn.onclick = function(){ overlay.remove(); };
+  
+  box.appendChild(upBtn);
+  box.appendChild(closeBtn);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
 }
 
 // ── PERSIST ALL STATE TO LOCALSTORAGE ──
@@ -18845,6 +18881,11 @@ async function qualSearchTopics(query){
 
 // Open a searched topic directly into its detail (study + practice, in-flow)
 function qualSearchOpen(standard, name){
+  // ── PRO GATE: Block non-Pro users at subtopic level ──
+  if(!isPro()){
+    showQualProLockedPopup();
+    return;
+  }
   QUAL_CUR_SUBJECT = QUAL_CUR_SUBJECT || {code:'', name:''};
   qualRenderStudyDetail(standard, name, (QUAL_CUR_SUBJECT&&QUAL_CUR_SUBJECT.code)||'', '');
 }
@@ -19047,6 +19088,11 @@ function qualTopicRow(t){
 }
 
 async function qualOpenTopicDetail(idx){
+  // ── PRO GATE: Block non-Pro users at subtopic level ──
+  if(!isPro()){
+    showQualProLockedPopup();
+    return;
+  }
   const t = QUAL_TOPICS[idx];
   if(!t || !t.standard) return;
   await qualRenderStudyDetail(t.standard, t.name, (QUAL_CUR_SUBJECT&&QUAL_CUR_SUBJECT.code)||'', (t.topic_type==='standard'?t.code:''));
@@ -19106,6 +19152,11 @@ async function qualStudyTopic(standard){
 
 // Practice → reuse the existing practice engine
 function qualPracticeTopic(standard){
+  // ── PRO GATE: Block non-Pro users from practicing ──
+  if(!isPro()){
+    showQualProLockedPopup();
+    return;
+  }
   if(typeof startTopicPractice==='function') startTopicPractice(standard);
 }
 
