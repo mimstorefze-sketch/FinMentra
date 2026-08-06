@@ -10156,7 +10156,7 @@ function showProLockedPopup(featureName){
   overlay.appendChild(box); document.body.appendChild(overlay);
 }
 
-// ── PRO LOCK FOR QUALIFICATIONS SUBTOPICS ──
+// ── PRO LOCK FOR QUALIFICATIONS SUBTOPICS (Browse free, locked at content) ──
 function showQualProLockedPopup(){
   document.querySelectorAll('.qual-pro-locked-overlay').forEach(e=>e.remove());
   const overlay = document.createElement('div');
@@ -10183,7 +10183,7 @@ function showQualProLockedPopup(){
   
   const closeBtn = document.createElement('button');
   closeBtn.style.cssText = 'width:100%;padding:13px;border-radius:12px;background:#E5E7EB;color:#374151;font-size:15px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
-  closeBtn.textContent = 'Explore Free Features';
+  closeBtn.textContent = 'View the Topics';
   closeBtn.onclick = function(){ overlay.remove(); };
   
   box.appendChild(upBtn);
@@ -18881,11 +18881,7 @@ async function qualSearchTopics(query){
 
 // Open a searched topic directly into its detail (study + practice, in-flow)
 function qualSearchOpen(standard, name){
-  // ── PRO GATE: Block non-Pro users at subtopic level ──
-  if(!isPro()){
-    showQualProLockedPopup();
-    return;
-  }
+  if(!isPro()){ showQualProLockedPopup(); return; }
   QUAL_CUR_SUBJECT = QUAL_CUR_SUBJECT || {code:'', name:''};
   qualRenderStudyDetail(standard, name, (QUAL_CUR_SUBJECT&&QUAL_CUR_SUBJECT.code)||'', '');
 }
@@ -18981,11 +18977,6 @@ async function openQualifications(){
   // ── GUEST GATE: not logged in → show signup card (matches Study Notes funnel) ──
   if(typeof _currentUser === 'undefined' || !_currentUser){
     if(typeof showStudyNotesSignupCard==='function'){ showStudyNotesSignupCard(); return; }
-  }
-  // ── PRO GATE (Qualifications is Pro-only) ──
-  if(typeof isPro==='function' && !isPro()){
-    if(typeof showProLockedPopup==='function') showProLockedPopup('Qualifications');
-    return;
   }
   // ── FIRST-TIME TERMS & CONDITIONS GATE (Pro users must accept once) ──
   if(typeof qualTCAccepted==='function' && !qualTCAccepted()){
@@ -19088,11 +19079,7 @@ function qualTopicRow(t){
 }
 
 async function qualOpenTopicDetail(idx){
-  // ── PRO GATE: Block non-Pro users at subtopic level ──
-  if(!isPro()){
-    showQualProLockedPopup();
-    return;
-  }
+  if(!isPro()){ showQualProLockedPopup(); return; }
   const t = QUAL_TOPICS[idx];
   if(!t || !t.standard) return;
   await qualRenderStudyDetail(t.standard, t.name, (QUAL_CUR_SUBJECT&&QUAL_CUR_SUBJECT.code)||'', (t.topic_type==='standard'?t.code:''));
@@ -19152,11 +19139,7 @@ async function qualStudyTopic(standard){
 
 // Practice → reuse the existing practice engine
 function qualPracticeTopic(standard){
-  // ── PRO GATE: Block non-Pro users from practicing ──
-  if(!isPro()){
-    showQualProLockedPopup();
-    return;
-  }
+  if(!isPro()){ showQualProLockedPopup(); return; }
   if(typeof startTopicPractice==='function') startTopicPractice(standard);
 }
 
