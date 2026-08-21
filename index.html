@@ -5627,14 +5627,23 @@ function showEditNamePopup(){
   const saveBtn = document.createElement('button');
   saveBtn.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-bottom:8px;';
   saveBtn.textContent = 'Save Name';
-  saveBtn.onclick = function(){
+  saveBtn.onclick = async function(){
     const newName = input.value.trim();
     if(!newName){ toast('Please enter a name'); return; }
-    S.username = newName;
-    saveState();
-    if(typeof saveUserProgress === 'function') saveUserProgress();
-        popup.remove();
-    toast('Name updated to ' + newName + ' ✓');
+    try{
+      if(typeof _supa !== 'undefined' && _currentUser){
+        const { error } = await _supa.auth.updateUser({ data: { full_name: newName } });
+        if(error){ toast('Failed to update name'); return; }
+        if(_currentUser.user_metadata) _currentUser.user_metadata.full_name = newName;
+      }
+      S.username = newName;
+      saveState();
+      if(typeof saveUserProgress === 'function') saveUserProgress();
+      popup.remove();
+      toast('Name updated to ' + newName + ' ✓');
+    }catch(e){
+      toast('Failed to update name');
+    }
   };
   const cancelBtn = document.createElement('button');
   cancelBtn.style.cssText = 'width:100%;padding:10px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
