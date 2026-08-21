@@ -2912,7 +2912,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <button onclick="showEditNamePopup()" style="background:rgba(255,255,255,.15);border:none;border-radius:999px;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;cursor:pointer;">✏️ Edit Name</button>
     </div>
     <div class="profile-rank" id="profile-rank-text">🌱 Initiate</div>
-    <div class="profile-badges"><span class="badge">🔥 0 Streak</span><span class="badge">⚡ 0 XP</span></div>
+    <div class="profile-badges"><span class="badge">🔥 <span id="profile-badge-streak">0</span> Streak</span><span class="badge">⚡ <span id="profile-badge-xp">0</span> XP</span></div>
     <!-- Peer comparison -->
     <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:6px;" id="peer-compare">Better than — % of learners</div>
   </div>
@@ -3214,6 +3214,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div class="profile-item" style="border-bottom:none;"><div class="profile-item-icon">🤚</div><div class="profile-item-label">Left-handed Mode</div><button class="toggle" data-setting="lefthanded" onclick="toggleLeftHand(this)"></button></div>
   </div>
   <button class="btn btn-block" style="background:var(--red-l);color:var(--red);border:1px solid var(--red);margin-top:4px;" onclick="showResetConfirm()">⚠️ Reset Progress</button>
+  <button class="btn btn-block" style="background:var(--red-l);color:var(--red);border:1px solid var(--red);margin-top:8px;" onclick="showDeleteAccountConfirm()">🗑️ Delete Account</button>
 
   <!-- Legal links -->
   <div style="display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border2);">
@@ -8997,6 +8998,9 @@ function updateProfileStats(){
   // Rank badge animation
   const badge=document.getElementById('rank-badge-anim');
   if(badge) badge.textContent=r.emblem;
+  // Top badges (streak / XP) — was previously hardcoded, never updated
+  const bStreak=document.getElementById('profile-badge-streak'); if(bStreak) bStreak.textContent=S.streak||0;
+  const bXP=document.getElementById('profile-badge-xp'); if(bXP) bXP.textContent=S.xp||0;
   // Peer comparison (simulated)
   const peer=document.getElementById('peer-compare');
   if(peer){
@@ -14417,6 +14421,57 @@ async function doLogout(){
   try{ window.location.reload(); }catch(e){}
 }
 
+function showDeleteAccountConfirm(){
+  if(!_currentUser){ toast('Please log in first'); return; }
+  const existing = document.getElementById('delete-account-popup');
+  if(existing) existing.remove();
+  const popup = document.createElement('div');
+  popup.id = 'delete-account-popup';
+  popup.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);';
+  box.innerHTML =
+    '<div style="font-size:32px;margin-bottom:12px;">⚠️</div>'+
+    '<div style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:600;color:#0A1F6E;margin-bottom:8px;">Delete Account?</div>'+
+    '<div style="font-size:13px;color:#64748B;margin-bottom:20px;line-height:1.5;">This permanently deletes your account, progress, XP, and streaks. This cannot be undone.</div>';
+  const confirmBtn = document.createElement('button');
+  confirmBtn.style.cssText = 'width:100%;padding:13px;border-radius:12px;background:#EF4444;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px;';
+  confirmBtn.textContent = 'Yes, Delete My Account';
+  confirmBtn.onclick = async function(){
+    confirmBtn.textContent = 'Deleting...';
+    confirmBtn.disabled = true;
+    try{
+      const resp = await fetch('/api/delete-account', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ userId: _currentUser.id })
+      });
+      const data = await resp.json();
+      if(data.success){
+        popup.remove();
+        toast('Account deleted.');
+        await doLogout();
+      } else {
+        toast('Could not delete account. Please contact support@finmentra.com');
+        confirmBtn.textContent = 'Yes, Delete My Account';
+        confirmBtn.disabled = false;
+      }
+    }catch(err){
+      toast('Error deleting account. Please contact support@finmentra.com');
+      confirmBtn.textContent = 'Yes, Delete My Account';
+      confirmBtn.disabled = false;
+    }
+  };
+  const cancelBtn = document.createElement('button');
+  cancelBtn.style.cssText = 'width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.onclick = function(){ popup.remove(); };
+  box.appendChild(confirmBtn);
+  box.appendChild(cancelBtn);
+  popup.appendChild(box);
+  document.body.appendChild(popup);
+}
+
 // ── CHECK IF ALREADY LOGGED IN (returning user) ──
 
 // ── OFFLINE DETECTION — Real ping based (navigator.onLine unreliable on Android) ──
@@ -18229,10 +18284,10 @@ function achInitScreen(){
     }, {passive: false});
     if (foxClose) {
       foxClose.addEventListener('click', function(e){
-        e.stopPropagation(); e.preventDefault(); minimize();
+        e.stopPropagation(); e.preventDefault(); isDrag = false; minimize();
       });
       foxClose.addEventListener('touchend', function(e){
-        e.stopPropagation(); e.preventDefault(); minimize();
+        e.stopPropagation(); e.preventDefault(); isDrag = false; minimize();
       }, {passive:false});
     }
 
