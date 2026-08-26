@@ -4605,32 +4605,44 @@ function fyShuffle(arr){
   return a;
 }
 
-// Paginated fetch — Supabase/PostgREST caps a single request at 1000 rows,
-// so this loops with offset until a short page (or empty page) signals the end.
+// Single-page fetch (1000 rows) — fast, one request. Picks a RANDOM offset
+// each time (instead of always the same first 1000) so different sessions
+// see a different slice of the full question bank over time.
 async function fetchAllQuestionsRaw(){
   const PAGE_SIZE = 1000;
-  let allData = [];
-  let offset = 0;
-  while(true){
-    const url = SUPA_URL + '/rest/v1/questions?select=*&limit='+PAGE_SIZE+'&offset='+offset;
-    const res = await fetch(url, {
+  const baseHeaders = {
+    'apikey': SUPA_KEY,
+    'Authorization': 'Bearer ' + SUPA_KEY,
+    'Content-Type': 'application/json'
+  };
+  try{
+    // Cheap request just to get the exact total row count via Content-Range
+    const countRes = await fetch(SUPA_URL + '/rest/v1/questions?select=id&limit=1', {
       method: 'GET',
-      headers:{
-        'apikey': SUPA_KEY,
-        'Authorization': 'Bearer ' + SUPA_KEY,
-        'Content-Type': 'application/json'
-      },
+      headers: Object.assign({}, baseHeaders, {'Prefer': 'count=exact'}),
       mode: 'cors',
       credentials: 'omit'
     });
-    if(!res.ok) break;
-    const page = await res.json();
-    if(!page || page.length===0) break;
-    allData = allData.concat(page);
-    if(page.length < PAGE_SIZE) break; // last page reached
-    offset += PAGE_SIZE;
+    let total = PAGE_SIZE;
+    if(countRes.ok){
+      const cr = countRes.headers.get('content-range');
+      if(cr && cr.includes('/')){
+        const t = parseInt(cr.split('/')[1], 10);
+        if(!isNaN(t) && t > 0) total = t;
+      }
+    }
+    const maxOffset = Math.max(0, total - PAGE_SIZE);
+    const offset = maxOffset > 0 ? Math.floor(Math.random() * maxOffset) : 0;
+
+    const res = await fetch(SUPA_URL + '/rest/v1/questions?select=*&limit='+PAGE_SIZE+'&offset='+offset, {
+      method: 'GET', headers: baseHeaders, mode: 'cors', credentials: 'omit'
+    });
+    if(!res.ok) return [];
+    const data = await res.json();
+    return data || [];
+  }catch(e){
+    return [];
   }
-  return allData;
 }
 
 async function fetchQuestionsFromSupabase(category, count){
