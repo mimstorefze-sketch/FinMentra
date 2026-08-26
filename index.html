@@ -2219,6 +2219,12 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <button class="dom-tab" onclick="selectDomain(this,'ISA')">Audit</button>
     <button class="dom-tab" onclick="selectDomain(this,'FM')">Fin Mgmt</button>
   </div>
+  <div class="dom-tabs" id="difficulty-tabs" style="margin-bottom:8px;">
+    <button class="dom-tab active" onclick="selectDifficulty(this,'All')">All Levels</button>
+    <button class="dom-tab" onclick="selectDifficulty(this,'Easy')">Easy</button>
+    <button class="dom-tab" onclick="selectDifficulty(this,'Medium')">Medium</button>
+    <button class="dom-tab" onclick="selectDifficulty(this,'Hard')">Hard</button>
+  </div>
   <!-- Progress -->
   <!-- Linear progress bar -->
   <div style="height:4px;background:var(--border2);border-radius:2px;overflow:hidden;margin-bottom:6px;">
@@ -3779,7 +3785,7 @@ const S = {
   answered:false, qIndex:0, sessionQs:[],
   dailyQCount:0, dailyQDate:'', // tracks daily questions for free users
   challengeUsed:false, // free users get 1 challenge ever
-  domain:'Mixed', currentStandard:null,
+  domain:'Mixed', currentStandard:null, difficulty:'All',
   bookmarks:new Set(),
   hearts:3, maxHearts:3,
   darkMode:false,
@@ -4568,6 +4574,24 @@ function selectDomain(el,d){
   S.answered=false;
   startSession();
 }
+function selectDifficulty(el,d){
+  // Same daily-limit protection as domain switching
+  if(!isPro()){
+    if(getDailyQRemaining() <= 0){ showLimitPopup('hard'); return; }
+    if(getDailyQUsed() >= 10){
+      const _bk = getDailyQKey()+'_bonus';
+      if(localStorage.getItem(_bk) !== '1'){ showLimitPopup('soft'); return; }
+    }
+  }
+  document.querySelectorAll('#difficulty-tabs .dom-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  S.difficulty=d;
+  S.currentStandard=null;
+  S.sessionQs=[];
+  S.qIndex=0;
+  S.answered=false;
+  startSession();
+}
 // ── SUPABASE QUESTION CACHE ──
 const SQ_CACHE = {};
 
@@ -4581,13 +4605,14 @@ function fyShuffle(arr){
   return a;
 }
 
-async function fetchQuestionsFromSupabase(category, count){
-  const cacheKey = category||'Mixed';
-  if(SQ_CACHE[cacheKey] && SQ_CACHE[cacheKey].length >= count){
-    return fyShuffle(SQ_CACHE[cacheKey]).slice(0,count);
-  }
-  try{
-    const url = SUPA_URL + '/rest/v1/questions?select=*&limit=1000';
+// Paginated fetch — Supabase/PostgREST caps a single request at 1000 rows,
+// so this loops with offset until a short page (or empty page) signals the end.
+async function fetchAllQuestionsRaw(){
+  const PAGE_SIZE = 1000;
+  let allData = [];
+  let offset = 0;
+  while(true){
+    const url = SUPA_URL + '/rest/v1/questions?select=*&limit='+PAGE_SIZE+'&offset='+offset;
     const res = await fetch(url, {
       method: 'GET',
       headers:{
@@ -4598,8 +4623,24 @@ async function fetchQuestionsFromSupabase(category, count){
       mode: 'cors',
       credentials: 'omit'
     });
-    if(!res.ok){ return null; }
-    const allData = await res.json();
+    if(!res.ok) break;
+    const page = await res.json();
+    if(!page || page.length===0) break;
+    allData = allData.concat(page);
+    if(page.length < PAGE_SIZE) break; // last page reached
+    offset += PAGE_SIZE;
+  }
+  return allData;
+}
+
+async function fetchQuestionsFromSupabase(category, count){
+  const diffSuffix = (S.difficulty && S.difficulty!=='All') ? '_'+S.difficulty : '';
+  const cacheKey = (category||'Mixed') + diffSuffix;
+  if(SQ_CACHE[cacheKey] && SQ_CACHE[cacheKey].length >= count){
+    return fyShuffle(SQ_CACHE[cacheKey]).slice(0,count);
+  }
+  try{
+    const allData = await fetchAllQuestionsRaw();
     if(!allData||allData.length===0){ return null; }
 
     // Shuffle options to avoid answer bias
@@ -4608,7 +4649,8 @@ async function fetchQuestionsFromSupabase(category, count){
       opts: [q.option_a, q.option_b, q.option_c, q.option_d],
       correct: ['A','B','C','D'].indexOf(q.correct_answer),
       explain: q.explanation||'',
-      standard: q.standard||''
+      standard: q.standard||'',
+      difficulty: q.difficulty||''
     })).filter(q=>q.correct>=0&&q.q&&q.opts[0]);
 
     SQ_CACHE['Mixed'] = allConverted;
@@ -4630,6 +4672,13 @@ async function fetchQuestionsFromSupabase(category, count){
       if(filtered.length===0) return null;
     }
 
+    // Filter by difficulty level if the user has selected one
+    if(S.difficulty && S.difficulty!=='All'){
+      const byDifficulty = filtered.filter(q=>q.difficulty===S.difficulty);
+      if(byDifficulty.length===0) return null; // no questions at this level — don't silently show wrong difficulty
+      filtered = byDifficulty;
+    }
+
     SQ_CACHE[cacheKey] = filtered;
     return fyShuffle(filtered).slice(0,count);
   }catch(e){
@@ -4647,11 +4696,14 @@ async function startSession(){
   const dailyRemaining = getDailyQRemaining();
   // Block if daily limit reached - no loopholes for topic switching
   if(!isPro() && dailyRemaining <= 0){ showDailyLimitPopup(); return; }
-  // Clear cache for current domain so questions reshuffle every session
+  // Clear cache for current domain+difficulty so questions reshuffle every session
   const _clearDomain = S.domain || 'IFRS';
+  const _clearDiffSuffix = (S.difficulty && S.difficulty!=='All') ? '_'+S.difficulty : '';
   delete SQ_CACHE[_clearDomain];
+  delete SQ_CACHE[_clearDomain+_clearDiffSuffix];
   delete SQ_CACHE[_clearDomain+'_100'];
   delete SQ_CACHE['Mixed'];
+  delete SQ_CACHE['Mixed'+_clearDiffSuffix];
   let pool = [];
   const qt=document.getElementById('q-text');
   const opts=document.getElementById('options');
@@ -7775,24 +7827,15 @@ function toggleCheckItem(item){
   // Pre-warm Supabase question cache for Arena + Challenge
   (async function preloadQuestions(){
     try{
-      const url = SUPA_URL + '/rest/v1/questions?select=*&limit=1000';
-      const res = await fetch(url, {
-        headers:{
-          'apikey': SUPA_KEY,
-          'Authorization': 'Bearer ' + SUPA_KEY,
-          'Content-Type': 'application/json'
-        },
-        mode: 'cors', credentials: 'omit'
-      });
-      if(!res.ok) return;
-      const allData = await res.json();
+      const allData = await fetchAllQuestionsRaw();
       if(!allData || !allData.length) return;
       const allConverted = allData.map(q=>({
         q: q.question,
         opts: [q.option_a, q.option_b, q.option_c, q.option_d],
         correct: ['A','B','C','D'].indexOf(q.correct_answer),
         explain: q.explanation||'',
-        standard: q.standard||''
+        standard: q.standard||'',
+        difficulty: q.difficulty||''
       })).filter(q=>q.correct>=0&&q.q&&q.opts[0]);
       // Cache by Mixed and each category
       SQ_CACHE['Mixed'] = allConverted;
