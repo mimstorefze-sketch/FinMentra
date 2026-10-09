@@ -13780,6 +13780,19 @@ function _isCapacitorNative(){
   return !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
 }
 
+// Opens the OAuth URL via the native ASWebAuthenticationSession bridge (iOS).
+// Falls back to the Capacitor Browser plugin if the bridge isn't present.
+function _iosOpenOAuth(url){
+  try{
+    var h = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.oauthHandler;
+    if(h){ h.postMessage(url); return true; }
+    var B = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser;
+    if(B){ B.open({ url: url }); return true; }
+  }catch(e){ console.error('OAuth open error:', e); }
+  toast('Sign-in unavailable. Please update the app.');
+  return false;
+}
+
 async function signInWithGoogle(){
   if(_isCapacitorNative()){
     const { data, error } = await _supa.auth.signInWithOAuth({
@@ -13791,7 +13804,7 @@ async function signInWithGoogle(){
       }
     });
     if(error){ toast('Google login failed: ' + error.message); return; }
-    if(data && data.url){ await window.Capacitor.Plugins.Browser.open({ url: data.url }); }
+    if(data && data.url){ _iosOpenOAuth(data.url); }
     return;
   }
 
@@ -13824,7 +13837,7 @@ async function signInWithLinkedIn(){
       }
     });
     if(error){ toast('LinkedIn login failed: ' + error.message); return; }
-    if(data && data.url){ await window.Capacitor.Plugins.Browser.open({ url: data.url }); }
+    if(data && data.url){ _iosOpenOAuth(data.url); }
     return;
   }
 
