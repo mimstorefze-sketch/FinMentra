@@ -127,6 +127,37 @@ const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
   }
 });
 
+// iOS native OAuth callback fix.
+// SceneDelegate.swift calls exchangeCodeForSession(<full callback URL>), but this
+// app uses the implicit flow: the callback URL carries access_token/refresh_token,
+// not a PKCE code, so that call fails with HTTP 400. This wrapper only changes calls
+// whose argument is a full URL; it uses setSession() for token URLs (or extracts the
+// code for PKCE URLs). Web and Android never call it with a URL, so they are unaffected.
+(function(){
+  try{
+    var _origExchange = _supa.auth.exchangeCodeForSession.bind(_supa.auth);
+    _supa.auth.exchangeCodeForSession = async function(arg){
+      try{
+        if(typeof arg === 'string' && /^https?:\/\//i.test(arg)){
+          var u = new URL(arg);
+          var hp = new URLSearchParams(u.hash ? u.hash.slice(1) : '');
+          var qp = u.searchParams;
+          var at = hp.get('access_token') || qp.get('access_token');
+          var rt = hp.get('refresh_token') || qp.get('refresh_token');
+          if(at && rt){
+            var res = await _supa.auth.setSession({ access_token: at, refresh_token: rt });
+            try{ await window.Capacitor.Plugins.Browser.close(); }catch(e){}
+            return res;
+          }
+          var code = qp.get('code') || hp.get('code');
+          if(code) arg = code;
+        }
+      }catch(e){ console.error('[AUTH] callback handling error:', e); }
+      return _origExchange(arg);
+    };
+  }catch(e){}
+})();
+
 // ── Reveal the app / hide the auth overlay whenever a session becomes active.
 // Called from both the deep-link handler and onAuthStateChange so it works
 // regardless of which auth event Supabase emits (SIGNED_IN, TOKEN_REFRESHED,
