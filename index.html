@@ -2006,7 +2006,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div class="fm-qa-card fm-qa-green"  onclick="checkFeatureLimitAndEnter('fm_drcr','drcr',()=>fmCardTap(this,'drcr'))"      data-e="⚖️"><span class="fm-qa-emoji">⚖️</span><div class="fm-qa-title">Debit &amp; Credit</div><div class="fm-qa-sub">Journal entry drill</div></div>
     <div class="fm-qa-card fm-qa-purple" onclick="fmCardTap(this,'topics')"    data-e="📚"><span class="fm-qa-emoji">📚</span><div class="fm-qa-title">Topic Library</div><div class="fm-qa-sub">All 81 standards</div></div>
     <div class="fm-qa-card fm-qa-cyan"   onclick="fmCardTapFn(this,openLibrary)" data-e="📖"><span class="fm-qa-emoji">📖</span><div class="fm-qa-title">Study Notes</div><div class="fm-qa-sub">IFRS · IAS · Costing · Tax · FM</div></div>
-    <div class="fm-qa-card fm-qa-indigo" onclick="fmCardTapFn(this,openQualifications)" data-e="🎓"><span class="fm-qa-emoji">🎓</span><div class="fm-qa-title">Qualifications</div><div class="fm-qa-sub">ACCA · CA · CMA · CPA</div></div>
+    <div class="fm-qa-card fm-qa-indigo" onclick="fmCardTapFn(this,openQualifications)" data-e="🎓"><span class="fm-qa-emoji">🎓</span><div class="fm-qa-title">Qualifications</div><div class="fm-qa-sub"></div></div>
     <div class="fm-qa-card fm-qa-teal"   onclick="fmCardTap(this,'askai')"     data-e="🤖"><span class="fm-qa-emoji">🤖</span><div class="fm-qa-title">Ask the AI</div><div class="fm-qa-sub">Chat any standard</div><div class="fm-qa-badge">AI</div></div>
     <div class="fm-qa-card fm-qa-rose"   onclick="checkFeatureLimitAndEnter('fm_vlt','vault',()=>fmCardTap(this,'vault'))"     data-e="🗄️"><span class="fm-qa-emoji">🗄️</span><div class="fm-qa-title">Mistake Vault</div><div class="fm-qa-sub">Weak spot focus</div></div>
     <div class="fm-qa-card fm-qa-indigo" onclick="checkFeatureLimitAndEnter('fm_cmp','challenge',()=>fmCardTap(this,'challenge'))" data-e="⚔️"><span class="fm-qa-emoji">⚔️</span><div class="fm-qa-title">Challenge</div><div class="fm-qa-sub">Live battle mode</div></div>
@@ -2218,6 +2218,12 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <button class="dom-tab" onclick="selectDomain(this,'Tax')">Tax</button>
     <button class="dom-tab" onclick="selectDomain(this,'ISA')">Audit</button>
     <button class="dom-tab" onclick="selectDomain(this,'FM')">Fin Mgmt</button>
+  </div>
+  <div class="dom-tabs" id="difficulty-tabs" style="margin-bottom:8px;">
+    <button class="dom-tab active" onclick="selectDifficulty(this,'All')">All Levels</button>
+    <button class="dom-tab" onclick="selectDifficulty(this,'Easy')">Easy</button>
+    <button class="dom-tab" onclick="selectDifficulty(this,'Medium')">Medium</button>
+    <button class="dom-tab" onclick="selectDifficulty(this,'Hard')">Hard</button>
   </div>
   <!-- Progress -->
   <!-- Linear progress bar -->
@@ -2912,7 +2918,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
       <button onclick="showEditNamePopup()" style="background:rgba(255,255,255,.15);border:none;border-radius:999px;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;cursor:pointer;">✏️ Edit Name</button>
     </div>
     <div class="profile-rank" id="profile-rank-text">🌱 Initiate</div>
-    <div class="profile-badges"><span class="badge">🔥 0 Streak</span><span class="badge">⚡ 0 XP</span></div>
+    <div class="profile-badges"><span class="badge">🔥 <span id="profile-badge-streak">0</span> Streak</span><span class="badge">⚡ <span id="profile-badge-xp">0</span> XP</span></div>
     <!-- Peer comparison -->
     <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:6px;" id="peer-compare">Better than — % of learners</div>
   </div>
@@ -2962,24 +2968,6 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
   </div>
   <div class="sec-label">Your Plan</div>
   <div id="plan-cards-container"><!-- rendered by updatePlanUI() --></div>
-  <!-- ELITE WAITLIST -->
-  <div class="card" style="border:2px dashed var(--purple);position:relative;background:var(--purple-l);">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-      <div style="font-size:28px;">💎</div>
-      <div>
-        <div style="font-family:var(--font-display);font-size:20px;font-weight:600;color:var(--text);">Elite <span style="font-size:11px;font-weight:700;background:var(--purple);color:#fff;padding:2px 8px;border-radius:999px;vertical-align:middle;">COMING SOON</span></div>
-        <div style="font-size:11px;color:var(--text);margin-top:2px;font-weight:600;">Priority AI · Team accounts · Advanced analytics</div>
-      </div>
-    </div>
-    <ul style="list-style:none;font-size:12px;display:flex;flex-direction:column;gap:5px;margin-bottom:14px;color:var(--text);opacity:.85;">
-      <li>✓ Everything in Pro</li>
-      <li>✓ Unlimited AI questions</li>
-      <li>✓ Team / group accounts</li>
-      <li>✓ Advanced performance analytics</li>
-      <li>✓ Priority support & early access</li>
-    </ul>
-    <button class="btn" style="width:100%;background:var(--purple);color:#fff;" onclick="joinEliteWaitlist()">Join the waitlist →</button>
-  </div>
   <div class="sec-label">Account</div>
   <div class="card">
     <button class="profile-item" onclick="showScreen('trophy')"><div class="profile-item-icon">🏆</div><div class="profile-item-label">Trophy Room</div><div class="profile-item-val">3 earned</div><div class="profile-item-arrow">›</div></button>
@@ -3232,6 +3220,7 @@ body::before { content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
     <div class="profile-item" style="border-bottom:none;"><div class="profile-item-icon">🤚</div><div class="profile-item-label">Left-handed Mode</div><button class="toggle" data-setting="lefthanded" onclick="toggleLeftHand(this)"></button></div>
   </div>
   <button class="btn btn-block" style="background:var(--red-l);color:var(--red);border:1px solid var(--red);margin-top:4px;" onclick="showResetConfirm()">⚠️ Reset Progress</button>
+  <button class="btn btn-block" style="background:var(--red-l);color:var(--red);border:1px solid var(--red);margin-top:8px;" onclick="showDeleteAccountConfirm()">🗑️ Delete Account</button>
 
   <!-- Legal links -->
   <div style="display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border2);">
@@ -3796,7 +3785,7 @@ const S = {
   answered:false, qIndex:0, sessionQs:[],
   dailyQCount:0, dailyQDate:'', // tracks daily questions for free users
   challengeUsed:false, // free users get 1 challenge ever
-  domain:'Mixed', currentStandard:null,
+  domain:'Mixed', currentStandard:null, difficulty:'All',
   bookmarks:new Set(),
   hearts:3, maxHearts:3,
   darkMode:false,
@@ -4585,6 +4574,24 @@ function selectDomain(el,d){
   S.answered=false;
   startSession();
 }
+function selectDifficulty(el,d){
+  // Same daily-limit protection as domain switching
+  if(!isPro()){
+    if(getDailyQRemaining() <= 0){ showLimitPopup('hard'); return; }
+    if(getDailyQUsed() >= 10){
+      const _bk = getDailyQKey()+'_bonus';
+      if(localStorage.getItem(_bk) !== '1'){ showLimitPopup('soft'); return; }
+    }
+  }
+  document.querySelectorAll('#difficulty-tabs .dom-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  S.difficulty=d;
+  S.currentStandard=null;
+  S.sessionQs=[];
+  S.qIndex=0;
+  S.answered=false;
+  startSession();
+}
 // ── SUPABASE QUESTION CACHE ──
 const SQ_CACHE = {};
 
@@ -4598,25 +4605,54 @@ function fyShuffle(arr){
   return a;
 }
 
+// Single-page fetch (1000 rows) — fast, one request. Picks a RANDOM offset
+// each time (instead of always the same first 1000) so different sessions
+// see a different slice of the full question bank over time.
+async function fetchAllQuestionsRaw(){
+  const PAGE_SIZE = 1000;
+  const baseHeaders = {
+    'apikey': SUPA_KEY,
+    'Authorization': 'Bearer ' + SUPA_KEY,
+    'Content-Type': 'application/json'
+  };
+  try{
+    // Cheap request just to get the exact total row count via Content-Range
+    const countRes = await fetch(SUPA_URL + '/rest/v1/questions?select=id&limit=1', {
+      method: 'GET',
+      headers: Object.assign({}, baseHeaders, {'Prefer': 'count=exact'}),
+      mode: 'cors',
+      credentials: 'omit'
+    });
+    let total = PAGE_SIZE;
+    if(countRes.ok){
+      const cr = countRes.headers.get('content-range');
+      if(cr && cr.includes('/')){
+        const t = parseInt(cr.split('/')[1], 10);
+        if(!isNaN(t) && t > 0) total = t;
+      }
+    }
+    const maxOffset = Math.max(0, total - PAGE_SIZE);
+    const offset = maxOffset > 0 ? Math.floor(Math.random() * maxOffset) : 0;
+
+    const res = await fetch(SUPA_URL + '/rest/v1/questions?select=*&limit='+PAGE_SIZE+'&offset='+offset, {
+      method: 'GET', headers: baseHeaders, mode: 'cors', credentials: 'omit'
+    });
+    if(!res.ok) return [];
+    const data = await res.json();
+    return data || [];
+  }catch(e){
+    return [];
+  }
+}
+
 async function fetchQuestionsFromSupabase(category, count){
-  const cacheKey = category||'Mixed';
+  const diffSuffix = (S.difficulty && S.difficulty!=='All') ? '_'+S.difficulty : '';
+  const cacheKey = (category||'Mixed') + diffSuffix;
   if(SQ_CACHE[cacheKey] && SQ_CACHE[cacheKey].length >= count){
     return fyShuffle(SQ_CACHE[cacheKey]).slice(0,count);
   }
   try{
-    const url = SUPA_URL + '/rest/v1/questions?select=*&limit=1000';
-    const res = await fetch(url, {
-      method: 'GET',
-      headers:{
-        'apikey': SUPA_KEY,
-        'Authorization': 'Bearer ' + SUPA_KEY,
-        'Content-Type': 'application/json'
-      },
-      mode: 'cors',
-      credentials: 'omit'
-    });
-    if(!res.ok){ return null; }
-    const allData = await res.json();
+    const allData = await fetchAllQuestionsRaw();
     if(!allData||allData.length===0){ return null; }
 
     // Shuffle options to avoid answer bias
@@ -4625,7 +4661,8 @@ async function fetchQuestionsFromSupabase(category, count){
       opts: [q.option_a, q.option_b, q.option_c, q.option_d],
       correct: ['A','B','C','D'].indexOf(q.correct_answer),
       explain: q.explanation||'',
-      standard: q.standard||''
+      standard: q.standard||'',
+      difficulty: q.difficulty||''
     })).filter(q=>q.correct>=0&&q.q&&q.opts[0]);
 
     SQ_CACHE['Mixed'] = allConverted;
@@ -4647,6 +4684,13 @@ async function fetchQuestionsFromSupabase(category, count){
       if(filtered.length===0) return null;
     }
 
+    // Filter by difficulty level if the user has selected one
+    if(S.difficulty && S.difficulty!=='All'){
+      const byDifficulty = filtered.filter(q=>q.difficulty===S.difficulty);
+      if(byDifficulty.length===0) return null; // no questions at this level — don't silently show wrong difficulty
+      filtered = byDifficulty;
+    }
+
     SQ_CACHE[cacheKey] = filtered;
     return fyShuffle(filtered).slice(0,count);
   }catch(e){
@@ -4664,11 +4708,14 @@ async function startSession(){
   const dailyRemaining = getDailyQRemaining();
   // Block if daily limit reached - no loopholes for topic switching
   if(!isPro() && dailyRemaining <= 0){ showDailyLimitPopup(); return; }
-  // Clear cache for current domain so questions reshuffle every session
+  // Clear cache for current domain+difficulty so questions reshuffle every session
   const _clearDomain = S.domain || 'IFRS';
+  const _clearDiffSuffix = (S.difficulty && S.difficulty!=='All') ? '_'+S.difficulty : '';
   delete SQ_CACHE[_clearDomain];
+  delete SQ_CACHE[_clearDomain+_clearDiffSuffix];
   delete SQ_CACHE[_clearDomain+'_100'];
   delete SQ_CACHE['Mixed'];
+  delete SQ_CACHE['Mixed'+_clearDiffSuffix];
   let pool = [];
   const qt=document.getElementById('q-text');
   const opts=document.getElementById('options');
@@ -5645,14 +5692,23 @@ function showEditNamePopup(){
   const saveBtn = document.createElement('button');
   saveBtn.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:#0A1F6E;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-bottom:8px;';
   saveBtn.textContent = 'Save Name';
-  saveBtn.onclick = function(){
+  saveBtn.onclick = async function(){
     const newName = input.value.trim();
     if(!newName){ toast('Please enter a name'); return; }
-    S.username = newName;
-    saveState();
-    if(typeof saveUserProgress === 'function') saveUserProgress();
-        popup.remove();
-    toast('Name updated to ' + newName + ' ✓');
+    try{
+      if(typeof _supa !== 'undefined' && _currentUser){
+        const { error } = await _supa.auth.updateUser({ data: { full_name: newName } });
+        if(error){ toast('Failed to update name'); return; }
+        if(_currentUser.user_metadata) _currentUser.user_metadata.full_name = newName;
+      }
+      S.username = newName;
+      saveState();
+      if(typeof saveUserProgress === 'function') saveUserProgress();
+      popup.remove();
+      toast('Name updated to ' + newName + ' ✓');
+    }catch(e){
+      toast('Failed to update name');
+    }
   };
   const cancelBtn = document.createElement('button');
   cancelBtn.style.cssText = 'width:100%;padding:10px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
@@ -7783,24 +7839,15 @@ function toggleCheckItem(item){
   // Pre-warm Supabase question cache for Arena + Challenge
   (async function preloadQuestions(){
     try{
-      const url = SUPA_URL + '/rest/v1/questions?select=*&limit=1000';
-      const res = await fetch(url, {
-        headers:{
-          'apikey': SUPA_KEY,
-          'Authorization': 'Bearer ' + SUPA_KEY,
-          'Content-Type': 'application/json'
-        },
-        mode: 'cors', credentials: 'omit'
-      });
-      if(!res.ok) return;
-      const allData = await res.json();
+      const allData = await fetchAllQuestionsRaw();
       if(!allData || !allData.length) return;
       const allConverted = allData.map(q=>({
         q: q.question,
         opts: [q.option_a, q.option_b, q.option_c, q.option_d],
         correct: ['A','B','C','D'].indexOf(q.correct_answer),
         explain: q.explanation||'',
-        standard: q.standard||''
+        standard: q.standard||'',
+        difficulty: q.difficulty||''
       })).filter(q=>q.correct>=0&&q.q&&q.opts[0]);
       // Cache by Mixed and each category
       SQ_CACHE['Mixed'] = allConverted;
@@ -9006,6 +9053,9 @@ function updateProfileStats(){
   // Rank badge animation
   const badge=document.getElementById('rank-badge-anim');
   if(badge) badge.textContent=r.emblem;
+  // Top badges (streak / XP) — was previously hardcoded, never updated
+  const bStreak=document.getElementById('profile-badge-streak'); if(bStreak) bStreak.textContent=S.streak||0;
+  const bXP=document.getElementById('profile-badge-xp'); if(bXP) bXP.textContent=S.xp||0;
   // Peer comparison (simulated)
   const peer=document.getElementById('peer-compare');
   if(peer){
@@ -10154,6 +10204,42 @@ function showProLockedPopup(featureName){
   closeBtn.onclick = function(){ overlay.remove(); };
   box.appendChild(upBtn); box.appendChild(closeBtn);
   overlay.appendChild(box); document.body.appendChild(overlay);
+}
+
+// ── PRO LOCK FOR QUALIFICATIONS SUBTOPICS (Browse free, locked at content) ──
+function showQualProLockedPopup(){
+  document.querySelectorAll('.qual-pro-locked-overlay').forEach(e=>e.remove());
+  const overlay = document.createElement('div');
+  overlay.className = 'qual-pro-locked-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.88);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:16px;';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:24px;padding:32px 24px;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);';
+  box.innerHTML =
+    '<div style="font-size:48px;margin-bottom:14px;">🔐</div>'+
+    '<div style="font-family:var(--font-display);font-size:24px;font-weight:800;color:#0A1F6E;margin-bottom:8px;">Unlock Full Access</div>'+
+    '<div style="font-size:14px;color:#64748B;line-height:1.7;margin-bottom:22px;">Explore all ACCA subjects, topics, and questions with Pro.</div>'+
+    '<div style="background:#EEF2FF;border-radius:14px;padding:14px;margin-bottom:20px;text-align:left;">'+
+      '<div style="font-size:13px;font-weight:700;color:#0A1F6E;padding:4px 0;display:flex;align-items:center;gap:8px;"><span>✅</span><span>Access all Professional Qualifications</span></div>'+
+      '<div style="font-size:13px;font-weight:700;color:#0A1F6E;padding:4px 0;display:flex;align-items:center;gap:8px;"><span>✅</span><span>Unlimited practice questions</span></div>'+
+      '<div style="font-size:13px;font-weight:700;color:#0A1F6E;padding:4px 0;display:flex;align-items:center;gap:8px;"><span>✅</span><span>Unlimited AI tutor</span></div>'+
+      '<div style="font-size:13px;font-weight:700;color:#0A1F6E;padding:4px 0;display:flex;align-items:center;gap:8px;"><span>✅</span><span>Challenge mode & multiplayer</span></div>'+
+      '<div style="font-size:13px;font-weight:700;color:#0A1F6E;padding:4px 0;display:flex;align-items:center;gap:8px;"><span>✅</span><span>Study buddy matching</span></div>'+
+    '</div>';
+  
+  const upBtn = document.createElement('button');
+  upBtn.style.cssText = 'width:100%;padding:16px;border-radius:14px;background:linear-gradient(135deg,#F59E0B,#FCD34D);color:#0A1F6E;font-size:16px;font-weight:800;border:none;cursor:pointer;font-family:inherit;margin-bottom:12px;box-shadow:0 4px 16px rgba(245,158,11,.3);';
+  upBtn.textContent = 'Upgrade to Pro';
+  upBtn.onclick = function(){ overlay.remove(); showScreen('profile'); };
+  
+  const closeBtn = document.createElement('button');
+  closeBtn.style.cssText = 'width:100%;padding:13px;border-radius:12px;background:#E5E7EB;color:#374151;font-size:15px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
+  closeBtn.textContent = 'View the Topics';
+  closeBtn.onclick = function(){ overlay.remove(); };
+  
+  box.appendChild(upBtn);
+  box.appendChild(closeBtn);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
 }
 
 // ── PERSIST ALL STATE TO LOCALSTORAGE ──
@@ -13694,6 +13780,19 @@ function _isCapacitorNative(){
   return !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
 }
 
+// Opens the OAuth URL via the native ASWebAuthenticationSession bridge (iOS).
+// Falls back to the Capacitor Browser plugin if the bridge isn't present.
+function _iosOpenOAuth(url){
+  try{
+    var h = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.oauthHandler;
+    if(h){ h.postMessage(url); return true; }
+    var B = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser;
+    if(B){ B.open({ url: url }); return true; }
+  }catch(e){ console.error('OAuth open error:', e); }
+  toast('Sign-in unavailable. Please update the app.');
+  return false;
+}
+
 async function signInWithGoogle(){
   if(_isCapacitorNative()){
     const { data, error } = await _supa.auth.signInWithOAuth({
@@ -13705,7 +13804,7 @@ async function signInWithGoogle(){
       }
     });
     if(error){ toast('Google login failed: ' + error.message); return; }
-    if(data && data.url){ await window.Capacitor.Plugins.Browser.open({ url: data.url }); }
+    if(data && data.url){ _iosOpenOAuth(data.url); }
     return;
   }
 
@@ -13738,7 +13837,7 @@ async function signInWithLinkedIn(){
       }
     });
     if(error){ toast('LinkedIn login failed: ' + error.message); return; }
-    if(data && data.url){ await window.Capacitor.Plugins.Browser.open({ url: data.url }); }
+    if(data && data.url){ _iosOpenOAuth(data.url); }
     return;
   }
 
@@ -14388,6 +14487,57 @@ async function doLogout(){
   // ── FULL RELOAD after logout: guarantees a pristine state so the next
   // login/guest session starts clean (no stale session leaking into guest). ──
   try{ window.location.reload(); }catch(e){}
+}
+
+function showDeleteAccountConfirm(){
+  if(!_currentUser){ toast('Please log in first'); return; }
+  const existing = document.getElementById('delete-account-popup');
+  if(existing) existing.remove();
+  const popup = document.createElement('div');
+  popup.id = 'delete-account-popup';
+  popup.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(10,31,110,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);';
+  box.innerHTML =
+    '<div style="font-size:32px;margin-bottom:12px;">⚠️</div>'+
+    '<div style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:600;color:#0A1F6E;margin-bottom:8px;">Delete Account?</div>'+
+    '<div style="font-size:13px;color:#64748B;margin-bottom:20px;line-height:1.5;">This permanently deletes your account, progress, XP, and streaks. This cannot be undone.</div>';
+  const confirmBtn = document.createElement('button');
+  confirmBtn.style.cssText = 'width:100%;padding:13px;border-radius:12px;background:#EF4444;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;margin-bottom:10px;';
+  confirmBtn.textContent = 'Yes, Delete My Account';
+  confirmBtn.onclick = async function(){
+    confirmBtn.textContent = 'Deleting...';
+    confirmBtn.disabled = true;
+    try{
+      const resp = await fetch('/api/delete-account', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ userId: _currentUser.id })
+      });
+      const data = await resp.json();
+      if(data.success){
+        popup.remove();
+        toast('Account deleted.');
+        await doLogout();
+      } else {
+        toast('Could not delete account. Please contact support@finmentra.com');
+        confirmBtn.textContent = 'Yes, Delete My Account';
+        confirmBtn.disabled = false;
+      }
+    }catch(err){
+      toast('Error deleting account. Please contact support@finmentra.com');
+      confirmBtn.textContent = 'Yes, Delete My Account';
+      confirmBtn.disabled = false;
+    }
+  };
+  const cancelBtn = document.createElement('button');
+  cancelBtn.style.cssText = 'width:100%;padding:11px;border-radius:12px;background:#EEF2FF;color:#0A1F6E;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.onclick = function(){ popup.remove(); };
+  box.appendChild(confirmBtn);
+  box.appendChild(cancelBtn);
+  popup.appendChild(box);
+  document.body.appendChild(popup);
 }
 
 // ── CHECK IF ALREADY LOGGED IN (returning user) ──
@@ -18202,10 +18352,10 @@ function achInitScreen(){
     }, {passive: false});
     if (foxClose) {
       foxClose.addEventListener('click', function(e){
-        e.stopPropagation(); e.preventDefault(); minimize();
+        e.stopPropagation(); e.preventDefault(); isDrag = false; minimize();
       });
       foxClose.addEventListener('touchend', function(e){
-        e.stopPropagation(); e.preventDefault(); minimize();
+        e.stopPropagation(); e.preventDefault(); isDrag = false; minimize();
       }, {passive:false});
     }
 
@@ -18843,16 +18993,11 @@ async function qualSearchTopics(query){
     }).join('');
 }
 
-// Open a searched topic directly into its detail (study + practice)
+// Open a searched topic directly into its detail (study + practice, in-flow)
 function qualSearchOpen(standard, name){
+  if(!isPro()){ showQualProLockedPopup(); return; }
   QUAL_CUR_SUBJECT = QUAL_CUR_SUBJECT || {code:'', name:''};
-  const box = document.getElementById('qual-topic-detail');
-  box.innerHTML =
-    '<div style="font-family:var(--font-display,serif);font-size:22px;font-weight:800;color:var(--navy,#0A1F6E);line-height:1.2;margin:0 0 20px;">'+qualEsc(name)+'</div>'+
-    '<button onclick="qualStudyTopic(\''+qualEsc(standard)+'\')" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;margin-bottom:12px;background:var(--navy,#0A1F6E);color:#fff;border:none;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer;font-family:var(--font-body);">📖 Study Material</button>'+
-    '<button onclick="qualPracticeTopic(\''+qualEsc(standard)+'\')" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;background:#5B54D6;color:#fff;border:none;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer;font-family:var(--font-body);">⚔️ Practice MCQs</button>';
-  showScreen('qual-topic-detail');
-  window.scrollTo(0,0);
+  qualRenderStudyDetail(standard, name, (QUAL_CUR_SUBJECT&&QUAL_CUR_SUBJECT.code)||'', '');
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -18947,11 +19092,6 @@ async function openQualifications(){
   if(typeof _currentUser === 'undefined' || !_currentUser){
     if(typeof showStudyNotesSignupCard==='function'){ showStudyNotesSignupCard(); return; }
   }
-  // ── PRO GATE (Qualifications is Pro-only) ──
-  if(typeof isPro==='function' && !isPro()){
-    if(typeof showProLockedPopup==='function') showProLockedPopup('Qualifications');
-    return;
-  }
   // ── FIRST-TIME TERMS & CONDITIONS GATE (Pro users must accept once) ──
   if(typeof qualTCAccepted==='function' && !qualTCAccepted()){
     if(typeof showQualTCModal==='function'){ showQualTCModal(); return; }
@@ -18966,11 +19106,20 @@ async function _openQualificationsInner(){
   const _sr = document.getElementById('qual-search-results'); if(_sr) _sr.innerHTML='';
   const list = document.getElementById('qual-list');
   if(list) list.style.display='';
-  const data = await qualFetch('qualifications?select=*&is_active=eq.true&order=sort_order');
+  // Fetch qualifications AND work out which ones actually have mapped content (data-driven active state)
+  const [data, subjMap] = await Promise.all([
+    qualFetch('qualifications?select=*&is_active=eq.true&order=sort_order'),
+    qualFetch('qual_subjects?select=id,qualification_id&is_active=eq.true')
+  ]);
   if(!data){ list.innerHTML='<div style="text-align:center;padding:40px;color:#F59E0B;font-size:13px;">Couldn\'t load. Try again.</div>'; return; }
+  // subject_ids that have at least one mapped topic
+  const mappedRows = await qualFetch('subject_topics?select=subject_id&is_active=eq.true');
+  const subjWithTopics = new Set((mappedRows||[]).map(r=>r.subject_id));
+  // qualification_ids that own at least one subject that has topics
+  const qualsWithContent = new Set((subjMap||[]).filter(s=>subjWithTopics.has(s.id)).map(s=>s.qualification_id));
   QUAL_QUALS = data;
   list.innerHTML = data.map(q=>{
-    const active = q.code==='ACCA'; // only ACCA has content for now
+    const active = qualsWithContent.has(q.id); // active if it has any subject with mapped topics
     const badge = active ? '' : '<span style="font-size:10px;background:#E2E8F0;color:#64748B;padding:2px 8px;border-radius:8px;margin-left:8px;">Coming soon</span>';
     return '<div onclick="'+(active?'qualOpenSubjects(\''+q.id+'\',\''+qualEsc(q.code)+'\',\''+qualEsc(q.name)+'\')':'')+'" style="display:flex;align-items:center;gap:14px;padding:18px;margin-bottom:12px;border-radius:16px;background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);cursor:'+(active?'pointer':'default')+';opacity:'+(active?'1':'.6')+';">'+
       '<div style="width:48px;height:48px;border-radius:12px;background:'+(active?'#5B54D6':'#CBD5E1')+';display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;font-weight:800;">'+qualEsc(q.code.substring(0,2))+'</div>'+
@@ -19052,29 +19201,68 @@ function qualTopicRow(t){
     (hasContent?'<div style="color:var(--muted);font-size:16px;flex:0 0 auto;">›</div>':'')+'</div>';
 }
 
-function qualOpenTopicDetail(idx){
+async function qualOpenTopicDetail(idx){
+  if(!isPro()){ showQualProLockedPopup(); return; }
   const t = QUAL_TOPICS[idx];
   if(!t || !t.standard) return;
+  await qualRenderStudyDetail(t.standard, t.name, (QUAL_CUR_SUBJECT&&QUAL_CUR_SUBJECT.code)||'', (t.topic_type==='standard'?t.code:''));
+}
+
+// Render study material + MCQ button directly into the qual-topic-detail screen.
+// Stays inside the Qualifications flow so the back button (→ qual-topics) works correctly.
+async function qualRenderStudyDetail(standard, name, subjCode, stdCode){
   const box = document.getElementById('qual-topic-detail');
-  box.innerHTML =
-    '<div style="margin-bottom:4px;"><span style="display:inline-block;padding:3px 10px;border-radius:20px;background:#5B54D6;color:#fff;font-size:11px;font-weight:700;">'+qualEsc(QUAL_CUR_SUBJECT.code)+'</span>'+(t.topic_type==='standard'?'<span style="display:inline-block;margin-left:6px;padding:3px 10px;border-radius:20px;background:#EEF2FF;color:#5B54D6;font-size:11px;font-weight:800;">'+qualEsc(t.code)+'</span>':'')+'</div>'+
-    '<div style="font-family:var(--font-display,serif);font-size:22px;font-weight:800;color:var(--navy,#0A1F6E);line-height:1.2;margin:6px 0 20px;">'+qualEsc(t.name)+'</div>'+
-    '<button onclick="qualStudyTopic(\''+qualEsc(t.standard)+'\')" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;margin-bottom:12px;background:var(--navy,#0A1F6E);color:#fff;border:none;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer;font-family:var(--font-body);">📖 Study Material</button>'+
-    '<button onclick="qualPracticeTopic(\''+qualEsc(t.standard)+'\')" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;background:#5B54D6;color:#fff;border:none;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer;font-family:var(--font-body);">⚔️ Practice MCQs</button>';
+  if(!box) return;
   showScreen('qual-topic-detail');
+  window.scrollTo(0,0);
+  box.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">⏳ Loading study material…</div>';
+  // Ensure summaries are loaded
+  if(typeof LIB_LOADED!=='undefined' && !LIB_LOADED){ if(typeof loadLibrarySummaries==='function') await loadLibrarySummaries(); }
+  const s = (typeof LIBRARY_DATA!=='undefined') ? LIBRARY_DATA.find(x=>x.standard===standard) : null;
+
+  // Header (subject + code badges + title)
+  let html =
+    '<div style="margin-bottom:4px;">'+
+      '<span style="display:inline-block;padding:3px 10px;border-radius:20px;background:#5B54D6;color:#fff;font-size:11px;font-weight:700;">'+qualEsc(subjCode||'')+'</span>'+
+      (stdCode?'<span style="display:inline-block;margin-left:6px;padding:3px 10px;border-radius:20px;background:#EEF2FF;color:#5B54D6;font-size:11px;font-weight:800;">'+qualEsc(stdCode)+'</span>':'')+
+    '</div>'+
+    '<div style="font-family:var(--font-display,serif);font-size:22px;font-weight:800;color:var(--navy,#0A1F6E);line-height:1.2;margin:6px 0 16px;">'+qualEsc(name)+'</div>';
+
+  if(s){
+    const esc = (typeof escapeHtmlLib==='function') ? escapeHtmlLib : qualEsc;
+    const kp = (s.key_points||'').split('\n').filter(x=>x.trim()).map(x=>'<li style="margin-bottom:7px;line-height:1.5;">'+esc(x.trim())+'</li>').join('');
+    const hasJE = s.journal_entry_dr && s.journal_entry_dr!=='N/A';
+    const jeBlock = hasJE ? ('<div style="margin-top:16px;"><div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:6px;">Typical Journal Entry</div><div style="background:var(--blue-ll,#eef4ff);border-radius:10px;padding:12px;font-family:var(--font-mono,monospace);font-size:12.5px;line-height:1.7;"><div><b>Dr</b> '+esc(s.journal_entry_dr)+'</div><div style="padding-left:18px;"><b>Cr</b> '+esc(s.journal_entry_cr||'')+'</div></div></div>') : '';
+    const exBlock = s.mini_example ? ('<div style="margin-top:16px;"><div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:6px;">Worked Example</div><div style="background:#F0FBF6;border:1px solid #C9EEDD;border-radius:10px;padding:12px;font-size:13px;line-height:1.7;white-space:pre-line;">'+esc(s.mini_example)+'</div></div>') : '';
+    const trapBlock = s.exam_trap ? ('<div style="margin-top:16px;"><div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#B45309;margin-bottom:6px;">⚠️ Exam Traps</div><div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:12px;font-size:13px;line-height:1.7;white-space:pre-line;">'+esc(s.exam_trap)+'</div></div>') : '';
+    html +=
+      '<div style="background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);border-radius:14px;padding:16px;">'+
+        '<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:6px;">Core Principle</div>'+
+        '<div style="font-size:14px;line-height:1.6;">'+esc(s.core_principle||'')+'</div>'+
+        (kp?'<div style="margin-top:16px;"><div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:6px;">Key Points</div><ul style="margin:0;padding-left:18px;font-size:13.5px;">'+kp+'</ul></div>':'')+
+        exBlock + jeBlock + trapBlock +
+      '</div>';
+  } else {
+    html += '<div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:12px;padding:16px;font-size:13px;color:#B45309;line-height:1.6;">Study material isn\'t available for this topic yet — you can still practise the MCQs below.</div>';
+  }
+
+  // MCQ button (always shown)
+  html += '<button onclick="qualPracticeTopic(\''+qualEsc(standard)+'\')" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;margin-top:16px;background:#5B54D6;color:#fff;border:none;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer;font-family:var(--font-body);">⚔️ Practice MCQs</button>'+
+    '<div style="font-size:10px;color:var(--muted);opacity:.75;line-height:1.4;margin-top:14px;text-align:center;">Independent study resource — not affiliated with any professional body. For study purposes only.</div>'+
+    '<div style="height:20px;"></div>';
+
+  box.innerHTML = html;
   window.scrollTo(0,0);
 }
 
-// Study Material → reuse the Study Notes renderer by loading that standard's summary
+// Search path → open a topic's study+practice detail (same in-flow renderer)
 async function qualStudyTopic(standard){
-  if(!LIB_LOADED){ await loadLibrarySummaries(); }
-  const idx = LIBRARY_DATA.findIndex(s=>s.standard===standard);
-  if(idx>=0){ openLibraryTopic(idx); }
-  else { if(typeof toast==='function') toast('Study material not available for '+standard); }
+  await qualRenderStudyDetail(standard, (QUAL_CUR_SUBJECT&&QUAL_CUR_SUBJECT.name)||standard, (QUAL_CUR_SUBJECT&&QUAL_CUR_SUBJECT.code)||'', '');
 }
 
 // Practice → reuse the existing practice engine
 function qualPracticeTopic(standard){
+  if(!isPro()){ showQualProLockedPopup(); return; }
   if(typeof startTopicPractice==='function') startTopicPractice(standard);
 }
 
