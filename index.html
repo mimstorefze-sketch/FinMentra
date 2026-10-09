@@ -127,30 +127,6 @@ const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
   }
 });
 
-// iOS native OAuth: SceneDelegate passes the FULL callback URL to
-// exchangeCodeForSession, but Supabase needs only the "code" value.
-// This wrapper extracts it. It only changes calls whose argument is a URL
-// containing "code=", so web and Android are unaffected.
-(function(){
-  try{
-    var _origExchange = _supa.auth.exchangeCodeForSession.bind(_supa.auth);
-    _supa.auth.exchangeCodeForSession = function(arg){
-      try{
-        if(typeof arg === 'string' && arg.indexOf('code=') !== -1){
-          var c = new URL(arg).searchParams.get('code');
-          if(c) arg = c;
-          // TEMP DEBUG: remove after iOS login is confirmed working
-          if(!window.localStorage.getItem('sb-vofxhqnipoywbbkmlxcp-auth-token-code-verifier')){
-            console.warn('[AUTH] code verifier missing before exchange');
-            try{ toast('DEBUG: code verifier missing'); }catch(e){}
-          }
-        }
-      }catch(e){}
-      return _origExchange(arg);
-    };
-  }catch(e){}
-})();
-
 // ── Reveal the app / hide the auth overlay whenever a session becomes active.
 // Called from both the deep-link handler and onAuthStateChange so it works
 // regardless of which auth event Supabase emits (SIGNED_IN, TOKEN_REFRESHED,
@@ -13804,19 +13780,6 @@ function _isCapacitorNative(){
   return !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
 }
 
-// Opens the OAuth URL via the native ASWebAuthenticationSession bridge (iOS).
-// Falls back to the Capacitor Browser plugin if the bridge isn't present.
-function _iosOpenOAuth(url){
-  try{
-    var h = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.oauthHandler;
-    if(h){ h.postMessage(url); return true; }
-    var B = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser;
-    if(B){ B.open({ url: url }); return true; }
-  }catch(e){ console.error('OAuth open error:', e); }
-  toast('Sign-in unavailable. Please update the app.');
-  return false;
-}
-
 async function signInWithGoogle(){
   if(_isCapacitorNative()){
     const { data, error } = await _supa.auth.signInWithOAuth({
@@ -13828,7 +13791,7 @@ async function signInWithGoogle(){
       }
     });
     if(error){ toast('Google login failed: ' + error.message); return; }
-    if(data && data.url){ _iosOpenOAuth(data.url); }
+    if(data && data.url){ await window.Capacitor.Plugins.Browser.open({ url: data.url }); }
     return;
   }
 
@@ -13861,7 +13824,7 @@ async function signInWithLinkedIn(){
       }
     });
     if(error){ toast('LinkedIn login failed: ' + error.message); return; }
-    if(data && data.url){ _iosOpenOAuth(data.url); }
+    if(data && data.url){ await window.Capacitor.Plugins.Browser.open({ url: data.url }); }
     return;
   }
 
