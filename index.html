@@ -18928,7 +18928,7 @@ let LIB_ACTIVE_CAT = 'IFRS';
 
 async function loadLibrarySummaries(){
   try{
-    const url = SUPA_URL + '/rest/v1/standard_summaries?select=*&is_active=eq.true';
+    const url = SUPA_URL + '/rest/v1/standard_summaries?select=id,standard,title,category&is_active=eq.true';
     const res = await fetch(url, {
       headers:{ 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' }
     });
@@ -18940,6 +18940,21 @@ async function loadLibrarySummaries(){
     console.log('%c📖 Library loaded: ' + data.length + ' summaries', 'color: teal; font-weight: bold');
     return true;
   }catch(e){ console.error('Library load error:', e.message); return false; }
+}
+
+async function libFetchFull(standard){
+  try{
+    const cached = LIBRARY_DATA.find(x=>x.standard===standard);
+    if(cached && cached.core_principle!==undefined) return cached;
+    const url = SUPA_URL + '/rest/v1/standard_summaries?select=*&is_active=eq.true&limit=1&standard=eq.' + encodeURIComponent(standard);
+    const res = await fetch(url, { headers:{ 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' } });
+    if(!res.ok) return null;
+    const rows = await res.json();
+    if(!Array.isArray(rows) || !rows.length) return null;
+    if(cached){ Object.assign(cached, rows[0]); return cached; }
+    LIBRARY_DATA.push(rows[0]);
+    return rows[0];
+  }catch(e){ console.error('Library note load error:', e.message); return null; }
 }
 
 function showStudyNotesSignupCard(){
@@ -19236,7 +19251,8 @@ async function qualRenderStudyDetail(standard, name, subjCode, stdCode){
   box.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">⏳ Loading study material…</div>';
   // Ensure summaries are loaded
   if(typeof LIB_LOADED!=='undefined' && !LIB_LOADED){ if(typeof loadLibrarySummaries==='function') await loadLibrarySummaries(); }
-  const s = (typeof LIBRARY_DATA!=='undefined') ? LIBRARY_DATA.find(x=>x.standard===standard) : null;
+  let s = (typeof LIBRARY_DATA!=='undefined') ? LIBRARY_DATA.find(x=>x.standard===standard) : null;
+  if(s && s.core_principle===undefined){ s = await libFetchFull(standard); }
 
   // Header (subject + code badges + title)
   let html =
@@ -19346,10 +19362,21 @@ function renderLibraryList(){
   }).join('');
 }
 
-function openLibraryTopic(idx){
-  const s = LIBRARY_DATA[idx];
+async function openLibraryTopic(idx){
+  let s = LIBRARY_DATA[idx];
   if(!s) return;
   const box = document.getElementById('lib-detail');
+  if(s.core_principle===undefined){
+    box.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">⏳ Loading…</div>';
+    showScreen('library-detail');
+    window.scrollTo(0,0);
+    const full = await libFetchFull(s.standard);
+    if(!full){
+      box.innerHTML = '<div style="text-align:center;padding:40px 16px;color:#F59E0B;font-size:13px;">📶 Couldn\'t load this note. Check your connection and try again.</div>';
+      return;
+    }
+    s = full;
+  }
   const kp = (s.key_points||'').split('\n').filter(x=>x.trim()).map(x =>
     '<li style="margin-bottom:7px;line-height:1.5;">' + escapeHtmlLib(x.trim()) + '</li>').join('');
   const hasJE = s.journal_entry_dr && s.journal_entry_dr!=='N/A';
